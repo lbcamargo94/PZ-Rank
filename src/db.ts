@@ -1,28 +1,30 @@
 // ============================================================
-//  db.js — Integração com Supabase
+//  db.ts — Integração com Supabase
 //  Responsável por todas as operações de dados:
 //  inserir, buscar e deletar entradas + upload de imagens
 // ============================================================
 
-// Carrega o cliente Supabase via CDN
-const supabaseScript = document.createElement('script');
-supabaseScript.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js';
-document.head.appendChild(supabaseScript);
+import { createClient } from '@supabase/supabase-js';
+import { SUPABASE_URL, SUPABASE_ANON_KEY, STORAGE_BUCKET, TABLE_NAME } from './config';
 
-let supabase = null;
+export interface Entry {
+  id?: number;
+  name: string;
+  live_url: string | null;
+  days: number;
+  time_str: string | null;
+  time_raw: number;
+  kills: number;
+  image_url: string | null;
+}
 
-supabaseScript.onload = () => {
-  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  window.dispatchEvent(new Event('db-ready'));
-};
+export type SortKey = 'days' | 'kills' | 'time';
 
-supabaseScript.onerror = () => {
-  window.dispatchEvent(new Event('db-error'));
-};
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ── Busca todas as entradas ordenadas por dias (desc) ──────
-async function dbFetchAll(orderBy = 'days') {
-  const colMap = { days: 'days', kills: 'kills', time: 'time_raw' };
+export async function dbFetchAll(orderBy: SortKey = 'days'): Promise<Entry[]> {
+  const colMap: Record<SortKey, string> = { days: 'days', kills: 'kills', time: 'time_raw' };
   const col = colMap[orderBy] || 'days';
 
   const { data, error } = await supabase
@@ -31,11 +33,11 @@ async function dbFetchAll(orderBy = 'days') {
     .order(col, { ascending: false });
 
   if (error) throw error;
-  return data;
+  return data as Entry[];
 }
 
 // ── Upload da imagem no Supabase Storage ───────────────────
-async function dbUploadImage(file) {
+export async function dbUploadImage(file: File): Promise<string> {
   const ext = file.name.split('.').pop();
   const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
 
@@ -53,7 +55,7 @@ async function dbUploadImage(file) {
 }
 
 // ── Insere nova entrada no banco ───────────────────────────
-async function dbInsert(entry) {
+export async function dbInsert(entry: Entry): Promise<Entry> {
   const { data, error } = await supabase
     .from(TABLE_NAME)
     .insert([entry])
@@ -61,11 +63,11 @@ async function dbInsert(entry) {
     .single();
 
   if (error) throw error;
-  return data;
+  return data as Entry;
 }
 
 // ── Deleta entrada por id ──────────────────────────────────
-async function dbDelete(id) {
+export async function dbDelete(id: number): Promise<void> {
   const { error } = await supabase
     .from(TABLE_NAME)
     .delete()
@@ -75,7 +77,7 @@ async function dbDelete(id) {
 }
 
 // ── Converte "12h 34m" ou "38h" em minutos (para ordenação) ──
-function parseTimeToMinutes(str) {
+export function parseTimeToMinutes(str: string | null): number {
   if (!str) return 0;
   const hMatch = str.match(/(\d+)\s*h/);
   const mMatch = str.match(/(\d+)\s*m/);

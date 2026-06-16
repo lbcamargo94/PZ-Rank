@@ -40,11 +40,18 @@ Site de ranking para o desafio de sobrevivência da comunidade de Project Zomboi
 
 ### Passo 5 — Configurar o projeto
 
-Abra o arquivo `js/config.js` e substitua os valores:
+Copie `.env.example` para `.env` e preencha os valores:
 
-```js
-const SUPABASE_URL = 'https://SEU-PROJETO.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJ...sua chave anon aqui...';
+```env
+VITE_SUPABASE_URL=https://SEU-PROJETO.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJ...sua chave anon aqui...
+```
+
+Instale as dependências e rode em modo desenvolvimento:
+
+```bash
+npm install
+npm run dev
 ```
 
 ### Passo 6 — Subir para o GitHub
@@ -66,23 +73,34 @@ git push -u origin main
 
 1. Acesse [vercel.com](https://vercel.com) e crie uma conta (pode usar o login do GitHub)
 2. Clique em **Add New → Project**
-3. Selecione o repositório `pz-rank` que você criou
-4. Clique em **Deploy** — sem nenhuma configuração extra necessária
-5. Em 30 segundos o site estará no ar com uma URL do tipo `pz-rank.vercel.app`
+3. Selecione o repositório `pz-rank` que você criou — o Vercel detecta automaticamente que é um projeto Vite
+4. Antes de clicar em Deploy, abra **Environment Variables** e adicione as mesmas chaves do seu `.env`:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+   - `VITE_STORAGE_BUCKET` (`screenshots`)
+   - `VITE_TABLE_NAME` (`entries`)
+
+   Isso é necessário porque o `.env` é ignorado pelo Git (não sobe pro GitHub) e o Vite só injeta essas variáveis no build do Vercel se elas estiverem configuradas lá.
+5. Clique em **Deploy**
+6. Em cerca de 30-60 segundos o site estará no ar com uma URL do tipo `pz-rank.vercel.app`
+
+Se mudar alguma env var depois, é preciso fazer um **redeploy** (Vercel → Deployments → ⋯ → Redeploy) — variáveis de ambiente só são lidas no momento do build.
 
 ---
 
 ## Estrutura do projeto
 
-```
+```text
 pz-rank/
 ├── index.html              # Página principal
 ├── css/
 │   └── style.css           # Todos os estilos
-├── js/
-│   ├── config.js           # ⚠️ Suas chaves do Supabase (edite aqui)
-│   ├── db.js               # Integração com o banco de dados
-│   └── app.js              # Lógica da aplicação
+├── src/
+│   ├── config.ts            # Lê as chaves do Supabase das variáveis de ambiente
+│   ├── db.ts                # Integração com o banco de dados
+│   ├── app.ts               # Lógica da aplicação
+│   └── main.ts              # Ponto de entrada (importado pelo index.html)
+├── .env.example             # ⚠️ Template das variáveis de ambiente (copie para .env)
 └── supabase_setup.sql      # SQL para criar a tabela (rode uma vez)
 ```
 
@@ -113,4 +131,4 @@ pz-rank/
 
 ## Dúvidas
 
-Se o site aparecer em branco, abra o console do navegador (F12 → Console) e veja a mensagem de erro. Geralmente é a URL ou chave do Supabase incorreta no `config.js`.
+Se o site aparecer em branco ou o status mostrar "sem conexão", abra o console do navegador (F12 → Console) e veja a mensagem de erro. Geralmente é a URL ou chave do Supabase incorretas — confira o `.env` localmente ou as Environment Variables no painel do Vercel. Atenção: `VITE_SUPABASE_URL` deve ser só a raiz do projeto (`https://SEU-PROJETO.supabase.co`), sem `/rest/v1/` no final — o `supabase-js` adiciona esse caminho internamente.

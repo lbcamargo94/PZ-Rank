@@ -1,66 +1,81 @@
 // ============================================================
-//  app.js — Lógica principal do PZ Community Rank
+//  app.ts — Lógica principal do PZ Community Rank
 // ============================================================
 
+import { dbFetchAll, dbUploadImage, dbInsert, parseTimeToMinutes, Entry, SortKey } from './db';
+
 // ── Estado da aplicação ────────────────────────────────────
-const state = {
+interface AppState {
+  entries: Entry[];
+  sortKey: SortKey;
+  pendingFile: File | null;
+  dbReady: boolean;
+}
+
+const state: AppState = {
   entries: [],
   sortKey: 'days',
   pendingFile: null,
-  loading: false,
   dbReady: false,
 };
 
 // ── Referências DOM ────────────────────────────────────────
-const $ = id => document.getElementById(id);
+function $<T extends HTMLElement = HTMLElement>(id: string): T {
+  return document.getElementById(id) as T;
+}
 
 const DOM = {
-  rankList:     $('rank-list'),
-  emptyState:   $('empty-state'),
-  statsBar:     $('stats-bar'),
-  statTotal:    $('stat-total'),
-  statRecord:   $('stat-record'),
-  statKills:    $('stat-kills'),
-  footerCount:  $('footer-count'),
-  connStatus:   $('conn-status'),
-  sortBtns:     document.querySelectorAll('.sort-btn'),
-  modalBg:      $('modal-bg'),
-  imgModalBg:   $('img-modal-bg'),
-  imgModalSrc:  $('img-modal-src'),
-  toast:        $('toast'),
+  rankList:     $<HTMLDivElement>('rank-list'),
+  emptyState:   $<HTMLDivElement>('empty-state'),
+  statsBar:     $<HTMLDivElement>('stats-bar'),
+  statTotal:    $<HTMLSpanElement>('stat-total'),
+  statRecord:   $<HTMLSpanElement>('stat-record'),
+  statKills:    $<HTMLSpanElement>('stat-kills'),
+  footerCount:  $<HTMLSpanElement>('footer-count'),
+  connStatus:   $<HTMLSpanElement>('conn-status'),
+  sortBtns:     document.querySelectorAll<HTMLButtonElement>('.sort-btn'),
+  modalBg:      $<HTMLDivElement>('modal-bg'),
+  imgModalBg:   $<HTMLDivElement>('img-modal-bg'),
+  imgModalSrc:  $<HTMLImageElement>('img-modal-src'),
+  toast:        $<HTMLDivElement>('toast'),
   // form fields
-  inpName:      $('inp-name'),
-  inpLive:      $('inp-live'),
-  inpDays:      $('inp-days'),
-  inpTime:      $('inp-time'),
-  inpKills:     $('inp-kills'),
-  inpFile:      $('inp-file'),
-  filePreview:  $('file-preview'),
-  uploadText:   $('upload-text'),
-  btnSave:      $('btn-save'),
-  btnSaveText:  $('btn-save-text'),
-  errName:      $('err-name'),
-  errLive:      $('err-live'),
-  errStats:     $('err-stats'),
-  errFile:      $('err-file'),
+  inpName:      $<HTMLInputElement>('inp-name'),
+  inpLive:      $<HTMLInputElement>('inp-live'),
+  inpDays:      $<HTMLInputElement>('inp-days'),
+  inpTime:      $<HTMLInputElement>('inp-time'),
+  inpKills:     $<HTMLInputElement>('inp-kills'),
+  inpFile:      $<HTMLInputElement>('inp-file'),
+  filePreview:  $<HTMLImageElement>('file-preview'),
+  uploadText:   $<HTMLSpanElement>('upload-text'),
+  btnSave:      $<HTMLButtonElement>('btn-save'),
+  btnSaveText:  $<HTMLSpanElement>('btn-save-text'),
+  errName:      $<HTMLSpanElement>('err-name'),
+  errLive:      $<HTMLSpanElement>('err-live'),
+  errStats:     $<HTMLSpanElement>('err-stats'),
+  errFile:      $<HTMLSpanElement>('err-file'),
 };
 
 // ── Inicialização ──────────────────────────────────────────
-window.addEventListener('db-ready', async () => {
-  state.dbReady = true;
-  setConnStatus('ok', 'conectado');
+async function init(): Promise<void> {
   showSkeletons();
-  await loadEntries();
-});
+  try {
+    state.entries = await dbFetchAll(state.sortKey);
+    state.dbReady = true;
+    setConnStatus('ok', 'conectado');
+    render();
+  } catch (e) {
+    console.error(e);
+    setConnStatus('err', 'sem conexão');
+    showToast('Erro ao conectar com o banco de dados.', 'error');
+  } finally {
+    hideSkeletons();
+  }
+}
 
-window.addEventListener('db-error', () => {
-  setConnStatus('err', 'sem conexão');
-  showToast('Erro ao conectar com o banco de dados.', 'error');
-  hideSkeletons();
-});
+init();
 
 // ── Carregar entradas ──────────────────────────────────────
-async function loadEntries() {
+async function loadEntries(): Promise<void> {
   try {
     state.entries = await dbFetchAll(state.sortKey);
     render();
@@ -73,7 +88,7 @@ async function loadEntries() {
 }
 
 // ── Renderização ───────────────────────────────────────────
-function render() {
+function render(): void {
   const list = DOM.rankList;
 
   // remove skeleton rows se existirem
@@ -94,7 +109,7 @@ function render() {
   const total = state.entries.length;
   const topDays = state.entries.reduce((max, e) => Math.max(max, e.days || 0), 0);
   const totalKills = state.entries.reduce((sum, e) => sum + (e.kills || 0), 0);
-  DOM.statTotal.textContent = total;
+  DOM.statTotal.textContent = String(total);
   DOM.statRecord.textContent = topDays + (topDays === 1 ? ' dia' : ' dias');
   DOM.statKills.textContent = totalKills.toLocaleString('pt-BR');
   DOM.footerCount.textContent = total + (total === 1 ? ' sobrevivente registrado' : ' sobreviventes registrados');
@@ -106,7 +121,7 @@ function render() {
   });
 }
 
-function buildRow(entry, index) {
+function buildRow(entry: Entry, index: number): HTMLDivElement {
   const div = document.createElement('div');
   const rankClass = index === 0 ? 'top-1' : index === 1 ? 'top-2' : index === 2 ? 'top-3' : '';
   const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
@@ -132,8 +147,7 @@ function buildRow(entry, index) {
     <div class="td td-stat">${entry.kills != null ? Number(entry.kills).toLocaleString('pt-BR') : '—'}</div>
     <div class="td td-img">
       ${entry.image_url
-        ? `<img class="thumb" src="${esc(entry.image_url)}" alt="Screenshot de ${esc(entry.name)}"
-             loading="lazy" onclick="openImgModal('${esc(entry.image_url)}', '${esc(entry.name)}')" />`
+        ? `<img class="thumb" src="${esc(entry.image_url)}" alt="Screenshot de ${esc(entry.name)}" loading="lazy" />`
         : '<span class="no-img">—</span>'
       }
     </div>
@@ -146,10 +160,16 @@ function buildRow(entry, index) {
       }
     </div>
   `;
+
+  if (entry.image_url) {
+    const thumb = div.querySelector<HTMLImageElement>('.thumb');
+    thumb?.addEventListener('click', () => openImgModal(entry.image_url as string, entry.name));
+  }
+
   return div;
 }
 
-function showSkeletons() {
+function showSkeletons(): void {
   DOM.rankList.innerHTML = '';
   for (let i = 0; i < 4; i++) {
     const row = document.createElement('div');
@@ -167,14 +187,14 @@ function showSkeletons() {
   }
 }
 
-function hideSkeletons() {
+function hideSkeletons(): void {
   DOM.rankList.querySelectorAll('.skeleton-row').forEach(el => el.remove());
 }
 
 // ── Ordenação ──────────────────────────────────────────────
 DOM.sortBtns.forEach(btn => {
   btn.addEventListener('click', async () => {
-    state.sortKey = btn.dataset.sort;
+    state.sortKey = btn.dataset.sort as SortKey;
     DOM.sortBtns.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     showSkeletons();
@@ -191,17 +211,17 @@ DOM.modalBg.addEventListener('click', e => {
   if (e.target === DOM.modalBg) closeModal();
 });
 
-function openModal() {
+function openModal(): void {
   DOM.modalBg.classList.add('open');
   DOM.inpName.focus();
 }
 
-function closeModal() {
+function closeModal(): void {
   DOM.modalBg.classList.remove('open');
   resetForm();
 }
 
-function resetForm() {
+function resetForm(): void {
   [DOM.inpName, DOM.inpLive, DOM.inpDays, DOM.inpTime, DOM.inpKills].forEach(el => {
     el.value = '';
     el.classList.remove('error');
@@ -216,7 +236,7 @@ function resetForm() {
 
 // ── Upload de arquivo ──────────────────────────────────────
 DOM.inpFile.addEventListener('change', e => {
-  const file = e.target.files[0];
+  const file = (e.target as HTMLInputElement).files?.[0];
   if (!file) return;
 
   if (file.size > 5 * 1024 * 1024) {
@@ -231,27 +251,27 @@ DOM.inpFile.addEventListener('change', e => {
 
   const reader = new FileReader();
   reader.onload = ev => {
-    DOM.filePreview.src = ev.target.result;
+    DOM.filePreview.src = ev.target?.result as string;
     DOM.filePreview.style.display = 'block';
   };
   reader.readAsDataURL(file);
 });
 
 // ── Salvar entrada ─────────────────────────────────────────
-$('btn-save').addEventListener('click', async () => {
+DOM.btnSave.addEventListener('click', async () => {
   if (!validateForm()) return;
   if (!state.dbReady) { showToast('Banco de dados não conectado.', 'error'); return; }
 
   setSaving(true);
 
   try {
-    let imageUrl = null;
+    let imageUrl: string | null = null;
     if (state.pendingFile) {
       imageUrl = await dbUploadImage(state.pendingFile);
     }
 
     const timeStr = DOM.inpTime.value.trim();
-    const entry = {
+    const entry: Entry = {
       name:     DOM.inpName.value.trim(),
       live_url: DOM.inpLive.value.trim() || null,
       days:     parseInt(DOM.inpDays.value) || 0,
@@ -275,7 +295,7 @@ $('btn-save').addEventListener('click', async () => {
   }
 });
 
-function validateForm() {
+function validateForm(): boolean {
   let valid = true;
 
   if (!DOM.inpName.value.trim()) {
@@ -318,17 +338,17 @@ function validateForm() {
   return valid;
 }
 
-function setSaving(saving) {
+function setSaving(saving: boolean): void {
   DOM.btnSave.disabled = saving;
   DOM.btnSaveText.textContent = saving ? 'Salvando...' : 'Confirmar';
 }
 
-function isValidUrl(str) {
+function isValidUrl(str: string): boolean {
   try { new URL(str); return true; } catch { return false; }
 }
 
 // ── Modal de imagem ────────────────────────────────────────
-function openImgModal(url, name) {
+function openImgModal(url: string, name: string): void {
   DOM.imgModalSrc.src = url;
   DOM.imgModalSrc.alt = `Screenshot das habilidades de ${name}`;
   DOM.imgModalBg.classList.add('open');
@@ -339,7 +359,7 @@ DOM.imgModalBg.addEventListener('click', e => {
   if (e.target === DOM.imgModalBg) closeImgModal();
 });
 
-function closeImgModal() {
+function closeImgModal(): void {
   DOM.imgModalBg.classList.remove('open');
   setTimeout(() => { DOM.imgModalSrc.src = ''; }, 300);
 }
@@ -353,9 +373,9 @@ document.addEventListener('keydown', e => {
 });
 
 // ── Toast ──────────────────────────────────────────────────
-let toastTimer = null;
+let toastTimer: ReturnType<typeof setTimeout> | undefined;
 
-function showToast(msg, type = '') {
+function showToast(msg: string, type = ''): void {
   const t = DOM.toast;
   t.textContent = msg;
   t.className = `toast show ${type}`;
@@ -364,7 +384,7 @@ function showToast(msg, type = '') {
 }
 
 // ── Status de conexão ──────────────────────────────────────
-function setConnStatus(type, label) {
+function setConnStatus(type: string, label: string): void {
   DOM.connStatus.textContent = '';
   const icon = document.createElement('i');
   icon.className = 'ti ti-circle-filled';
@@ -375,7 +395,7 @@ function setConnStatus(type, label) {
 }
 
 // ── Utilitários ────────────────────────────────────────────
-function esc(str) {
+function esc(str: unknown): string {
   if (str == null) return '';
   return String(str)
     .replace(/&/g, '&amp;')
