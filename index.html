@@ -111,12 +111,14 @@
         </div>
 
         <div class="field">
-          <label class="field-label" for="inp-code">Código do mod (opcional)</label>
-          <div class="code-row">
-            <input class="field-input" id="inp-code" type="text" placeholder="PZR|14|487|38h22m|Forca 8,Machado 6" autocomplete="off" />
-            <button class="btn-secondary" id="btn-decode" type="button">Decodificar</button>
-          </div>
+          <label class="field-label" for="inp-rank-file">Arquivo do mod (.pzrank) — opcional</label>
+          <label class="upload-area" for="inp-rank-file" id="rank-file-label">
+            <i class="ti ti-file-upload" aria-hidden="true"></i>
+            <span id="rank-file-text">Clique para selecionar o arquivo gerado pelo mod</span>
+          </label>
+          <input type="file" id="inp-rank-file" accept=".pzrank,.txt" style="display:none" />
           <span class="field-error" id="err-code"></span>
+          <div class="decoded-info" id="decoded-info" style="display:none"></div>
           <div class="skills-tags" id="skills-tags" style="display:none"></div>
         </div>
 

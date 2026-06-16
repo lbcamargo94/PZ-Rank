@@ -10,6 +10,8 @@ interface AppState {
   sortKey: SortKey;
   pendingFile: File | null;
   pendingSkills: string | null;
+  pendingCharacterName: string | null;
+  pendingProfession: string | null;
   dbReady: boolean;
 }
 
@@ -18,26 +20,96 @@ const state: AppState = {
   sortKey: 'days',
   pendingFile: null,
   pendingSkills: null,
+  pendingCharacterName: null,
+  pendingProfession: null,
   dbReady: false,
 };
 
-// ── Decodificação do código gerado pelo mod ─────────────────
-// Formato: PZR|<dias>|<kills>|<tempo>|<skills separadas por vírgula>
-const PZR_CODE_RE = /^PZR\|(\d+)\|(\d+)\|(\d+h\d+m)\|(.*)$/;
+// ── Decodificação do arquivo gerado pelo mod ────────────────
+// Formato do arquivo: "PZRX1:" + base64(xor(payload, XOR_KEY))
+// payload: PZR|<nome_personagem>|<profissao>|<kills>|<minutos_totais>|<skills>
+//
+// IMPORTANTE: esta chave precisa ser IDÊNTICA à XOR_KEY em
+// mod/.../RankCode.lua, byte a byte. É ofuscação, não segurança
+// real — tanto o mod (Lua aberto) quanto este JS são públicos.
+const XOR_KEY = 'PZRank-Community-2026-Key!';
+const PZR_FILE_RE = /^PZRX1:([\s\S]+)$/;
+const PZR_PAYLOAD_RE = /^PZR\|([^|]*)\|([^|]*)\|(\d+)\|(\d+)\|(.*)$/;
 
 interface DecodedCode {
-  days: number;
+  characterName: string;
+  profession: string;
   kills: number;
+  timeRaw: number;
+  days: number;
   timeStr: string;
   skills: string[];
 }
 
-function parsePzrCode(code: string): DecodedCode | null {
-  const match = code.trim().match(PZR_CODE_RE);
+function xorBytes(bytes: Uint8Array, key: string): Uint8Array {
+  const keyBytes = new TextEncoder().encode(key);
+  const out = new Uint8Array(bytes.length);
+  for (let i = 0; i < bytes.length; i++) {
+    out[i] = bytes[i] ^ keyBytes[i % keyBytes.length];
+  }
+  return out;
+}
+
+function base64ToBytes(b64: string): Uint8Array {
+  const bin = atob(b64.replace(/\s+/g, ''));
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+
+function deobfuscate(b64: string): string {
+  const xored = base64ToBytes(b64);
+  return new TextDecoder().decode(xorBytes(xored, XOR_KEY));
+}
+
+function formatMinutesToYDHM(totalMinutes: number): string {
+  const m = totalMinutes % 60;
+  const totalHours = Math.floor(totalMinutes / 60);
+  const h = totalHours % 24;
+  const totalDays = Math.floor(totalHours / 24);
+  const y = Math.floor(totalDays / 365);
+  const d = totalDays % 365;
+
+  const parts: string[] = [];
+  if (y > 0) parts.push(`${y}a`);
+  if (y > 0 || d > 0) parts.push(`${d}d`);
+  parts.push(`${h}h`);
+  parts.push(`${m}m`);
+  return parts.join(' ');
+}
+
+function parsePzrFile(raw: string): DecodedCode | null {
+  const fileMatch = raw.trim().match(PZR_FILE_RE);
+  if (!fileMatch) return null;
+
+  let plain: string;
+  try {
+    plain = deobfuscate(fileMatch[1].trim());
+  } catch {
+    return null;
+  }
+
+  const match = plain.match(PZR_PAYLOAD_RE);
   if (!match) return null;
-  const [, days, kills, timeStr, skillsRaw] = match;
+
+  const [, characterName, profession, kills, timeRaw, skillsRaw] = match;
+  const timeRawNum = parseInt(timeRaw, 10);
   const skills = skillsRaw ? skillsRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
-  return { days: parseInt(days, 10), kills: parseInt(kills, 10), timeStr, skills };
+
+  return {
+    characterName: characterName || 'Sobrevivente',
+    profession: profession || 'Desconhecida',
+    kills: parseInt(kills, 10),
+    timeRaw: timeRawNum,
+    days: Math.floor(timeRawNum / 1440),
+    timeStr: formatMinutesToYDHM(timeRawNum),
+    skills,
+  };
 }
 
 // ── Referências DOM ────────────────────────────────────────
@@ -74,10 +146,11 @@ const DOM = {
   errLive:      $<HTMLSpanElement>('err-live'),
   errStats:     $<HTMLSpanElement>('err-stats'),
   errFile:      $<HTMLSpanElement>('err-file'),
-  inpCode:      $<HTMLInputElement>('inp-code'),
-  btnDecode:    $<HTMLButtonElement>('btn-decode'),
+  inpRankFile:  $<HTMLInputElement>('inp-rank-file'),
+  rankFileText: $<HTMLSpanElement>('rank-file-text'),
   errCode:      $<HTMLSpanElement>('err-code'),
   skillsTags:   $<HTMLDivElement>('skills-tags'),
+  decodedInfo:  $<HTMLDivElement>('decoded-info'),
 };
 
 // ── Inicialização ──────────────────────────────────────────
@@ -164,6 +237,10 @@ function buildRow(entry: Entry, index: number): HTMLDivElement {
                <span class="live-dot"></span>LIVE / VOD
              </a>`
           : '<span style="font-size:10px;color:var(--text-4);font-family:var(--font-mono)">sem link</span>'
+        }
+        ${entry.profession
+          ? `<div class="player-profession" title="Personagem: ${esc(entry.character_name || '?')}">${esc(entry.profession)}</div>`
+          : ''
         }
         ${entry.skills ? `<div class="player-skills" title="${esc(entry.skills)}">${esc(entry.skills)}</div>` : ''}
       </div>
@@ -257,36 +334,53 @@ function resetForm(): void {
   DOM.filePreview.src = '';
   DOM.uploadText.textContent = 'Clique para selecionar imagem (máx. 5 MB)';
   DOM.inpFile.value = '';
-  DOM.inpCode.value = '';
+  DOM.inpRankFile.value = '';
+  DOM.rankFileText.textContent = 'Clique para selecionar o arquivo gerado pelo mod';
+  hideDecodedInfo();
   renderSkillTags([]);
   state.pendingFile = null;
   state.pendingSkills = null;
+  state.pendingCharacterName = null;
+  state.pendingProfession = null;
 }
 
-// ── Decodificar código do mod ───────────────────────────────
-DOM.btnDecode.addEventListener('click', () => {
-  const code = DOM.inpCode.value.trim();
-
-  if (!code) {
-    DOM.errCode.textContent = 'Cole o código gerado pelo mod.';
-    return;
-  }
-
-  const decoded = parsePzrCode(code);
-  if (!decoded) {
-    DOM.errCode.textContent = 'Código inválido. Verifique se copiou corretamente do jogo.';
-    renderSkillTags([]);
-    state.pendingSkills = null;
-    return;
-  }
+// ── Decodificar arquivo do mod ───────────────────────────────
+DOM.inpRankFile.addEventListener('change', async e => {
+  const file = (e.target as HTMLInputElement).files?.[0];
+  if (!file) return;
 
   DOM.errCode.textContent = '';
+
+  let raw: string;
+  try {
+    raw = await file.text();
+  } catch (err) {
+    console.error(err);
+    DOM.errCode.textContent = 'Não foi possível ler o arquivo.';
+    return;
+  }
+
+  const decoded = parsePzrFile(raw);
+  if (!decoded) {
+    DOM.errCode.textContent = 'Arquivo inválido ou corrompido. Verifique se é o arquivo gerado pelo mod.';
+    renderSkillTags([]);
+    hideDecodedInfo();
+    state.pendingSkills = null;
+    state.pendingCharacterName = null;
+    state.pendingProfession = null;
+    return;
+  }
+
+  DOM.rankFileText.textContent = file.name;
   DOM.inpDays.value = String(decoded.days);
   DOM.inpKills.value = String(decoded.kills);
   DOM.inpTime.value = decoded.timeStr;
   state.pendingSkills = decoded.skills.length ? decoded.skills.join(', ') : null;
+  state.pendingCharacterName = decoded.characterName;
+  state.pendingProfession = decoded.profession;
   renderSkillTags(decoded.skills);
-  showToast('Código decodificado com sucesso!', 'success');
+  showDecodedInfo(decoded.characterName, decoded.profession);
+  showToast('Arquivo decodificado com sucesso!', 'success');
 });
 
 function renderSkillTags(skills: string[]): void {
@@ -302,6 +396,16 @@ function renderSkillTags(skills: string[]): void {
     tag.textContent = skill;
     DOM.skillsTags.appendChild(tag);
   });
+}
+
+function showDecodedInfo(characterName: string, profession: string): void {
+  DOM.decodedInfo.textContent = `Personagem: ${characterName} — ${profession}`;
+  DOM.decodedInfo.style.display = 'block';
+}
+
+function hideDecodedInfo(): void {
+  DOM.decodedInfo.textContent = '';
+  DOM.decodedInfo.style.display = 'none';
 }
 
 // ── Upload de arquivo ──────────────────────────────────────
@@ -350,6 +454,8 @@ DOM.btnSave.addEventListener('click', async () => {
       kills:    parseInt(DOM.inpKills.value) || 0,
       image_url: imageUrl,
       skills:   state.pendingSkills,
+      character_name: state.pendingCharacterName,
+      profession: state.pendingProfession,
     };
 
     await dbInsert(entry);

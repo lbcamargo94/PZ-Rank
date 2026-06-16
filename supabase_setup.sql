@@ -14,6 +14,8 @@ CREATE TABLE entries (
   kills      INTEGER     NOT NULL DEFAULT 0,
   image_url  TEXT,
   skills     TEXT,                                -- habilidades coletadas pelo mod (ex: "Forca 8, Machado 6")
+  character_name TEXT,                            -- nome do personagem no jogo (mod)
+  profession     TEXT,                            -- profissão do personagem (mod)
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -47,7 +49,9 @@ CREATE POLICY "Upload público de imagens"
 
 -- ============================================================
 --  MIGRAÇÃO — Integração com o mod (rode se a tabela já existia
---  antes da coluna "skills" ser adicionada)
+--  antes destas colunas serem adicionadas)
 -- ============================================================
 
 ALTER TABLE entries ADD COLUMN IF NOT EXISTS skills TEXT;
+ALTER TABLE entries ADD COLUMN IF NOT EXISTS character_name TEXT;
+ALTER TABLE entries ADD COLUMN IF NOT EXISTS profession TEXT;

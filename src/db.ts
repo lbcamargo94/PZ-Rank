@@ -17,6 +17,8 @@ export interface Entry {
   kills: number;
   image_url: string | null;
   skills: string | null;
+  character_name: string | null;
+  profession: string | null;
 }
 
 export type SortKey = 'days' | 'kills' | 'time';

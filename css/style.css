@@ -546,9 +546,15 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 }
 
 /* código do mod */
-.code-row { display: flex; gap: 8px; }
-.code-row .field-input { flex: 1; }
-.code-row .btn-secondary { white-space: nowrap; }
+.decoded-info {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--green-light);
+  background: var(--green-dim);
+  border: 1px solid var(--green-border);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+}
 
 .skills-tags {
   display: flex;
@@ -567,7 +573,17 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   border-radius: var(--radius);
 }
 
-/* habilidades resumidas na linha do ranking */
+/* profissão e habilidades resumidas na linha do ranking */
+.player-profession {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
 .player-skills {
   font-family: var(--font-mono);
   font-size: 10px;
