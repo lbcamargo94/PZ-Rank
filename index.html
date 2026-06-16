@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PZ Community Rank</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <div>
+        <span class="game-label">Project Zomboid</span>
+        <h1 class="site-title">Ranking de Sobrevivência</h1>
+        <p class="site-sub">// desafio da comunidade — quem dura mais?</p>
+      </div>
+      <button class="btn-primary" id="btn-open-modal" aria-label="Adicionar resultado">
+        <i class="ti ti-plus" aria-hidden="true"></i> Adicionar resultado
+      </button>
+    </div>
+    <div class="container rules-bar">
+      <span class="rule-tag"><i class="ti ti-link" aria-hidden="true"></i> Link da live</span>
+      <span class="rule-tag"><i class="ti ti-camera" aria-hidden="true"></i> Print das habilidades</span>
+      <span class="rule-tag"><i class="ti ti-skull" aria-hidden="true"></i> Stats do mod de status</span>
+      <span class="rule-tag"><i class="ti ti-calendar" aria-hidden="true"></i> Tempo, dias vivo, zumbis</span>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="container" id="main-content">
+
+    <!-- STATS BAR -->
+    <div class="stats-bar" id="stats-bar" style="display:none">
+      <div class="stat-card">
+        <span class="stat-label">Sobreviventes</span>
+        <span class="stat-value" id="stat-total">0</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Maior recorde</span>
+        <span class="stat-value" id="stat-record">—</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Total de zumbis</span>
+        <span class="stat-value" id="stat-kills">0</span>
+      </div>
+    </div>
+
+    <!-- RANKING TABLE -->
+    <div class="table-wrap">
+      <div class="sort-bar">
+        <span class="sort-label">Ordenar por:</span>
+        <button class="sort-btn active" data-sort="days"><i class="ti ti-calendar" aria-hidden="true"></i> Dias vivo</button>
+        <button class="sort-btn" data-sort="kills"><i class="ti ti-skull" aria-hidden="true"></i> Zumbis</button>
+        <button class="sort-btn" data-sort="time"><i class="ti ti-clock" aria-hidden="true"></i> Tempo</button>
+      </div>
+
+      <div class="table-header">
+        <div class="th th-rank">#</div>
+        <div class="th th-player">Jogador</div>
+        <div class="th th-days">Dias</div>
+        <div class="th th-time">Tempo</div>
+        <div class="th th-kills">Zumbis</div>
+        <div class="th th-img">Print</div>
+        <div class="th th-live">Live</div>
+      </div>
+
+      <div id="rank-list">
+        <div class="empty-state" id="empty-state">
+          <i class="ti ti-ghost" aria-hidden="true"></i>
+          <p>Nenhum sobrevivente registrado ainda.</p>
+          <p class="empty-sub">Seja o primeiro a adicionar seu resultado!</p>
+        </div>
+      </div>
+
+      <div class="table-footer">
+        <span class="footer-count" id="footer-count">0 sobreviventes registrados</span>
+        <span class="footer-status" id="conn-status">
+          <i class="ti ti-circle-filled" aria-hidden="true"></i> conectando...
+        </span>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL REGISTRO -->
+  <div class="modal-bg" id="modal-bg" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modal-title">
+          <i class="ti ti-user-plus" aria-hidden="true"></i> Registrar resultado
+        </h2>
+        <button class="btn-icon" id="btn-close-modal" aria-label="Fechar"><i class="ti ti-x"></i></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="field">
+          <label class="field-label" for="inp-name">Nome do jogador <span class="required">*</span></label>
+          <input class="field-input" id="inp-name" type="text" placeholder="ex: DarkSurvivor99" autocomplete="off" />
+          <span class="field-error" id="err-name"></span>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="inp-live">Link da live / VOD <span class="required">*</span></label>
+          <input class="field-input" id="inp-live" type="url" placeholder="https://twitch.tv/..." autocomplete="off" />
+          <span class="field-error" id="err-live"></span>
+        </div>
+
+        <div class="field-label" style="margin-bottom:8px">Dados do mod de status <span class="required">*</span></div>
+        <div class="field-row">
+          <div class="field">
+            <label class="field-label-sm" for="inp-days">Dias vivo</label>
+            <input class="field-input" id="inp-days" type="number" min="0" placeholder="7" />
+          </div>
+          <div class="field">
+            <label class="field-label-sm" for="inp-time">Tempo total</label>
+            <input class="field-input" id="inp-time" type="text" placeholder="12h 34m" />
+          </div>
+          <div class="field">
+            <label class="field-label-sm" for="inp-kills">Zumbis mortos</label>
+            <input class="field-input" id="inp-kills" type="number" min="0" placeholder="142" />
+          </div>
+        </div>
+        <span class="field-error" id="err-stats"></span>
+
+        <div class="field">
+          <label class="field-label" for="inp-file">Print das habilidades <span class="required">*</span></label>
+          <label class="upload-area" for="inp-file" id="upload-label">
+            <i class="ti ti-photo-up" aria-hidden="true"></i>
+            <span id="upload-text">Clique para selecionar imagem (máx. 5 MB)</span>
+          </label>
+          <input type="file" id="inp-file" accept="image/*" style="display:none" />
+          <img id="file-preview" class="file-preview" alt="Preview do screenshot" />
+          <span class="field-error" id="err-file"></span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btn-cancel">Cancelar</button>
+        <button class="btn-primary" id="btn-save">
+          <i class="ti ti-check" aria-hidden="true"></i>
+          <span id="btn-save-text">Confirmar</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL IMAGEM FULLSCREEN -->
+  <div class="img-modal-bg" id="img-modal-bg" role="dialog" aria-modal="true" aria-label="Screenshot em tela cheia">
+    <button class="img-close" id="img-close" aria-label="Fechar imagem"><i class="ti ti-x"></i></button>
+    <img id="img-modal-src" src="" alt="" />
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast" role="alert" aria-live="polite"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
