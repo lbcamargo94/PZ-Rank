@@ -16,6 +16,7 @@ export interface Entry {
   time_raw: number;
   kills: number;
   image_url: string | null;
+  skills: string | null;
 }
 
 export type SortKey = 'days' | 'kills' | 'time';

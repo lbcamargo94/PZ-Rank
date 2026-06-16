@@ -9,6 +9,7 @@ interface AppState {
   entries: Entry[];
   sortKey: SortKey;
   pendingFile: File | null;
+  pendingSkills: string | null;
   dbReady: boolean;
 }
 
@@ -16,8 +17,28 @@ const state: AppState = {
   entries: [],
   sortKey: 'days',
   pendingFile: null,
+  pendingSkills: null,
   dbReady: false,
 };
+
+// ── Decodificação do código gerado pelo mod ─────────────────
+// Formato: PZR|<dias>|<kills>|<tempo>|<skills separadas por vírgula>
+const PZR_CODE_RE = /^PZR\|(\d+)\|(\d+)\|(\d+h\d+m)\|(.*)$/;
+
+interface DecodedCode {
+  days: number;
+  kills: number;
+  timeStr: string;
+  skills: string[];
+}
+
+function parsePzrCode(code: string): DecodedCode | null {
+  const match = code.trim().match(PZR_CODE_RE);
+  if (!match) return null;
+  const [, days, kills, timeStr, skillsRaw] = match;
+  const skills = skillsRaw ? skillsRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+  return { days: parseInt(days, 10), kills: parseInt(kills, 10), timeStr, skills };
+}
 
 // ── Referências DOM ────────────────────────────────────────
 function $<T extends HTMLElement = HTMLElement>(id: string): T {
@@ -53,6 +74,10 @@ const DOM = {
   errLive:      $<HTMLSpanElement>('err-live'),
   errStats:     $<HTMLSpanElement>('err-stats'),
   errFile:      $<HTMLSpanElement>('err-file'),
+  inpCode:      $<HTMLInputElement>('inp-code'),
+  btnDecode:    $<HTMLButtonElement>('btn-decode'),
+  errCode:      $<HTMLSpanElement>('err-code'),
+  skillsTags:   $<HTMLDivElement>('skills-tags'),
 };
 
 // ── Inicialização ──────────────────────────────────────────
@@ -140,6 +165,7 @@ function buildRow(entry: Entry, index: number): HTMLDivElement {
              </a>`
           : '<span style="font-size:10px;color:var(--text-4);font-family:var(--font-mono)">sem link</span>'
         }
+        ${entry.skills ? `<div class="player-skills" title="${esc(entry.skills)}">${esc(entry.skills)}</div>` : ''}
       </div>
     </div>
     <div class="td td-stat td-days">${entry.days ?? '—'}</div>
@@ -226,12 +252,56 @@ function resetForm(): void {
     el.value = '';
     el.classList.remove('error');
   });
-  [DOM.errName, DOM.errLive, DOM.errStats, DOM.errFile].forEach(el => el.textContent = '');
+  [DOM.errName, DOM.errLive, DOM.errStats, DOM.errFile, DOM.errCode].forEach(el => el.textContent = '');
   DOM.filePreview.style.display = 'none';
   DOM.filePreview.src = '';
   DOM.uploadText.textContent = 'Clique para selecionar imagem (máx. 5 MB)';
   DOM.inpFile.value = '';
+  DOM.inpCode.value = '';
+  renderSkillTags([]);
   state.pendingFile = null;
+  state.pendingSkills = null;
+}
+
+// ── Decodificar código do mod ───────────────────────────────
+DOM.btnDecode.addEventListener('click', () => {
+  const code = DOM.inpCode.value.trim();
+
+  if (!code) {
+    DOM.errCode.textContent = 'Cole o código gerado pelo mod.';
+    return;
+  }
+
+  const decoded = parsePzrCode(code);
+  if (!decoded) {
+    DOM.errCode.textContent = 'Código inválido. Verifique se copiou corretamente do jogo.';
+    renderSkillTags([]);
+    state.pendingSkills = null;
+    return;
+  }
+
+  DOM.errCode.textContent = '';
+  DOM.inpDays.value = String(decoded.days);
+  DOM.inpKills.value = String(decoded.kills);
+  DOM.inpTime.value = decoded.timeStr;
+  state.pendingSkills = decoded.skills.length ? decoded.skills.join(', ') : null;
+  renderSkillTags(decoded.skills);
+  showToast('Código decodificado com sucesso!', 'success');
+});
+
+function renderSkillTags(skills: string[]): void {
+  DOM.skillsTags.innerHTML = '';
+  if (!skills.length) {
+    DOM.skillsTags.style.display = 'none';
+    return;
+  }
+  DOM.skillsTags.style.display = 'flex';
+  skills.forEach(skill => {
+    const tag = document.createElement('span');
+    tag.className = 'skill-tag';
+    tag.textContent = skill;
+    DOM.skillsTags.appendChild(tag);
+  });
 }
 
 // ── Upload de arquivo ──────────────────────────────────────
@@ -279,6 +349,7 @@ DOM.btnSave.addEventListener('click', async () => {
       time_raw: parseTimeToMinutes(timeStr),
       kills:    parseInt(DOM.inpKills.value) || 0,
       image_url: imageUrl,
+      skills:   state.pendingSkills,
     };
 
     await dbInsert(entry);

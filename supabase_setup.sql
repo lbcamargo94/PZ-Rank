@@ -13,6 +13,7 @@ CREATE TABLE entries (
   time_raw   INTEGER     NOT NULL DEFAULT 0,   -- tempo em minutos (para ordenação)
   kills      INTEGER     NOT NULL DEFAULT 0,
   image_url  TEXT,
+  skills     TEXT,                                -- habilidades coletadas pelo mod (ex: "Forca 8, Machado 6")
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -32,4 +33,21 @@ CREATE POLICY "Inserção pública"
 -- ============================================================
 -- No painel do Supabase vá em:
 --   Storage → New bucket → nome: screenshots → Public: SIM
--- Isso já cria o bucket com acesso público de leitura.
+-- Isso cria o bucket com acesso público de LEITURA, mas marcar
+-- "Public" não libera UPLOAD. Rode as políticas abaixo para
+-- permitir que qualquer pessoa envie screenshots:
+
+CREATE POLICY "Leitura pública de imagens"
+  ON storage.objects FOR SELECT
+  USING (bucket_id = 'screenshots');
+
+CREATE POLICY "Upload público de imagens"
+  ON storage.objects FOR INSERT
+  WITH CHECK (bucket_id = 'screenshots');
+
+-- ============================================================
+--  MIGRAÇÃO — Integração com o mod (rode se a tabela já existia
+--  antes da coluna "skills" ser adicionada)
+-- ============================================================
+
+ALTER TABLE entries ADD COLUMN IF NOT EXISTS skills TEXT;

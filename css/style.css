@@ -545,6 +545,39 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   gap: 10px;
 }
 
+/* código do mod */
+.code-row { display: flex; gap: 8px; }
+.code-row .field-input { flex: 1; }
+.code-row .btn-secondary { white-space: nowrap; }
+
+.skills-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.skill-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--green-light);
+  background: var(--green-dim);
+  border: 1px solid var(--green-border);
+  padding: 3px 8px;
+  border-radius: var(--radius);
+}
+
+/* habilidades resumidas na linha do ranking */
+.player-skills {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
 /* upload */
 .upload-area {
   display: flex;
