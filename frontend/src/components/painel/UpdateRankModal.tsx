@@ -3,7 +3,7 @@ import { apiGetPlayers, apiCreateEntry } from '../../lib/api';
 import { parsePzrCode } from '../../lib/decoder';
 import {
   SPIFFOS_RESTAURANTS, BASE_ITEMS,
-  initObjectives, computeScore,
+  initObjectives, computeScore, SCORE_KILLS_MAX,
 } from '../../lib/objectives';
 import type { Objectives } from '../../lib/objectives';
 import type { Player } from '../../types';
@@ -38,7 +38,11 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
 
   useEffect(() => {
     const d = parsePzrCode(code.trim());
-    if (d) setIsAlive(d.isAlive);
+    if (!d) return;
+    setIsAlive(d.isAlive);
+    if (d.kills >= SCORE_KILLS_MAX) {
+      setObjectives(prev => ({ ...prev, kills_500k: true }));
+    }
   }, [code]);
 
   function toggleBase(restaurantId: string, checked: boolean) {

@@ -2,12 +2,16 @@ import type { Objectives } from '../types';
 
 const BASE_ITEMS = ['bed', 'windows', 'sink', 'power', 'food', 'vehicle'] as const;
 
+const SCORE_DAYS      = 5;
+const SCORE_KILLS     = 1;
+const SCORE_KILLS_MAX = 500_000;
+
 export function computeScore(
   days: number,
   kills: number,
   objectives?: Partial<Objectives> | null,
 ): number {
-  let score = days * 5 + kills;
+  let score = days * SCORE_DAYS + Math.min(kills, SCORE_KILLS_MAX) * SCORE_KILLS;
 
   if (objectives?.bases) {
     for (const base of Object.values(objectives.bases)) {

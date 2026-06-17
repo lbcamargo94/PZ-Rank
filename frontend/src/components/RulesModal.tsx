@@ -1,6 +1,6 @@
 import {
   SPIFFOS_RESTAURANTS, BASE_ITEMS,
-  SCORE_DAYS, SCORE_KILLS, SCORE_BASE, SCORE_BASE_ITEM,
+  SCORE_DAYS, SCORE_KILLS, SCORE_KILLS_MAX, SCORE_BASE, SCORE_BASE_ITEM,
   SCORE_KILLS_500K, SCORE_ALL_SKILLS, SCORE_STATUE, SCORE_MILITARY,
 } from '../lib/objectives';
 
@@ -99,7 +99,7 @@ export function RulesModal({ onClose }: Props) {
             <table className="rules-score-table">
               <tbody>
                 <tr><td>Cada dia sobrevivido</td><td className="pts-col">+{SCORE_DAYS} pts</td></tr>
-                <tr><td>Cada zumbi abatido</td><td className="pts-col">+{SCORE_KILLS} pt</td></tr>
+                <tr><td>Cada zumbi abatido (máx. {SCORE_KILLS_MAX.toLocaleString('pt-BR')})</td><td className="pts-col">+{SCORE_KILLS} pt</td></tr>
                 <tr><td>Base em um Spiffo's</td><td className="pts-col">+{SCORE_BASE} pts</td></tr>
                 <tr><td>Item completo da base (×{BASE_ITEMS.length} por restaurante)</td><td className="pts-col">+{SCORE_BASE_ITEM} pts</td></tr>
                 <tr><td>Estátua do Spiffo</td><td className="pts-col">+{SCORE_STATUE} pts</td></tr>

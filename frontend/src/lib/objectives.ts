@@ -49,8 +49,9 @@ export function initObjectives(): Objectives {
 }
 
 // ── Pontuação ───────────────────────────────────────────────
-export const SCORE_DAYS        = 5;   // pts por dia
-export const SCORE_KILLS       = 1;   // pts por zumbi abatido
+export const SCORE_DAYS        = 5;        // pts por dia
+export const SCORE_KILLS       = 1;        // pts por zumbi abatido
+export const SCORE_KILLS_MAX   = 500_000;  // máximo de kills contabilizados
 export const SCORE_BASE        = 50;  // pts por base estabelecida
 export const SCORE_BASE_ITEM   = 10;  // pts por item da base
 export const SCORE_KILLS_500K  = 500; // pts por atingir 500k kills
@@ -63,7 +64,7 @@ export function computeScore(
   kills: number,
   objectives?: Partial<Objectives> | null,
 ): number {
-  let score = days * SCORE_DAYS + kills * SCORE_KILLS;
+  let score = days * SCORE_DAYS + Math.min(kills, SCORE_KILLS_MAX) * SCORE_KILLS;
 
   if (objectives?.bases) {
     for (const base of Object.values(objectives.bases)) {
