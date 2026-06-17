@@ -17,12 +17,15 @@ export default function App() {
   );
   const [entries,      setEntries]      = useState<Entry[]>([]);
   const [sortKey,      setSortKey]      = useState<SortKey>('days');
+  const [loadingRank,  setLoadingRank]  = useState(false);
   const [showRegister, setShowRegister] = useState(false);
   const { toast, showToast } = useToast();
 
   const fetchEntries = useCallback(async () => {
+    setLoadingRank(true);
     try { setEntries(await apiGetEntries(sortKey)); }
     catch (err) { showToast((err as Error).message || 'Erro ao carregar ranking.', 'error'); }
+    finally { setLoadingRank(false); }
   }, [sortKey, showToast]);
 
   useEffect(() => { fetchEntries(); }, [fetchEntries]);
@@ -48,8 +51,10 @@ export default function App() {
         <RankTable
           entries={entries}
           sortKey={sortKey}
+          loading={loadingRank}
           onSort={setSortKey}
           onRegister={() => setShowRegister(true)}
+          onReload={fetchEntries}
         />
       </main>
 

@@ -1014,7 +1014,29 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   margin-bottom: 8px;
 }
 
-.sort-register { margin-left: auto; }
+.sort-bar-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+
+.btn-reload {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-mid);
+  background: var(--bg-3);
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 14px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.btn-reload:hover { color: var(--green-light); border-color: var(--green); }
+.btn-reload:disabled { opacity: 0.5; cursor: not-allowed; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { display: inline-block; animation: spin 0.7s linear infinite; }
+
+.table-loading { opacity: 0.5; pointer-events: none; transition: opacity 0.2s; }
 
 .table-wrapper {
   background: var(--bg-1);
@@ -1100,16 +1122,50 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 
 .rank-skills { max-width: 220px; }
 .skill-chip {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-family: var(--font-mono);
   font-size: 9px;
-  color: var(--text-3);
   background: var(--bg-3);
   border: 1px solid var(--border);
   padding: 1px 5px;
   border-radius: 3px;
   margin: 1px 2px 1px 0;
 }
+
+.skill-name { color: var(--text-2); }
+
+.skill-level {
+  font-weight: 700;
+  font-size: 9px;
+  min-width: 8px;
+  text-align: center;
+}
+
+/* nível 0 — não desenvolvida */
+.skill-chip.lvl-zero .skill-name { color: var(--text-4); }
+.skill-chip.lvl-zero .skill-level { color: var(--text-4); }
+.skill-chip.lvl-zero { border-color: var(--border); }
+
+/* nível 1 */
+.skill-chip.lvl-one .skill-name { color: var(--text-3); }
+.skill-chip.lvl-one .skill-level { color: var(--text-3); }
+
+/* nível 2 */
+.skill-chip.lvl-two .skill-name { color: var(--text-2); }
+.skill-chip.lvl-two .skill-level { color: var(--silver); }
+.skill-chip.lvl-two { border-color: #2e2e2e; }
+
+/* nível 3 */
+.skill-chip.lvl-three .skill-name { color: var(--text-1); }
+.skill-chip.lvl-three .skill-level { color: var(--green-light); }
+.skill-chip.lvl-three { border-color: var(--green-border); background: var(--green-dim); }
+
+/* nível 4+ */
+.skill-chip.lvl-max .skill-name { color: var(--text-1); }
+.skill-chip.lvl-max .skill-level { color: var(--gold); }
+.skill-chip.lvl-max { border-color: rgba(200,168,75,0.35); background: rgba(200,168,75,0.08); }
 
 .rank-proof { width: 48px; }
 .proof-link {

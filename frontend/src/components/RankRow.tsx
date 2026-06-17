@@ -7,6 +7,28 @@ interface RankRowProps {
 
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
+function SkillChip({ raw }: { raw: string }) {
+  const lastSpace = raw.lastIndexOf(' ');
+  const level = lastSpace !== -1 ? parseInt(raw.slice(lastSpace + 1), 10) : NaN;
+  const hasLevel = !isNaN(level) && lastSpace !== -1;
+  const name = hasLevel ? raw.slice(0, lastSpace) : raw;
+
+  const lvlClass = hasLevel
+    ? level === 0 ? 'lvl-zero'
+    : level === 1 ? 'lvl-one'
+    : level === 2 ? 'lvl-two'
+    : level === 3 ? 'lvl-three'
+    : 'lvl-max'
+    : '';
+
+  return (
+    <span className={`skill-chip ${lvlClass}`}>
+      <span className="skill-name">{name}</span>
+      {hasLevel && <span className="skill-level">{level}</span>}
+    </span>
+  );
+}
+
 export function RankRow({ entry, rank }: RankRowProps) {
   return (
     <tr className={rank <= 3 ? `rank-top rank-${rank}` : ''}>
@@ -28,7 +50,7 @@ export function RankRow({ entry, rank }: RankRowProps) {
       <td className="rank-skills">
         {entry.skills
           ? entry.skills.split(',').map(s => s.trim()).filter(Boolean).map(s => (
-              <span key={s} className="skill-chip">{s}</span>
+              <SkillChip key={s} raw={s} />
             ))
           : '—'}
       </td>
