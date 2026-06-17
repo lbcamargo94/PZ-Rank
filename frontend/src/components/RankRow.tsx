@@ -7,11 +7,30 @@ interface RankRowProps {
 
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
+// Entries saved before the Latin-1 fix have U+FFFD where accented chars
+// should be. Map every known corrupted form back to the correct name.
+const U = '�';
+const SKILL_FIX: Record<string, string> = {
+  [`Cer${U}mica`]:          'Cerâmica',
+  [`Culin${U}ria`]:         'Culinária',
+  [`For${U}a`]:             'Força',
+  [`Lan${U}a`]:             'Lança',
+  [`L${U}mina Longa`]:      'Lâmina Longa',
+  [`L${U}mina Curta`]:      'Lâmina Curta',
+  [`Manuten${U}${U}o`]:     'Manutenção',
+  [`Mec${U}nica`]:          'Mecânica',
+  [`P${U}s Leves`]:         'Pés Leves',
+};
+
+function fixSkillName(name: string): string {
+  return SKILL_FIX[name] ?? name;
+}
+
 function SkillChip({ raw }: { raw: string }) {
   const lastSpace = raw.lastIndexOf(' ');
   const level = lastSpace !== -1 ? parseInt(raw.slice(lastSpace + 1), 10) : NaN;
   const hasLevel = !isNaN(level) && lastSpace !== -1;
-  const name = hasLevel ? raw.slice(0, lastSpace) : raw;
+  const name = fixSkillName(hasLevel ? raw.slice(0, lastSpace) : raw);
 
   const lvlClass = hasLevel
     ? level === 0 ? 'lvl-zero'
