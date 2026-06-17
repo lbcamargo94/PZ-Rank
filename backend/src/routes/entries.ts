@@ -31,10 +31,11 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
 
 // POST /entries — moderador: valida código + insere entrada
 router.post('/', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
-  const { player_id, code, live_url } = req.body as {
+  const { player_id, code, live_url, is_alive } = req.body as {
     player_id?: number;
     code?:      string;
     live_url?:  string;
+    is_alive?:  boolean;
   };
 
   if (!player_id || typeof player_id !== 'number') {
@@ -55,7 +56,7 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
   // Busca o nick do jogador aprovado
   const { data: player, error: playerError } = await supabase
     .from('players')
-    .select('id, nick, status')
+    .select('id, nick, status, blocked')
     .eq('id', player_id)
     .single();
 
@@ -67,19 +68,24 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
     res.status(400).json({ error: 'Jogador não está aprovado no ranking.' });
     return;
   }
+  if ((player as Player & { blocked: boolean }).blocked) {
+    res.status(403).json({ error: 'Jogador está bloqueado e não pode ser atualizado no ranking.' });
+    return;
+  }
 
   const entry = {
     player_id,
-    moderator_id:  req.userId,
-    name:          (player as Player).nick,
+    moderator_id:   req.userId,
+    name:           (player as Player).nick,
     character_name: decoded.characterName,
-    profession:    decoded.profession,
-    days:          decoded.days,
-    time_raw:      decoded.timeRaw,
-    time_str:      decoded.timeStr,
-    kills:         decoded.kills,
-    skills:        decoded.skills.join(', ') || null,
-    live_url:      live_url?.trim() || null,
+    profession:     decoded.profession,
+    days:           decoded.days,
+    time_raw:       decoded.timeRaw,
+    time_str:       decoded.timeStr,
+    kills:          decoded.kills,
+    skills:         decoded.skills.join(', ') || null,
+    live_url:       live_url?.trim() || null,
+    is_alive:       is_alive !== false,
   };
 
   const { data, error } = await supabase

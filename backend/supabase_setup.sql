@@ -1,5 +1,5 @@
 -- ============================================================
---  PZ Community Rank — Database Setup v3
+--  PZ Community Rank — Database Setup v4
 --  Execute no SQL Editor do Supabase (painel → SQL Editor)
 --  ATENÇÃO: Auth própria com bcrypt+JWT — sem dependência de auth.users
 -- ============================================================
@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS players (
   tiktok_url  TEXT,
   status      TEXT        NOT NULL DEFAULT 'pending'
               CHECK (status IN ('pending', 'approved', 'rejected')),
+  blocked     BOOLEAN     NOT NULL DEFAULT false,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -41,6 +42,7 @@ CREATE TABLE IF NOT EXISTS entries (
   kills          INTEGER     NOT NULL DEFAULT 0,
   skills         TEXT,
   live_url       TEXT,
+  is_alive       BOOLEAN     NOT NULL DEFAULT true,
   created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 

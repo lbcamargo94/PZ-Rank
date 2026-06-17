@@ -44,6 +44,7 @@ export function RankTable({ entries, sortKey, onSort, onRegister }: RankTablePro
               <tr>
                 <th>#</th>
                 <th>Jogador</th>
+                <th>Status</th>
                 <th>Dias</th>
                 <th>Tempo</th>
                 <th>Zumbis</th>

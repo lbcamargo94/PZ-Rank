@@ -11,17 +11,18 @@ interface Props {
 }
 
 export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props) {
-  const [players,    setPlayers]    = useState<Player[]>([]);
-  const [playerId,   setPlayerId]   = useState<number | ''>('');
-  const [code,       setCode]       = useState('');
-  const [liveUrl,    setLiveUrl]    = useState('');
-  const [loading,    setLoading]    = useState(false);
+  const [players,  setPlayers]  = useState<Player[]>([]);
+  const [playerId, setPlayerId] = useState<number | ''>('');
+  const [code,     setCode]     = useState('');
+  const [liveUrl,  setLiveUrl]  = useState('');
+  const [isAlive,  setIsAlive]  = useState(true);
+  const [loading,  setLoading]  = useState(false);
 
   const decoded = parsePzrCode(code.trim());
 
   useEffect(() => {
     apiGetPlayers(token, 'approved')
-      .then(setPlayers)
+      .then(data => setPlayers(data.filter(p => !p.blocked)))
       .catch(err => showToast((err as Error).message, 'error'));
   }, [token, showToast]);
 
@@ -34,6 +35,7 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
         player_id: playerId as number,
         code:      code.trim(),
         live_url:  liveUrl.trim() || undefined,
+        is_alive:  isAlive,
       });
       showToast('Rank atualizado com sucesso!', 'success');
       onSuccess();
@@ -65,6 +67,22 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
               <option key={p.id} value={p.id}>{p.nick}</option>
             ))}
           </select>
+
+          <div className="alive-toggle-group">
+            <span className="form-label">Status do jogador</span>
+            <div className="alive-toggle-row">
+              <button type="button"
+                className={`alive-toggle-btn${isAlive ? ' alive-active' : ''}`}
+                onClick={() => setIsAlive(true)}>
+                <i className="ti ti-heartbeat" /> Vivo
+              </button>
+              <button type="button"
+                className={`alive-toggle-btn${!isAlive ? ' dead-active' : ''}`}
+                onClick={() => setIsAlive(false)}>
+                <i className="ti ti-skull" /> Morto
+              </button>
+            </div>
+          </div>
 
           <label className="form-label" htmlFor="ur-live">Link da live (opcional)</label>
           <input id="ur-live" className="form-input" type="url"

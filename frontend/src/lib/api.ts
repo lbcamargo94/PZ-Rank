@@ -1,4 +1,4 @@
-import type { Player, Moderator, ModSession, ModeratorRole, Entry } from '../types';
+import type { Player, Moderator, ModSession, ModeratorRole, Entry, PlayerFilter } from '../types';
 
 const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:3000';
 
@@ -69,7 +69,7 @@ export function apiRegisterPlayer(data: {
   return request('/players/register', { method: 'POST', ...json(null, data) });
 }
 
-export function apiGetPlayers(token: string, status = 'all'): Promise<Player[]> {
+export function apiGetPlayers(token: string, status: PlayerFilter = 'all'): Promise<Player[]> {
   return request(`/players?status=${status}`, auth(token));
 }
 
@@ -81,6 +81,14 @@ export function apiUpdatePlayerStatus(
   });
 }
 
+export function apiBlockPlayer(token: string, id: number): Promise<Player> {
+  return request(`/players/${id}/block`, { method: 'PATCH', ...auth(token) });
+}
+
+export function apiUnblockPlayer(token: string, id: number): Promise<Player> {
+  return request(`/players/${id}/unblock`, { method: 'PATCH', ...auth(token) });
+}
+
 // ── Entries ─────────────────────────────────────────────────
 
 export function apiGetEntries(sort = 'days'): Promise<Entry[]> {
@@ -88,7 +96,7 @@ export function apiGetEntries(sort = 'days'): Promise<Entry[]> {
 }
 
 export function apiCreateEntry(
-  token: string, data: { player_id: number; code: string; live_url?: string }
+  token: string, data: { player_id: number; code: string; live_url?: string; is_alive?: boolean }
 ): Promise<Entry> {
   return request('/entries', { method: 'POST', ...json(token, data) });
 }

@@ -33,6 +33,7 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
         kick_url:    kick_url?.trim()    || null,
         tiktok_url:  tiktok_url?.trim()  || null,
         status:      'pending',
+        blocked:     false,
       }])
       .select()
       .single();
@@ -51,7 +52,7 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
-// GET /players?status=pending|approved|rejected|all — moderador
+// GET /players?status=pending|approved|rejected|blocked|all — moderador
 router.get('/', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
   const statusParam = typeof req.query.status === 'string' ? req.query.status : 'all';
 
@@ -61,8 +62,10 @@ router.get('/', requireModerator, async (req: ModRequest, res: Response): Promis
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (statusParam !== 'all') {
-      query = query.eq('status', statusParam);
+    if (statusParam === 'blocked') {
+      query = query.eq('blocked', true);
+    } else if (statusParam !== 'all') {
+      query = query.eq('status', statusParam as PlayerStatus);
     }
 
     const { data, error } = await query;
@@ -111,6 +114,48 @@ router.patch('/:id/status', requireModerator, async (req: ModRequest, res: Respo
   } catch (err) {
     console.error('[PATCH /players/:id/status] Erro inesperado:', err);
     res.status(500).json({ error: 'Erro interno ao atualizar status do jogador.' });
+  }
+});
+
+// PATCH /players/:id/block — moderador
+router.patch('/:id/block', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
+  const id = parseInt(String(req.params.id), 10);
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
+
+  try {
+    const { data, error } = await supabase
+      .from('players')
+      .update({ blocked: true })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
+    res.json(data);
+  } catch (err) {
+    console.error('[PATCH /players/:id/block] Erro inesperado:', err);
+    res.status(500).json({ error: 'Erro interno ao bloquear jogador.' });
+  }
+});
+
+// PATCH /players/:id/unblock — moderador
+router.patch('/:id/unblock', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
+  const id = parseInt(String(req.params.id), 10);
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
+
+  try {
+    const { data, error } = await supabase
+      .from('players')
+      .update({ blocked: false })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
+    res.json(data);
+  } catch (err) {
+    console.error('[PATCH /players/:id/unblock] Erro inesperado:', err);
+    res.status(500).json({ error: 'Erro interno ao desbloquear jogador.' });
   }
 });
 

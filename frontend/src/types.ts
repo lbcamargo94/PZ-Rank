@@ -11,6 +11,7 @@ export interface Entry {
   kills:          number;
   skills:         string | null;
   live_url:       string | null;
+  is_alive:       boolean;
 }
 
 export type SortKey = 'days' | 'kills' | 'time';
@@ -25,8 +26,9 @@ export interface DecodedCode {
   skills:        string[];
 }
 
-export type ModeratorRole = 'moderator' | 'master';
-export type PlayerStatus  = 'pending' | 'approved' | 'rejected';
+export type ModeratorRole  = 'moderator' | 'master';
+export type PlayerStatus   = 'pending' | 'approved' | 'rejected';
+export type PlayerFilter   = PlayerStatus | 'blocked' | 'all';
 
 export interface Player {
   id:          number;
@@ -36,6 +38,7 @@ export interface Player {
   kick_url:    string | null;
   tiktok_url:  string | null;
   status:      PlayerStatus;
+  blocked:     boolean;
   created_at:  string;
 }
 

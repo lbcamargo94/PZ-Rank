@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { apiGetPlayers, apiUpdatePlayerStatus } from '../../lib/api';
-import type { Player, PlayerStatus } from '../../types';
+import { apiGetPlayers, apiUpdatePlayerStatus, apiBlockPlayer, apiUnblockPlayer } from '../../lib/api';
+import type { Player, PlayerStatus, PlayerFilter } from '../../types';
 
 interface Props {
   token:     string;
@@ -13,11 +13,19 @@ const STATUS_LABELS: Record<PlayerStatus, string> = {
   rejected: 'Rejeitado',
 };
 
+const FILTER_LABELS: Record<PlayerFilter, string> = {
+  pending:  'Pendente',
+  approved: 'Aprovado',
+  rejected: 'Rejeitado',
+  blocked:  'Bloqueados',
+  all:      'Todos',
+};
+
 export function PendingPlayers({ token, showToast }: Props) {
-  const [players,   setPlayers]   = useState<Player[]>([]);
-  const [filter,    setFilter]    = useState<PlayerStatus | 'all'>('pending');
-  const [loading,   setLoading]   = useState(false);
-  const [updating,  setUpdating]  = useState<number | null>(null);
+  const [players,  setPlayers]  = useState<Player[]>([]);
+  const [filter,   setFilter]   = useState<PlayerFilter>('pending');
+  const [loading,  setLoading]  = useState(false);
+  const [updating, setUpdating] = useState<number | null>(null);
 
   const fetchPlayers = useCallback(async () => {
     setLoading(true);
@@ -46,7 +54,33 @@ export function PendingPlayers({ token, showToast }: Props) {
     }
   }
 
-  const filterOptions: Array<PlayerStatus | 'all'> = ['pending', 'approved', 'rejected', 'all'];
+  async function handleBlock(id: number) {
+    setUpdating(id);
+    try {
+      await apiBlockPlayer(token, id);
+      showToast('Jogador bloqueado.', 'success');
+      fetchPlayers();
+    } catch (err) {
+      showToast((err as Error).message, 'error');
+    } finally {
+      setUpdating(null);
+    }
+  }
+
+  async function handleUnblock(id: number) {
+    setUpdating(id);
+    try {
+      await apiUnblockPlayer(token, id);
+      showToast('Jogador desbloqueado!', 'success');
+      fetchPlayers();
+    } catch (err) {
+      showToast((err as Error).message, 'error');
+    } finally {
+      setUpdating(null);
+    }
+  }
+
+  const filterOptions: PlayerFilter[] = ['pending', 'approved', 'rejected', 'blocked', 'all'];
 
   return (
     <div className="painel-section">
@@ -55,9 +89,10 @@ export function PendingPlayers({ token, showToast }: Props) {
         <div className="filter-bar">
           {filterOptions.map(f => (
             <button key={f}
-              className={`sort-btn${filter === f ? ' active' : ''}`}
+              className={`sort-btn${filter === f ? ' active' : ''}${f === 'blocked' ? ' filter-blocked' : ''}`}
               onClick={() => setFilter(f)}>
-              {f === 'all' ? 'Todos' : STATUS_LABELS[f]}
+              {f === 'blocked' && <i className="ti ti-lock" />}
+              {FILTER_LABELS[f]}
             </button>
           ))}
         </div>
@@ -66,14 +101,17 @@ export function PendingPlayers({ token, showToast }: Props) {
       {loading && <p className="painel-loading">Carregando...</p>}
 
       {!loading && players.length === 0 && (
-        <p className="painel-empty">Nenhum jogador {filter !== 'all' ? STATUS_LABELS[filter].toLowerCase() : ''} encontrado.</p>
+        <p className="painel-empty">Nenhum jogador {filter !== 'all' ? FILTER_LABELS[filter].toLowerCase() : ''} encontrado.</p>
       )}
 
       {players.map(p => (
-        <div key={p.id} className={`player-card status-${p.status}`}>
+        <div key={p.id} className={`player-card status-${p.status}${p.blocked ? ' player-blocked' : ''}`}>
           <div className="player-card-info">
             <span className="player-nick">{p.nick}</span>
-            <span className={`player-status status-badge-${p.status}`}>{STATUS_LABELS[p.status]}</span>
+            <div className="player-badges">
+              <span className={`player-status status-badge-${p.status}`}>{STATUS_LABELS[p.status]}</span>
+              {p.blocked && <span className="player-status status-badge-blocked"><i className="ti ti-lock" /> Bloqueado</span>}
+            </div>
           </div>
           <div className="player-card-links">
             {p.twitch_url  && <a href={p.twitch_url}  target="_blank" rel="noopener noreferrer"><i className="ti ti-brand-twitch" /></a>}
@@ -92,6 +130,17 @@ export function PendingPlayers({ token, showToast }: Props) {
               <button className="btn-danger btn-sm" disabled={updating === p.id}
                 onClick={() => handleStatus(p.id, 'rejected')}>
                 <i className="ti ti-x" /> Rejeitar
+              </button>
+            )}
+            {!p.blocked ? (
+              <button className="btn-warning btn-sm" disabled={updating === p.id}
+                onClick={() => handleBlock(p.id)}>
+                <i className="ti ti-lock" /> Bloquear
+              </button>
+            ) : (
+              <button className="btn-ghost btn-sm" disabled={updating === p.id}
+                onClick={() => handleUnblock(p.id)}>
+                <i className="ti ti-lock-open" /> Desbloquear
               </button>
             )}
           </div>

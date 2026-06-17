@@ -16,6 +16,12 @@ export function RankRow({ entry, rank }: RankRowProps) {
         {entry.profession && <span className="profession-badge">{entry.profession}</span>}
         <span className="player-alias">{entry.name}</span>
       </td>
+      <td className="rank-alive">
+        {entry.is_alive
+          ? <span className="alive-badge alive"><i className="ti ti-heartbeat" /> Vivo</span>
+          : <span className="alive-badge dead"><i className="ti ti-skull" /> Morto</span>
+        }
+      </td>
       <td className="rank-days">{entry.days}d</td>
       <td className="rank-time">{entry.time_str ?? '—'}</td>
       <td className="rank-kills">{entry.kills.toLocaleString('pt-BR')}</td>
