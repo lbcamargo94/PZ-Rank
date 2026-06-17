@@ -1,8 +1,9 @@
 interface HeaderProps {
   onPainel: () => void;
+  onRules:  () => void;
 }
 
-export function Header({ onPainel }: HeaderProps) {
+export function Header({ onPainel, onRules }: HeaderProps) {
   return (
     <header className="site-header">
       <div className="container header-inner">
@@ -12,6 +13,9 @@ export function Header({ onPainel }: HeaderProps) {
           <p className="site-sub">// desafio da comunidade — quem dura mais?</p>
         </div>
         <div className="header-actions">
+          <button className="btn-ghost btn-sm" onClick={onRules} aria-label="Regras do desafio">
+            <i className="ti ti-book" aria-hidden="true" /> Regras
+          </button>
           <button className="btn-ghost btn-sm" onClick={onPainel} aria-label="Painel de moderadores">
             <i className="ti ti-shield-half" aria-hidden="true" /> Moderadores
           </button>

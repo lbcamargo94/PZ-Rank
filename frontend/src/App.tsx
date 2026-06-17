@@ -7,6 +7,7 @@ import { Header } from './components/Header';
 import { StatsBar } from './components/StatsBar';
 import { RankTable } from './components/RankTable';
 import { PlayerRegisterModal } from './components/PlayerRegisterModal';
+import { RulesModal } from './components/RulesModal';
 import { PainelPage } from './pages/PainelPage';
 
 type Page = 'public' | 'painel';
@@ -19,6 +20,7 @@ export default function App() {
   const [sortKey,      setSortKey]      = useState<SortKey>('days');
   const [loadingRank,  setLoadingRank]  = useState(false);
   const [showRegister, setShowRegister] = useState(false);
+  const [showRules,    setShowRules]    = useState(false);
   const { toast, showToast } = useToast();
 
   const fetchEntries = useCallback(async () => {
@@ -44,7 +46,7 @@ export default function App() {
 
   return (
     <>
-      <Header onPainel={() => navigate('painel')} />
+      <Header onPainel={() => navigate('painel')} onRules={() => setShowRules(true)} />
 
       <main>
         <StatsBar total={entries.length} maxDays={maxDays} maxKills={maxKills} />
@@ -66,6 +68,8 @@ export default function App() {
           showToast={showToast}
         />
       )}
+
+      {showRules && <RulesModal onClose={() => setShowRules(false)} />}
     </>
   );
 }
