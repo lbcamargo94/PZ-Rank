@@ -15,7 +15,9 @@ function xorBuffer(data: Buffer, key: string): Buffer {
 
 function deobfuscate(b64: string): string {
   const decoded = Buffer.from(b64.replace(/\s+/g, ''), 'base64');
-  return xorBuffer(decoded, XOR_KEY).toString('utf8');
+  // Kahlua (PZ's Lua engine) exposes the low byte of each UTF-16 code point,
+  // which matches Latin-1 for all characters in the Latin Extended range.
+  return xorBuffer(decoded, XOR_KEY).toString('latin1');
 }
 
 function formatMinutesToYDHM(totalMinutes: number): string {

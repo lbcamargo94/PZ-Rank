@@ -21,7 +21,10 @@ function base64ToBytes(b64: string): Uint8Array {
 }
 
 function deobfuscate(b64: string): string {
-  return new TextDecoder().decode(xorBytes(base64ToBytes(b64), XOR_KEY));
+  // Kahlua (PZ's Lua engine) exposes the low byte of each UTF-16 code point,
+  // which matches Latin-1. String.fromCharCode handles this correctly.
+  const bytes = xorBytes(base64ToBytes(b64), XOR_KEY);
+  return Array.from(bytes, b => String.fromCharCode(b)).join('');
 }
 
 function formatMinutesToYDHM(totalMinutes: number): string {
