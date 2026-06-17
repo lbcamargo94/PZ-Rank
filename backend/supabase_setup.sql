@@ -1,5 +1,5 @@
 -- ============================================================
---  PZ Community Rank — Database Setup v4
+--  PZ Community Rank — Database Setup v5
 --  Execute no SQL Editor do Supabase (painel → SQL Editor)
 --  ATENÇÃO: Auth própria com bcrypt+JWT — sem dependência de auth.users
 -- ============================================================
@@ -43,6 +43,8 @@ CREATE TABLE IF NOT EXISTS entries (
   skills         TEXT,
   live_url       TEXT,
   is_alive       BOOLEAN     NOT NULL DEFAULT true,
+  objectives     JSONB,
+  score          INTEGER     NOT NULL DEFAULT 0,
   created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -54,3 +56,10 @@ ALTER TABLE entries    ENABLE ROW LEVEL SECURITY;
 -- Leitura pública
 CREATE POLICY "public_read_entries" ON entries    FOR SELECT USING (true);
 CREATE POLICY "public_read_players" ON players    FOR SELECT USING (true);
+
+-- ── Migration v5 (rodar se o banco já existe) ────────────────
+-- ALTER TABLE entries ADD COLUMN IF NOT EXISTS objectives JSONB;
+-- ALTER TABLE entries ADD COLUMN IF NOT EXISTS score      INTEGER NOT NULL DEFAULT 0;
+-- ── Migration v4 (rodar se ainda não rodou) ──────────────────
+-- ALTER TABLE players ADD COLUMN IF NOT EXISTS blocked    BOOLEAN NOT NULL DEFAULT false;
+-- ALTER TABLE entries ADD COLUMN IF NOT EXISTS is_alive   BOOLEAN NOT NULL DEFAULT true;

@@ -20,6 +20,24 @@ export interface Moderator {
   created_at: string;
 }
 
+export interface BaseObjectives {
+  has_base: boolean;
+  bed:      boolean;
+  windows:  boolean;
+  sink:     boolean;
+  power:    boolean;
+  food:     boolean;
+  vehicle:  boolean;
+}
+
+export interface Objectives {
+  bases:         Record<string, BaseObjectives>;
+  kills_500k:    boolean;
+  all_skills_10: boolean;
+  spiffo_statue: boolean;
+  military_base: boolean;
+}
+
 export interface Entry {
   id?:            number;
   player_id?:     number | null;
@@ -34,6 +52,8 @@ export interface Entry {
   skills:         string | null;
   live_url:       string | null;
   is_alive:       boolean;
+  objectives:     Objectives | null;
+  score:          number;
 }
 
 export interface DecodedCode {

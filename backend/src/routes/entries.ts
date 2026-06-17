@@ -3,17 +3,19 @@ import type { Request, Response } from 'express';
 import { supabase } from '../supabase';
 import { parsePzrCode } from '../lib/decoder';
 import { dbError } from '../lib/errors';
+import { computeScore } from '../lib/scoring';
 import { requireModerator } from '../middleware/moderator';
 import type { ModRequest } from '../middleware/moderator';
 import { config } from '../config';
-import type { Player } from '../types';
+import type { Player, Objectives } from '../types';
 
 const router = Router();
 
 const SORT_COLS: Record<string, string> = {
-  days: 'days',
+  days:  'days',
   kills: 'kills',
-  time: 'time_raw',
+  time:  'time_raw',
+  score: 'score',
 };
 
 // GET /entries?sort=days|kills|time — público
@@ -31,11 +33,12 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
 
 // POST /entries — moderador: valida código + insere entrada
 router.post('/', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
-  const { player_id, code, live_url, is_alive } = req.body as {
-    player_id?: number;
-    code?:      string;
-    live_url?:  string;
-    is_alive?:  boolean;
+  const { player_id, code, live_url, is_alive, objectives } = req.body as {
+    player_id?:  number;
+    code?:       string;
+    live_url?:   string;
+    is_alive?:   boolean;
+    objectives?: Objectives;
   };
 
   if (!player_id || typeof player_id !== 'number') {
@@ -73,6 +76,7 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
     return;
   }
 
+  const safeObjectives = objectives ?? null;
   const entry = {
     player_id,
     moderator_id:   req.userId,
@@ -86,6 +90,8 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
     skills:         decoded.skills.join(', ') || null,
     live_url:       live_url?.trim() || null,
     is_alive:       is_alive !== false,
+    objectives:     safeObjectives,
+    score:          computeScore(decoded.days, decoded.kills, safeObjectives),
   };
 
   const { data, error } = await supabase
