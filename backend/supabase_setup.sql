@@ -52,13 +52,3 @@ ALTER TABLE entries    ENABLE ROW LEVEL SECURITY;
 -- Leitura pública
 CREATE POLICY "public_read_entries" ON entries    FOR SELECT USING (true);
 CREATE POLICY "public_read_players" ON players    FOR SELECT USING (true);
-
--- Toda escrita feita pelo backend com service_role key (bypassa RLS).
-
--- ── Moderador master inicial ────────────────────────────────
--- Execute APÓS rodar o setup. Substitua o e-mail e a senha hash.
--- Para gerar o hash: node -e "require('bcryptjs').hash('SuaSenha',12).then(console.log)"
---
--- INSERT INTO moderators (email, role, password_hash)
--- VALUES ('lb.camargo94@gmail.com', 'master', '$2a$12$HASH_GERADO_AQUI');
--- ============================================================
