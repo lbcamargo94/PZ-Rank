@@ -34,7 +34,7 @@ body {
   background: var(--bg-0);
   color: var(--text-1);
   font-family: var(--font-body);
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.5;
   min-height: 100vh;
 }
@@ -192,7 +192,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 
 .stat-label {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 1px;
   color: var(--text-3);
   text-transform: uppercase;
@@ -224,7 +224,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 
 .sort-label {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text-3);
   margin-right: 4px;
 }
@@ -234,7 +234,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   border: 1px solid var(--border);
   color: var(--text-3);
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 13px;
   padding: 5px 10px;
   border-radius: var(--radius);
   cursor: pointer;
@@ -944,7 +944,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .form-label {
   display: block;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 1.2px;
   color: var(--text-3);
   text-transform: uppercase;
@@ -953,7 +953,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   align-items: center;
   gap: 5px;
 }
-.form-label .ti { font-size: 12px; }
+.form-label .ti { font-size: 13px; }
 
 .form-input {
   background: var(--bg-1);
@@ -999,8 +999,8 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   gap: 4px;
 }
 .decoded-row { display: flex; justify-content: space-between; gap: 8px; }
-.decoded-label { font-family: var(--font-mono); font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.8px; }
-.decoded-value { font-family: var(--font-mono); font-size: 11px; color: var(--green-light); }
+.decoded-label { font-family: var(--font-mono); font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.8px; }
+.decoded-value { font-family: var(--font-mono); font-size: 13px; color: var(--green-light); }
 
 /* ── Tabela React ─────────────────────────────────────────── */
 .table-section { padding-bottom: 48px; }
@@ -1048,12 +1048,12 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .rank-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .rank-table thead th {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 1px;
   color: var(--green);
   text-transform: uppercase;
@@ -1091,14 +1091,14 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .rank-name { min-width: 150px; }
 .char-name {
   display: block;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--text-1);
 }
 .profession-badge {
   display: inline-block;
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.8px;
   color: var(--green-light);
   background: var(--green-dim);
@@ -1111,14 +1111,14 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .player-alias {
   display: block;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   color: var(--text-3);
   margin-top: 1px;
 }
 
-.rank-days { font-family: var(--font-mono); font-size: 14px; font-weight: 600; color: var(--gold); }
-.rank-time { font-family: var(--font-mono); font-size: 11px; color: var(--text-3); }
-.rank-kills { font-family: var(--font-mono); font-size: 13px; color: var(--text-2); }
+.rank-days { font-family: var(--font-mono); font-size: 15px; font-weight: 600; color: var(--gold); }
+.rank-time { font-family: var(--font-mono); font-size: 13px; color: var(--text-3); }
+.rank-kills { font-family: var(--font-mono); font-size: 14px; color: var(--text-2); }
 
 .rank-skills { max-width: 220px; }
 .skill-chip {
@@ -1126,10 +1126,10 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   align-items: center;
   gap: 4px;
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 11px;
   background: var(--bg-3);
   border: 1px solid var(--border);
-  padding: 1px 5px;
+  padding: 2px 6px;
   border-radius: 3px;
   margin: 1px 2px 1px 0;
 }
@@ -1138,7 +1138,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 
 .skill-level {
   font-weight: 700;
-  font-size: 9px;
+  font-size: 11px;
   min-width: 8px;
   text-align: center;
 }
@@ -1186,7 +1186,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   text-align: center;
   padding: 24px 0 8px;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   color: var(--text-4);
   letter-spacing: 0.5px;
 }
@@ -1392,7 +1392,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 
 .painel-login-sub {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text-4);
   text-align: center;
   margin-top: 6px;
@@ -1422,7 +1422,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 
 .painel-login-warn {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   color: var(--text-4);
   text-align: center;
   margin-top: 16px;
@@ -1470,7 +1470,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 
 .mod-email {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text-3);
 }
 
@@ -1526,7 +1526,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 
 .painel-section-header h2 {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 13px;
   letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--text-3);
@@ -1535,7 +1535,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 
 .painel-loading, .painel-empty {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-4);
   padding: 24px 16px;
   text-align: center;
@@ -1573,7 +1573,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 
 .player-status {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   flex-shrink: 0;
 }
 
@@ -1600,7 +1600,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 
 .painel-entry-meta {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   color: var(--text-4);
   white-space: nowrap;
 }
@@ -1654,7 +1654,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   padding: 3px 8px;
   border-radius: 20px;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -1684,7 +1684,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   gap: 4px;
   padding: 2px 8px;
   border-radius: 20px;
-  font-size: 10px;
+  font-size: 12px;
   font-family: var(--font-mono);
   font-weight: 600;
   text-transform: uppercase;
@@ -1716,7 +1716,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 /* ── Pontuação na tabela ──────────────────────────────────── */
 .rank-score {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--green-light);
   white-space: nowrap;
@@ -1789,7 +1789,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 
 .rules-intro, .rules-desc {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-3);
   line-height: 1.6;
 }
@@ -1804,7 +1804,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 
 .rules-list li {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-2);
   display: flex;
   align-items: center;
@@ -1833,7 +1833,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 
 .rules-sub-title {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text-3);
   display: flex;
   align-items: center;
@@ -1857,7 +1857,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   width: 100%;
   border-collapse: collapse;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .rules-score-table tr {
@@ -1876,7 +1876,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 
 .rules-max-note {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text-3);
   margin-top: 8px;
   line-height: 1.5;
@@ -1922,7 +1922,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 
 .objectives-group-title {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--text-3);
@@ -1979,11 +1979,11 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   cursor: pointer;
   user-select: none;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-2);
   padding: 2px 0;
 }
-.obj-checkbox-label.sub { font-size: 11px; color: var(--text-3); padding-left: 4px; }
+.obj-checkbox-label.sub { font-size: 12px; color: var(--text-3); padding-left: 4px; }
 .obj-checkbox-label.special { padding: 4px 0; }
 .obj-checkbox-label:hover .obj-check-text { color: var(--text-1); }
 
