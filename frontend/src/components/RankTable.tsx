@@ -11,9 +11,10 @@ interface RankTableProps {
 }
 
 const SORT_LABELS: { key: SortKey; label: string }[] = [
-  { key: 'days',  label: 'Dias'   },
-  { key: 'kills', label: 'Zumbis' },
-  { key: 'time',  label: 'Tempo'  },
+  { key: 'score', label: 'Pontos'  },
+  { key: 'days',  label: 'Dias'    },
+  { key: 'kills', label: 'Zumbis'  },
+  { key: 'time',  label: 'Tempo'   },
 ];
 
 export function RankTable({ entries, sortKey, loading, onSort, onRegister, onReload }: RankTableProps) {
@@ -52,6 +53,7 @@ export function RankTable({ entries, sortKey, loading, onSort, onRegister, onRel
                 <th>#</th>
                 <th>Jogador</th>
                 <th>Status</th>
+                <th>Pontos</th>
                 <th>Dias</th>
                 <th>Tempo</th>
                 <th>Zumbis</th>

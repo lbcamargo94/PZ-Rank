@@ -63,6 +63,7 @@ export function RankRow({ entry, rank }: RankRowProps) {
           : <span className="alive-badge dead"><i className="ti ti-skull" /> Morto</span>
         }
       </td>
+      <td className="rank-score">{(entry.score ?? 0).toLocaleString('pt-BR')}</td>
       <td className="rank-days">{entry.days}d</td>
       <td className="rank-time">{entry.time_str ?? '—'}</td>
       <td className="rank-kills">{entry.kills.toLocaleString('pt-BR')}</td>
