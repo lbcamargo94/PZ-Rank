@@ -4,7 +4,7 @@ const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:30
 
 interface LoginResponse {
   session: { access_token: string };
-  user:    { email: string };
+  user:    { login: string };
   role:    ModeratorRole | null;
 }
 
@@ -47,13 +47,13 @@ function auth(token: string): RequestInit {
 
 // ── Auth ────────────────────────────────────────────────────
 
-export async function apiLogin(email: string, password: string): Promise<ModSession> {
+export async function apiLogin(login: string, password: string): Promise<ModSession> {
   const data = await request<LoginResponse>('/auth/login', {
     method: 'POST',
-    ...json(null, { email, password }),
+    ...json(null, { login, password }),
   });
   if (!data.role) throw new Error('Usuário não tem permissão de moderador.');
-  return { token: data.session.access_token, role: data.role, email: data.user.email };
+  return { token: data.session.access_token, role: data.role, login: data.user.login };
 }
 
 export function apiLogout(token: string): Promise<void> {
@@ -118,7 +118,7 @@ export function apiGetModerators(token: string): Promise<Moderator[]> {
 }
 
 export function apiCreateModerator(
-  token: string, data: { email: string; password: string }
+  token: string, data: { login: string; password: string }
 ): Promise<Moderator> {
   return request('/moderators', { method: 'POST', ...json(token, data) });
 }

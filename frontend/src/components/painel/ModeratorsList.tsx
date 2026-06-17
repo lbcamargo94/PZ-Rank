@@ -25,8 +25,8 @@ export function ModeratorsList({ token, currentId, showToast, onCreateClick }: P
 
   useEffect(() => { fetchMods(); }, [fetchMods]);
 
-  async function handleDelete(id: string, email: string) {
-    if (!confirm(`Remover moderador ${email}?`)) return;
+  async function handleDelete(id: string, login: string) {
+    if (!confirm(`Remover moderador ${login}?`)) return;
     setDeleting(id);
     try {
       await apiDeleteModerator(token, id);
@@ -53,13 +53,13 @@ export function ModeratorsList({ token, currentId, showToast, onCreateClick }: P
       {mods.map(m => (
         <div key={m.id} className="player-card">
           <div className="player-card-info">
-            <span className="player-nick">{m.email}</span>
+            <span className="player-nick">{m.login}</span>
             <span className={`player-status status-badge-${m.role}`}>{ROLE_LABELS[m.role]}</span>
           </div>
           {m.id !== currentId && m.role !== 'master' && (
             <div className="player-card-actions">
               <button className="btn-danger btn-sm" disabled={deleting === m.id}
-                onClick={() => handleDelete(m.id, m.email)}>
+                onClick={() => handleDelete(m.id, m.login)}>
                 <i className="ti ti-trash" /> Remover
               </button>
             </div>

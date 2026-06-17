@@ -68,7 +68,7 @@ export function PainelPage({ onBack }: Props) {
             <span className="painel-title">Painel de Moderadores</span>
           </div>
           <div className="painel-header-right">
-            <span className="mod-email">{session.email}</span>
+            <span className="mod-email">{session.login}</span>
             <span className={`player-status status-badge-${session.role}`}>
               {session.role === 'master' ? 'Master' : 'Moderador'}
             </span>

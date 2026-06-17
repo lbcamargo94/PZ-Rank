@@ -9,7 +9,7 @@ interface Props {
 }
 
 export function PainelLogin({ onSuccess, onBack, showToast }: Props) {
-  const [email,    setEmail]    = useState('');
+  const [login,    setLogin]    = useState('');
   const [password, setPassword] = useState('');
   const [loading,  setLoading]  = useState(false);
 
@@ -17,7 +17,7 @@ export function PainelLogin({ onSuccess, onBack, showToast }: Props) {
     e.preventDefault();
     setLoading(true);
     try {
-      const session = await apiLogin(email, password);
+      const session = await apiLogin(login, password);
       onSuccess(session);
     } catch (err) {
       showToast((err as Error).message, 'error');
@@ -50,17 +50,17 @@ export function PainelLogin({ onSuccess, onBack, showToast }: Props) {
 
         <form className="modal-form" onSubmit={handleSubmit} noValidate>
           <div className="painel-login-field">
-            <label className="form-label" htmlFor="mod-email">
-              <i className="ti ti-at" /> E-mail
+            <label className="form-label" htmlFor="mod-login">
+              <i className="ti ti-user" /> Login
             </label>
             <input
-              id="mod-email"
+              id="mod-login"
               className="form-input painel-login-input"
-              type="email"
-              placeholder="moderador@email.com"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              autoComplete="email"
+              type="text"
+              placeholder="seu_login"
+              value={login}
+              onChange={e => setLogin(e.target.value)}
+              autoComplete="username"
               required
             />
           </div>
@@ -84,7 +84,7 @@ export function PainelLogin({ onSuccess, onBack, showToast }: Props) {
           <button
             className="btn-primary btn-block painel-login-btn"
             type="submit"
-            disabled={loading || !email || !password}
+            disabled={loading || !login || !password}
           >
             {loading
               ? <><i className="ti ti-loader-2" /> Verificando...</>

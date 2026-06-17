@@ -11,29 +11,29 @@ const router = Router();
 
 // Login: verifica credenciais na tabela moderators e retorna JWT próprio
 router.post('/login', async (req: Request, res: Response): Promise<void> => {
-  const { email, password } = req.body as { email?: string; password?: string };
-  if (!email || !password) {
-    res.status(400).json({ error: 'E-mail e senha são obrigatórios.' });
+  const { login, password } = req.body as { login?: string; password?: string };
+  if (!login || !password) {
+    res.status(400).json({ error: 'Login e senha são obrigatórios.' });
     return;
   }
 
   try {
     const { data: mod, error } = await supabase
       .from('moderators')
-      .select('id, email, role, password_hash')
-      .eq('email', email.trim().toLowerCase())
+      .select('id, login, role, password_hash')
+      .eq('login', login.trim().toLowerCase())
       .single();
 
     if (error || !mod) {
-      res.status(401).json({ error: 'E-mail ou senha incorretos.' });
+      res.status(401).json({ error: 'Login ou senha incorretos.' });
       return;
     }
 
-    const modRow = mod as { id: string; email: string; role: ModeratorRole; password_hash: string };
+    const modRow = mod as { id: string; login: string; role: ModeratorRole; password_hash: string };
 
     const valid = await bcrypt.compare(password, modRow.password_hash);
     if (!valid) {
-      res.status(401).json({ error: 'E-mail ou senha incorretos.' });
+      res.status(401).json({ error: 'Login ou senha incorretos.' });
       return;
     }
 
@@ -45,7 +45,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
 
     res.json({
       session: { access_token: token },
-      user:    { email: modRow.email },
+      user:    { login: modRow.login },
       role:    modRow.role,
     });
   } catch (err) {

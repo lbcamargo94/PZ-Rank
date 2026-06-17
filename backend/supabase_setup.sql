@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS players (
 -- ── Tabela: moderators (auth própria — sem FK para auth.users) ──
 CREATE TABLE IF NOT EXISTS moderators (
   id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  email         TEXT        NOT NULL UNIQUE,
+  login         TEXT        NOT NULL UNIQUE,
   role          TEXT        NOT NULL DEFAULT 'moderator'
                 CHECK (role IN ('moderator', 'master')),
   password_hash TEXT        NOT NULL,
@@ -57,6 +57,8 @@ ALTER TABLE entries    ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "public_read_entries" ON entries    FOR SELECT USING (true);
 CREATE POLICY "public_read_players" ON players    FOR SELECT USING (true);
 
+-- ── Migration v6 (rodar se o banco já existe) ────────────────
+-- ALTER TABLE moderators RENAME COLUMN email TO login;
 -- ── Migration v5 (rodar se o banco já existe) ────────────────
 -- ALTER TABLE entries ADD COLUMN IF NOT EXISTS objectives JSONB;
 -- ALTER TABLE entries ADD COLUMN IF NOT EXISTS score      INTEGER NOT NULL DEFAULT 0;

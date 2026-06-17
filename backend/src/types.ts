@@ -15,7 +15,7 @@ export interface Player {
 
 export interface Moderator {
   id:         string;
-  email:      string;
+  login:      string;
   role:       ModeratorRole;
   created_at: string;
 }

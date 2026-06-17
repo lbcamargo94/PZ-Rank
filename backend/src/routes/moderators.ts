@@ -13,7 +13,7 @@ router.get('/', requireMaster, async (_req: ModRequest, res: Response): Promise<
   try {
     const { data, error } = await supabase
       .from('moderators')
-      .select('id, email, role, created_at')
+      .select('id, login, role, created_at')
       .order('created_at', { ascending: true });
 
     if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
@@ -26,10 +26,10 @@ router.get('/', requireMaster, async (_req: ModRequest, res: Response): Promise<
 
 // POST /moderators — master: cria novo moderador com senha hasheada
 router.post('/', requireMaster, async (req: ModRequest, res: Response): Promise<void> => {
-  const { email, password } = req.body as { email?: string; password?: string };
+  const { login, password } = req.body as { login?: string; password?: string };
 
-  if (!email || !password) {
-    res.status(400).json({ error: 'E-mail e senha são obrigatórios.' });
+  if (!login || !password) {
+    res.status(400).json({ error: 'Login e senha são obrigatórios.' });
     return;
   }
   if (password.length < 6) {
@@ -42,13 +42,13 @@ router.post('/', requireMaster, async (req: ModRequest, res: Response): Promise<
 
     const { data, error } = await supabase
       .from('moderators')
-      .insert([{ email: email.trim().toLowerCase(), role: 'moderator', password_hash }])
-      .select('id, email, role, created_at')
+      .insert([{ login: login.trim().toLowerCase(), role: 'moderator', password_hash }])
+      .select('id, login, role, created_at')
       .single();
 
     if (error) {
       const msg = error.code === '23505'
-        ? 'Este e-mail já está cadastrado como moderador.'
+        ? 'Este login já está cadastrado como moderador.'
         : translateSupabaseError(error.message);
       res.status(error.code === '23505' ? 400 : 500).json({ error: msg });
       return;

@@ -9,17 +9,17 @@ interface Props {
 }
 
 export function CreateModeratorModal({ token, onClose, onSuccess, showToast }: Props) {
-  const [email,    setEmail]    = useState('');
+  const [login,    setLogin]    = useState('');
   const [password, setPassword] = useState('');
   const [loading,  setLoading]  = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!email || !password) return;
+    if (!login || !password) return;
     setLoading(true);
     try {
-      await apiCreateModerator(token, { email, password });
-      showToast(`Moderador ${email} criado com sucesso.`, 'success');
+      await apiCreateModerator(token, { login, password });
+      showToast(`Moderador ${login} criado com sucesso.`, 'success');
       onSuccess();
       onClose();
     } catch (err) {
@@ -38,18 +38,18 @@ export function CreateModeratorModal({ token, onClose, onSuccess, showToast }: P
         <h2 className="modal-title">Novo Moderador</h2>
 
         <form className="modal-form" onSubmit={handleSubmit} noValidate>
-          <label className="form-label" htmlFor="cm-email">E-mail</label>
-          <input id="cm-email" className="form-input" type="email"
-            placeholder="novo@moderador.com" value={email}
-            onChange={e => setEmail(e.target.value)} required />
+          <label className="form-label" htmlFor="cm-login">Login</label>
+          <input id="cm-login" className="form-input" type="text"
+            placeholder="nome_do_moderador" value={login}
+            onChange={e => setLogin(e.target.value)} required />
 
           <label className="form-label" htmlFor="cm-pass">Senha inicial</label>
           <input id="cm-pass" className="form-input" type="password"
-            placeholder="mínimo 8 caracteres" value={password}
+            placeholder="mínimo 6 caracteres" value={password}
             onChange={e => setPassword(e.target.value)} required />
 
           <button className="btn-primary btn-block" type="submit"
-            disabled={loading || !email || !password}>
+            disabled={loading || !login || !password}>
             {loading ? 'Criando...' : 'Criar moderador'}
           </button>
         </form>
