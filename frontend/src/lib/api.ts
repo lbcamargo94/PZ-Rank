@@ -96,7 +96,13 @@ export function apiGetEntries(sort = 'days'): Promise<Entry[]> {
 }
 
 export function apiCreateEntry(
-  token: string, data: { player_id: number; code: string; live_url?: string; is_alive?: boolean }
+  token: string, data: {
+    player_id:   number;
+    code:        string;
+    live_url?:   string;
+    is_alive?:   boolean;
+    objectives?: import('../lib/objectives').Objectives;
+  }
 ): Promise<Entry> {
   return request('/entries', { method: 'POST', ...json(token, data) });
 }

@@ -12,9 +12,11 @@ export interface Entry {
   skills:         string | null;
   live_url:       string | null;
   is_alive:       boolean;
+  objectives?:    import('./lib/objectives').Objectives | null;
+  score:          number;
 }
 
-export type SortKey = 'days' | 'kills' | 'time';
+export type SortKey = 'days' | 'kills' | 'time' | 'score';
 
 export interface DecodedCode {
   characterName: string;
