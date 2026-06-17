@@ -46,7 +46,7 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
     return;
   }
   if (!code || typeof code !== 'string') {
-    res.status(400).json({ error: 'Código PZRX1 é obrigatório.' });
+    res.status(400).json({ error: 'Código é obrigatório.' });
     return;
   }
 
@@ -89,7 +89,7 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
     kills:          decoded.kills,
     skills:         decoded.skills.join(', ') || null,
     live_url:       live_url?.trim() || null,
-    is_alive:       is_alive !== false,
+    is_alive:       is_alive !== undefined ? is_alive : decoded.isAlive,
     objectives:     safeObjectives,
     score:          computeScore(decoded.days, decoded.kills, safeObjectives),
   };

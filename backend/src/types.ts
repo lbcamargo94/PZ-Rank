@@ -64,4 +64,5 @@ export interface DecodedCode {
   days:          number;
   timeStr:       string;
   skills:        string[];
+  isAlive:       boolean;
 }

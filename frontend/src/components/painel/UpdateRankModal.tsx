@@ -36,6 +36,11 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
       .catch(err => showToast((err as Error).message, 'error'));
   }, [token, showToast]);
 
+  useEffect(() => {
+    const d = parsePzrCode(code.trim());
+    if (d) setIsAlive(d.isAlive);
+  }, [code]);
+
   function toggleBase(restaurantId: string, checked: boolean) {
     setObjectives(prev => ({
       ...prev,
