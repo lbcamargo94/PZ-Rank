@@ -1,6 +1,6 @@
 import {
   SPIFFOS_RESTAURANTS, BASE_ITEMS,
-  SCORE_DAYS, SCORE_KILLS, SCORE_KILLS_MAX, SCORE_BASE, SCORE_BASE_ITEM,
+  SCORE_KILLS, SCORE_KILLS_MAX, SCORE_BASE, SCORE_BASE_ITEM,
   SCORE_KILLS_500K, SCORE_ALL_SKILLS, SCORE_STATUE, SCORE_MILITARY,
 } from '../lib/objectives';
 
@@ -98,7 +98,6 @@ export function RulesModal({ onClose }: Props) {
             <h3 className="rules-section-title"><i className="ti ti-calculator" /> Pontuação</h3>
             <table className="rules-score-table">
               <tbody>
-                <tr><td>Cada dia sobrevivido</td><td className="pts-col">+{SCORE_DAYS} pts</td></tr>
                 <tr><td>Cada zumbi abatido (máx. {SCORE_KILLS_MAX.toLocaleString('pt-BR')})</td><td className="pts-col">+{SCORE_KILLS} pt</td></tr>
                 <tr><td>Base em um Spiffo's</td><td className="pts-col">+{SCORE_BASE} pts</td></tr>
                 <tr><td>Item completo da base (×{BASE_ITEMS.length} por restaurante)</td><td className="pts-col">+{SCORE_BASE_ITEM} pts</td></tr>
@@ -109,9 +108,8 @@ export function RulesModal({ onClose }: Props) {
               </tbody>
             </table>
             <p className="rules-max-note">
-              Pontuação máxima possível em objetivos:{' '}
-              <strong>{SPIFFOS_RESTAURANTS.length * (SCORE_BASE + BASE_ITEMS.length * SCORE_BASE_ITEM) + SCORE_STATUE + SCORE_MILITARY + SCORE_KILLS_500K + SCORE_ALL_SKILLS} pts</strong>{' '}
-              (excluindo dias e zumbis)
+              Pontuação máxima possível:{' '}
+              <strong>{SCORE_KILLS_MAX * SCORE_KILLS + SPIFFOS_RESTAURANTS.length * (SCORE_BASE + BASE_ITEMS.length * SCORE_BASE_ITEM) + SCORE_STATUE + SCORE_MILITARY + SCORE_KILLS_500K + SCORE_ALL_SKILLS} pts</strong>
             </p>
           </section>
 

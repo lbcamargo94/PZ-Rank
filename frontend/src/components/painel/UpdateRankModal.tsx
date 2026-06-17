@@ -27,7 +27,7 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
 
   const decoded = parsePzrCode(code.trim());
   const previewScore = decoded
-    ? computeScore(decoded.days, decoded.kills, objectives)
+    ? computeScore(decoded.kills, objectives)
     : 0;
 
   useEffect(() => {

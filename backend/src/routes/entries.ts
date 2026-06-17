@@ -91,7 +91,7 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
     live_url:       live_url?.trim() || null,
     is_alive:       is_alive !== undefined ? is_alive : decoded.isAlive,
     objectives:     safeObjectives,
-    score:          computeScore(decoded.days, decoded.kills, safeObjectives),
+    score:          computeScore(decoded.kills, safeObjectives),
   };
 
   const { data, error } = await supabase
