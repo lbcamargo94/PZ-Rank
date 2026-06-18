@@ -6,16 +6,17 @@
 
 -- ── Tabela: players ─────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS players (
-  id          SERIAL      PRIMARY KEY,
-  nick        TEXT        NOT NULL UNIQUE,
-  twitch_url  TEXT,
-  youtube_url TEXT,
-  kick_url    TEXT,
-  tiktok_url  TEXT,
-  status      TEXT        NOT NULL DEFAULT 'pending'
-              CHECK (status IN ('pending', 'approved', 'rejected')),
-  blocked     BOOLEAN     NOT NULL DEFAULT false,
-  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+  id           SERIAL      PRIMARY KEY,
+  nick         TEXT        NOT NULL UNIQUE,
+  twitch_url   TEXT,
+  youtube_url  TEXT,
+  kick_url     TEXT,
+  tiktok_url   TEXT,
+  status       TEXT        NOT NULL DEFAULT 'pending'
+               CHECK (status IN ('pending', 'approved', 'rejected')),
+  blocked      BOOLEAN     NOT NULL DEFAULT false,
+  player_token UUID        NOT NULL DEFAULT gen_random_uuid(),
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 -- ── Tabela: moderators (auth própria — sem FK para auth.users) ──
@@ -57,6 +58,10 @@ ALTER TABLE entries    ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "public_read_entries" ON entries    FOR SELECT USING (true);
 CREATE POLICY "public_read_players" ON players    FOR SELECT USING (true);
 
+-- ── Migration v8 (rodar se o banco já existe) ────────────────
+-- Adiciona token único por jogador para sincronização automática do mod.
+-- ALTER TABLE players ADD COLUMN IF NOT EXISTS player_token UUID DEFAULT gen_random_uuid();
+-- UPDATE players SET player_token = gen_random_uuid() WHERE player_token IS NULL;
 -- ── Migration v7 (rodar se o banco já existe) ────────────────
 -- (sem ALTER necessário — múltiplos personagens já são suportados pelo schema atual)
 -- ── Migration v6 (rodar se o banco já existe) ────────────────
