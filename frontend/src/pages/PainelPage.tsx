@@ -13,11 +13,12 @@ import { CreateModeratorModal }  from '../components/painel/CreateModeratorModal
 type Tab = 'players' | 'rank';
 
 interface Props {
-  onBack: () => void;
+  session:   ModSession | null;
+  onSession: (s: ModSession | null) => void;
+  onBack:    () => void;
 }
 
-export function PainelPage({ onBack }: Props) {
-  const [session,        setSession]        = useState<ModSession | null>(null);
+export function PainelPage({ session, onSession, onBack }: Props) {
   const [tab,            setTab]            = useState<Tab>('players');
   const [showUpdateRank, setShowUpdateRank] = useState(false);
   const [showCreateMod,  setShowCreateMod]  = useState(false);
@@ -44,13 +45,13 @@ export function PainelPage({ onBack }: Props) {
   async function handleLogout() {
     if (!session) return;
     try { await apiLogout(session.token); } catch { /* ignora */ }
-    setSession(null);
+    onSession(null);
   }
 
   if (!session) {
     return (
       <>
-        <PainelLogin onSuccess={setSession} onBack={onBack} showToast={showToast} />
+        <PainelLogin onSuccess={onSession} onBack={onBack} showToast={showToast} />
         <Toast {...toast} />
       </>
     );

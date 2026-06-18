@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiGetEntries } from './lib/api';
-import type { Entry, SortKey } from './types';
+import type { Entry, SortKey, ModSession } from './types';
 import { useToast } from './hooks/useToast';
 import { Toast } from './components/Toast';
 import { Header } from './components/Header';
@@ -16,6 +16,7 @@ export default function App() {
   const [page,         setPage]         = useState<Page>(() =>
     window.location.hash === '#painel' ? 'painel' : 'public'
   );
+  const [modSession,   setModSession]   = useState<ModSession | null>(null);
   const [entries,      setEntries]      = useState<Entry[]>([]);
   const [sortKey,      setSortKey]      = useState<SortKey>('days');
   const [loadingRank,  setLoadingRank]  = useState(false);
@@ -41,7 +42,13 @@ export default function App() {
   const maxKills = entries.reduce((m: number, e: Entry) => Math.max(m, e.kills), 0);
 
   if (page === 'painel') {
-    return <PainelPage onBack={() => navigate('public')} />;
+    return (
+      <PainelPage
+        session={modSession}
+        onSession={setModSession}
+        onBack={() => navigate('public')}
+      />
+    );
   }
 
   return (
