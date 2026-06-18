@@ -16,13 +16,26 @@ export default function App() {
   const [page,         setPage]         = useState<Page>(() =>
     window.location.hash === '#painel' ? 'painel' : 'public'
   );
-  const [modSession,   setModSession]   = useState<ModSession | null>(null);
+  const [modSession,   setModSession]   = useState<ModSession | null>(() => {
+    try {
+      const raw = sessionStorage.getItem('mod_session');
+      return raw ? (JSON.parse(raw) as ModSession) : null;
+    } catch { return null; }
+  });
   const [entries,      setEntries]      = useState<Entry[]>([]);
   const [sortKey,      setSortKey]      = useState<SortKey>('days');
   const [loadingRank,  setLoadingRank]  = useState(false);
   const [showRegister, setShowRegister] = useState(false);
   const [showRules,    setShowRules]    = useState(false);
   const { toast, showToast } = useToast();
+
+  useEffect(() => {
+    if (modSession) {
+      sessionStorage.setItem('mod_session', JSON.stringify(modSession));
+    } else {
+      sessionStorage.removeItem('mod_session');
+    }
+  }, [modSession]);
 
   const fetchEntries = useCallback(async () => {
     setLoadingRank(true);

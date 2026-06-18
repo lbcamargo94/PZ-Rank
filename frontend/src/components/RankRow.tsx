@@ -7,10 +7,11 @@ interface RankRowProps {
 
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
-// Entries saved before the Latin-1 fix have U+FFFD where accented chars
-// should be. Map every known corrupted form back to the correct name.
+// Entries saved with encoding bugs have corrupted accented chars.
+// U = U+FFFD (old UTF-8 mis-read era); ý/â/etc. = Latin-1 XOR mis-alignment era.
 const U = '�';
 const SKILL_FIX: Record<string, string> = {
+  // ── U+FFFD era (before Latin-1 fix) ─────────────────────
   [`Cer${U}mica`]:          'Cerâmica',
   [`Culin${U}ria`]:         'Culinária',
   [`For${U}a`]:             'Força',
@@ -20,6 +21,15 @@ const SKILL_FIX: Record<string, string> = {
   [`Manuten${U}${U}o`]:     'Manutenção',
   [`Mec${U}nica`]:          'Mecânica',
   [`P${U}s Leves`]:         'Pés Leves',
+  // ── ý-corruption era ─────────────────────────────────────
+  'Cesýmica':               'Cerâmica',
+  'Culiiýria':              'Culinária',
+  'Fouýa':                  'Força',
+  'Lanýa':                  'Lança',
+  'Lýmina Longa':           'Lâmina Longa',
+  'Lýmina Curta':           'Lâmina Curta',
+  'Manutenâýo':             'Manutenção',
+  'Mebýnica':               'Mecânica',
 };
 
 function fixSkillName(name: string): string {
