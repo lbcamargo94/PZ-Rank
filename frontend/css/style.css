@@ -2039,3 +2039,184 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   .header-actions .btn-secondary { flex: 1; justify-content: center; }
   .user-info { flex-wrap: wrap; width: 100%; }
 }
+
+/* ===== PLAYER CARD MODAL ===== */
+.player-card-box {
+  max-width: 480px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Cabeçalho ── */
+.pc-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.pc-avatar {
+  font-size: 40px;
+  color: var(--green-light);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.pc-header-info { display: flex; flex-direction: column; gap: 8px; }
+.pc-nick {
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--text-1);
+  letter-spacing: 0.5px;
+}
+
+/* ── Canais sociais ── */
+.pc-socials { display: flex; flex-wrap: wrap; gap: 6px; }
+.pc-social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: opacity 0.15s;
+}
+.pc-social-link:hover { opacity: 0.8; }
+.pc-social-link.social-twitch  { background: #9146ff22; border-color: #9146ff55; color: #bf94ff; }
+.pc-social-link.social-youtube { background: #ff000022; border-color: #ff000055; color: #ff4444; }
+.pc-social-link.social-kick    { background: #53fc1822; border-color: #53fc1855; color: #53fc18; }
+.pc-social-link.social-tiktok  { background: #ff004422; border-color: #ff004455; color: #ff6699; }
+.pc-no-socials { font-size: 12px; color: var(--text-3); font-family: var(--font-mono); }
+
+/* ── Melhor pontuação ── */
+.pc-best {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--green-dim);
+  border: 1px solid var(--green-border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  flex-wrap: wrap;
+}
+.pc-best-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+.pc-best-score {
+  font-family: var(--font-display);
+  font-size: 20px;
+  color: var(--green-light);
+  font-weight: 700;
+}
+.pc-best-char {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+/* ── Seção de personagens ── */
+.pc-section-title {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.pc-char-count {
+  background: var(--bg-4);
+  border: 1px solid var(--border-mid);
+  border-radius: 8px;
+  padding: 0 7px;
+  font-size: 11px;
+  color: var(--text-2);
+}
+
+.pc-chars-list { display: flex; flex-direction: column; gap: 8px; }
+
+.pc-char-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color 0.15s;
+}
+.pc-char-card.pc-char-best {
+  border-color: var(--green-border);
+  background: #0a1a07;
+}
+
+.pc-char-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.pc-char-identity { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.pc-char-name {
+  font-family: var(--font-display);
+  font-size: 15px;
+  color: var(--text-1);
+}
+
+.pc-char-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.pc-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-2);
+}
+.pc-stat .ti { color: var(--text-3); font-size: 13px; }
+
+.pc-live-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: #bf94ff;
+  text-decoration: none;
+  padding: 3px 8px;
+  border: 1px solid #9146ff44;
+  border-radius: var(--radius);
+  width: fit-content;
+}
+.pc-live-link:hover { background: #9146ff22; }
+
+/* ── Botão de alias de jogador na tabela ── */
+.player-alias-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  transition: color 0.15s;
+}
+.player-alias-btn:hover { color: var(--green-light); }

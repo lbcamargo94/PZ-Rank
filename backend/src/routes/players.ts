@@ -8,6 +8,32 @@ import type { PlayerStatus } from '../types';
 
 const router = Router();
 
+// GET /players/:id — público: retorna dados do jogador + todas as entradas dele no rank
+router.get('/:id', async (req: Request, res: Response): Promise<void> => {
+  const id = parseInt(String(req.params.id), 10);
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
+
+  const [playerRes, entriesRes] = await Promise.all([
+    supabase
+      .from('players')
+      .select('id, nick, twitch_url, youtube_url, kick_url, tiktok_url')
+      .eq('id', id)
+      .single(),
+    supabase
+      .from('entries')
+      .select('*')
+      .eq('player_id', id)
+      .order('score', { ascending: false }),
+  ]);
+
+  if (playerRes.error || !playerRes.data) {
+    res.status(404).json({ error: 'Jogador não encontrado.' });
+    return;
+  }
+
+  res.json({ player: playerRes.data, entries: entriesRes.data ?? [] });
+});
+
 // POST /players/register — público
 router.post('/register', async (req: Request, res: Response): Promise<void> => {
   const { nick, twitch_url, youtube_url, kick_url, tiktok_url } = req.body as {

@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import type { Entry, SortKey } from '../types';
 import { RankRow } from './RankRow';
+import { PlayerCardModal } from './PlayerCardModal';
 
 interface RankTableProps {
   entries:    Entry[];
@@ -18,6 +20,8 @@ const SORT_LABELS: { key: SortKey; label: string }[] = [
 ];
 
 export function RankTable({ entries, sortKey, loading, onSort, onRegister, onReload }: RankTableProps) {
+  const [playerCardId, setPlayerCardId] = useState<number | null>(null);
+
   return (
     <div className="container table-section">
       <div className="sort-bar">
@@ -63,7 +67,12 @@ export function RankTable({ entries, sortKey, loading, onSort, onRegister, onRel
             </thead>
             <tbody>
               {entries.map((entry, i) => (
-                <RankRow key={entry.id} entry={entry} rank={i + 1} />
+                <RankRow
+                  key={entry.id}
+                  entry={entry}
+                  rank={i + 1}
+                  onPlayerClick={setPlayerCardId}
+                />
               ))}
             </tbody>
           </table>
@@ -73,6 +82,13 @@ export function RankTable({ entries, sortKey, loading, onSort, onRegister, onRel
       <footer className="site-footer-bottom">
         <p>PZ Community Rank &copy; {new Date().getFullYear()} — Projeto da comunidade</p>
       </footer>
+
+      {playerCardId !== null && (
+        <PlayerCardModal
+          playerId={playerCardId}
+          onClose={() => setPlayerCardId(null)}
+        />
+      )}
     </div>
   );
 }

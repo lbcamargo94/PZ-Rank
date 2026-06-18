@@ -57,6 +57,8 @@ ALTER TABLE entries    ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "public_read_entries" ON entries    FOR SELECT USING (true);
 CREATE POLICY "public_read_players" ON players    FOR SELECT USING (true);
 
+-- ── Migration v7 (rodar se o banco já existe) ────────────────
+-- (sem ALTER necessário — múltiplos personagens já são suportados pelo schema atual)
 -- ── Migration v6 (rodar se o banco já existe) ────────────────
 -- ALTER TABLE moderators RENAME COLUMN email TO login;
 -- ── Migration v5 (rodar se o banco já existe) ────────────────

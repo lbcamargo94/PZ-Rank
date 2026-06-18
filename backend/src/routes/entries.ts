@@ -89,19 +89,37 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
     kills:          decoded.kills,
     skills:         decoded.skills.join(', ') || null,
     live_url:       live_url?.trim() || null,
-    is_alive:       is_alive !== undefined ? is_alive : decoded.isAlive,
+    is_alive:       decoded.isAlive,
     objectives:     safeObjectives,
     score:          computeScore(decoded.kills, safeObjectives),
   };
 
-  const { data, error } = await supabase
+  // Upsert: mesmo personagem → atualiza; personagem diferente → cria nova entrada
+  const { data: existing } = await supabase
     .from(config.tableName)
-    .insert([entry])
-    .select()
-    .single();
+    .select('id')
+    .eq('player_id', player_id)
+    .eq('character_name', decoded.characterName)
+    .maybeSingle();
+
+  let data, error;
+  if (existing) {
+    ({ data, error } = await supabase
+      .from(config.tableName)
+      .update(entry)
+      .eq('id', (existing as { id: number }).id)
+      .select()
+      .single());
+  } else {
+    ({ data, error } = await supabase
+      .from(config.tableName)
+      .insert([entry])
+      .select()
+      .single());
+  }
 
   if (error) { res.status(500).json({ error: dbError(error).message }); return; }
-  res.status(201).json(data);
+  res.status(existing ? 200 : 201).json(data);
 });
 
 // DELETE /entries/:id — moderador

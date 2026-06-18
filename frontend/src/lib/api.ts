@@ -1,4 +1,4 @@
-import type { Player, Moderator, ModSession, ModeratorRole, Entry, PlayerFilter } from '../types';
+import type { Player, Moderator, ModSession, ModeratorRole, Entry, PlayerFilter, PlayerProfile } from '../types';
 
 const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:3000';
 
@@ -67,6 +67,10 @@ export function apiRegisterPlayer(data: {
   kick_url?: string; tiktok_url?: string;
 }): Promise<Player> {
   return request('/players/register', { method: 'POST', ...json(null, data) });
+}
+
+export function apiGetPlayerProfile(id: number): Promise<PlayerProfile> {
+  return request(`/players/${id}`);
 }
 
 export function apiGetPlayers(token: string, status: PlayerFilter = 'all'): Promise<Player[]> {

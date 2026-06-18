@@ -1,8 +1,9 @@
 import type { Entry } from '../types';
 
 interface RankRowProps {
-  entry: Entry;
-  rank:  number;
+  entry:          Entry;
+  rank:           number;
+  onPlayerClick?: (playerId: number) => void;
 }
 
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
@@ -58,14 +59,25 @@ function SkillChip({ raw }: { raw: string }) {
   );
 }
 
-export function RankRow({ entry, rank }: RankRowProps) {
+export function RankRow({ entry, rank, onPlayerClick }: RankRowProps) {
   return (
     <tr className={rank <= 3 ? `rank-top rank-${rank}` : ''}>
       <td className="rank-pos">{MEDALS[rank] ?? rank}</td>
       <td className="rank-name">
         <span className="char-name">{entry.character_name || entry.name}</span>
         {entry.profession && <span className="profession-badge">{entry.profession}</span>}
-        <span className="player-alias">{entry.name}</span>
+        {entry.player_id
+          ? (
+            <button
+              className="player-alias player-alias-btn"
+              onClick={() => onPlayerClick?.(entry.player_id!)}
+              title="Ver perfil do jogador"
+            >
+              {entry.name}
+            </button>
+          )
+          : <span className="player-alias">{entry.name}</span>
+        }
       </td>
       <td className="rank-alive">
         {entry.is_alive

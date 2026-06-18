@@ -57,3 +57,8 @@ export interface ModSession {
   role:  ModeratorRole;
   login: string;
 }
+
+export interface PlayerProfile {
+  player: Pick<Player, 'id' | 'nick' | 'twitch_url' | 'youtube_url' | 'kick_url' | 'tiktok_url'>;
+  entries: Entry[];
+}
