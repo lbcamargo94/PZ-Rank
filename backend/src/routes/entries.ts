@@ -20,7 +20,7 @@ const SORT_COLS: Record<string, string> = {
 
 // GET /entries?sort=days|kills|time — público
 router.get('/', async (req: Request, res: Response): Promise<void> => {
-  const col = SORT_COLS[typeof req.query.sort === 'string' ? req.query.sort : ''] ?? 'days';
+  const col = SORT_COLS[typeof req.query.sort === 'string' ? req.query.sort : ''] ?? 'score';
 
   const { data, error } = await supabase
     .from(config.tableName)
@@ -33,11 +33,10 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
 
 // POST /entries — moderador: valida código + insere entrada
 router.post('/', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
-  const { player_id, code, live_url, is_alive, objectives } = req.body as {
+  const { player_id, code, live_url, objectives } = req.body as {
     player_id?:  number;
     code?:       string;
     live_url?:   string;
-    is_alive?:   boolean;
     objectives?: Objectives;
   };
 

@@ -23,7 +23,7 @@ export default function App() {
     } catch { return null; }
   });
   const [entries,      setEntries]      = useState<Entry[]>([]);
-  const [sortKey,      setSortKey]      = useState<SortKey>('days');
+  const [sortKey,      setSortKey]      = useState<SortKey>('score');
   const [loadingRank,  setLoadingRank]  = useState(false);
   const [showRegister, setShowRegister] = useState(false);
   const [showRules,    setShowRules]    = useState(false);
