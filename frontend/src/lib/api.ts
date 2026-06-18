@@ -104,7 +104,6 @@ export function apiCreateEntry(
     player_id:   number;
     code:        string;
     live_url?:   string;
-    is_alive?:   boolean;
     objectives?: import('../lib/objectives').Objectives;
   }
 ): Promise<Entry> {

@@ -16,14 +16,13 @@ interface Props {
 }
 
 export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props) {
-  const [players,     setPlayers]     = useState<Player[]>([]);
-  const [playerId,    setPlayerId]    = useState<number | ''>('');
-  const [code,        setCode]        = useState('');
-  const [liveUrl,     setLiveUrl]     = useState('');
-  const [isAlive,     setIsAlive]     = useState(true);
-  const [objectives,  setObjectives]  = useState<Objectives>(initObjectives);
+  const [players,      setPlayers]     = useState<Player[]>([]);
+  const [playerId,     setPlayerId]    = useState<number | ''>('');
+  const [code,         setCode]        = useState('');
+  const [liveUrl,      setLiveUrl]     = useState('');
+  const [objectives,   setObjectives]  = useState<Objectives>(initObjectives);
   const [expandedBase, setExpandedBase] = useState<string | null>(null);
-  const [loading,     setLoading]     = useState(false);
+  const [loading,      setLoading]     = useState(false);
 
   const decoded = parsePzrCode(code.trim());
   const previewScore = decoded
@@ -39,7 +38,6 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
   useEffect(() => {
     const d = parsePzrCode(code.trim());
     if (!d) return;
-    setIsAlive(d.isAlive);
     if (d.kills >= SCORE_KILLS_MAX) {
       setObjectives(prev => ({ ...prev, kills_500k: true }));
     }
@@ -80,7 +78,6 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
         player_id:  playerId as number,
         code:       code.trim(),
         live_url:   liveUrl.trim() || undefined,
-        is_alive:   isAlive,
         objectives,
       });
       showToast('Rank atualizado com sucesso!', 'success');
@@ -116,22 +113,17 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
             ))}
           </select>
 
-          {/* Status vivo/morto */}
-          <div className="alive-toggle-group">
-            <span className="form-label">Status do jogador</span>
-            <div className="alive-toggle-row">
-              <button type="button"
-                className={`alive-toggle-btn${isAlive ? ' alive-active' : ''}`}
-                onClick={() => setIsAlive(true)}>
-                <i className="ti ti-heartbeat" /> Vivo
-              </button>
-              <button type="button"
-                className={`alive-toggle-btn${!isAlive ? ' dead-active' : ''}`}
-                onClick={() => setIsAlive(false)}>
-                <i className="ti ti-skull" /> Morto
-              </button>
+          {/* Status vivo/morto — lido diretamente do código */}
+          {decoded && (
+            <div className="alive-toggle-group">
+              <span className="form-label">Status do jogador</span>
+              <div className="alive-toggle-row">
+                {decoded.isAlive
+                  ? <span className="alive-badge alive"><i className="ti ti-heartbeat" /> Vivo</span>
+                  : <span className="alive-badge dead"><i className="ti ti-skull" /> Morto</span>}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Live URL */}
           <label className="form-label" htmlFor="ur-live">Link da live (opcional)</label>
