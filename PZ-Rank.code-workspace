@@ -1,0 +1,22 @@
+{
+  "folders": [
+    {
+      "name": "PZ-Rank (backend)",
+      "path": "."
+    },
+    {
+      "name": "PZ-Rank-Companion",
+      "path": "../PZ-Rank-Companion"
+    },
+    {
+      "name": "PZCommunityRank (mod)",
+      "path": "../PZCommunityRank"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/dist": true
+    }
+  }
+}
