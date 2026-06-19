@@ -18,3 +18,15 @@ backend/local.db-wal
 
 # PZ mod (pasta separada, não faz parte do repositório web)
 mod
+
+# Companion (repositório separado — PZ-Rank-Companion)
+companion/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
