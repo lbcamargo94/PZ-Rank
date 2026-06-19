@@ -1,11 +1,32 @@
 # Env
 .env
+.env.local
 frontend/.env
+backend/.env
+backend/.env.local
 
 # Dependencies & build output
 node_modules
 frontend/node_modules
 frontend/dist
+backend/dist
+
+# SQLite local (banco de dados de desenvolvimento)
+backend/local.db
+backend/local.db-shm
+backend/local.db-wal
 
 # PZ mod (pasta separada, não faz parte do repositório web)
 mod
+
+# Companion (repositório separado — PZ-Rank-Companion)
+companion/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
