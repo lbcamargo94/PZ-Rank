@@ -4,6 +4,7 @@
   "description": "PZ Community Rank — API backend",
   "scripts": {
     "dev": "tsx watch src/index.ts",
+    "dev:local": "tsx watch --node-options=\"--env-file=.env.local\" src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js"
   },

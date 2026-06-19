@@ -1,6 +1,8 @@
 # Env
 .env
+.env.local
 frontend/.env
+backend/.env.local
 
 # Dependencies & build output
 node_modules
