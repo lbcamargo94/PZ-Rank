@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 interface HeaderProps {
   onPainel: () => void;
   onRules:  () => void;
@@ -7,11 +9,11 @@ export function Header({ onPainel, onRules }: HeaderProps) {
   return (
     <header className="site-header">
       <div className="container header-inner">
-        <div>
+        <Link to="/" className="header-brand" aria-label="Página inicial">
           <span className="game-label">Project Zomboid</span>
           <h1 className="site-title">Ranking de Sobrevivência</h1>
           <p className="site-sub">// desafio da comunidade — quem dura mais?</p>
-        </div>
+        </Link>
         <div className="header-actions">
           <button className="btn-ghost btn-sm" onClick={onRules} aria-label="Regras do desafio">
             <i className="ti ti-book" aria-hidden="true" /> Regras

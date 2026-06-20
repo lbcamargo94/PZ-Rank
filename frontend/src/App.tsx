@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import { apiGetEntries } from './lib/api';
 import type { Entry, SortKey, ModSession } from './types';
 import { useToast } from './hooks/useToast';
@@ -9,33 +10,17 @@ import { RankTable } from './components/RankTable';
 import { PlayerRegisterModal } from './components/PlayerRegisterModal';
 import { RulesModal } from './components/RulesModal';
 import { PainelPage } from './pages/PainelPage';
+import { PlayerPage } from './pages/PlayerPage';
+import { OverlayPage } from './pages/OverlayPage';
 
-type Page = 'public' | 'painel';
-
-export default function App() {
-  const [page,         setPage]         = useState<Page>(() =>
-    window.location.hash === '#painel' ? 'painel' : 'public'
-  );
-  const [modSession,   setModSession]   = useState<ModSession | null>(() => {
-    try {
-      const raw = sessionStorage.getItem('mod_session');
-      return raw ? (JSON.parse(raw) as ModSession) : null;
-    } catch { return null; }
-  });
+function MainView() {
+  const navigate = useNavigate();
   const [entries,      setEntries]      = useState<Entry[]>([]);
   const [sortKey,      setSortKey]      = useState<SortKey>('score');
   const [loadingRank,  setLoadingRank]  = useState(false);
   const [showRegister, setShowRegister] = useState(false);
   const [showRules,    setShowRules]    = useState(false);
   const { toast, showToast } = useToast();
-
-  useEffect(() => {
-    if (modSession) {
-      sessionStorage.setItem('mod_session', JSON.stringify(modSession));
-    } else {
-      sessionStorage.removeItem('mod_session');
-    }
-  }, [modSession]);
 
   const fetchEntries = useCallback(async () => {
     setLoadingRank(true);
@@ -46,28 +31,15 @@ export default function App() {
 
   useEffect(() => { fetchEntries(); }, [fetchEntries]);
 
-  function navigate(p: Page) {
-    window.location.hash = p === 'painel' ? '#painel' : '';
-    setPage(p);
-  }
-
-  const maxDays  = entries.reduce((m: number, e: Entry) => Math.max(m, e.days),  0);
-  const maxKills = entries.reduce((m: number, e: Entry) => Math.max(m, e.kills), 0);
-
-  if (page === 'painel') {
-    return (
-      <PainelPage
-        session={modSession}
-        onSession={setModSession}
-        onBack={() => navigate('public')}
-      />
-    );
-  }
+  const maxDays  = entries.reduce((m, e) => Math.max(m, e.days),  0);
+  const maxKills = entries.reduce((m, e) => Math.max(m, e.kills), 0);
 
   return (
     <>
-      <Header onPainel={() => navigate('painel')} onRules={() => setShowRules(true)} />
-
+      <Header
+        onPainel={() => navigate('/painel')}
+        onRules={() => setShowRules(true)}
+      />
       <main>
         <StatsBar total={entries.length} maxDays={maxDays} maxKills={maxKills} />
         <RankTable
@@ -88,8 +60,37 @@ export default function App() {
           showToast={showToast}
         />
       )}
-
       {showRules && <RulesModal onClose={() => setShowRules(false)} />}
     </>
+  );
+}
+
+export default function App() {
+  const navigate = useNavigate();
+  const [modSession, setModSession] = useState<ModSession | null>(() => {
+    try {
+      const raw = sessionStorage.getItem('mod_session');
+      return raw ? (JSON.parse(raw) as ModSession) : null;
+    } catch { return null; }
+  });
+
+  useEffect(() => {
+    if (modSession) sessionStorage.setItem('mod_session', JSON.stringify(modSession));
+    else sessionStorage.removeItem('mod_session');
+  }, [modSession]);
+
+  return (
+    <Routes>
+      <Route path="/" element={<MainView />} />
+      <Route path="/player/:id" element={<PlayerPage />} />
+      <Route path="/overlay/:id" element={<OverlayPage />} />
+      <Route path="/painel" element={
+        <PainelPage
+          session={modSession}
+          onSession={setModSession}
+          onBack={() => navigate('/')}
+        />
+      } />
+    </Routes>
   );
 }
