@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS entries (
   skills         TEXT,
   live_url       TEXT,
   is_alive       BOOLEAN     NOT NULL DEFAULT true,
+  sandbox_ok     BOOLEAN     NOT NULL DEFAULT true,
   objectives     JSONB,
   score          INTEGER     NOT NULL DEFAULT 0,
   created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -58,6 +59,9 @@ ALTER TABLE entries    ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "public_read_entries" ON entries    FOR SELECT USING (true);
 CREATE POLICY "public_read_players" ON players    FOR SELECT USING (true);
 
+-- ── Migration v9 (rodar se o banco já existe) ────────────────
+-- Adiciona campo de validade do sandbox — DEFAULT true não afeta entradas anteriores.
+-- ALTER TABLE entries ADD COLUMN IF NOT EXISTS sandbox_ok BOOLEAN NOT NULL DEFAULT true;
 -- ── Migration v8 (rodar se o banco já existe) ────────────────
 -- Adiciona token único por jogador para sincronização automática do mod.
 -- ALTER TABLE players ADD COLUMN IF NOT EXISTS player_token UUID DEFAULT gen_random_uuid();

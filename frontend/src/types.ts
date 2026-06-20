@@ -12,6 +12,7 @@ export interface Entry {
   skills:         string | null;
   live_url:       string | null;
   is_alive:       boolean;
+  sandbox_ok?:    boolean;
   objectives?:    import('./lib/objectives').Objectives | null;
   score:          number;
 }
@@ -27,6 +28,7 @@ export interface DecodedCode {
   timeStr:       string;
   skills:        string[];
   isAlive:       boolean;
+  sandboxOk:     boolean;
 }
 
 export type ModeratorRole  = 'moderator' | 'master';

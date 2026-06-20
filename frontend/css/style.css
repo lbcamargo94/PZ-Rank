@@ -16,6 +16,9 @@
   --text-3: #777060;
   --text-4: #3a3530;
   --red: #e04040;
+  --blue-light: #7ab8e0;
+  --blue-dim: #0d2233;
+  --blue-border: #1a4060;
   --gold: #c8a84b;
   --silver: #9099a5;
   --bronze: #8a5c3a;
@@ -177,6 +180,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
+  margin-top: 32px;
   margin-bottom: 20px;
 }
 
@@ -192,7 +196,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 
 .stat-label {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 1px;
   color: var(--text-3);
   text-transform: uppercase;
@@ -200,7 +204,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 
 .stat-value {
   font-family: var(--font-display);
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 600;
   color: var(--green-light);
 }
@@ -742,7 +746,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 
 .btn-sm {
   padding: 7px 12px !important;
-  font-size: 12px !important;
+  font-size: 14px !important;
 }
 
 .auth-tabs {
@@ -1001,6 +1005,8 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .decoded-row { display: flex; justify-content: space-between; gap: 8px; }
 .decoded-label { font-family: var(--font-mono); font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.8px; }
 .decoded-value { font-family: var(--font-mono); font-size: 13px; color: var(--green-light); }
+.decoded-value.sandbox-ok    { color: var(--green-light); }
+.decoded-value.sandbox-invalid { color: #e07820; }
 
 /* ── Tabela React ─────────────────────────────────────────── */
 .table-section { padding-bottom: 48px; }
@@ -1100,9 +1106,9 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.8px;
-  color: var(--green-light);
-  background: var(--green-dim);
-  border: 1px solid var(--green-border);
+  color: var(--blue-light);
+  background: var(--blue-dim);
+  border: 1px solid var(--blue-border);
   padding: 1px 6px;
   border-radius: 3px;
   margin: 2px 0;
@@ -1816,6 +1822,12 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   border: 1px solid rgba(224, 64, 64, 0.3);
 }
 
+.alive-badge.disqualified {
+  background: rgba(180, 100, 0, 0.15);
+  color: #e07820;
+  border: 1px solid rgba(180, 100, 0, 0.35);
+}
+
 /* ── Bloqueio de jogador ──────────────────────────────────── */
 .player-blocked { opacity: 0.7; border-left: 3px solid var(--red) !important; }
 
@@ -2349,21 +2361,27 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 }
 .pc-live-link:hover { background: #9146ff22; }
 
-/* ── Botão de alias de jogador na tabela ── */
-.player-alias-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font: inherit;
-  padding: 0;
-  color: var(--text-3);
+/* ── Botão "Ver detalhes" na tabela de rank ── */
+.btn-details {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 3px;
+  padding: 2px 8px;
   font-family: var(--font-mono);
-  font-size: 12px;
-  text-decoration: underline dotted;
-  text-underline-offset: 3px;
-  transition: color 0.15s;
+  font-size: 11px;
+  color: var(--green);
+  background: var(--green-dim);
+  border: 1px solid var(--green-border);
+  border-radius: 4px;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
-.player-alias-btn:hover { color: var(--green-light); }
+.btn-details:hover {
+  background: rgba(74, 222, 128, 0.15);
+  color: var(--green-light);
+  border-color: var(--green);
+}
 
 /* ── Header brand link ──────────────────────────────────────── */
 .header-brand {
@@ -2568,10 +2586,13 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
 }
-.pp-avatar-icon {
-  font-size: 52px;
-  color: var(--text-4);
-  line-height: 1;
+.pp-avatar-img {
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 1px solid var(--border-mid);
+  flex-shrink: 0;
 }
 .pp-nick {
   font-family: var(--font-display);

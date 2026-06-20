@@ -75,6 +75,14 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
     return;
   }
 
+  if (!decoded.sandboxOk) {
+    res.status(400).json({
+      error: 'Sandbox inválido — as configurações do servidor divergem do desafio oficial. Atualização bloqueada. O jogador está desqualificado.',
+      sandbox_invalid: true,
+    });
+    return;
+  }
+
   const safeObjectives = objectives ?? null;
   const entry = {
     player_id,
@@ -89,6 +97,7 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
     skills:         decoded.skills.join(', ') || null,
     live_url:       live_url?.trim() || null,
     is_alive:       decoded.isAlive,
+    sandbox_ok:     decoded.sandboxOk,
     objectives:     safeObjectives,
     score:          computeScore(decoded.kills, safeObjectives),
   };

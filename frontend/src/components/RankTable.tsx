@@ -47,9 +47,15 @@ function RankCard({ entry, rank, onPlayerClick }: {
           <span className="rc-char-name">{entry.character_name || entry.name}</span>
           {entry.profession && <span className="profession-badge">{entry.profession}</span>}
         </div>
-        {entry.is_alive
-          ? <span className="alive-badge alive rc-status"><i className="ti ti-heartbeat" /> Vivo</span>
-          : <span className="alive-badge dead rc-status"><i className="ti ti-skull" /> Morto</span>}
+        {entry.sandbox_ok === false
+          ? (
+            <span className="alive-badge disqualified rc-status" title="Configurações do sandbox divergem do desafio oficial">
+              <i className="ti ti-ban" /> Desc.
+            </span>
+          )
+          : entry.is_alive
+            ? <span className="alive-badge alive rc-status"><i className="ti ti-heartbeat" /> Vivo</span>
+            : <span className="alive-badge dead rc-status"><i className="ti ti-skull" /> Morto</span>}
       </div>
 
       {/* Score */}
@@ -65,12 +71,11 @@ function RankCard({ entry, rank, onPlayerClick }: {
 
       {/* Player + actions */}
       <div className="rc-footer">
-        {entry.player_id ? (
+        <span className="rc-player-name"><i className="ti ti-user" /> {entry.name}</span>
+        {entry.player_id && (
           <button className="rc-player-btn" onClick={() => onPlayerClick(entry.player_id!)}>
-            <i className="ti ti-user" /> {entry.name}
+            <i className="ti ti-user" /> Ver detalhes
           </button>
-        ) : (
-          <span className="rc-player-name"><i className="ti ti-user" /> {entry.name}</span>
         )}
         {entry.live_url && (
           <a href={entry.live_url} target="_blank" rel="noopener noreferrer" className="rc-live-btn">

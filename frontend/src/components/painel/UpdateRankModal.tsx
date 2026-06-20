@@ -153,7 +153,19 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
               <div className="decoded-row"><span className="decoded-label">Profissão</span><span className="decoded-value">{decoded.profession}</span></div>
               <div className="decoded-row"><span className="decoded-label">Sobreviveu</span><span className="decoded-value">{decoded.days} dias — {decoded.timeStr}</span></div>
               <div className="decoded-row"><span className="decoded-label">Zumbis</span><span className="decoded-value">{decoded.kills.toLocaleString('pt-BR')}</span></div>
+              <div className="decoded-row">
+                <span className="decoded-label">Sandbox</span>
+                {decoded.sandboxOk
+                  ? <span className="decoded-value sandbox-ok"><i className="ti ti-check" /> Válido</span>
+                  : <span className="decoded-value sandbox-invalid"><i className="ti ti-ban" /> Inválido — envio será bloqueado</span>
+                }
+              </div>
             </div>
+          )}
+          {decoded && !decoded.sandboxOk && (
+            <p className="form-error">
+              <i className="ti ti-alert-triangle" /> Sandbox inválido: as configurações do servidor divergem do desafio oficial. O envio será bloqueado pelo servidor.
+            </p>
           )}
           {!decoded && code.length > 6 && (
             <p className="form-error">Código não reconhecido.</p>

@@ -3,8 +3,8 @@ import type { DecodedCode } from '../types';
 const XOR_KEY = 'PZRank-Community-2026-Key!';
 // PZRX1 = formato antigo (6 campos, sem status); PZRX2 = atual (7 campos, com status)
 const PZR_PREFIX_RE = /^PZRX[12]:([\s\S]+)$/;
-// Grupo 5 = skills (sem pipe), grupo 6 = status opcional (morto|vivo) presente só no PZRX2
-const PZR_PAYLOAD_RE = /^PZR\|([^|]*)\|([^|]*)\|(\d+)\|(\d+)\|([^|]*)\|?([^|]*)$/;
+// Grupo 5 = skills, grupo 6 = status (morto|vivo), grupo 7 = sandbox (ok|invalido) — opcional
+const PZR_PAYLOAD_RE = /^PZR\|([^|]*)\|([^|]*)\|(\d+)\|(\d+)\|([^|]*)\|?([^|]*)\|?([^|]*)$/;
 
 function xorBytes(bytes: Uint8Array, key: string): Uint8Array {
   const keyBytes = new TextEncoder().encode(key);
@@ -55,7 +55,7 @@ export function parsePzrCode(raw: string): DecodedCode | null {
   }
   const match = plain.match(PZR_PAYLOAD_RE);
   if (!match) return null;
-  const [, characterName, profession, kills, timeRaw, skillsRaw, statusRaw] = match;
+  const [, characterName, profession, kills, timeRaw, skillsRaw, statusRaw, sandboxRaw] = match;
   const timeRawNum = parseInt(timeRaw, 10);
   const skills = skillsRaw ? skillsRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
   return {
@@ -67,5 +67,6 @@ export function parsePzrCode(raw: string): DecodedCode | null {
     timeStr: formatMinutesToYDHM(timeRawNum),
     skills,
     isAlive: statusRaw !== 'morto',
+    sandboxOk: sandboxRaw !== 'invalido',
   };
 }

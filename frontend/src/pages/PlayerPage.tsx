@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import avatarDefault from '../../assets/avatar.png';
 import { apiGetPlayerProfile, apiGetEntries } from '../lib/api';
 import { parseSkillMap, SKILL_CATEGORIES, MAX_SKILL_LEVEL, TOTAL_SKILLS } from '../lib/skills';
 import { SPIFFOS_RESTAURANTS, BASE_ITEMS } from '../lib/objectives';
@@ -263,7 +264,7 @@ export function PlayerPage() {
         {/* Player header */}
         <div className="pp-header">
           <div className="pp-avatar-wrap">
-            <i className="ti ti-user-circle pp-avatar-icon" />
+            <img src={avatarDefault} alt="Avatar" className="pp-avatar-img" />
           </div>
           <div className="pp-header-info">
             <h1 className="pp-nick">{profile.player.nick}</h1>

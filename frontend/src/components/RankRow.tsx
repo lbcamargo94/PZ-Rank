@@ -112,23 +112,23 @@ export function RankRow({ entry, rank }: RankRowProps) {
       <td className="rank-name">
         <span className="char-name">{entry.character_name || entry.name}</span>
         {entry.profession && <span className="profession-badge">{entry.profession}</span>}
-        {entry.player_id
-          ? (
-            <Link
-              to={`/player/${entry.player_id}`}
-              className="player-alias player-alias-btn"
-              title="Ver perfil do jogador"
-            >
-              {entry.name}
-            </Link>
-          )
-          : <span className="player-alias">{entry.name}</span>
-        }
+        <span className="player-alias">{entry.name}</span>
+        {entry.player_id && (
+          <Link to={`/player/${entry.player_id}`} className="btn-details">
+            <i className="ti ti-user" /> Ver detalhes
+          </Link>
+        )}
       </td>
       <td className="rank-alive">
-        {entry.is_alive
-          ? <span className="alive-badge alive"><i className="ti ti-heartbeat" /> Vivo</span>
-          : <span className="alive-badge dead"><i className="ti ti-skull" /> Morto</span>
+        {entry.sandbox_ok === false
+          ? (
+            <span className="alive-badge disqualified" title="Configurações do sandbox divergem do desafio oficial">
+              <i className="ti ti-ban" /> Desclassificado
+            </span>
+          )
+          : entry.is_alive
+            ? <span className="alive-badge alive"><i className="ti ti-heartbeat" /> Vivo</span>
+            : <span className="alive-badge dead"><i className="ti ti-skull" /> Morto</span>
         }
       </td>
       <td className="rank-score">{(entry.score ?? 0).toLocaleString('pt-BR')}</td>
