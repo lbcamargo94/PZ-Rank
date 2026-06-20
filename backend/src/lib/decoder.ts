@@ -1,4 +1,5 @@
 import type { DecodedCode } from '../types';
+import { SKILL_NAMES } from './skills';
 
 const XOR_KEY = 'PZRank-Community-2026-Key!';
 // PZRX1 = formato antigo (6 campos, sem status); PZRX2 = atual (7 campos, com status)
@@ -53,7 +54,21 @@ export function parsePzrCode(raw: string): DecodedCode | null {
 
   const [, characterName, profession, kills, timeRaw, skillsRaw, statusRaw] = match;
   const timeRawNum = parseInt(timeRaw!, 10);
-  const skills = skillsRaw ? skillsRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+  // Traduz tokens de skill: mod v1.7+ exporta IDs em inglês ("Axe 6"), versões anteriores
+  // exportavam nomes em PT-BR ("Machado 6"). SKILL_NAMES só tem chaves em inglês, então
+  // nomes PT-BR passam inalterados (lookup retorna undefined → mantém original).
+  const skills = skillsRaw
+    ? skillsRaw.split(',').map(s => {
+        const t = s.trim();
+        if (!t) return '';
+        const lastSpace = t.lastIndexOf(' ');
+        if (lastSpace === -1) return SKILL_NAMES[t] ?? t;
+        const id    = t.slice(0, lastSpace);
+        const level = t.slice(lastSpace + 1);
+        return `${SKILL_NAMES[id] ?? id} ${level}`;
+      }).filter(Boolean)
+    : [];
 
   return {
     characterName: characterName || 'Sobrevivente',

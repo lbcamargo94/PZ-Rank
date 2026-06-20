@@ -8,11 +8,51 @@ interface RankRowProps {
 
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
-// Entries saved with encoding bugs have corrupted accented chars.
-// U = U+FFFD (old UTF-8 mis-read era); ý/â/etc. = Latin-1 XOR mis-alignment era.
+// Mapeia qualquer forma não-canônica → nome PT-BR canônico.
+// Cobre: IDs em inglês (mod v1.7+, safety-net caso o decoder não traduza),
+// abreviações do mod ≤v1.6.0, e eras de corrupção de encoding (U+FFFD e ý).
 const U = '�';
 const SKILL_FIX: Record<string, string> = {
-  // ── U+FFFD era (before Latin-1 fix) ─────────────────────
+  // ── IDs em inglês (mod v1.7+ exporta IDs; decoder traduz, mas safety-net aqui) ──
+  Sprinting:    'Corrida',
+  Lightfooted:  'Pés Leves',
+  Nimble:       'Agilidade',
+  Sneaking:     'Furtividade',
+  Fitness:      'Condicionamento',
+  Strength:     'Força',
+  Axe:          'Machado',
+  LongBlunt:    'Contundente Longo',
+  ShortBlunt:   'Contundente Curto',
+  LongBlade:    'Lâmina Longa',
+  ShortBlade:   'Lâmina Curta',
+  Spear:        'Lança',
+  Maintenance:  'Manutenção',
+  Aiming:       'Mira',
+  Reloading:    'Recarga',
+  Cooking:      'Culinária',
+  Fishing:      'Pesca',
+  Trapping:     'Armadilhas',
+  Foraging:     'Coleta',
+  FirstAid:     'Primeiros Socorros',
+  Carpentry:    'Carpintaria',
+  Agriculture:  'Agricultura',
+  Electrical:   'Eletricidade',
+  Mechanics:    'Mecânica',
+  MetalWelding: 'Soldagem',
+  Tailoring:    'Costura',
+  Knapping:     'Lascamento',
+  Carving:      'Entalhamento',
+  Masonry:      'Alvenaria',
+  Pottery:      'Cerâmica',
+  Blacksmith:   'Ferraria',
+  Glassmaking:  'Vidraria',
+  AnimalCare:   'Cuidado Animal',
+  Butchering:   'Abate',
+  Tracking:     'Rastreamento',
+  // ── Abreviações do mod ≤v1.6.0 ───────────────────────────
+  'Cont. Longo': 'Contundente Longo',
+  'Cont. Curto': 'Contundente Curto',
+  // ── U+FFFD era (antes do fix Latin-1) ────────────────────
   [`Cer${U}mica`]:          'Cerâmica',
   [`Culin${U}ria`]:         'Culinária',
   [`For${U}a`]:             'Força',
