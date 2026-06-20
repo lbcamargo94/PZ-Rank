@@ -1120,52 +1120,125 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .rank-time { font-family: var(--font-mono); font-size: 13px; color: var(--text-3); }
 .rank-kills { font-family: var(--font-mono); font-size: 14px; color: var(--text-2); }
 
-.rank-skills { max-width: 220px; }
-.skill-chip {
+/* ── Coluna de habilidades — contador + popup ─────────────── */
+.rank-skills { white-space: nowrap; }
+
+.skills-counter {
   display: inline-flex;
-  align-items: center;
-  gap: 4px;
+  align-items: baseline;
+  gap: 1px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-3);
+  cursor: default;
+  user-select: none;
+  padding: 3px 10px;
   background: var(--bg-3);
   border: 1px solid var(--border);
-  padding: 2px 6px;
-  border-radius: 3px;
-  margin: 1px 2px 1px 0;
+  border-radius: var(--radius);
+  letter-spacing: 0.5px;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  position: relative;
 }
 
-.skill-name { color: var(--text-2); }
+.skills-counter:hover {
+  border-color: var(--border-mid);
+  color: var(--text-2);
+}
 
-.skill-level {
-  font-weight: 700;
+.skills-counter.has-maxed {
+  color: var(--gold);
+  border-color: rgba(200, 168, 75, 0.4);
+  background: rgba(200, 168, 75, 0.07);
+}
+
+.skills-counter.skills-no-data { color: var(--text-4); font-size: 13px; font-weight: 400; }
+
+.skills-sep { color: var(--text-4); font-weight: 400; margin: 0 1px; }
+
+/* popup fixo via portal — não é clipado por overflow:hidden do pai */
+.skills-popup {
+  position: fixed;
+  z-index: 500;
+  width: 298px;
+  max-height: 460px;
+  overflow-y: auto;
+  background: var(--bg-1);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.7);
+  padding: 8px 12px 12px;
+  pointer-events: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-mid) transparent;
+}
+
+/* categoria */
+.scat { margin-top: 10px; }
+.scat:first-child { margin-top: 0; }
+
+.scat-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--green);
+  padding-bottom: 4px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* linha de habilidade */
+.srow {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 1px 0;
+}
+
+.srow-name {
+  width: 124px;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
   font-size: 11px;
-  min-width: 8px;
-  text-align: center;
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* nível 0 — não desenvolvida */
-.skill-chip.lvl-zero .skill-name { color: var(--text-4); }
-.skill-chip.lvl-zero .skill-level { color: var(--text-4); }
-.skill-chip.lvl-zero { border-color: var(--border); }
+.srow-max .srow-name { color: var(--gold); font-weight: 700; }
 
-/* nível 1 */
-.skill-chip.lvl-one .skill-name { color: var(--text-3); }
-.skill-chip.lvl-one .skill-level { color: var(--text-3); }
+/* pips de progresso (10 quadradinhos = nível 0–10) */
+.srow-pips {
+  flex: 1;
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
 
-/* nível 2 */
-.skill-chip.lvl-two .skill-name { color: var(--text-2); }
-.skill-chip.lvl-two .skill-level { color: var(--silver); }
-.skill-chip.lvl-two { border-color: #2e2e2e; }
+.pip {
+  width: 10px;
+  height: 7px;
+  border-radius: 1px;
+  flex-shrink: 0;
+}
 
-/* nível 3 */
-.skill-chip.lvl-three .skill-name { color: var(--text-1); }
-.skill-chip.lvl-three .skill-level { color: var(--green-light); }
-.skill-chip.lvl-three { border-color: var(--green-border); background: var(--green-dim); }
+.pip-on  { background: var(--gold); }
+.pip-off { background: var(--bg-4); border: 1px solid rgba(255, 255, 255, 0.07); }
 
-/* nível 4+ */
-.skill-chip.lvl-max .skill-name { color: var(--text-1); }
-.skill-chip.lvl-max .skill-level { color: var(--gold); }
-.skill-chip.lvl-max { border-color: rgba(200,168,75,0.35); background: rgba(200,168,75,0.08); }
+/* nível numérico */
+.srow-lvl {
+  width: 18px;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-4);
+  text-align: right;
+}
+
+.srow-max .srow-lvl { color: var(--gold); font-weight: 700; }
 
 .rank-proof { width: 48px; }
 .proof-link {

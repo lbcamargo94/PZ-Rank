@@ -1,3 +1,5 @@
+import { useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import type { Entry } from '../types';
 
 interface RankRowProps {
@@ -73,28 +75,119 @@ const SKILL_FIX: Record<string, string> = {
   'Mebýnica':               'Mecânica',
 };
 
-function fixSkillName(name: string): string {
-  return SKILL_FIX[name] ?? name;
+// Categorias e ordem canônica das 35 habilidades (nomes PT-BR após tradução).
+const SKILL_CATEGORIES = [
+  {
+    label:  'Física',
+    skills: ['Agilidade', 'Condicionamento', 'Corrida', 'Força', 'Furtividade', 'Pés Leves'],
+  },
+  {
+    label:  'Combate - Corpo a Corpo',
+    skills: ['Contundente Curto', 'Contundente Longo', 'Lança', 'Lâmina Curta', 'Lâmina Longa', 'Machado', 'Manutenção'],
+  },
+  {
+    label:  'Combate - Armas de Fogo',
+    skills: ['Mira', 'Recarga'],
+  },
+  {
+    label:  'Sobrevivência',
+    skills: ['Armadilhas', 'Coleta', 'Pesca', 'Primeiros Socorros', 'Rastreamento'],
+  },
+  {
+    label:  'Criação',
+    skills: ['Alvenaria', 'Carpintaria', 'Cerâmica', 'Costura', 'Culinária', 'Eletricidade', 'Entalhamento', 'Ferraria', 'Lascamento', 'Mecânica', 'Soldagem', 'Vidraria'],
+  },
+  {
+    label:  'Agricultura',
+    skills: ['Abate', 'Agricultura', 'Cuidado Animal'],
+  },
+];
+
+const TOTAL_SKILLS = 35;
+const MAX_LEVEL    = 10;
+
+function parseSkillMap(skillsStr: string | null): Map<string, number> {
+  const map = new Map<string, number>();
+  if (!skillsStr) return map;
+  for (const s of skillsStr.split(',')) {
+    const t = s.trim();
+    if (!t) continue;
+    const lastSpace = t.lastIndexOf(' ');
+    if (lastSpace === -1) continue;
+    const rawName = t.slice(0, lastSpace);
+    const name    = SKILL_FIX[rawName] ?? rawName;
+    const level   = parseInt(t.slice(lastSpace + 1), 10);
+    if (!isNaN(level)) map.set(name, level);
+  }
+  return map;
 }
 
-function SkillChip({ raw }: { raw: string }) {
-  const lastSpace = raw.lastIndexOf(' ');
-  const level = lastSpace !== -1 ? parseInt(raw.slice(lastSpace + 1), 10) : NaN;
-  const hasLevel = !isNaN(level) && lastSpace !== -1;
-  const name = fixSkillName(hasLevel ? raw.slice(0, lastSpace) : raw);
+function SkillsPopup({ skillMap, top, left }: { skillMap: Map<string, number>; top: number; left: number }) {
+  return createPortal(
+    <div className="skills-popup" style={{ top, left }}>
+      {SKILL_CATEGORIES.map(cat => (
+        <div key={cat.label} className="scat">
+          <div className="scat-label">{cat.label}</div>
+          {cat.skills.map(name => {
+            const level  = skillMap.get(name) ?? 0;
+            const isMax  = level >= MAX_LEVEL;
+            return (
+              <div key={name} className={isMax ? 'srow srow-max' : 'srow'}>
+                <span className="srow-name">{name}</span>
+                <span className="srow-pips">
+                  {Array.from({ length: MAX_LEVEL }, (_, i) => (
+                    <span key={i} className={i < level ? 'pip pip-on' : 'pip pip-off'} />
+                  ))}
+                </span>
+                <span className="srow-lvl">{level}</span>
+              </div>
+            );
+          })}
+        </div>
+      ))}
+    </div>,
+    document.body,
+  );
+}
 
-  const lvlClass = hasLevel
-    ? level === 0 ? 'lvl-zero'
-    : level === 1 ? 'lvl-one'
-    : level === 2 ? 'lvl-two'
-    : level === 3 ? 'lvl-three'
-    : 'lvl-max'
-    : '';
+function SkillsCell({ skills }: { skills: string | null }) {
+  const [open, setOpen] = useState(false);
+  const [pos,  setPos]  = useState({ top: 0, left: 0 });
+  const ref             = useRef<HTMLSpanElement>(null);
+  const closeTimer      = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const skillMap = parseSkillMap(skills);
+  const maxed    = Array.from(skillMap.values()).filter(l => l >= MAX_LEVEL).length;
+
+  const handleEnter = () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    if (!skills || !ref.current) return;
+    const r    = ref.current.getBoundingClientRect();
+    const popH = 460;
+    const top  = window.innerHeight - r.bottom > popH + 8
+      ? r.bottom + 6
+      : Math.max(4, r.top - popH - 6);
+    const left = Math.max(8, Math.min(r.left, window.innerWidth - 298 - 8));
+    setPos({ top, left });
+    setOpen(true);
+  };
+
+  const handleLeave = () => {
+    closeTimer.current = setTimeout(() => setOpen(false), 120);
+  };
 
   return (
-    <span className={`skill-chip ${lvlClass}`}>
-      <span className="skill-name">{name}</span>
-      {hasLevel && <span className="skill-level">{level}</span>}
+    <span
+      ref={ref}
+      className={`skills-counter${maxed > 0 ? ' has-maxed' : ''}${!skills ? ' skills-no-data' : ''}`}
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
+    >
+      {skills
+        ? <>{String(maxed).padStart(2, '0')}<span className="skills-sep">/</span>{TOTAL_SKILLS}</>
+        : '—'
+      }
+      {open && skills && <SkillsPopup skillMap={skillMap} top={pos.top} left={pos.left} />}
     </span>
   );
 }
@@ -130,11 +223,7 @@ export function RankRow({ entry, rank, onPlayerClick }: RankRowProps) {
       <td className="rank-time">{entry.time_str ?? '—'}</td>
       <td className="rank-kills">{entry.kills.toLocaleString('pt-BR')}</td>
       <td className="rank-skills">
-        {entry.skills
-          ? entry.skills.split(',').map(s => s.trim()).filter(Boolean).map(s => (
-              <SkillChip key={s} raw={s} />
-            ))
-          : '—'}
+        <SkillsCell skills={entry.skills} />
       </td>
       <td className="rank-proof">
         {entry.live_url && (
