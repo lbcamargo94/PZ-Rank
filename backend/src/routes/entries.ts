@@ -75,15 +75,10 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
     return;
   }
 
-  if (!decoded.sandboxOk) {
-    res.status(400).json({
-      error: 'Sandbox inválido — as configurações do servidor divergem do desafio oficial. Atualização bloqueada. O jogador está desqualificado.',
-      sandbox_invalid: true,
-    });
-    return;
-  }
-
-  const safeObjectives = objectives ?? null;
+  // Sandbox inválido: salva a entrada marcada como desclassificada (score=0, sandbox_ok=false)
+  // para que o rank exiba o badge "Desclassificado". Não rejeita — o bloqueio de progresso
+  // ocorre via score 0 e via exibição pública do status.
+  const safeObjectives = decoded.sandboxOk ? (objectives ?? null) : null;
   const entry = {
     player_id,
     moderator_id:   req.userId,
@@ -99,7 +94,7 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
     is_alive:       decoded.isAlive,
     sandbox_ok:     decoded.sandboxOk,
     objectives:     safeObjectives,
-    score:          computeScore(decoded.kills, safeObjectives),
+    score:          decoded.sandboxOk ? computeScore(decoded.kills, safeObjectives) : 0,
   };
 
   // Upsert: mesmo personagem → atualiza; personagem diferente → cria nova entrada

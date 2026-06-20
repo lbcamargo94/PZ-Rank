@@ -992,6 +992,12 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   color: var(--red);
   margin-top: -4px;
 }
+.form-warning {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: #e07820;
+  margin-top: -4px;
+}
 
 .decoded-preview {
   background: var(--green-dim);

@@ -157,14 +157,14 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
                 <span className="decoded-label">Sandbox</span>
                 {decoded.sandboxOk
                   ? <span className="decoded-value sandbox-ok"><i className="ti ti-check" /> Válido</span>
-                  : <span className="decoded-value sandbox-invalid"><i className="ti ti-ban" /> Inválido — envio será bloqueado</span>
+                  : <span className="decoded-value sandbox-invalid"><i className="ti ti-ban" /> Inválido — jogador será desclassificado</span>
                 }
               </div>
             </div>
           )}
           {decoded && !decoded.sandboxOk && (
-            <p className="form-error">
-              <i className="ti ti-alert-triangle" /> Sandbox inválido: as configurações do servidor divergem do desafio oficial. O envio será bloqueado pelo servidor.
+            <p className="form-warning">
+              <i className="ti ti-alert-triangle" /> Sandbox inválido: as configurações do servidor divergem do desafio oficial. A entrada será salva com score 0 e marcada como <strong>Desclassificado</strong> no ranking.
             </p>
           )}
           {!decoded && code.length > 6 && (
