@@ -120,7 +120,7 @@ function SkillsModal({ skillMap, charName, onClose }: {
   }, [onClose]);
 
   return createPortal(
-    <div className="sm-overlay" onClick={onClose}>
+    <div className="sm-overlay">
       <div className="sm-box" onClick={e => e.stopPropagation()}>
 
         <div className="sm-header">

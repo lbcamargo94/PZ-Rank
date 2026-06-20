@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { apiRegisterPlayer } from '../lib/api';
 
 interface Props {
@@ -21,6 +21,14 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
   const [socials, setSocials] = useState<Record<SocialId, string>>({
     twitch: '', youtube: '', kick: '', tiktok: '',
   });
+
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
+  }, [onClose]);
 
   function setSocial(id: SocialId, value: string) {
     setSocials(prev => ({ ...prev, [id]: value }));
@@ -48,7 +56,7 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
   }
 
   return (
-    <div className="modal-overlay active" role="dialog" aria-modal="true" onClick={onClose}>
+    <div className="modal-overlay active" role="dialog" aria-modal="true">
       <div className="modal-box reg-modal-box" onClick={e => e.stopPropagation()}>
 
         <button className="modal-close" aria-label="Fechar" onClick={onClose}>

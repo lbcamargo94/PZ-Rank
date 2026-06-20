@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { apiCreateModerator } from '../../lib/api';
 
 interface Props {
@@ -12,6 +12,14 @@ export function CreateModeratorModal({ token, onClose, onSuccess, showToast }: P
   const [login,    setLogin]    = useState('');
   const [password, setPassword] = useState('');
   const [loading,  setLoading]  = useState(false);
+
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
+  }, [onClose]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -30,7 +38,7 @@ export function CreateModeratorModal({ token, onClose, onSuccess, showToast }: P
   }
 
   return (
-    <div className="modal-overlay active" role="dialog" aria-modal="true" onClick={onClose}>
+    <div className="modal-overlay active" role="dialog" aria-modal="true">
       <div className="modal-box" onClick={e => e.stopPropagation()}>
         <button className="modal-close" aria-label="Fechar" onClick={onClose}>
           <i className="ti ti-x" />

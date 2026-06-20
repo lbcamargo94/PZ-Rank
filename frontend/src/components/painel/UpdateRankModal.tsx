@@ -30,6 +30,14 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
     : 0;
 
   useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
+  }, [onClose]);
+
+  useEffect(() => {
     apiGetPlayers(token, 'approved')
       .then(data => setPlayers(data.filter(p => !p.blocked)))
       .catch(err => showToast((err as Error).message, 'error'));
@@ -91,7 +99,7 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
   }
 
   return (
-    <div className="modal-overlay active" role="dialog" aria-modal="true" onClick={onClose}>
+    <div className="modal-overlay active" role="dialog" aria-modal="true">
       <div className="modal-box update-modal-box" onClick={e => e.stopPropagation()}>
         <button className="modal-close" aria-label="Fechar" onClick={onClose}>
           <i className="ti ti-x" />
