@@ -202,7 +202,7 @@ describe('SKILL_NAMES — sanidade dos IDs B42', () => {
     'Sprinting', 'Lightfoot', 'Nimble', 'Sneak', 'Fitness', 'Strength',
     'Axe', 'Blunt', 'SmallBlunt', 'LongBlade', 'SmallBlade', 'Spear', 'Maintenance',
     'Aiming', 'Reloading', 'Woodwork', 'Electricity', 'MetalWelding', 'Mechanics',
-    'Tailoring', 'Cooking', 'Farming', 'Doctor', 'Fishing', 'Trapping', 'Survivalist',
+    'Tailoring', 'Cooking', 'Farming', 'Doctor', 'Fishing', 'Trapping', 'PlantScavenging',
     'FlintKnapping', 'Carving', 'Masonry', 'Pottery', 'Blacksmith', 'Glassmaking',
     'Husbandry', 'Butchering', 'Tracking',
   ];
@@ -218,7 +218,7 @@ describe('SKILL_NAMES — sanidade dos IDs B42', () => {
   it('IDs B41 renomeados foram removidos', () => {
     const obsolete = ['Lightfooted', 'Sneaking', 'LongBlunt', 'ShortBlunt',
                       'ShortBlade', 'Carpentry', 'Electrical', 'Foraging',
-                      'FirstAid', 'Agriculture', 'Knapping', 'AnimalCare'];
+                      'Survivalist', 'FirstAid', 'Agriculture', 'Knapping', 'AnimalCare'];
     for (const id of obsolete) expect(SKILL_NAMES).not.toHaveProperty(id);
   });
 
