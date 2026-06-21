@@ -58,7 +58,6 @@ export const TRAITS: Record<string, TraitDef> = {
   Herbalist:        { name: 'Herbalista',              type: 'positive'                                },
   Inconspicuous:    { name: 'Discreto',                type: 'positive', image: 'Discreto'             },
   IronGut:          { name: 'Estômago de Ferro',       type: 'positive', image: 'Estômago de ferro'   },
-  Wakeful2:         { name: 'Leve Sono',               type: 'positive'                                },
   Desensitized:     { name: 'Dessensibilizado',        type: 'positive', image: 'Viciado em adrenalina' },
   Construction:     { name: 'Construção',              type: 'positive'                                },
 
