@@ -1,4 +1,4 @@
--- SQLite schema — ambiente local (equivalente ao PostgreSQL v8)
+-- SQLite schema — ambiente local (equivalente ao PostgreSQL v11)
 -- Tipos adaptados: BOOLEAN→INTEGER(0/1), UUID→TEXT, JSONB→TEXT
 
 CREATE TABLE IF NOT EXISTS players (
@@ -38,6 +38,8 @@ CREATE TABLE IF NOT EXISTS entries (
   skills         TEXT,
   live_url       TEXT,
   is_alive       INTEGER  NOT NULL DEFAULT 1,
+  sandbox_ok     INTEGER  NOT NULL DEFAULT 1,
+  traits         TEXT,
   objectives     TEXT,
   score          INTEGER  NOT NULL DEFAULT 0,
   created_at     TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))

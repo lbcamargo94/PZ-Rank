@@ -23,7 +23,7 @@ import fs from 'node:fs';
 
 const BOOL_COLS: Record<string, string[]> = {
   players: ['blocked'],
-  entries: ['is_alive'],
+  entries: ['is_alive', 'sandbox_ok'],
 };
 
 const JSON_COLS: Record<string, string[]> = {
@@ -225,6 +225,18 @@ class SqliteQueryBuilder {
 
 // ── Fábrica ──────────────────────────────────────────────────────────────────
 
+function runMigrations(db: Database): void {
+  const cols = (db.prepare('PRAGMA table_info(entries)').all() as { name: string }[]).map(c => c.name);
+  if (!cols.includes('sandbox_ok')) {
+    db.exec('ALTER TABLE entries ADD COLUMN sandbox_ok INTEGER NOT NULL DEFAULT 1');
+    console.log('[SQLite] migração: coluna sandbox_ok adicionada');
+  }
+  if (!cols.includes('traits')) {
+    db.exec('ALTER TABLE entries ADD COLUMN traits TEXT');
+    console.log('[SQLite] migração: coluna traits adicionada');
+  }
+}
+
 export function createSQLiteClient() {
   const dbPath     = path.join(process.cwd(), 'local.db');
   const schemaPath = path.join(__dirname, 'sqlite-schema.sql');
@@ -233,6 +245,7 @@ export function createSQLiteClient() {
   db.pragma('journal_mode = WAL');
   db.pragma('foreign_keys = ON');
   db.exec(fs.readFileSync(schemaPath, 'utf-8'));
+  runMigrations(db);
 
   console.log(`[SQLite] Banco em: ${dbPath}`);
 
