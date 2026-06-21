@@ -204,18 +204,11 @@ router.delete('/:id', requireModerator, async (req: ModRequest, res: Response): 
 
   const { data: existing, error: fetchError } = await supabase
     .from(config.tableName)
-    .select('id, moderator_id')
+    .select('id')
     .eq('id', id)
     .single();
 
   if (fetchError || !existing) { res.status(404).json({ error: 'Entrada não encontrada.' }); return; }
-
-  // Somente o moderador que criou ou o master pode deletar
-  const row = existing as { id: number; moderator_id: string };
-  if (req.modRole !== 'master' && row.moderator_id !== req.userId) {
-    res.status(403).json({ error: 'Sem permissão para remover esta entrada.' });
-    return;
-  }
 
   const { error } = await supabase.from(config.tableName).delete().eq('id', id);
   if (error) { res.status(500).json({ error: dbError(error).message }); return; }

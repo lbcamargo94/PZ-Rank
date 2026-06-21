@@ -3,13 +3,13 @@ import type { Response } from 'express';
 import bcrypt from 'bcryptjs';
 import { supabase } from '../supabase';
 import { dbError, translateSupabaseError } from '../lib/errors';
-import { requireMaster } from '../middleware/moderator';
+import { requireModerator } from '../middleware/moderator';
 import type { ModRequest } from '../middleware/moderator';
 
 const router = Router();
 
-// GET /moderators — master
-router.get('/', requireMaster, async (_req: ModRequest, res: Response): Promise<void> => {
+// GET /moderators — moderador
+router.get('/', requireModerator, async (_req: ModRequest, res: Response): Promise<void> => {
   try {
     const { data, error } = await supabase
       .from('moderators')
@@ -24,8 +24,8 @@ router.get('/', requireMaster, async (_req: ModRequest, res: Response): Promise<
   }
 });
 
-// POST /moderators — master: cria novo moderador com senha hasheada
-router.post('/', requireMaster, async (req: ModRequest, res: Response): Promise<void> => {
+// POST /moderators — moderador: cria novo moderador com senha hasheada
+router.post('/', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
   const { login, password } = req.body as { login?: string; password?: string };
 
   if (!login || !password) {
@@ -61,8 +61,8 @@ router.post('/', requireMaster, async (req: ModRequest, res: Response): Promise<
   }
 });
 
-// DELETE /moderators/:id — master
-router.delete('/:id', requireMaster, async (req: ModRequest, res: Response): Promise<void> => {
+// DELETE /moderators/:id — moderador
+router.delete('/:id', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
   const targetId = String(req.params.id);
 
   if (targetId === req.userId) {

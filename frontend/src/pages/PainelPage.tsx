@@ -116,12 +116,10 @@ export function PainelPage({ session, onSession, onBack }: Props) {
             onClick={() => setTab('players')}>
             <i className="ti ti-users" /> Jogadores
           </button>
-          {session.role === 'master' && (
-            <button className={`painel-tab${tab === 'rank' ? ' active' : ''}`}
-              onClick={() => { setTab('rank'); fetchEntries(); }}>
-              <i className="ti ti-shield-star" /> Moderadores
-            </button>
-          )}
+          <button className={`painel-tab${tab === 'rank' ? ' active' : ''}`}
+            onClick={() => { setTab('rank'); fetchEntries(); }}>
+            <i className="ti ti-shield-star" /> Moderadores
+          </button>
         </div>
         <button className="btn-primary" onClick={() => setShowUpdateRank(true)}>
           <i className="ti ti-trophy" /> Atualizar Rank
@@ -133,7 +131,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
         {tab === 'players' && (
           <PendingPlayers token={session.token} showToast={showToast} />
         )}
-        {tab === 'rank' && session.role === 'master' && (
+        {tab === 'rank' && (
           <ModeratorsList
             token={session.token}
             currentId={session.token}
@@ -240,7 +238,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
         />
       )}
 
-      {showCreateMod && session.role === 'master' && (
+      {showCreateMod && (
         <CreateModeratorModal
           token={session.token}
           onClose={() => setShowCreateMod(false)}
