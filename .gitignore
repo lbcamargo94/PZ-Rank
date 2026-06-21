@@ -1,9 +1,11 @@
-# Env
+# Env — arquivos com segredos (não comitar)
 .env
 .env.local
 frontend/.env
 backend/.env
 backend/.env.local
+
+# Env — .env.development e .env.production SÃO comitados (sem segredos, apenas URLs públicas)
 
 # Dependencies & build output
 node_modules
