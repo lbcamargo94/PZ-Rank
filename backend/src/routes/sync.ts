@@ -107,8 +107,31 @@ router.post('/update', async (req: Request, res: Response): Promise<void> => {
   }
 
   const existingObjectives = (existing?.objectives as Objectives | null) ?? null;
-  // Desclassificado não acumula pontuação
-  const score = decoded.sandboxOk ? computeScore(decoded.kills, existingObjectives) : 0;
+
+  // Desclassificação: preserva os dados legítimos do último estado classificado.
+  // Só atualiza sandbox_ok, is_alive e zera o score — kills/dias/skills não são sobrescritos.
+  if (!decoded.sandboxOk && existing) {
+    const { data, error } = await supabase
+      .from(config.tableName)
+      .update({ sandbox_ok: false, is_alive: decoded.isAlive, score: 0 })
+      .eq('id', (existing as { id: number }).id)
+      .select('id, character_name, score, is_alive')
+      .single();
+
+    if (error) {
+      res.status(500).json({ error: dbError(error).message });
+      return;
+    }
+    res.status(200).json({
+      success:        true,
+      character_name: (data as { character_name: string }).character_name,
+      score:          0,
+      is_alive:       (data as { is_alive: boolean }).is_alive,
+    });
+    return;
+  }
+
+  const score = computeScore(decoded.kills, existingObjectives);
 
   const entry = {
     player_id:      player.id,
@@ -123,7 +146,7 @@ router.post('/update', async (req: Request, res: Response): Promise<void> => {
     skills:         decoded.skills.join(', ') || null,
     live_url:       existing?.live_url ?? null,
     is_alive:       decoded.isAlive,
-    sandbox_ok:     decoded.sandboxOk,
+    sandbox_ok:     true,
     traits:         decoded.traits.length > 0 ? decoded.traits.join(',') : null,
     objectives:     existingObjectives,
     score,
