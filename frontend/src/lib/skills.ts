@@ -4,62 +4,85 @@ export interface SkillDef {
   category: string;
 }
 
+// IDs usam a nomenclatura B42.19 (Perks enum do jogo).
+// B41 renomeou: Lightfooted→Lightfoot, Sneaking→Sneak, LongBlunt→Blunt,
+// ShortBlunt→SmallBlunt, ShortBlade→SmallBlade, Carpentry→Woodwork,
+// Electrical→Electricity, Foraging→Survivalist, FirstAid→Doctor,
+// Agriculture→Farming, Knapping→FlintKnapping, AnimalCare→Husbandry.
 export const SKILLS: SkillDef[] = [
   // Física
-  { id: 'Fitness',      name: 'Condicionamento',    category: 'Física' },
-  { id: 'Strength',     name: 'Força',              category: 'Física' },
-  { id: 'Sprinting',    name: 'Corrida',            category: 'Física' },
-  { id: 'Lightfooted',  name: 'Pés Leves',          category: 'Física' },
-  { id: 'Nimble',       name: 'Agilidade',          category: 'Física' },
-  { id: 'Sneaking',     name: 'Furtividade',        category: 'Física' },
+  { id: 'Fitness',       name: 'Condicionamento',    category: 'Física' },
+  { id: 'Strength',      name: 'Força',              category: 'Física' },
+  { id: 'Sprinting',     name: 'Corrida',            category: 'Física' },
+  { id: 'Lightfoot',     name: 'Pés Leves',          category: 'Física' },
+  { id: 'Nimble',        name: 'Agilidade',          category: 'Física' },
+  { id: 'Sneak',         name: 'Furtividade',        category: 'Física' },
   // Combate
-  { id: 'Axe',          name: 'Machado',            category: 'Combate' },
-  { id: 'LongBlunt',    name: 'Contundente Longo',  category: 'Combate' },
-  { id: 'ShortBlunt',   name: 'Contundente Curto',  category: 'Combate' },
-  { id: 'LongBlade',    name: 'Lâmina Longa',       category: 'Combate' },
-  { id: 'ShortBlade',   name: 'Lâmina Curta',       category: 'Combate' },
-  { id: 'Spear',        name: 'Lança',              category: 'Combate' },
-  { id: 'Maintenance',  name: 'Manutenção',         category: 'Combate' },
+  { id: 'Axe',           name: 'Machado',            category: 'Combate' },
+  { id: 'Blunt',         name: 'Contundente Longo',  category: 'Combate' },
+  { id: 'SmallBlunt',    name: 'Contundente Curto',  category: 'Combate' },
+  { id: 'LongBlade',     name: 'Lâmina Longa',       category: 'Combate' },
+  { id: 'SmallBlade',    name: 'Lâmina Curta',       category: 'Combate' },
+  { id: 'Spear',         name: 'Lança',              category: 'Combate' },
+  { id: 'Maintenance',   name: 'Manutenção',         category: 'Combate' },
   // Armas de Fogo
-  { id: 'Aiming',       name: 'Mira',               category: 'Armas de Fogo' },
-  { id: 'Reloading',    name: 'Recarga',            category: 'Armas de Fogo' },
+  { id: 'Aiming',        name: 'Mira',               category: 'Armas de Fogo' },
+  { id: 'Reloading',     name: 'Recarga',            category: 'Armas de Fogo' },
   // Profissões
-  { id: 'Carpentry',    name: 'Carpintaria',        category: 'Profissões' },
-  { id: 'Electrical',   name: 'Eletricidade',       category: 'Profissões' },
-  { id: 'MetalWelding', name: 'Soldagem',           category: 'Profissões' },
-  { id: 'Mechanics',    name: 'Mecânica',           category: 'Profissões' },
-  { id: 'Tailoring',    name: 'Costura',            category: 'Profissões' },
+  { id: 'Woodwork',      name: 'Marcenaria',         category: 'Profissões' },
+  { id: 'Electricity',   name: 'Eletricidade',       category: 'Profissões' },
+  { id: 'MetalWelding',  name: 'Soldagem',           category: 'Profissões' },
+  { id: 'Mechanics',     name: 'Mecânica',           category: 'Profissões' },
+  { id: 'Tailoring',     name: 'Costura',            category: 'Profissões' },
   // Sobrevivência
-  { id: 'Cooking',      name: 'Culinária',          category: 'Sobrevivência' },
-  { id: 'Agriculture',  name: 'Agricultura',        category: 'Sobrevivência' },
-  { id: 'FirstAid',     name: 'Primeiros Socorros', category: 'Sobrevivência' },
-  { id: 'Fishing',      name: 'Pesca',              category: 'Sobrevivência' },
-  { id: 'Trapping',     name: 'Armadilhas',         category: 'Sobrevivência' },
-  { id: 'Foraging',     name: 'Coleta',             category: 'Sobrevivência' },
+  { id: 'Cooking',       name: 'Culinária',          category: 'Sobrevivência' },
+  { id: 'Farming',       name: 'Agricultura',        category: 'Sobrevivência' },
+  { id: 'Doctor',        name: 'Medicina',           category: 'Sobrevivência' },
+  { id: 'Fishing',       name: 'Pesca',              category: 'Sobrevivência' },
+  { id: 'Trapping',      name: 'Armadilhas',         category: 'Sobrevivência' },
+  { id: 'Survivalist',   name: 'Sobrevivência',      category: 'Sobrevivência' },
   // Build 42
-  { id: 'Knapping',     name: 'Lascamento',         category: 'Build 42' },
-  { id: 'Carving',      name: 'Entalhamento',       category: 'Build 42' },
-  { id: 'Masonry',      name: 'Alvenaria',          category: 'Build 42' },
-  { id: 'Pottery',      name: 'Cerâmica',           category: 'Build 42' },
-  { id: 'Blacksmith',   name: 'Ferraria',           category: 'Build 42' },
-  { id: 'Glassmaking',  name: 'Vidraria',           category: 'Build 42' },
-  { id: 'AnimalCare',   name: 'Cuidado Animal',     category: 'Build 42' },
-  { id: 'Butchering',   name: 'Abate',              category: 'Build 42' },
-  { id: 'Tracking',     name: 'Rastreamento',       category: 'Build 42' },
+  { id: 'FlintKnapping', name: 'Lascamento',         category: 'Build 42' },
+  { id: 'Carving',       name: 'Entalhamento',       category: 'Build 42' },
+  { id: 'Masonry',       name: 'Alvenaria',          category: 'Build 42' },
+  { id: 'Pottery',       name: 'Cerâmica',           category: 'Build 42' },
+  { id: 'Blacksmith',    name: 'Ferraria',           category: 'Build 42' },
+  { id: 'Glassmaking',   name: 'Vidraria',           category: 'Build 42' },
+  { id: 'Husbandry',     name: 'Pecuária',           category: 'Build 42' },
+  { id: 'Butchering',    name: 'Abate',              category: 'Build 42' },
+  { id: 'Tracking',      name: 'Rastreamento',       category: 'Build 42' },
 ];
 
 export const TOTAL_SKILLS = SKILLS.length;
 export const MAX_SKILL_LEVEL = 10;
 
-const U = '�';
+const U = '?';
 
 // Normalization map: any historical variant → canonical PT-BR name
 const SKILL_FIX: Record<string, string> = {
-  // English IDs (mod v1.7+)
+  // B42 IDs → PT-BR (gerado a partir da lista acima)
   ...Object.fromEntries(SKILLS.map(s => [s.id, s.name])),
+  // B41 IDs → PT-BR (backward compat: entradas antigas armazenadas com ID inglês B41)
+  Lightfooted:        'Pés Leves',
+  Sneaking:           'Furtividade',
+  LongBlunt:          'Contundente Longo',
+  ShortBlunt:         'Contundente Curto',
+  ShortBlade:         'Lâmina Curta',
+  Carpentry:          'Marcenaria',
+  Electrical:         'Eletricidade',
+  Foraging:           'Sobrevivência',
+  FirstAid:           'Medicina',
+  Agriculture:        'Agricultura',
+  Knapping:           'Lascamento',
+  AnimalCare:         'Pecuária',
+  // Nomes PT-BR antigos → PT-BR novo (backward compat: entradas decodificadas antes do fix)
+  'Carpintaria':      'Marcenaria',
+  'Coleta':           'Sobrevivência',
+  'Primeiros Socorros': 'Medicina',
+  'Cuidado Animal':   'Pecuária',
   // Old abbreviations
-  'Cont. Longo': 'Contundente Longo',
-  'Cont. Curto': 'Contundente Curto',
+  'Cont. Longo':      'Contundente Longo',
+  'Cont. Curto':      'Contundente Curto',
   // U+FFFD era
   [`Cer${U}mica`]:       'Cerâmica',
   [`Culin${U}ria`]:      'Culinária',
