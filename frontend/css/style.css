@@ -2674,6 +2674,51 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   padding: 12px 0;
 }
 
+/* ── Características (traits) ───────────────────────────── */
+.pp-traits {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.pp-trait-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.pp-trait-group-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-3);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.pp-trait-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.trait-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 20px;
+  letter-spacing: 0.3px;
+}
+.trait-positive {
+  background: var(--green-dim);
+  color: var(--green-light);
+  border: 1px solid var(--green-border);
+}
+.trait-negative {
+  background: rgba(224, 64, 64, 0.1);
+  color: var(--red);
+  border: 1px solid rgba(224, 64, 64, 0.28);
+}
+
 /* Character card */
 .pp-char-card {
   background: var(--bg-2);

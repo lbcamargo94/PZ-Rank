@@ -93,6 +93,7 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
     live_url:       live_url?.trim() || null,
     is_alive:       decoded.isAlive,
     sandbox_ok:     decoded.sandboxOk,
+    traits:         decoded.traits.join(',') || null,
     objectives:     safeObjectives,
     score:          decoded.sandboxOk ? computeScore(decoded.kills, safeObjectives) : 0,
   };

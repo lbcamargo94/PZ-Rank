@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import avatarDefault from '../../assets/avatar.png';
 import { apiGetPlayerProfile, apiGetEntries } from '../lib/api';
 import { parseSkillMap, SKILL_CATEGORIES, MAX_SKILL_LEVEL, TOTAL_SKILLS } from '../lib/skills';
+import { parseTraitList, resolveTrait } from '../lib/traits';
 import { SPIFFOS_RESTAURANTS, BASE_ITEMS } from '../lib/objectives';
 import { ProgressBar } from '../components/ProgressBar';
 import type { PlayerProfile, Entry } from '../types';
@@ -137,8 +138,41 @@ function SkillsSection({ skillsStr }: { skillsStr: string | null }) {
   );
 }
 
+function TraitsSection({ traitsRaw }: { traitsRaw: string | null | undefined }) {
+  const ids = parseTraitList(traitsRaw);
+  if (ids.length === 0) return <p className="pp-no-data">Características não registradas nesta entrada.</p>;
+
+  const positive = ids.filter(id => resolveTrait(id).type === 'positive');
+  const negative = ids.filter(id => resolveTrait(id).type === 'negative');
+
+  return (
+    <div className="pp-traits">
+      {positive.length > 0 && (
+        <div className="pp-trait-group">
+          <span className="pp-trait-group-label"><i className="ti ti-circle-plus" /> Positivas</span>
+          <div className="pp-trait-list">
+            {positive.map(id => (
+              <span key={id} className="trait-badge trait-positive">{resolveTrait(id).name}</span>
+            ))}
+          </div>
+        </div>
+      )}
+      {negative.length > 0 && (
+        <div className="pp-trait-group">
+          <span className="pp-trait-group-label"><i className="ti ti-circle-minus" /> Negativas</span>
+          <div className="pp-trait-list">
+            {negative.map(id => (
+              <span key={id} className="trait-badge trait-negative">{resolveTrait(id).name}</span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function CharacterCard({ entry, rank }: { entry: Entry; rank: number | null }) {
-  const [tab, setTab] = useState<'stats' | 'objectives' | 'skills'>('stats');
+  const [tab, setTab] = useState<'stats' | 'skills' | 'traits'>('stats');
 
   return (
     <div className={`pp-char-card${entry.is_alive ? '' : ' pp-char-dead'}`}>
@@ -182,15 +216,15 @@ function CharacterCard({ entry, rank }: { entry: Entry; rank: number | null }) {
         <button className={`pp-tab${tab === 'skills' ? ' active' : ''}`} onClick={() => setTab('skills')}>
           Habilidades
         </button>
+        <button className={`pp-tab${tab === 'traits' ? ' active' : ''}`} onClick={() => setTab('traits')}>
+          Características
+        </button>
       </div>
 
       <div className="pp-tab-body">
-        {tab === 'stats' && (
-          <ObjectivesSection objectives={entry.objectives} kills={entry.kills} />
-        )}
-        {tab === 'skills' && (
-          <SkillsSection skillsStr={entry.skills} />
-        )}
+        {tab === 'stats'  && <ObjectivesSection objectives={entry.objectives} kills={entry.kills} />}
+        {tab === 'skills' && <SkillsSection skillsStr={entry.skills} />}
+        {tab === 'traits' && <TraitsSection traitsRaw={entry.traits} />}
       </div>
     </div>
   );

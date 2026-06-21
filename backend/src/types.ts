@@ -53,6 +53,7 @@ export interface Entry {
   live_url:       string | null;
   is_alive:       boolean;
   sandbox_ok:     boolean;
+  traits:         string | null;
   objectives:     Objectives | null;
   score:          number;
 }
@@ -67,4 +68,5 @@ export interface DecodedCode {
   skills:        string[];
   isAlive:       boolean;
   sandboxOk:     boolean;
+  traits:        string[];
 }

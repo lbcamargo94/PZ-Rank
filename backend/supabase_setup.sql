@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS entries (
   live_url       TEXT,
   is_alive       BOOLEAN     NOT NULL DEFAULT true,
   sandbox_ok     BOOLEAN     NOT NULL DEFAULT true,
+  traits         TEXT,
   objectives     JSONB,
   score          INTEGER     NOT NULL DEFAULT 0,
   created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -59,6 +60,9 @@ ALTER TABLE entries    ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "public_read_entries" ON entries    FOR SELECT USING (true);
 CREATE POLICY "public_read_players" ON players    FOR SELECT USING (true);
 
+-- ── Migration v10 (rodar se o banco já existe) ───────────────
+-- Adiciona campo de traços do personagem (comma-separated IDs em inglês).
+-- ALTER TABLE entries ADD COLUMN IF NOT EXISTS traits TEXT;
 -- ── Migration v9 (rodar se o banco já existe) ────────────────
 -- Adiciona campo de validade do sandbox — DEFAULT true não afeta entradas anteriores.
 -- ALTER TABLE entries ADD COLUMN IF NOT EXISTS sandbox_ok BOOLEAN NOT NULL DEFAULT true;
