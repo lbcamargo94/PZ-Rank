@@ -1108,7 +1108,9 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   color: var(--text-1);
 }
 .profession-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.8px;
@@ -1119,6 +1121,12 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   border-radius: 3px;
   margin: 2px 0;
   text-transform: uppercase;
+}
+.profession-img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 .player-alias {
   display: block;
@@ -2701,12 +2709,21 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   gap: 6px;
 }
 .trait-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 600;
-  padding: 3px 9px;
+  padding: 3px 9px 3px 5px;
   border-radius: 20px;
   letter-spacing: 0.3px;
+}
+.trait-img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 .trait-positive {
   background: var(--green-dim);

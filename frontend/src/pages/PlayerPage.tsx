@@ -3,7 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import avatarDefault from '../../assets/avatar.png';
 import { apiGetPlayerProfile, apiGetEntries } from '../lib/api';
 import { parseSkillMap, SKILL_CATEGORIES, MAX_SKILL_LEVEL, TOTAL_SKILLS } from '../lib/skills';
-import { parseTraitList, resolveTrait } from '../lib/traits';
+import { parseTraitList, resolveTrait, getTraitImageUrl } from '../lib/traits';
+import { getProfessionImageUrl } from '../lib/professions';
 import { SPIFFOS_RESTAURANTS, BASE_ITEMS } from '../lib/objectives';
 import { ProgressBar } from '../components/ProgressBar';
 import type { PlayerProfile, Entry } from '../types';
@@ -151,9 +152,16 @@ function TraitsSection({ traitsRaw }: { traitsRaw: string | null | undefined }) 
         <div className="pp-trait-group">
           <span className="pp-trait-group-label"><i className="ti ti-circle-plus" /> Positivas</span>
           <div className="pp-trait-list">
-            {positive.map(id => (
-              <span key={id} className="trait-badge trait-positive">{resolveTrait(id).name}</span>
-            ))}
+            {positive.map(id => {
+              const def = resolveTrait(id);
+              const img = getTraitImageUrl(def);
+              return (
+                <span key={id} className="trait-badge trait-positive">
+                  {img && <img src={img} alt="" className="trait-img" />}
+                  {def.name}
+                </span>
+              );
+            })}
           </div>
         </div>
       )}
@@ -161,9 +169,16 @@ function TraitsSection({ traitsRaw }: { traitsRaw: string | null | undefined }) 
         <div className="pp-trait-group">
           <span className="pp-trait-group-label"><i className="ti ti-circle-minus" /> Negativas</span>
           <div className="pp-trait-list">
-            {negative.map(id => (
-              <span key={id} className="trait-badge trait-negative">{resolveTrait(id).name}</span>
-            ))}
+            {negative.map(id => {
+              const def = resolveTrait(id);
+              const img = getTraitImageUrl(def);
+              return (
+                <span key={id} className="trait-badge trait-negative">
+                  {img && <img src={img} alt="" className="trait-img" />}
+                  {def.name}
+                </span>
+              );
+            })}
           </div>
         </div>
       )}
@@ -180,7 +195,14 @@ function CharacterCard({ entry, rank }: { entry: Entry; rank: number | null }) {
       <div className="pp-char-header">
         <div className="pp-char-identity">
           <span className="pp-char-name">{entry.character_name || '—'}</span>
-          {entry.profession && <span className="profession-badge">{entry.profession}</span>}
+          {entry.profession && (
+            <span className="profession-badge">
+              {getProfessionImageUrl(entry.profession) && (
+                <img src={getProfessionImageUrl(entry.profession)} alt="" className="profession-img" />
+              )}
+              {entry.profession}
+            </span>
+          )}
         </div>
         <div className="pp-char-right">
           {rank !== null && <span className="pp-char-rank">#{rank}</span>}

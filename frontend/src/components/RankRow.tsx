@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import type { Entry } from '../types';
 import { parseSkillMap, SKILL_CATEGORIES, TOTAL_SKILLS, MAX_SKILL_LEVEL } from '../lib/skills';
+import { getProfessionImageUrl } from '../lib/professions';
 
 interface RankRowProps {
   entry: Entry;
@@ -111,7 +112,14 @@ export function RankRow({ entry, rank }: RankRowProps) {
       <td className="rank-pos">{MEDALS[rank] ?? rank}</td>
       <td className="rank-name">
         <span className="char-name">{entry.character_name || entry.name}</span>
-        {entry.profession && <span className="profession-badge">{entry.profession}</span>}
+        {entry.profession && (
+          <span className="profession-badge">
+            {getProfessionImageUrl(entry.profession) && (
+              <img src={getProfessionImageUrl(entry.profession)} alt="" className="profession-img" />
+            )}
+            {entry.profession}
+          </span>
+        )}
         <span className="player-alias">{entry.name}</span>
         {entry.player_id && (
           <Link to={`/player/${entry.player_id}`} className="btn-details">
