@@ -77,11 +77,6 @@ function RankCard({ entry, rank, onPlayerClick }: {
             <i className="ti ti-user" /> Ver detalhes
           </button>
         )}
-        {entry.live_url && (
-          <a href={entry.live_url} target="_blank" rel="noopener noreferrer" className="rc-live-btn">
-            <i className="ti ti-brand-twitch" />
-          </a>
-        )}
       </div>
     </div>
   );

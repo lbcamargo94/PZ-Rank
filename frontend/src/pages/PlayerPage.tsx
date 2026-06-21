@@ -5,7 +5,7 @@ import { apiGetPlayerProfile, apiGetEntries } from '../lib/api';
 import { parseSkillMap, SKILL_CATEGORIES, MAX_SKILL_LEVEL, TOTAL_SKILLS } from '../lib/skills';
 import { parseTraitList, resolveTrait, getTraitImageUrl } from '../lib/traits';
 import { getProfessionImageUrl } from '../lib/professions';
-import { SPIFFOS_RESTAURANTS, BASE_ITEMS } from '../lib/objectives';
+import { SPIFFOS_RESTAURANTS, BASE_ITEMS, initObjectives } from '../lib/objectives';
 import { ProgressBar } from '../components/ProgressBar';
 import type { PlayerProfile, Entry } from '../types';
 import type { Objectives } from '../lib/objectives';
@@ -18,28 +18,28 @@ const SOCIALS = [
 ] as const;
 
 function ObjectivesSection({ objectives, kills }: { objectives: Objectives | null | undefined; kills: number }) {
-  if (!objectives) {
-    return (
-      <div className="pp-no-data-box">
-        <i className="ti ti-clipboard-x" />
-        <p>Objetivos não registrados nesta entrada.</p>
-        <span className="pp-no-data-hint">Os objetivos são cadastrados pelo moderador ao registrar a entrada no rank.</span>
-      </div>
-    );
-  }
+  const obj = objectives ?? initObjectives();
+  const pending = !objectives;
 
-  const bases = SPIFFOS_RESTAURANTS.map(r => ({ ...r, ...objectives.bases[r.id] }));
+  const bases = SPIFFOS_RESTAURANTS.map(r => ({ ...r, ...obj.bases[r.id] }));
   const basesCount = bases.filter(b => b.has_base).length;
 
   return (
     <div className="pp-objectives">
+      {pending && (
+        <div className="pp-obj-pending-banner">
+          <i className="ti ti-info-circle" />
+          Objetivos ainda não registrados pelo moderador. Mostrando estado inicial.
+        </div>
+      )}
+
       {/* Special objectives */}
       <div className="pp-obj-group">
         <h4 className="pp-obj-group-title"><i className="ti ti-star" /> Objetivos Especiais</h4>
 
         <div className="pp-obj-item">
-          <div className={`pp-obj-badge ${objectives.kills_500k ? 'pp-obj-done' : ''}`}>
-            {objectives.kills_500k ? <i className="ti ti-check" /> : <i className="ti ti-clock" />}
+          <div className={`pp-obj-badge ${obj.kills_500k ? 'pp-obj-done' : ''}`}>
+            {obj.kills_500k ? <i className="ti ti-check" /> : <i className="ti ti-clock" />}
           </div>
           <div className="pp-obj-body">
             <span className="pp-obj-name">500.000 Zumbis Abatidos</span>
@@ -48,8 +48,8 @@ function ObjectivesSection({ objectives, kills }: { objectives: Objectives | nul
         </div>
 
         <div className="pp-obj-item">
-          <div className={`pp-obj-badge ${objectives.all_skills_10 ? 'pp-obj-done' : ''}`}>
-            {objectives.all_skills_10 ? <i className="ti ti-check" /> : <i className="ti ti-clock" />}
+          <div className={`pp-obj-badge ${obj.all_skills_10 ? 'pp-obj-done' : ''}`}>
+            {obj.all_skills_10 ? <i className="ti ti-check" /> : <i className="ti ti-clock" />}
           </div>
           <div className="pp-obj-body">
             <span className="pp-obj-name">Todas as Habilidades no Nível 10</span>
@@ -58,8 +58,8 @@ function ObjectivesSection({ objectives, kills }: { objectives: Objectives | nul
         </div>
 
         <div className="pp-obj-item">
-          <div className={`pp-obj-badge ${objectives.spiffo_statue ? 'pp-obj-done' : ''}`}>
-            {objectives.spiffo_statue ? <i className="ti ti-check" /> : <i className="ti ti-clock" />}
+          <div className={`pp-obj-badge ${obj.spiffo_statue ? 'pp-obj-done' : ''}`}>
+            {obj.spiffo_statue ? <i className="ti ti-check" /> : <i className="ti ti-clock" />}
           </div>
           <div className="pp-obj-body">
             <span className="pp-obj-name">Estátua do Spiffo (Louisville)</span>
@@ -67,8 +67,8 @@ function ObjectivesSection({ objectives, kills }: { objectives: Objectives | nul
         </div>
 
         <div className="pp-obj-item">
-          <div className={`pp-obj-badge ${objectives.military_base ? 'pp-obj-done' : ''}`}>
-            {objectives.military_base ? <i className="ti ti-check" /> : <i className="ti ti-clock" />}
+          <div className={`pp-obj-badge ${obj.military_base ? 'pp-obj-done' : ''}`}>
+            {obj.military_base ? <i className="ti ti-check" /> : <i className="ti ti-clock" />}
           </div>
           <div className="pp-obj-body">
             <span className="pp-obj-name">Base Militar de Rosewood Limpa</span>
@@ -229,11 +229,6 @@ function CharacterCard({ entry, rank }: { entry: Entry; rank: number | null }) {
         <span className="pp-stat"><i className="ti ti-calendar" />{entry.days}d</span>
         <span className="pp-stat"><i className="ti ti-clock" />{entry.time_str ?? '—'}</span>
         <span className="pp-stat"><i className="ti ti-sword" />{entry.kills.toLocaleString('pt-BR')}</span>
-        {entry.live_url && (
-          <a href={entry.live_url} target="_blank" rel="noopener noreferrer" className="pp-stat pp-live-link">
-            <i className="ti ti-brand-twitch" /> Live
-          </a>
-        )}
       </div>
 
       {/* Tabs */}

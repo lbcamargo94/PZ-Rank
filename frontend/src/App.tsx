@@ -9,6 +9,7 @@ import { StatsBar } from './components/StatsBar';
 import { RankTable } from './components/RankTable';
 import { PlayerRegisterModal } from './components/PlayerRegisterModal';
 import { RulesModal } from './components/RulesModal';
+import { ChallengeSettingsModal } from './components/ChallengeSettingsModal';
 import { PainelPage } from './pages/PainelPage';
 import { PlayerPage } from './pages/PlayerPage';
 import { OverlayPage } from './pages/OverlayPage';
@@ -18,8 +19,9 @@ function MainView() {
   const [entries,      setEntries]      = useState<Entry[]>([]);
   const [sortKey,      setSortKey]      = useState<SortKey>('score');
   const [loadingRank,  setLoadingRank]  = useState(false);
-  const [showRegister, setShowRegister] = useState(false);
-  const [showRules,    setShowRules]    = useState(false);
+  const [showRegister,  setShowRegister]  = useState(false);
+  const [showRules,     setShowRules]     = useState(false);
+  const [showSettings,  setShowSettings]  = useState(false);
   const { toast, showToast } = useToast();
 
   const fetchEntries = useCallback(async () => {
@@ -39,6 +41,7 @@ function MainView() {
       <Header
         onPainel={() => navigate('/painel')}
         onRules={() => setShowRules(true)}
+        onSettings={() => setShowSettings(true)}
       />
       <main>
         <StatsBar total={entries.length} maxDays={maxDays} maxKills={maxKills} />
@@ -60,7 +63,8 @@ function MainView() {
           showToast={showToast}
         />
       )}
-      {showRules && <RulesModal onClose={() => setShowRules(false)} />}
+      {showRules     && <RulesModal             onClose={() => setShowRules(false)}    />}
+      {showSettings  && <ChallengeSettingsModal onClose={() => setShowSettings(false)} />}
     </>
   );
 }

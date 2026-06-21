@@ -121,12 +121,6 @@ export function RankRow({ entry, rank }: RankRowProps) {
           </span>
         )}
         <span className="player-alias">{entry.name}</span>
-        {entry.live_url && (
-          <a href={entry.live_url} target="_blank" rel="noopener noreferrer"
-            className="proof-link" aria-label="Link da live">
-            <i className="ti ti-brand-twitch" aria-hidden="true" />
-          </a>
-        )}
         {entry.player_id && (
           <Link to={`/player/${entry.player_id}`} className="btn-details">
             <i className="ti ti-user" /> Ver detalhes

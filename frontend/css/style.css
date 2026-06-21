@@ -3365,3 +3365,396 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .painel-empty-state i { font-size: 32px; }
 .painel-empty-state p { font-family: var(--font-mono); font-size: 14px; margin: 0; }
 
+/* ════════════════════════════════════════════════════════════
+   NOVOS COMPONENTES — tasks 1-6 (v2.5.0)
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Task 1: banner "objetivos pendentes" na PlayerPage ──── */
+.pp-obj-pending-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(200, 168, 75, 0.08);
+  border: 1px solid var(--amber-border);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--amber);
+  margin-bottom: 16px;
+}
+.pp-obj-pending-banner i { font-size: 16px; flex-shrink: 0; }
+
+/* ── Task 2: modal de Configurações do Desafio ────────────── */
+.settings-modal-box {
+  max-width: 600px;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+}
+.settings-modal-header {
+  padding: 24px 24px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+}
+.settings-modal-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--green);
+  letter-spacing: 1px;
+}
+.settings-modal-icon {
+  width: 48px; height: 48px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--green-dim);
+  border: 1px solid var(--green-border);
+  border-radius: 50%;
+  font-size: 22px;
+  color: var(--green);
+  margin: 0 auto 8px;
+}
+.settings-modal-sub {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-3);
+  max-width: 440px;
+  line-height: 1.6;
+  margin: 0 0 20px;
+}
+.settings-modal-body {
+  padding: 0 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-height: calc(90vh - 200px);
+  overflow-y: auto;
+}
+.settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.settings-group-title {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--green);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2px;
+}
+.settings-rows { display: flex; flex-direction: column; gap: 2px; }
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 8px;
+  border-radius: 4px;
+  gap: 12px;
+}
+.settings-row:nth-child(odd) { background: var(--bg-2); }
+.settings-row-label {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-3);
+  flex: 1;
+}
+.settings-row-value {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+  white-space: nowrap;
+}
+
+/* ── Task 5: modal de Cadastro refatorado ─────────────────── */
+.reg-modal-box { max-width: 480px; }
+.reg-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+.reg-header-icon {
+  width: 48px; height: 48px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--green-dim);
+  border: 1px solid var(--green-border);
+  border-radius: 50%;
+  font-size: 22px;
+  color: var(--green);
+}
+.reg-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-1);
+  margin: 0;
+}
+.reg-subtitle {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-3);
+  margin: 0;
+  line-height: 1.5;
+}
+.reg-field { display: flex; flex-direction: column; gap: 6px; }
+.reg-nick-input-wrap { position: relative; }
+.reg-nick-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-4);
+  font-size: 16px;
+  pointer-events: none;
+}
+.reg-nick-input { padding-left: 36px !important; font-size: 16px; }
+.reg-socials-section { display: flex; flex-direction: column; gap: 10px; }
+.reg-socials-header { display: flex; align-items: center; gap: 8px; }
+.reg-socials-hint { font-family: var(--font-mono); font-size: 12px; color: var(--text-4); margin: 0; }
+.reg-socials-grid { display: flex; flex-direction: column; gap: 8px; }
+.reg-social-item { display: flex; flex-direction: column; gap: 4px; }
+.reg-social-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--social-color, var(--text-3));
+}
+.reg-social-input { font-size: 14px !important; }
+.reg-info-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-3);
+  line-height: 1.5;
+}
+.reg-info-box i { color: var(--green); flex-shrink: 0; margin-top: 2px; }
+/* Estado de sucesso */
+.reg-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+  padding: 8px 0 4px;
+}
+.reg-success-icon {
+  width: 64px; height: 64px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--green-dim);
+  border: 1px solid var(--green-border);
+  border-radius: 50%;
+  font-size: 32px;
+  color: var(--green);
+}
+.reg-success-title { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--text-1); margin: 0; }
+.reg-success-msg { font-family: var(--font-mono); font-size: 14px; color: var(--text-3); max-width: 320px; line-height: 1.6; margin: 0; }
+
+/* ── Task 6: modal de Regras refatorado ─────────────────────── */
+.rules-modal-box   { max-width: 600px; padding: 0; gap: 0; overflow: hidden; }
+.rules-modal-header {
+  padding: 24px 24px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+}
+.rules-modal-icon {
+  width: 48px; height: 48px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--green-dim);
+  border: 1px solid var(--green-border);
+  border-radius: 50%;
+  font-size: 22px;
+  color: var(--green);
+  margin-bottom: 4px;
+}
+.rules-modal-sub {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-3);
+  max-width: 420px;
+  line-height: 1.5;
+  margin: 0;
+}
+.rules-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  margin: 16px 0 0;
+  padding: 0 24px;
+}
+.rules-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-3);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.rules-tab:hover  { color: var(--text-1); }
+.rules-tab.active { color: var(--green-light); border-bottom-color: var(--green); }
+.rules-tab-body {
+  padding: 20px 24px 24px;
+  max-height: calc(90vh - 260px);
+  overflow-y: auto;
+}
+/* Aba Objetivos */
+.rules-section-list  { display: flex; flex-direction: column; gap: 12px; }
+.rules-obj-card {
+  display: flex;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  align-items: flex-start;
+}
+.rules-obj-card-wide { flex-direction: column; }
+.rules-obj-icon {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--green-dim);
+  border: 1px solid var(--green-border);
+  border-radius: 50%;
+  font-size: 16px;
+  color: var(--green);
+  flex-shrink: 0;
+}
+.rules-obj-card-wide .rules-obj-icon { display: none; }
+.rules-obj-content { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.rules-obj-title { font-size: 15px; font-weight: 600; color: var(--text-1); }
+.rules-obj-desc { font-family: var(--font-mono); font-size: 13px; color: var(--text-3); line-height: 1.5; }
+.rules-pts-badge {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--green-light);
+  background: var(--green-dim);
+  border: 1px solid var(--green-border);
+  padding: 2px 8px;
+  border-radius: 10px;
+  width: fit-content;
+}
+.rules-tab-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--green);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-top: 4px;
+}
+.rules-tab-link:hover { color: var(--green-light); }
+/* Aba Bases */
+.rules-bases-section { display: flex; flex-direction: column; gap: 16px; }
+.rules-bases-intro { font-family: var(--font-mono); font-size: 14px; color: var(--text-3); margin: 0; }
+.rules-base-items-list { display: flex; flex-direction: column; gap: 6px; }
+.rules-base-item-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-2);
+  padding: 6px 10px;
+  background: var(--bg-2);
+  border-radius: var(--radius);
+}
+.rules-base-item-row i { color: var(--green); flex-shrink: 0; }
+.rules-pts-badge-sm {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--green-light);
+  background: var(--green-dim);
+  border: 1px solid var(--green-border);
+  padding: 1px 6px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+.rules-restaurants-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 6px;
+}
+.rules-restaurant-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-2);
+}
+.rules-restaurant-chip i { color: var(--green); font-size: 12px; }
+/* Aba Pontuação */
+.rules-score-section { display: flex; flex-direction: column; gap: 16px; }
+.rules-score-table { width: 100%; border-collapse: collapse; }
+.rules-score-table td {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-2);
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.rules-score-table tr:last-child td { border-bottom: none; }
+.rules-score-table tr:nth-child(even) td { background: var(--bg-2); }
+.rules-score-table .score-table-note td {
+  font-size: 12px;
+  color: var(--text-4);
+  padding: 4px 10px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.rules-score-table td.pts-col { text-align: right; font-weight: 700; color: var(--green-light); white-space: nowrap; }
+.rules-max-score {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--green-dim);
+  border: 1px solid var(--green-border);
+  border-radius: var(--radius);
+}
+.rules-max-label { font-family: var(--font-mono); font-size: 14px; color: var(--green); }
+.rules-max-value { font-family: var(--font-mono); font-size: 18px; font-weight: 700; color: var(--green-light); }
+

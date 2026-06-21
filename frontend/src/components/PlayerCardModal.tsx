@@ -120,12 +120,6 @@ export function PlayerCardModal({ playerId, onClose }: Props) {
                       {e.time_str && <span className="pc-stat"><i className="ti ti-clock" />{e.time_str}</span>}
                     </div>
 
-                    {e.live_url && (
-                      <a href={e.live_url} target="_blank" rel="noopener noreferrer"
-                        className="pc-live-link">
-                        <i className="ti ti-brand-twitch" /> Ver live
-                      </a>
-                    )}
                   </div>
                 ))}
               </div>

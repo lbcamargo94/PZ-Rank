@@ -19,7 +19,6 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
   const [players,      setPlayers]     = useState<Player[]>([]);
   const [playerId,     setPlayerId]    = useState<number | ''>('');
   const [code,         setCode]        = useState('');
-  const [liveUrl,      setLiveUrl]     = useState('');
   const [objectives,   setObjectives]  = useState<Objectives>(initObjectives);
   const [expandedBase, setExpandedBase] = useState<string | null>(null);
   const [loading,      setLoading]     = useState(false);
@@ -85,7 +84,6 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
       await apiCreateEntry(token, {
         player_id:  playerId as number,
         code:       code.trim(),
-        live_url:   liveUrl.trim() || undefined,
         objectives,
       });
       showToast('Rank atualizado com sucesso!', 'success');
@@ -132,12 +130,6 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
               </div>
             </div>
           )}
-
-          {/* Live URL */}
-          <label className="form-label" htmlFor="ur-live">Link da live (opcional)</label>
-          <input id="ur-live" className="form-input" type="url"
-            placeholder="https://twitch.tv/..." value={liveUrl}
-            onChange={e => setLiveUrl(e.target.value)} />
 
           {/* Código do mod */}
           <label className="form-label" htmlFor="ur-code">

@@ -165,6 +165,38 @@ router.patch('/:id/status', requireModerator, async (req: ModRequest, res: Respo
   res.json(data);
 });
 
+// PATCH /entries/:id/objectives — moderador: atualiza objetivos e recalcula score
+router.patch('/:id/objectives', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
+  const id = parseInt(String(req.params.id), 10);
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
+
+  const { objectives } = req.body as { objectives: Objectives };
+  if (!objectives || typeof objectives !== 'object') {
+    res.status(400).json({ error: 'Objetivos inválidos.' }); return;
+  }
+
+  const { data: existing, error: fetchError } = await supabase
+    .from(config.tableName)
+    .select('id, kills, sandbox_ok')
+    .eq('id', id)
+    .single();
+
+  if (fetchError || !existing) { res.status(404).json({ error: 'Entrada não encontrada.' }); return; }
+
+  const row = existing as { id: number; kills: number; sandbox_ok: boolean };
+  const newScore = row.sandbox_ok !== false ? computeScore(row.kills, objectives) : 0;
+
+  const { data, error } = await supabase
+    .from(config.tableName)
+    .update({ objectives, score: newScore })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) { res.status(500).json({ error: dbError(error).message }); return; }
+  res.json(data);
+});
+
 // DELETE /entries/:id — moderador
 router.delete('/:id', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
   const id = parseInt(String(req.params.id), 10);

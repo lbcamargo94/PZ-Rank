@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom';
 
 interface HeaderProps {
-  onPainel: () => void;
-  onRules:  () => void;
+  onPainel:   () => void;
+  onRules:    () => void;
+  onSettings: () => void;
 }
 
-export function Header({ onPainel, onRules }: HeaderProps) {
+export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
   return (
     <header className="site-header">
       <div className="container header-inner">
@@ -18,15 +19,18 @@ export function Header({ onPainel, onRules }: HeaderProps) {
           <button className="btn-primary btn-sm" onClick={onRules} aria-label="Regras do desafio">
             <i className="ti ti-book" aria-hidden="true" /> Regras
           </button>
+          <button className="btn-primary btn-sm" onClick={onSettings} aria-label="Configurações do desafio">
+            <i className="ti ti-settings" aria-hidden="true" /> Configurações
+          </button>
           <button className="btn-primary btn-sm" onClick={onPainel} aria-label="Painel de moderadores">
             <i className="ti ti-shield-half" aria-hidden="true" /> Moderadores
           </button>
         </div>
       </div>
       <div className="container rules-bar">
-        <span className="rule-tag"><i className="ti ti-link" aria-hidden="true" /> Link da live</span>
         <span className="rule-tag"><i className="ti ti-skull" aria-hidden="true" /> Stats do mod</span>
         <span className="rule-tag"><i className="ti ti-calendar" aria-hidden="true" /> Tempo, dias, zumbis</span>
+        <span className="rule-tag"><i className="ti ti-settings" aria-hidden="true" /> Sandbox validado</span>
         <span className="rule-tag"><i className="ti ti-user-check" aria-hidden="true" /> Aprovado por moderador</span>
       </div>
     </header>

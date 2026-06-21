@@ -120,6 +120,12 @@ export function apiUpdateEntryStatus(
   return request(`/entries/${id}/status`, { method: 'PATCH', ...json(token, patch) });
 }
 
+export function apiUpdateEntryObjectives(
+  token: string, id: number, objectives: import('../lib/objectives').Objectives
+): Promise<Entry> {
+  return request(`/entries/${id}/objectives`, { method: 'PATCH', ...json(token, { objectives }) });
+}
+
 // ── Moderators ───────────────────────────────────────────────
 
 export function apiGetModerators(token: string): Promise<Moderator[]> {

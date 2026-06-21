@@ -7,6 +7,7 @@ import { Toast } from '../components/Toast';
 import { PainelLogin }           from '../components/painel/PainelLogin';
 import { PendingPlayers }        from '../components/painel/PendingPlayers';
 import { UpdateRankModal }       from '../components/painel/UpdateRankModal';
+import { EditObjectivesModal }   from '../components/painel/EditObjectivesModal';
 import { ModeratorsList }        from '../components/painel/ModeratorsList';
 import { CreateModeratorModal }  from '../components/painel/CreateModeratorModal';
 
@@ -30,6 +31,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
   const [tab,            setTab]            = useState<Tab>('players');
   const [showUpdateRank, setShowUpdateRank] = useState(false);
   const [showCreateMod,  setShowCreateMod]  = useState(false);
+  const [editObjEntry,   setEditObjEntry]   = useState<Entry | null>(null);
   const [entries,        setEntries]        = useState<Entry[]>([]);
   const [sortKey]                           = useState<SortKey>('score');
   const [updatingEntry,  setUpdatingEntry]  = useState<number | null>(null);
@@ -194,6 +196,14 @@ export function PainelPage({ session, onSession, onBack }: Props) {
                       <i className="ti ti-ban" /> Desc.
                     </button>
                     <button
+                      className="btn-secondary btn-sm"
+                      disabled={busy}
+                      title="Editar objetivos"
+                      onClick={() => setEditObjEntry(entry)}
+                    >
+                      <i className="ti ti-target" /> Obj.
+                    </button>
+                    <button
                       className="btn-ghost btn-sm"
                       disabled={busy}
                       title="Remover entrada"
@@ -215,6 +225,16 @@ export function PainelPage({ session, onSession, onBack }: Props) {
         <UpdateRankModal
           token={session.token}
           onClose={() => setShowUpdateRank(false)}
+          onSuccess={fetchEntries}
+          showToast={showToast}
+        />
+      )}
+
+      {editObjEntry && (
+        <EditObjectivesModal
+          token={session.token}
+          entry={editObjEntry}
+          onClose={() => setEditObjEntry(null)}
           onSuccess={fetchEntries}
           showToast={showToast}
         />
