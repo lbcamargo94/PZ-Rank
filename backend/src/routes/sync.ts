@@ -86,16 +86,29 @@ router.post('/update', async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  // Busca entrada existente para preservar objectives e live_url
+  // Busca entrada existente para preservar objectives, live_url e estado de desclassificação
   const { data: existing } = await supabase
     .from(config.tableName)
-    .select('id, objectives, live_url')
+    .select('id, objectives, live_url, sandbox_ok')
     .eq('player_id', player.id)
     .eq('character_name', decoded.characterName)
     .maybeSingle();
 
+  // Se já está desclassificado, descarta qualquer atualização futura
+  if (existing && existing.sandbox_ok === false) {
+    res.status(200).json({
+      success:        true,
+      character_name: decoded.characterName,
+      score:          0,
+      is_alive:       (existing as { is_alive?: boolean }).is_alive ?? false,
+      disqualified:   true,
+    });
+    return;
+  }
+
   const existingObjectives = (existing?.objectives as Objectives | null) ?? null;
-  const score = computeScore(decoded.kills, existingObjectives);
+  // Desclassificado não acumula pontuação
+  const score = decoded.sandboxOk ? computeScore(decoded.kills, existingObjectives) : 0;
 
   const entry = {
     player_id:      player.id,
@@ -110,6 +123,8 @@ router.post('/update', async (req: Request, res: Response): Promise<void> => {
     skills:         decoded.skills.join(', ') || null,
     live_url:       existing?.live_url ?? null,
     is_alive:       decoded.isAlive,
+    sandbox_ok:     decoded.sandboxOk,
+    traits:         decoded.traits.length > 0 ? decoded.traits.join(',') : null,
     objectives:     existingObjectives,
     score,
   };
