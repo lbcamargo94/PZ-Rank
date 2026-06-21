@@ -3125,3 +3125,243 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 }
 .overlay-obj-done i { color: var(--gold); }
 
+/* ════════════════════════════════════════════════════════════
+   AJUSTES — tasks 1-12 (BRASILEIRÃO PZ)
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Task 4: fonte mínima 16px no rank ──────────────────── */
+.rank-table       { font-size: 16px; }
+.rank-table td    { font-size: 16px; }
+.char-name        { font-size: 16px; }
+.rank-pos         { font-size: 16px; }
+.rank-days        { font-size: 16px; }
+.rank-time        { font-size: 16px; }
+.rank-kills       { font-size: 16px; }
+.skills-counter   { font-size: 16px; }
+.skills-no-data   { font-size: 16px; }
+.player-alias     { font-size: 14px; }
+.sort-btn         { font-size: 14px; }
+.sort-label       { font-size: 14px; }
+.alive-badge      { font-size: 14px; }
+
+/* ── Task 5: fontes do modal de Regras ───────────────────── */
+.rules-section-title  { font-size: 17px; }
+.rules-intro,
+.rules-desc           { font-size: 15px; }
+.rules-list li        { font-size: 15px; }
+.rules-sub-title      { font-size: 14px; }
+.rules-score-table td { font-size: 15px; padding: 6px 8px; }
+.rules-max-note       { font-size: 14px; }
+
+/* ── Task 7: box para "objetivos não registrados" ────────── */
+.pp-no-data-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 28px 20px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-align: center;
+}
+.pp-no-data-box i {
+  font-size: 32px;
+  color: var(--text-4);
+}
+.pp-no-data-box p {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--text-3);
+  margin: 0;
+}
+.pp-no-data-hint {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-4);
+  max-width: 320px;
+  line-height: 1.5;
+}
+
+/* ── Task 8: botão ← Ranking na tela de detalhes ─────────── */
+.back-btn-rank {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 24px;
+  text-decoration: none;
+}
+
+/* ── Task 9: filtro de personagens na PlayerPage ─────────── */
+.pp-chars-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.pp-char-filter {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.sort-btn.filter-alive.active { background: rgba(64,200,128,.15); border-color: var(--green); color: var(--green-light); }
+.sort-btn.filter-dead.active  { background: rgba(180,60,60,.15);  border-color: #b44;        color: #f88; }
+.sort-btn.filter-disq.active  { background: rgba(200,140,30,.15); border-color: var(--amber); color: var(--amber); }
+
+/* ── Task 10: botão ← Voltar no PainelLogin ─────────────── */
+.painel-back {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 10;
+}
+
+/* ── Tasks 11 + 12: entradas no painel de moderadores ────── */
+.painel-entries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.painel-entry-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border);
+  border-radius: var(--radius);
+  flex-wrap: wrap;
+}
+.painel-entry-card.entry-alive        { border-left-color: var(--green); }
+.painel-entry-card.entry-dead         { border-left-color: #b44; }
+.painel-entry-card.entry-disqualified { border-left-color: var(--amber); opacity: 0.75; }
+
+.painel-entry-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 130px;
+}
+.painel-entry-char {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+.painel-entry-player {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.painel-entry-stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-3);
+  flex: 1;
+}
+
+.painel-entry-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+/* ── PendingPlayers — melhorias UX task 12 ───────────────── */
+.player-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  flex-wrap: wrap;
+  transition: border-color 0.15s;
+}
+.player-card.status-approved { border-left: 3px solid var(--green); }
+.player-card.status-pending  { border-left: 3px solid var(--amber); }
+.player-card.status-rejected { border-left: 3px solid #b44; }
+.player-card.player-blocked  { opacity: 0.65; }
+
+.player-nick {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+.player-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 150px;
+}
+.player-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.player-card-links {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 18px;
+}
+.player-card-links a { color: var(--text-3); transition: color 0.15s; }
+.player-card-links a:hover { color: var(--text-1); }
+.player-card-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.players-list { display: flex; flex-direction: column; gap: 8px; }
+
+.painel-pending-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 10px;
+  background: var(--amber);
+  color: #111;
+  font-size: 12px;
+  font-weight: 700;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+.painel-loading-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-3);
+  padding: 16px 0;
+}
+.painel-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 32px;
+  color: var(--text-4);
+  text-align: center;
+}
+.painel-empty-state i { font-size: 32px; }
+.painel-empty-state p { font-family: var(--font-mono); font-size: 14px; margin: 0; }
+

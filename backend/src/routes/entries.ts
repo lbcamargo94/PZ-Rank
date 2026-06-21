@@ -126,6 +126,45 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
   res.status(existing ? 200 : 201).json(data);
 });
 
+// PATCH /entries/:id/status — moderador: altera is_alive e/ou sandbox_ok manualmente
+router.patch('/:id/status', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
+  const id = parseInt(String(req.params.id), 10);
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
+
+  const { is_alive, sandbox_ok } = req.body as { is_alive?: boolean; sandbox_ok?: boolean };
+  if (is_alive === undefined && sandbox_ok === undefined) {
+    res.status(400).json({ error: 'Informe is_alive e/ou sandbox_ok.' });
+    return;
+  }
+
+  const { data: existing, error: fetchError } = await supabase
+    .from(config.tableName)
+    .select('id, score, kills, objectives')
+    .eq('id', id)
+    .single();
+
+  if (fetchError || !existing) { res.status(404).json({ error: 'Entrada não encontrada.' }); return; }
+
+  const row = existing as { id: number; score: number; kills: number; objectives: Objectives | null };
+  const patch: Record<string, unknown> = {};
+  if (is_alive  !== undefined) patch.is_alive  = is_alive;
+  if (sandbox_ok !== undefined) {
+    patch.sandbox_ok = sandbox_ok;
+    // Ao desclassificar manualmente: zera score. Ao reclassificar: recalcula.
+    patch.score = sandbox_ok ? computeScore(row.kills, row.objectives) : 0;
+  }
+
+  const { data, error } = await supabase
+    .from(config.tableName)
+    .update(patch)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) { res.status(500).json({ error: dbError(error).message }); return; }
+  res.json(data);
+});
+
 // DELETE /entries/:id — moderador
 router.delete('/:id', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
   const id = parseInt(String(req.params.id), 10);

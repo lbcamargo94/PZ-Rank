@@ -19,7 +19,13 @@ const SOCIALS = [
 
 function ObjectivesSection({ objectives, kills }: { objectives: Objectives | null | undefined; kills: number }) {
   if (!objectives) {
-    return <p className="pp-no-data">Objetivos não registrados nesta entrada.</p>;
+    return (
+      <div className="pp-no-data-box">
+        <i className="ti ti-clipboard-x" />
+        <p>Objetivos não registrados nesta entrada.</p>
+        <span className="pp-no-data-hint">Os objetivos são cadastrados pelo moderador ao registrar a entrada no rank.</span>
+      </div>
+    );
   }
 
   const bases = SPIFFOS_RESTAURANTS.map(r => ({ ...r, ...objectives.bases[r.id] }));
@@ -252,12 +258,15 @@ function CharacterCard({ entry, rank }: { entry: Entry; rank: number | null }) {
   );
 }
 
+type CharFilter = 'all' | 'alive' | 'dead' | 'disqualified';
+
 export function PlayerPage() {
   const { id } = useParams<{ id: string }>();
-  const [profile, setProfile]     = useState<PlayerProfile | null>(null);
+  const [profile, setProfile]       = useState<PlayerProfile | null>(null);
   const [allEntries, setAllEntries] = useState<Entry[]>([]);
-  const [loading, setLoading]     = useState(true);
-  const [error,   setError]       = useState<string | null>(null);
+  const [loading, setLoading]       = useState(true);
+  const [error,   setError]         = useState<string | null>(null);
+  const [charFilter, setCharFilter] = useState<CharFilter>('all');
 
   useEffect(() => {
     if (!id) return;
@@ -304,6 +313,18 @@ export function PlayerPage() {
 
   // Sort this player's entries by score desc
   const entries = [...profile.entries].sort((a, b) => b.score - a.score);
+
+  const filteredEntries = entries.filter(e => {
+    if (charFilter === 'alive')        return e.sandbox_ok !== false && e.is_alive;
+    if (charFilter === 'dead')         return e.sandbox_ok !== false && !e.is_alive;
+    if (charFilter === 'disqualified') return e.sandbox_ok === false;
+    return true;
+  });
+
+  const aliveCount  = entries.filter(e => e.sandbox_ok !== false && e.is_alive).length;
+  const deadCount   = entries.filter(e => e.sandbox_ok !== false && !e.is_alive).length;
+  const descCount   = entries.filter(e => e.sandbox_ok === false).length;
+
   const bestEntry = entries[0] ?? null;
   const bestRank  = bestEntry?.id !== undefined ? (rankMap.get(bestEntry.id) ?? null) : null;
 
@@ -315,7 +336,9 @@ export function PlayerPage() {
     <div className="player-page">
       <div className="container">
         {/* Back link */}
-        <Link to="/" className="back-link"><i className="ti ti-arrow-left" /> Ranking</Link>
+        <Link to="/" className="btn-primary btn-sm back-btn-rank">
+          <i className="ti ti-arrow-left" /> Ranking
+        </Link>
 
         {/* Player header */}
         <div className="pp-header">
@@ -364,17 +387,47 @@ export function PlayerPage() {
 
         {/* Characters */}
         <div className="pp-chars-section">
-          <h2 className="pp-section-title">
-            <i className="ti ti-users" /> Personagens no Ranking
-            <span className="pp-section-count">{entries.length}</span>
-          </h2>
+          <div className="pp-chars-header">
+            <h2 className="pp-section-title">
+              <i className="ti ti-users" /> Personagens no Ranking
+              <span className="pp-section-count">{entries.length}</span>
+            </h2>
+            <div className="pp-char-filter">
+              <button
+                className={`sort-btn${charFilter === 'all' ? ' active' : ''}`}
+                onClick={() => setCharFilter('all')}
+              >
+                Todos ({entries.length})
+              </button>
+              <button
+                className={`sort-btn filter-alive${charFilter === 'alive' ? ' active' : ''}`}
+                onClick={() => setCharFilter('alive')}
+              >
+                <i className="ti ti-heartbeat" /> Vivos ({aliveCount})
+              </button>
+              <button
+                className={`sort-btn filter-dead${charFilter === 'dead' ? ' active' : ''}`}
+                onClick={() => setCharFilter('dead')}
+              >
+                <i className="ti ti-skull" /> Mortos ({deadCount})
+              </button>
+              {descCount > 0 && (
+                <button
+                  className={`sort-btn filter-disq${charFilter === 'disqualified' ? ' active' : ''}`}
+                  onClick={() => setCharFilter('disqualified')}
+                >
+                  <i className="ti ti-ban" /> Desclassificados ({descCount})
+                </button>
+              )}
+            </div>
+          </div>
 
-          {entries.length === 0 && (
-            <p className="pp-no-data">Nenhum personagem registrado ainda.</p>
+          {filteredEntries.length === 0 && (
+            <p className="pp-no-data">Nenhum personagem nesta categoria.</p>
           )}
 
           <div className="pp-chars-list">
-            {entries.map(entry => (
+            {filteredEntries.map(entry => (
               <CharacterCard
                 key={entry.id}
                 entry={entry}

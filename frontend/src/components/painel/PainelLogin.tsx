@@ -30,7 +30,7 @@ export function PainelLogin({ onSuccess, onBack, showToast }: Props) {
     <div className="painel-login-wrap">
       <div className="painel-login-scanlines" aria-hidden="true" />
 
-      <button className="btn-ghost painel-back" onClick={onBack}>
+      <button className="btn-primary painel-back" onClick={onBack}>
         <i className="ti ti-arrow-left" /> Voltar ao ranking
       </button>
 

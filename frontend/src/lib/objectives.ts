@@ -17,15 +17,19 @@ export interface Objectives {
 }
 
 export const SPIFFOS_RESTAURANTS = [
-  { id: 'muldraugh',    name: 'Muldraugh'          },
-  { id: 'west_point',   name: 'West Point'          },
-  { id: 'riverside',    name: 'Riverside'           },
-  { id: 'rosewood',     name: 'Rosewood'            },
-  { id: 'march_ridge',  name: 'March Ridge'         },
-  { id: 'ekron',        name: 'Ekron'               },
-  { id: 'louisville_w', name: 'Louisville - Oeste'  },
-  { id: 'louisville_c', name: 'Louisville - Centro' },
-  { id: 'louisville_e', name: 'Louisville - Leste'  },
+  { id: 'muldraugh',      name: 'Muldraugh'                      },
+  { id: 'west_point',     name: 'West Point'                     },
+  { id: 'riverside',      name: 'Riverside'                      },
+  { id: 'rosewood',       name: 'Rosewood'                       },
+  { id: 'march_ridge',    name: 'March Ridge'                    },
+  { id: 'ekron',          name: 'Ekron'                          },
+  { id: 'valley_station', name: 'Valley Station'                 },
+  { id: 'brandenburg',    name: 'Brandenburg'                    },
+  { id: 'irvington',      name: 'Irvington'                      },
+  { id: 'louisville_w',   name: 'Louisville - Parkwood'          },
+  { id: 'louisville_c',   name: 'Louisville - East Market'       },
+  { id: 'louisville_e',   name: 'Louisville - Centro'            },
+  { id: 'louisville_hq',  name: 'Louisville - Sede (HQ)'        },
 ] as const;
 
 export const BASE_ITEMS: { id: keyof Omit<BaseObjectives, 'has_base'>; label: string }[] = [

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { apiLogout, apiDeleteEntry, apiGetEntries } from '../lib/api';
+import { apiLogout, apiDeleteEntry, apiGetEntries, apiUpdateEntryStatus } from '../lib/api';
 import type { Entry, SortKey } from '../types';
 import type { ModSession } from '../types';
 import { useToast } from '../hooks/useToast';
@@ -18,12 +18,21 @@ interface Props {
   onBack:    () => void;
 }
 
+function EntryStatusBadge({ entry }: { entry: Entry }) {
+  if (entry.sandbox_ok === false)
+    return <span className="alive-badge disqualified"><i className="ti ti-ban" /> Desclassificado</span>;
+  if (entry.is_alive)
+    return <span className="alive-badge alive"><i className="ti ti-heartbeat" /> Vivo</span>;
+  return <span className="alive-badge dead"><i className="ti ti-skull" /> Morto</span>;
+}
+
 export function PainelPage({ session, onSession, onBack }: Props) {
   const [tab,            setTab]            = useState<Tab>('players');
   const [showUpdateRank, setShowUpdateRank] = useState(false);
   const [showCreateMod,  setShowCreateMod]  = useState(false);
   const [entries,        setEntries]        = useState<Entry[]>([]);
-  const [sortKey]                           = useState<SortKey>('days');
+  const [sortKey]                           = useState<SortKey>('score');
+  const [updatingEntry,  setUpdatingEntry]  = useState<number | null>(null);
   const { toast, showToast }               = useToast();
 
   const fetchEntries = useCallback(async () => {
@@ -39,6 +48,24 @@ export function PainelPage({ session, onSession, onBack }: Props) {
       fetchEntries();
     } catch (err) {
       showToast((err as Error).message, 'error');
+    }
+  }
+
+  async function handleEntryStatus(
+    id: number,
+    patch: { is_alive?: boolean; sandbox_ok?: boolean },
+    label: string,
+  ) {
+    if (!session) return;
+    setUpdatingEntry(id);
+    try {
+      await apiUpdateEntryStatus(session.token, id, patch);
+      showToast(`Personagem marcado como ${label}.`, 'success');
+      fetchEntries();
+    } catch (err) {
+      showToast((err as Error).message, 'error');
+    } finally {
+      setUpdatingEntry(null);
     }
   }
 
@@ -63,7 +90,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
       <header className="painel-header">
         <div className="container painel-header-inner">
           <div className="painel-header-left">
-            <button className="btn-ghost" onClick={onBack}>
+            <button className="btn-primary btn-sm" onClick={onBack}>
               <i className="ti ti-arrow-left" /> Ranking público
             </button>
             <span className="painel-title">Painel de Moderadores</span>
@@ -90,7 +117,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
           {session.role === 'master' && (
             <button className={`painel-tab${tab === 'rank' ? ' active' : ''}`}
               onClick={() => { setTab('rank'); fetchEntries(); }}>
-              <i className="ti ti-list-numbers" /> Moderadores
+              <i className="ti ti-shield-star" /> Moderadores
             </button>
           )}
         </div>
@@ -113,34 +140,72 @@ export function PainelPage({ session, onSession, onBack }: Props) {
           />
         )}
 
-        {/* Tabela de entradas no painel para gestão */}
+        {/* ── Entradas no Ranking ── */}
         <div className="painel-section">
           <div className="painel-section-header">
-            <h2>Entradas no Ranking</h2>
-            <button className="btn-ghost btn-sm" onClick={fetchEntries}>
-              <i className="ti ti-refresh" /> Atualizar
+            <h2><i className="ti ti-list-numbers" /> Entradas no Ranking</h2>
+            <button className="btn-primary btn-sm" onClick={fetchEntries}>
+              <i className="ti ti-refresh" /> Carregar
             </button>
           </div>
+
           {entries.length === 0 && (
-            <p className="painel-empty">Clique em "Atualizar" para carregar as entradas.</p>
+            <p className="painel-empty">Clique em "Carregar" para ver as entradas.</p>
           )}
-          {entries.map(entry => (
-            <div key={entry.id} className="player-card">
-              <div className="player-card-info">
-                <span className="player-nick">{entry.name}</span>
-                <span className="player-status">{entry.character_name}</span>
-                <span className="painel-entry-meta">
-                  {entry.days}d · {entry.kills} kills
-                </span>
-              </div>
-              <div className="player-card-actions">
-                <button className="btn-danger btn-sm"
-                  onClick={() => handleDeleteEntry(entry.id!)}>
-                  <i className="ti ti-trash" />
-                </button>
-              </div>
-            </div>
-          ))}
+
+          <div className="painel-entries-list">
+            {entries.map(entry => {
+              const busy = updatingEntry === entry.id;
+              return (
+                <div key={entry.id} className={`painel-entry-card${entry.sandbox_ok === false ? ' entry-disqualified' : entry.is_alive ? ' entry-alive' : ' entry-dead'}`}>
+                  <div className="painel-entry-identity">
+                    <span className="painel-entry-char">{entry.character_name || '—'}</span>
+                    <span className="painel-entry-player"><i className="ti ti-user" /> {entry.name}</span>
+                  </div>
+                  <div className="painel-entry-stats">
+                    <span><i className="ti ti-calendar" /> {entry.days}d</span>
+                    <span><i className="ti ti-sword" /> {entry.kills.toLocaleString('pt-BR')}</span>
+                    <span><i className="ti ti-star" /> {entry.score.toLocaleString('pt-BR')} pts</span>
+                    <EntryStatusBadge entry={entry} />
+                  </div>
+                  <div className="painel-entry-actions">
+                    <button
+                      className="btn-success btn-sm"
+                      disabled={busy || (entry.is_alive && entry.sandbox_ok !== false)}
+                      title="Marcar como Vivo"
+                      onClick={() => handleEntryStatus(entry.id!, { is_alive: true, sandbox_ok: true }, 'Vivo')}
+                    >
+                      <i className="ti ti-heartbeat" /> Vivo
+                    </button>
+                    <button
+                      className="btn-warning btn-sm"
+                      disabled={busy || (!entry.is_alive && entry.sandbox_ok !== false)}
+                      title="Marcar como Morto"
+                      onClick={() => handleEntryStatus(entry.id!, { is_alive: false, sandbox_ok: true }, 'Morto')}
+                    >
+                      <i className="ti ti-skull" /> Morto
+                    </button>
+                    <button
+                      className="btn-danger btn-sm"
+                      disabled={busy || entry.sandbox_ok === false}
+                      title="Desclassificar"
+                      onClick={() => handleEntryStatus(entry.id!, { sandbox_ok: false }, 'Desclassificado')}
+                    >
+                      <i className="ti ti-ban" /> Desc.
+                    </button>
+                    <button
+                      className="btn-ghost btn-sm"
+                      disabled={busy}
+                      title="Remover entrada"
+                      onClick={() => handleDeleteEntry(entry.id!)}
+                    >
+                      <i className="ti ti-trash" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </main>
 

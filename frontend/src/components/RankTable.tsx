@@ -136,7 +136,6 @@ export function RankTable({ entries, sortKey, loading, onSort, onRegister, onRel
                   <th>Tempo</th>
                   <th>Zumbis</th>
                   <th>Habilidades</th>
-                  <th>Live</th>
                 </tr>
               </thead>
               <tbody>

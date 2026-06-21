@@ -82,70 +82,92 @@ export function PendingPlayers({ token, showToast }: Props) {
 
   const filterOptions: PlayerFilter[] = ['pending', 'approved', 'rejected', 'blocked', 'all'];
 
+  const pendingCount  = players.filter(p => p.status === 'pending').length;
+
   return (
     <div className="painel-section">
       <div className="painel-section-header">
-        <h2>Jogadores Cadastrados</h2>
+        <h2>
+          <i className="ti ti-users" /> Jogadores Cadastrados
+          {filter === 'pending' && pendingCount > 0 && (
+            <span className="painel-pending-badge">{pendingCount}</span>
+          )}
+        </h2>
         <div className="filter-bar">
           {filterOptions.map(f => (
             <button key={f}
               className={`sort-btn${filter === f ? ' active' : ''}${f === 'blocked' ? ' filter-blocked' : ''}`}
               onClick={() => setFilter(f)}>
-              {f === 'blocked' && <i className="ti ti-lock" />}
-              {FILTER_LABELS[f]}
+              {f === 'pending'  && <i className="ti ti-clock" />}
+              {f === 'approved' && <i className="ti ti-check" />}
+              {f === 'rejected' && <i className="ti ti-x" />}
+              {f === 'blocked'  && <i className="ti ti-lock" />}
+              {f === 'all'      && <i className="ti ti-list" />}
+              {' '}{FILTER_LABELS[f]}
             </button>
           ))}
         </div>
       </div>
 
-      {loading && <p className="painel-loading">Carregando...</p>}
-
-      {!loading && players.length === 0 && (
-        <p className="painel-empty">Nenhum jogador {filter !== 'all' ? FILTER_LABELS[filter].toLowerCase() : ''} encontrado.</p>
+      {loading && (
+        <div className="painel-loading-row">
+          <i className="ti ti-loader-2 spin" /> Carregando jogadores...
+        </div>
       )}
 
-      {players.map(p => (
-        <div key={p.id} className={`player-card status-${p.status}${p.blocked ? ' player-blocked' : ''}`}>
-          <div className="player-card-info">
-            <span className="player-nick">{p.nick}</span>
-            <div className="player-badges">
-              <span className={`player-status status-badge-${p.status}`}>{STATUS_LABELS[p.status]}</span>
-              {p.blocked && <span className="player-status status-badge-blocked"><i className="ti ti-lock" /> Bloqueado</span>}
+      {!loading && players.length === 0 && (
+        <div className="painel-empty-state">
+          <i className="ti ti-user-off" />
+          <p>Nenhum jogador {filter !== 'all' ? FILTER_LABELS[filter].toLowerCase() : ''} encontrado.</p>
+        </div>
+      )}
+
+      <div className="players-list">
+        {players.map(p => (
+          <div key={p.id} className={`player-card status-${p.status}${p.blocked ? ' player-blocked' : ''}`}>
+            <div className="player-card-info">
+              <span className="player-nick">{p.nick}</span>
+              <div className="player-badges">
+                <span className={`player-status status-badge-${p.status}`}>{STATUS_LABELS[p.status]}</span>
+                {p.blocked && <span className="player-status status-badge-blocked"><i className="ti ti-lock" /> Bloqueado</span>}
+              </div>
+            </div>
+
+            <div className="player-card-links">
+              {p.twitch_url  && <a href={p.twitch_url}  target="_blank" rel="noopener noreferrer" title="Twitch"><i className="ti ti-brand-twitch" /></a>}
+              {p.youtube_url && <a href={p.youtube_url} target="_blank" rel="noopener noreferrer" title="YouTube"><i className="ti ti-brand-youtube" /></a>}
+              {p.kick_url    && <a href={p.kick_url}    target="_blank" rel="noopener noreferrer" title="Kick"><i className="ti ti-brand-kick" /></a>}
+              {p.tiktok_url  && <a href={p.tiktok_url}  target="_blank" rel="noopener noreferrer" title="TikTok"><i className="ti ti-brand-tiktok" /></a>}
+            </div>
+
+            <div className="player-card-actions">
+              {p.status !== 'approved' && (
+                <button className="btn-success btn-sm" disabled={updating === p.id}
+                  onClick={() => handleStatus(p.id, 'approved')}>
+                  <i className="ti ti-check" /> Aprovar
+                </button>
+              )}
+              {p.status !== 'rejected' && (
+                <button className="btn-danger btn-sm" disabled={updating === p.id}
+                  onClick={() => handleStatus(p.id, 'rejected')}>
+                  <i className="ti ti-x" /> Rejeitar
+                </button>
+              )}
+              {!p.blocked ? (
+                <button className="btn-warning btn-sm" disabled={updating === p.id}
+                  onClick={() => handleBlock(p.id)}>
+                  <i className="ti ti-lock" /> Bloquear
+                </button>
+              ) : (
+                <button className="btn-ghost btn-sm" disabled={updating === p.id}
+                  onClick={() => handleUnblock(p.id)}>
+                  <i className="ti ti-lock-open" /> Desbloquear
+                </button>
+              )}
             </div>
           </div>
-          <div className="player-card-links">
-            {p.twitch_url  && <a href={p.twitch_url}  target="_blank" rel="noopener noreferrer"><i className="ti ti-brand-twitch" /></a>}
-            {p.youtube_url && <a href={p.youtube_url} target="_blank" rel="noopener noreferrer"><i className="ti ti-brand-youtube" /></a>}
-            {p.kick_url    && <a href={p.kick_url}    target="_blank" rel="noopener noreferrer"><i className="ti ti-brand-kick" /></a>}
-            {p.tiktok_url  && <a href={p.tiktok_url}  target="_blank" rel="noopener noreferrer"><i className="ti ti-brand-tiktok" /></a>}
-          </div>
-          <div className="player-card-actions">
-            {p.status !== 'approved' && (
-              <button className="btn-success btn-sm" disabled={updating === p.id}
-                onClick={() => handleStatus(p.id, 'approved')}>
-                <i className="ti ti-check" /> Aprovar
-              </button>
-            )}
-            {p.status !== 'rejected' && (
-              <button className="btn-danger btn-sm" disabled={updating === p.id}
-                onClick={() => handleStatus(p.id, 'rejected')}>
-                <i className="ti ti-x" /> Rejeitar
-              </button>
-            )}
-            {!p.blocked ? (
-              <button className="btn-warning btn-sm" disabled={updating === p.id}
-                onClick={() => handleBlock(p.id)}>
-                <i className="ti ti-lock" /> Bloquear
-              </button>
-            ) : (
-              <button className="btn-ghost btn-sm" disabled={updating === p.id}
-                onClick={() => handleUnblock(p.id)}>
-                <i className="ti ti-lock-open" /> Desbloquear
-              </button>
-            )}
-          </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }

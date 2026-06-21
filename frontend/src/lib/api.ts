@@ -114,6 +114,12 @@ export function apiDeleteEntry(token: string, id: number): Promise<void> {
   return request(`/entries/${id}`, { method: 'DELETE', ...auth(token) });
 }
 
+export function apiUpdateEntryStatus(
+  token: string, id: number, patch: { is_alive?: boolean; sandbox_ok?: boolean }
+): Promise<Entry> {
+  return request(`/entries/${id}/status`, { method: 'PATCH', ...json(token, patch) });
+}
+
 // ── Moderators ───────────────────────────────────────────────
 
 export function apiGetModerators(token: string): Promise<Moderator[]> {
