@@ -36,11 +36,12 @@ const SETTINGS_GROUPS = [
     title: 'Loot',
     icon: 'ti-package',
     rows: [
-      { label: 'Comida',    value: '0.04 (Muito Baixo)' },
-      { label: 'Armas',     value: '0.04 (Muito Baixo)' },
-      { label: 'Médico',    value: '0.04 (Muito Baixo)' },
-      { label: 'Munição',   value: '0.04 (Muito Baixo)' },
-      { label: 'Geradores', value: 'Extremamente Raro' },
+      { label: 'Comida',        value: '0.04 (Muito Baixo)' },
+      { label: 'Armas',         value: '0.04 (Muito Baixo)' },
+      { label: 'Outros itens',  value: '0.04 (Muito Baixo)' },
+      { label: 'Médico',        value: '0.04 (Muito Baixo)' },
+      { label: 'Munição',       value: '0.04 (Muito Baixo)' },
+      { label: 'Geradores',     value: 'Extremamente Raro' },
     ],
   },
   {

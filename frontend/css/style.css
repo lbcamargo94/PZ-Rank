@@ -3758,3 +3758,93 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .rules-max-label { font-family: var(--font-mono); font-size: 14px; color: var(--green); }
 .rules-max-value { font-family: var(--font-mono); font-size: 18px; font-weight: 700; color: var(--green-light); }
 
+/* ════════════════════════════════════════════════════════════
+   CORREÇÕES DE UX/MOBILE (v2.6.4)
+   ════════════════════════════════════════════════════════════ */
+
+/* ── 1. Modal — rodapé não mais cortado em mobile ─────────── */
+.modal-box {
+  max-height: calc(100dvh - 32px);
+}
+/* fallback para browsers sem suporte a dvh */
+@supports not (height: 1dvh) {
+  .modal-box { max-height: calc(100vh - 32px); }
+}
+
+/* ── 2. Modal "Regras" — abas scrolláveis em telas ≤480px ─── */
+@media (max-width: 480px) {
+  .rules-tabs {
+    padding: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    /* gradiente à direita indica scroll */
+    -webkit-mask-image: linear-gradient(to right, black 80%, transparent 100%);
+    mask-image: linear-gradient(to right, black 80%, transparent 100%);
+  }
+  .rules-tabs::-webkit-scrollbar { display: none; }
+
+  .rules-tab {
+    padding: 10px 14px;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  /* Remove máscara quando aba Pontuação está ativa (última aba, sem mais scroll) */
+  .rules-tab-body {
+    padding: 16px 16px 20px;
+  }
+}
+
+/* ── 3. Modal "Configurações" — overflow correto em mobile ─── */
+.settings-modal-body {
+  max-height: calc(100dvh - 220px);
+}
+@supports not (height: 1dvh) {
+  .settings-modal-body { max-height: calc(100vh - 220px); }
+}
+
+/* ── 4. Modal habilidades — coluna única em mobile ────────── */
+@media (max-width: 560px) {
+  .sm-body {
+    grid-template-columns: 1fr;
+    padding: 14px 16px 16px;
+    gap: 0;
+  }
+  .srow-name { width: 100px; }
+}
+
+/* ── 5. Fontes do modal de habilidades ────────────────────── */
+.srow-name { font-size: 12px; }
+.srow-lvl  { font-size: 12px; }
+
+/* ── 6. Botão "Ver detalhes" nos cards mobile ─────────────── */
+.rc-player-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--green);
+  background: var(--green-dim);
+  border: 1px solid var(--green-border);
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.rc-player-btn:hover {
+  background: rgba(74, 222, 128, 0.15);
+  color: var(--green-light);
+  border-color: var(--green);
+}
+
+/* ── 7. Características — tamanho legível ─────────────────── */
+.trait-badge { font-size: 12px; }
+
+/* ── 8. PlayerPage — fontes das habilidades ───────────────── */
+.pp-srow-name { font-size: 12px; }
+.pp-srow-lvl  { font-size: 12px; }
+
