@@ -3775,22 +3775,25 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 
 /* ── 2. Modal "Regras" — abas scrolláveis em telas ≤480px ─── */
 @media (max-width: 480px) {
+  /* Abas distribuídas igualmente — todas visíveis sem scroll */
   .rules-tabs {
     padding: 0;
-    justify-content: flex-start;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-    /* gradiente à direita indica scroll */
-    -webkit-mask-image: linear-gradient(to right, black 80%, transparent 100%);
-    mask-image: linear-gradient(to right, black 80%, transparent 100%);
+    justify-content: stretch;
+    overflow-x: visible;
+    -webkit-mask-image: none;
+    mask-image: none;
   }
-  .rules-tabs::-webkit-scrollbar { display: none; }
-
   .rules-tab {
-    padding: 10px 14px;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    white-space: normal;
+    line-height: 1.3;
+    padding: 8px 4px;
     font-size: 16px;
-    flex-shrink: 0;
+    gap: 4px;
   }
 
   .rules-tab-body { padding: 16px 16px 20px; }
