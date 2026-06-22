@@ -2711,17 +2711,16 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .trait-badge {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   font-family: var(--font-mono);
   font-size: 11px;
-  font-weight: 600;
-  padding: 3px 9px 3px 5px;
-  border-radius: 20px;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.5px;
+  padding: 2px 7px 2px 4px;
+  border-radius: 3px;
 }
 .trait-img {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   object-fit: contain;
   flex-shrink: 0;
 }
@@ -3866,7 +3865,6 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 }
 
 /* ── 7. Características — tamanho legível ─────────────────── */
-.trait-badge { font-size: 12px; }
 
 /* ── 8. PlayerPage — fontes das habilidades ───────────────── */
 .pp-srow-name { font-size: 14px; }
@@ -3940,6 +3938,10 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .painel-entry-player   { font-size: 16px; }
 .mod-email             { font-size: 16px; }
 
+/* ── Profession + trait badges ───────────────────────────────── */
+.profession-badge      { font-size: 16px; }
+.trait-badge           { font-size: 16px; }
+
 /* ── Player Card Modal ───────────────────────────────────────── */
 .pc-best-label         { font-size: 16px; }
 .pc-best-char          { font-size: 16px; }
@@ -3967,7 +3969,6 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .pp-scat-label         { font-size: 16px; }
 .pp-srow-name          { font-size: 16px; }
 .pp-srow-lvl           { font-size: 16px; }
-.trait-badge           { font-size: 16px; }
 
 /* ── Rank cards (mobile) ─────────────────────────────────────── */
 .rc-char-name          { font-size: 16px; }
