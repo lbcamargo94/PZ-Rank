@@ -1,4 +1,4 @@
-# PZ Community Rank 🧟
+# PZ Rank 🧟
 
 Site de ranking para o desafio de sobrevivência da comunidade de Project Zomboid.
 
