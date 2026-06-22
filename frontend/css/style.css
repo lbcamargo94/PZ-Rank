@@ -3849,26 +3849,22 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .pp-srow-lvl  { font-size: 14px; }
 
 /* ════════════════════════════════════════════════════════════
-   REGRA GLOBAL: FONTE MÍNIMA 16px
-
-   Hierarquia de exceções:
-   • 14px — dados compactos (badges, metadata, labels de tabela densa)
-   • 12px — chips decorativos (scat-label, optional-chip, counters)
-   • Tamanhos de ícones (.ti) não contam como texto
+   REGRA GLOBAL: FONTE MÍNIMA 16px — SEM EXCEÇÕES
+   Tamanhos de ícones (.ti) não contam como texto.
    ════════════════════════════════════════════════════════════ */
 
 /* ── Formulários — 16px previne auto-zoom em mobile (crítico) ─ */
 .form-input            { font-size: 16px; }
 .form-select           { font-size: 16px; }
 .field-input           { font-size: 16px; }
-.form-label            { font-size: 14px; }
-.form-error            { font-size: 14px; }
-.form-warning          { font-size: 14px; }
-.code-input            { font-size: 13px; } /* código hexadecimal — exceção técnica */
-.decoded-label         { font-size: 14px; }
+.code-input            { font-size: 16px; }
+.form-label            { font-size: 16px; }
+.form-error            { font-size: 16px; }
+.form-warning          { font-size: 16px; }
+.decoded-label         { font-size: 16px; }
 .decoded-value         { font-size: 16px; }
 
-/* ── Botões (todos os tamanhos) ──────────────────────────────── */
+/* ── Botões ──────────────────────────────────────────────────── */
 .btn-primary           { font-size: 16px; }
 .btn-secondary         { font-size: 16px; }
 .btn-danger            { font-size: 16px; }
@@ -3880,88 +3876,88 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .sort-label            { font-size: 16px; }
 .sort-btn              { font-size: 16px; }
 
-/* ── Modais — texto descritivo ───────────────────────────────── */
+/* ── Modais ──────────────────────────────────────────────────── */
 .modal-hint            { font-size: 16px; }
 
 /* Modal Regras */
 .rules-modal-sub       { font-size: 16px; }
-.rules-tab             { font-size: 15px; }
+.rules-tab             { font-size: 16px; }
 .rules-obj-title       { font-size: 16px; }
 .rules-obj-desc        { font-size: 16px; }
 .rules-bases-intro     { font-size: 16px; }
 .rules-base-item-row   { font-size: 16px; }
-.rules-restaurant-chip { font-size: 15px; }
+.rules-restaurant-chip { font-size: 16px; }
 .rules-score-table td  { font-size: 16px; }
 .rules-max-label       { font-size: 16px; }
 .rules-max-value       { font-size: 20px; }
-.rules-pts-badge       { font-size: 14px; }
-.rules-pts-badge-sm    { font-size: 13px; }
+.rules-pts-badge       { font-size: 16px; }
+.rules-pts-badge-sm    { font-size: 16px; }
 
 /* Modal Configurações */
 .settings-modal-sub    { font-size: 16px; }
-.settings-row-label    { font-size: 15px; }
-.settings-row-value    { font-size: 15px; }
+.settings-row-label    { font-size: 16px; }
+.settings-row-value    { font-size: 16px; }
 
 /* Modal Cadastro */
 .reg-subtitle          { font-size: 16px; }
-.reg-socials-hint      { font-size: 14px; }
-.reg-social-label      { font-size: 14px; }
+.reg-socials-hint      { font-size: 16px; }
+.reg-social-label      { font-size: 16px; }
 .reg-social-input      { font-size: 16px !important; }
 .reg-nick-input        { font-size: 16px !important; }
 .reg-info-box          { font-size: 16px; }
 .reg-success-msg       { font-size: 16px; }
 
 /* ── Painel de moderadores ───────────────────────────────────── */
-.painel-section-header h2 { font-size: 14px; }
+.painel-section-header h2 { font-size: 16px; }
 .painel-loading,
 .painel-empty          { font-size: 16px; }
 .painel-empty-state p  { font-size: 16px; }
 .painel-entry-char     { font-size: 16px; }
-.painel-entry-player   { font-size: 14px; }
-.mod-email             { font-size: 14px; }
+.painel-entry-player   { font-size: 16px; }
+.mod-email             { font-size: 16px; }
 
 /* ── Player Card Modal ───────────────────────────────────────── */
-.pc-best-label         { font-size: 14px; }
-.pc-best-char          { font-size: 14px; }
-.pc-section-title      { font-size: 14px; }
+.pc-best-label         { font-size: 16px; }
+.pc-best-char          { font-size: 16px; }
+.pc-section-title      { font-size: 16px; }
 .pc-char-name          { font-size: 16px; }
-.pc-stat               { font-size: 14px; }
-.pc-social-link        { font-size: 14px; }
-.pc-no-socials         { font-size: 14px; }
+.pc-stat               { font-size: 16px; }
+.pc-social-link        { font-size: 16px; }
+.pc-no-socials         { font-size: 16px; }
 
 /* ── PlayerPage ──────────────────────────────────────────────── */
-.pp-sum-label          { font-size: 12px; }
+.pp-sum-label          { font-size: 16px; }
 .pp-sum-value          { font-size: 20px; }
 .pp-score-label        { font-size: 16px; }
 .pp-char-name          { font-size: 16px; }
-.pp-obj-name           { font-size: 15px; }
-.pp-obj-note           { font-size: 14px; }
+.pp-obj-name           { font-size: 16px; }
+.pp-obj-note           { font-size: 16px; }
 .pp-no-data            { font-size: 16px; }
 .pp-no-data-box p      { font-size: 16px; }
-.pp-trait-group-label  { font-size: 14px; }
-.pp-skills-label       { font-size: 14px; }
-.trait-badge           { font-size: 14px; }
+.pp-trait-group-label  { font-size: 16px; }
+.pp-skills-label       { font-size: 16px; }
+.trait-badge           { font-size: 16px; }
 
 /* ── Rank cards (mobile) ─────────────────────────────────────── */
 .rc-char-name          { font-size: 16px; }
-.rc-stat               { font-size: 14px; }
-.rc-player-name        { font-size: 14px; }
+.rc-stat               { font-size: 16px; }
+.rc-player-name        { font-size: 16px; }
 
-/* ── Modal de habilidades — dados compactos ──────────────────── */
-.sm-subtitle           { font-size: 14px; }
-.sm-char               { font-size: 14px; }
-.srow-name             { font-size: 14px; }
-.srow-lvl              { font-size: 14px; }
+/* ── Modal de habilidades ────────────────────────────────────── */
+.sm-subtitle           { font-size: 16px; }
+.sm-char               { font-size: 16px; }
+.srow-name             { font-size: 16px; }
+.srow-lvl              { font-size: 16px; }
 
 /* ── Objective checkboxes ────────────────────────────────────── */
-.obj-checkbox-label    { font-size: 15px; }
-.obj-checkbox-label.sub { font-size: 14px; }
+.obj-checkbox-label    { font-size: 16px; }
+.obj-checkbox-label.sub { font-size: 16px; }
 
-/* ── Alive/status badges (dados, não decorativos) ────────────── */
-.alive-badge           { font-size: 14px; }
-.player-status         { font-size: 14px; }
+/* ── Alive/status badges ─────────────────────────────────────── */
+.alive-badge           { font-size: 16px; }
+.player-status         { font-size: 16px; }
 
 /* ── Pbar ────────────────────────────────────────────────────── */
-.pbar-label            { font-size: 14px; }
-.pbar-vals             { font-size: 14px; }
+.pbar-label            { font-size: 16px; }
+.pbar-vals             { font-size: 16px; }
 
