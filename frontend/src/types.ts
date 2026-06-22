@@ -19,6 +19,7 @@ export interface Entry {
 }
 
 export type SortKey = 'days' | 'kills' | 'time' | 'score';
+export type RankTab = 'rank' | 'records' | 'dead' | 'disqualified';
 
 export interface DecodedCode {
   characterName: string;

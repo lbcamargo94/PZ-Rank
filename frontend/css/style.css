@@ -1014,6 +1014,76 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .decoded-value.sandbox-ok    { color: var(--green-light); }
 .decoded-value.sandbox-invalid { color: #e07820; }
 
+/* ── Rank tabs ────────────────────────────────────────────── */
+.rank-tabs-bar {
+  padding-top: 4px;
+  padding-bottom: 0;
+}
+
+.rank-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+}
+
+.rank-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
+  text-transform: uppercase;
+}
+
+.rank-tab:hover { color: var(--text-1); }
+
+.rank-tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  padding: 1px 5px;
+  border-radius: 10px;
+  font-size: 10px;
+  background: var(--bg-3);
+  color: var(--text-3);
+  border: 1px solid var(--border);
+  transition: background 0.15s, color 0.15s;
+}
+
+/* Rank (vivos) — verde */
+.rank-tab.tab-rank.active         { color: var(--green-light); border-bottom-color: var(--green); }
+.rank-tab.tab-rank.active .rank-tab-badge { background: var(--green-dim); color: var(--green-light); border-color: var(--green-border); }
+
+/* Records (todos) — âmbar */
+.rank-tab.tab-records.active      { color: #f0a050; border-bottom-color: #c07820; }
+.rank-tab.tab-records.active .rank-tab-badge { background: rgba(192,120,32,0.15); color: #f0a050; border-color: rgba(192,120,32,0.4); }
+
+/* Mortos — vermelho */
+.rank-tab.tab-dead.active         { color: var(--red); border-bottom-color: var(--red); }
+.rank-tab.tab-dead.active .rank-tab-badge { background: rgba(224,64,64,0.12); color: var(--red); border-color: rgba(224,64,64,0.3); }
+
+/* Desclassificados — laranja */
+.rank-tab.tab-disqualified.active { color: #e07820; border-bottom-color: #b05010; }
+.rank-tab.tab-disqualified.active .rank-tab-badge { background: rgba(180,100,0,0.15); color: #e07820; border-color: rgba(180,100,0,0.35); }
+
+/* ── StatsBar colorida ────────────────────────────────────── */
+.stat-card.stat-alive  .stat-label { color: var(--green-light); }
+.stat-card.stat-dead   .stat-label { color: var(--red); }
+.stat-card.stat-disc   .stat-label { color: #e07820; }
+
 /* ── Tabela React ─────────────────────────────────────────── */
 .table-section { padding-bottom: 48px; }
 

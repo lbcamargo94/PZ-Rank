@@ -6,8 +6,9 @@ import { parseSkillMap, SKILL_CATEGORIES, TOTAL_SKILLS, MAX_SKILL_LEVEL } from '
 import { getProfessionImageUrl } from '../lib/professions';
 
 interface RankRowProps {
-  entry: Entry;
-  rank:  number;
+  entry:       Entry;
+  rank:        number;
+  hideStatus?: boolean;
 }
 
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
@@ -106,7 +107,7 @@ function SkillsCell({ skills, charName }: { skills: string | null; charName?: st
   );
 }
 
-export function RankRow({ entry, rank }: RankRowProps) {
+export function RankRow({ entry, rank, hideStatus }: RankRowProps) {
   return (
     <tr className={rank <= 3 ? `rank-top rank-${rank}` : ''}>
       <td className="rank-pos">{MEDALS[rank] ?? rank}</td>
@@ -127,18 +128,20 @@ export function RankRow({ entry, rank }: RankRowProps) {
           </Link>
         )}
       </td>
-      <td className="rank-alive">
-        {entry.sandbox_ok === false
-          ? (
-            <span className="alive-badge disqualified" title="Configurações do sandbox divergem do desafio oficial">
-              <i className="ti ti-ban" /> Desclassificado
-            </span>
-          )
-          : entry.is_alive
-            ? <span className="alive-badge alive"><i className="ti ti-heartbeat" /> Vivo</span>
-            : <span className="alive-badge dead"><i className="ti ti-skull" /> Morto</span>
-        }
-      </td>
+      {!hideStatus && (
+        <td className="rank-alive">
+          {entry.sandbox_ok === false
+            ? (
+              <span className="alive-badge disqualified" title="Configurações do sandbox divergem do desafio oficial">
+                <i className="ti ti-ban" /> Desclassificado
+              </span>
+            )
+            : entry.is_alive
+              ? <span className="alive-badge alive"><i className="ti ti-heartbeat" /> Vivo</span>
+              : <span className="alive-badge dead"><i className="ti ti-skull" /> Morto</span>
+          }
+        </td>
+      )}
       <td className="rank-score">{(entry.score ?? 0).toLocaleString('pt-BR')}</td>
       <td className="rank-days">{entry.days}d</td>
       <td className="rank-time">{entry.time_str ?? '—'}</td>

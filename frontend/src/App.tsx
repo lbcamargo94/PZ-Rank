@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import { apiGetEntries } from './lib/api';
-import type { Entry, SortKey, ModSession } from './types';
+import type { Entry, SortKey, RankTab, ModSession } from './types';
 import { useToast } from './hooks/useToast';
 import { Toast } from './components/Toast';
 import { Header } from './components/Header';
@@ -14,14 +14,22 @@ import { PainelPage } from './pages/PainelPage';
 import { PlayerPage } from './pages/PlayerPage';
 import { OverlayPage } from './pages/OverlayPage';
 
+const TAB_CONFIG: { key: RankTab; label: string; icon: string }[] = [
+  { key: 'rank',          label: 'Rank',             icon: 'ti-heartbeat' },
+  { key: 'records',       label: 'Records',          icon: 'ti-trophy'    },
+  { key: 'dead',          label: 'Mortos',           icon: 'ti-skull'     },
+  { key: 'disqualified',  label: 'Desclassificados', icon: 'ti-ban'       },
+];
+
 function MainView() {
   const navigate = useNavigate();
-  const [entries,      setEntries]      = useState<Entry[]>([]);
-  const [sortKey,      setSortKey]      = useState<SortKey>('score');
-  const [loadingRank,  setLoadingRank]  = useState(false);
-  const [showRegister,  setShowRegister]  = useState(false);
-  const [showRules,     setShowRules]     = useState(false);
-  const [showSettings,  setShowSettings]  = useState(false);
+  const [entries,       setEntries]      = useState<Entry[]>([]);
+  const [sortKey,       setSortKey]      = useState<SortKey>('score');
+  const [loadingRank,   setLoadingRank]  = useState(false);
+  const [activeTab,     setActiveTab]    = useState<RankTab>('rank');
+  const [showRegister,  setShowRegister] = useState(false);
+  const [showRules,     setShowRules]    = useState(false);
+  const [showSettings,  setShowSettings] = useState(false);
   const { toast, showToast } = useToast();
 
   const fetchEntries = useCallback(async () => {
@@ -33,8 +41,25 @@ function MainView() {
 
   useEffect(() => { fetchEntries(); }, [fetchEntries]);
 
-  const maxDays  = entries.reduce((m, e) => Math.max(m, e.days),  0);
-  const maxKills = entries.reduce((m, e) => Math.max(m, e.kills), 0);
+  const aliveEntries = useMemo(() => entries.filter(e => e.sandbox_ok !== false && e.is_alive),  [entries]);
+  const deadEntries  = useMemo(() => entries.filter(e => e.sandbox_ok !== false && !e.is_alive), [entries]);
+  const discEntries  = useMemo(() => entries.filter(e => e.sandbox_ok === false),                 [entries]);
+
+  const tabCounts: Record<RankTab, number> = {
+    rank:         aliveEntries.length,
+    records:      entries.length,
+    dead:         deadEntries.length,
+    disqualified: discEntries.length,
+  };
+
+  const filteredEntries = useMemo(() => {
+    switch (activeTab) {
+      case 'rank':         return aliveEntries;
+      case 'records':      return entries;
+      case 'dead':         return deadEntries;
+      case 'disqualified': return discEntries;
+    }
+  }, [activeTab, entries, aliveEntries, deadEntries, discEntries]);
 
   return (
     <>
@@ -44,14 +69,36 @@ function MainView() {
         onSettings={() => setShowSettings(true)}
       />
       <main>
-        <StatsBar total={entries.length} maxDays={maxDays} maxKills={maxKills} />
+        <StatsBar
+          alive={aliveEntries.length}
+          dead={deadEntries.length}
+          disqualified={discEntries.length}
+        />
+
+        <div className="container rank-tabs-bar">
+          <div className="rank-tabs">
+            {TAB_CONFIG.map(({ key, label, icon }) => (
+              <button
+                key={key}
+                className={`rank-tab tab-${key}${activeTab === key ? ' active' : ''}`}
+                onClick={() => setActiveTab(key)}
+              >
+                <i className={`ti ${icon}`} />
+                {label}
+                <span className="rank-tab-badge">{tabCounts[key]}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
         <RankTable
-          entries={entries}
+          entries={filteredEntries}
           sortKey={sortKey}
           loading={loadingRank}
           onSort={setSortKey}
           onRegister={() => setShowRegister(true)}
           onReload={fetchEntries}
+          tab={activeTab}
         />
       </main>
 

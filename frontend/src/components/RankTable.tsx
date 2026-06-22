@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import type { Entry, SortKey } from '../types';
+import type { Entry, SortKey, RankTab } from '../types';
 import { RankRow } from './RankRow';
 
 interface RankTableProps {
@@ -9,7 +9,15 @@ interface RankTableProps {
   onSort:     (key: SortKey) => void;
   onRegister: () => void;
   onReload:   () => void;
+  tab:        RankTab;
 }
+
+const EMPTY_MESSAGES: Record<RankTab, { icon: string; text: string }> = {
+  rank:         { icon: 'ti-ghost',      text: 'Nenhum sobrevivente ativo no momento.\nCadastre-se e aguarde aprovação dos moderadores!' },
+  records:      { icon: 'ti-trophy',     text: 'Nenhum registro encontrado ainda.'                                                       },
+  dead:         { icon: 'ti-skull',      text: 'Nenhum sobrevivente foi eliminado ainda.'                                               },
+  disqualified: { icon: 'ti-ban',        text: 'Nenhum participante desclassificado.'                                                   },
+};
 
 const SORT_LABELS: { key: SortKey; label: string }[] = [
   { key: 'score', label: 'Pontos'  },
@@ -20,10 +28,11 @@ const SORT_LABELS: { key: SortKey; label: string }[] = [
 
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
-function RankCard({ entry, rank, onPlayerClick }: {
+function RankCard({ entry, rank, onPlayerClick, hideStatus }: {
   entry: Entry;
   rank: number;
   onPlayerClick: (id: number) => void;
+  hideStatus?: boolean;
 }) {
   const objCount = entry.objectives
     ? [
@@ -47,15 +56,17 @@ function RankCard({ entry, rank, onPlayerClick }: {
           <span className="rc-char-name">{entry.character_name || entry.name}</span>
           {entry.profession && <span className="profession-badge">{entry.profession}</span>}
         </div>
-        {entry.sandbox_ok === false
-          ? (
-            <span className="alive-badge disqualified rc-status" title="Configurações do sandbox divergem do desafio oficial">
-              <i className="ti ti-ban" /> Desc.
-            </span>
-          )
-          : entry.is_alive
-            ? <span className="alive-badge alive rc-status"><i className="ti ti-heartbeat" /> Vivo</span>
-            : <span className="alive-badge dead rc-status"><i className="ti ti-skull" /> Morto</span>}
+        {!hideStatus && (
+          entry.sandbox_ok === false
+            ? (
+              <span className="alive-badge disqualified rc-status" title="Configurações do sandbox divergem do desafio oficial">
+                <i className="ti ti-ban" /> Desc.
+              </span>
+            )
+            : entry.is_alive
+              ? <span className="alive-badge alive rc-status"><i className="ti ti-heartbeat" /> Vivo</span>
+              : <span className="alive-badge dead rc-status"><i className="ti ti-skull" /> Morto</span>
+        )}
       </div>
 
       {/* Score */}
@@ -82,8 +93,10 @@ function RankCard({ entry, rank, onPlayerClick }: {
   );
 }
 
-export function RankTable({ entries, sortKey, loading, onSort, onRegister, onReload }: RankTableProps) {
+export function RankTable({ entries, sortKey, loading, onSort, onRegister, onReload, tab }: RankTableProps) {
   const navigate = useNavigate();
+  const hideStatus = tab === 'rank';
+  const { icon: emptyIcon, text: emptyText } = EMPTY_MESSAGES[tab];
 
   function handlePlayerClick(playerId: number) {
     navigate(`/player/${playerId}`);
@@ -113,8 +126,8 @@ export function RankTable({ entries, sortKey, loading, onSort, onRegister, onRel
 
       {entries.length === 0 && !loading ? (
         <div className="empty-state">
-          <i className="ti ti-ghost" aria-hidden="true" />
-          <p>Nenhum sobrevivente registrado ainda.<br />Cadastre-se e aguarde aprovação dos moderadores!</p>
+          <i className={`ti ${emptyIcon}`} aria-hidden="true" />
+          <p>{emptyText.split('\n').map((line, i) => <span key={i}>{line}{i === 0 && emptyText.includes('\n') ? <br /> : ''}</span>)}</p>
         </div>
       ) : (
         <>
@@ -125,7 +138,7 @@ export function RankTable({ entries, sortKey, loading, onSort, onRegister, onRel
                 <tr>
                   <th>#</th>
                   <th>Jogador</th>
-                  <th>Status</th>
+                  {!hideStatus && <th>Status</th>}
                   <th>Pontos</th>
                   <th>Dias</th>
                   <th>Tempo</th>
@@ -135,7 +148,7 @@ export function RankTable({ entries, sortKey, loading, onSort, onRegister, onRel
               </thead>
               <tbody>
                 {entries.map((entry, i) => (
-                  <RankRow key={entry.id} entry={entry} rank={i + 1} />
+                  <RankRow key={entry.id} entry={entry} rank={i + 1} hideStatus={hideStatus} />
                 ))}
               </tbody>
             </table>
@@ -149,6 +162,7 @@ export function RankTable({ entries, sortKey, loading, onSort, onRegister, onRel
                 entry={entry}
                 rank={i + 1}
                 onPlayerClick={handlePlayerClick}
+                hideStatus={hideStatus}
               />
             ))}
           </div>
