@@ -110,8 +110,15 @@ export const TRAITS: Record<string, TraitDef> = {
   Glasses:            { name: 'Usa Óculos',              type: 'negative'                                    },
 };
 
+const _TRAITS_BY_PATH: Record<string, TraitDef> = Object.fromEntries(
+  Object.entries(TRAITS).map(([k, v]) => [k.toLowerCase(), v]),
+);
+
 export function resolveTrait(id: string): TraitDef {
-  return TRAITS[id] ?? { name: id, type: 'positive' };
+  if (TRAITS[id]) return TRAITS[id];
+  const colonIdx = id.indexOf(':');
+  const path = (colonIdx !== -1 ? id.slice(colonIdx + 1) : id).toLowerCase();
+  return _TRAITS_BY_PATH[path] ?? { name: id, type: 'positive' };
 }
 
 export function parseTraitList(raw: string | null | undefined): string[] {
