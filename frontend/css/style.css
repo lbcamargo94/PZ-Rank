@@ -2993,11 +2993,14 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 }
 .pp-srow-max .pp-srow-name { color: var(--gold); font-weight: 700; }
 .pp-srow-name {
-  width: 130px;
+  width: 185px;
   flex-shrink: 0;
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .pp-srow-pips {
   display: flex;
@@ -3008,8 +3011,9 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text-3);
-  width: 16px;
+  width: 20px;
   text-align: right;
+  flex-shrink: 0;
 }
 .pp-srow-max .pp-srow-lvl { color: var(--gold); }
 
@@ -3017,7 +3021,8 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   .pp-summary { grid-template-columns: repeat(2, 1fr); }
   .pp-skills-grid { grid-template-columns: 1fr; }
   .pp-bases-grid { grid-template-columns: 1fr; }
-  .pp-srow-name { width: 110px; }
+  .pp-srow-name { width: 145px; }
+  .pp-srow-pips { overflow: hidden; }
 }
 
 /* ── OBS Overlay ────────────────────────────────────────────── */
@@ -3801,13 +3806,17 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 
 /* ── PlayerPage — abas distribuídas em mobile ────────────────── */
 @media (max-width: 560px) {
-  .pp-tabs { justify-content: stretch; }
+  .pp-tabs { justify-content: flex-start; }
   .pp-tab  {
     flex: 1;
     text-align: center;
     text-transform: none;
     letter-spacing: 0;
-    padding: 10px 4px;
+    padding: 8px 2px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+    line-height: 1.25;
   }
 }
 
@@ -3945,12 +3954,19 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .pp-sum-value          { font-size: 20px; }
 .pp-score-label        { font-size: 16px; }
 .pp-char-name          { font-size: 16px; }
+.pp-stat               { font-size: 16px; }
+.pp-obj-group-title    { font-size: 16px; }
+.pp-obj-count          { font-size: 16px; }
 .pp-obj-name           { font-size: 16px; }
 .pp-obj-note           { font-size: 16px; }
+.pp-base-items         { font-size: 16px; }
 .pp-no-data            { font-size: 16px; }
 .pp-no-data-box p      { font-size: 16px; }
 .pp-trait-group-label  { font-size: 16px; }
 .pp-skills-label       { font-size: 16px; }
+.pp-scat-label         { font-size: 16px; }
+.pp-srow-name          { font-size: 16px; }
+.pp-srow-lvl           { font-size: 16px; }
 .trait-badge           { font-size: 16px; }
 
 /* ── Rank cards (mobile) ─────────────────────────────────────── */
