@@ -31,7 +31,8 @@ export const TRAITS: Record<string, TraitDef> = {
   Graceful:           { name: 'Gracioso',                type: 'positive', image: 'Gracioso'                },
   LightFooted:        { name: 'Passos Silenciosos',      type: 'positive'                                    },
   NimbleFingers:      { name: 'Mãos Ágeis',              type: 'positive', image: 'Mãos ágeis'              },
-  Dextrous:           { name: 'Destreza',                type: 'positive'                                    },
+  Dextrous:           { name: 'Mãos Ágeis',              type: 'positive', image: 'Mãos ágeis'              },
+  Dexterous:          { name: 'Mãos Ágeis',              type: 'positive', image: 'Mãos ágeis'              },
   ThickSkinned:       { name: 'Casca Grossa',            type: 'positive', image: 'Casca grossa'            },
   Resilient:          { name: 'Resiliente',              type: 'positive', image: 'Saudável'                },
   Wakeful:            { name: 'Madrugador',              type: 'positive', image: 'Madrugador'              },
@@ -97,6 +98,8 @@ export const TRAITS: Record<string, TraitDef> = {
   WeightLoss:         { name: 'Metabolismo Acelerado',   type: 'positive', image: 'WeightLoss'              },
   Whittler:           { name: 'Entalhador',              type: 'positive', image: 'Whittler'                },
   WildernessKnowledge:{ name: 'Conhecimento Selvagem',   type: 'positive', image: 'Sobrevivencialista'      },
+  Tinkerer:           { name: 'Tinkerer',                type: 'positive'                                    },
+  tinkerer:           { name: 'Tinkerer',                type: 'positive'                                    },
 
   // ── Físicos negativos ─────────────────────────────────────
   Weak:               { name: 'Fraco',                   type: 'negative', image: 'Fracote'                },
@@ -154,7 +157,10 @@ export function resolveTrait(id: string): TraitDef {
   if (TRAITS[id]) return TRAITS[id];
   const colonIdx = id.indexOf(':');
   const path = (colonIdx !== -1 ? id.slice(colonIdx + 1) : id).toLowerCase();
-  return _TRAITS_BY_PATH[path] ?? { name: id, type: 'positive' };
+  if (_TRAITS_BY_PATH[path]) return _TRAITS_BY_PATH[path];
+  // Traits registrados com espaços ("Out of Shape" → "outofshape")
+  const pathNoSpace = path.replace(/\s+/g, '');
+  return _TRAITS_BY_PATH[pathNoSpace] ?? { name: id, type: 'positive' };
 }
 
 export function parseTraitList(raw: string | null | undefined): string[] {
