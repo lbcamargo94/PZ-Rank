@@ -1,4 +1,11 @@
 import { useEffect } from 'react';
+import {
+  IconX,
+  IconAlertTriangle,
+  IconHelpCircle,
+  IconTrash,
+  IconCheck,
+} from '@tabler/icons-react';
 
 interface Props {
   title:         string;
@@ -29,10 +36,10 @@ export function ConfirmModal({
     <div className="modal-overlay active" role="alertdialog" aria-modal="true">
       <div className="modal-box modal-box--sm" onClick={e => e.stopPropagation()}>
         <button className="modal-close" aria-label="Fechar" onClick={onCancel}>
-          <i className="ti ti-x" />
+          <IconX size={16} />
         </button>
         <h2 className="modal-title">
-          <i className={`ti ${danger ? 'ti-alert-triangle' : 'ti-help-circle'}`} /> {title}
+          {danger ? <IconAlertTriangle size={18} /> : <IconHelpCircle size={18} />} {title}
         </h2>
         <p className="confirm-modal-msg">{message}</p>
         <div className="confirm-modal-actions">
@@ -40,7 +47,7 @@ export function ConfirmModal({
             Cancelar
           </button>
           <button className={danger ? 'btn-danger' : 'btn-primary'} onClick={onConfirm}>
-            <i className={`ti ${danger ? 'ti-trash' : 'ti-check'}`} /> {confirmLabel}
+            {danger ? <IconTrash size={16} /> : <IconCheck size={16} />} {confirmLabel}
           </button>
         </div>
       </div>

@@ -11,15 +11,36 @@ import { EditObjectivesModal }   from '../components/painel/EditObjectivesModal'
 import { ModeratorsList }        from '../components/painel/ModeratorsList';
 import { CreateModeratorModal }  from '../components/painel/CreateModeratorModal';
 import { ConfirmModal }          from '../components/painel/ConfirmModal';
+import {
+  IconArrowLeft,
+  IconLogout,
+  IconUsers,
+  IconListNumbers,
+  IconShieldStar,
+  IconTrophy,
+  IconBan,
+  IconHeartbeat,
+  IconSkull,
+  IconList,
+  IconRefresh,
+  IconListSearch,
+  IconFilterOff,
+  IconUser,
+  IconCalendar,
+  IconSword,
+  IconStar,
+  IconTarget,
+  IconTrash,
+} from '@tabler/icons-react';
 
 type Tab         = 'players' | 'entries' | 'moderators';
 type EntryFilter = 'all' | 'alive' | 'dead' | 'disqualified';
 
-const ENTRY_FILTER_CONFIG: { key: EntryFilter; label: string; icon: string }[] = [
-  { key: 'all',          label: 'Todos',           icon: 'ti-list'      },
-  { key: 'alive',        label: 'Vivos',            icon: 'ti-heartbeat' },
-  { key: 'dead',         label: 'Mortos',           icon: 'ti-skull'     },
-  { key: 'disqualified', label: 'Desclassificados', icon: 'ti-ban'       },
+const ENTRY_FILTER_CONFIG: { key: EntryFilter; label: string; icon: React.ReactElement }[] = [
+  { key: 'all',          label: 'Todos',           icon: <IconList      size={16} /> },
+  { key: 'alive',        label: 'Vivos',            icon: <IconHeartbeat size={16} /> },
+  { key: 'dead',         label: 'Mortos',           icon: <IconSkull     size={16} /> },
+  { key: 'disqualified', label: 'Desclassificados', icon: <IconBan       size={16} /> },
 ];
 
 interface Props {
@@ -30,10 +51,10 @@ interface Props {
 
 function EntryStatusBadge({ entry }: { entry: Entry }) {
   if (entry.sandbox_ok === false)
-    return <span className="alive-badge disqualified"><i className="ti ti-ban" /> Desclassificado</span>;
+    return <span className="alive-badge disqualified"><IconBan size={16} /> Desclassificado</span>;
   if (entry.is_alive)
-    return <span className="alive-badge alive"><i className="ti ti-heartbeat" /> Vivo</span>;
-  return <span className="alive-badge dead"><i className="ti ti-skull" /> Morto</span>;
+    return <span className="alive-badge alive"><IconHeartbeat size={16} /> Vivo</span>;
+  return <span className="alive-badge dead"><IconSkull size={16} /> Morto</span>;
 }
 
 export function PainelPage({ session, onSession, onBack }: Props) {
@@ -125,7 +146,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
         <div className="container painel-header-inner">
           <div className="painel-header-left">
             <button className="btn-primary btn-sm" onClick={onBack}>
-              <i className="ti ti-arrow-left" /> Ranking público
+              <IconArrowLeft size={16} /> Ranking público
             </button>
             <span className="painel-title">Painel de Moderadores</span>
           </div>
@@ -135,7 +156,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
               {session.role === 'master' ? 'Master' : 'Moderador'}
             </span>
             <button className="btn-secondary btn-sm" onClick={handleLogout}>
-              <i className="ti ti-logout" /> Sair
+              <IconLogout size={16} /> Sair
             </button>
           </div>
         </div>
@@ -146,20 +167,20 @@ export function PainelPage({ session, onSession, onBack }: Props) {
         <div className="painel-tabs">
           <button className={`painel-tab${tab === 'players' ? ' active' : ''}`}
             onClick={() => setTab('players')}>
-            <i className="ti ti-users" /> Jogadores
+            <IconUsers size={16} /> Jogadores
           </button>
           <button className={`painel-tab${tab === 'entries' ? ' active' : ''}`}
             onClick={() => { setTab('entries'); fetchEntries(); }}>
-            <i className="ti ti-list-numbers" /> Entradas
+            <IconListNumbers size={16} /> Entradas
             {entries.length > 0 && <span className="rank-tab-badge">{entries.length}</span>}
           </button>
           <button className={`painel-tab${tab === 'moderators' ? ' active' : ''}`}
             onClick={() => setTab('moderators')}>
-            <i className="ti ti-shield-star" /> Moderadores
+            <IconShieldStar size={16} /> Moderadores
           </button>
         </div>
         <button className="btn-primary" onClick={() => setShowUpdateRank(true)}>
-          <i className="ti ti-trophy" /> Atualizar Rank
+          <IconTrophy size={16} /> Atualizar Rank
         </button>
       </div>
 
@@ -181,9 +202,9 @@ export function PainelPage({ session, onSession, onBack }: Props) {
         {tab === 'entries' && (
           <div className="painel-section">
             <div className="painel-section-header">
-              <h2><i className="ti ti-list-numbers" /> Entradas no Ranking</h2>
+              <h2><IconListNumbers size={18} /> Entradas no Ranking</h2>
               <button className="btn-primary btn-sm" onClick={fetchEntries}>
-                <i className="ti ti-refresh" /> Atualizar
+                <IconRefresh size={16} /> Atualizar
               </button>
             </div>
 
@@ -194,7 +215,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
                   <button key={key}
                     className={`sort-btn filter-entry-${key}${entryFilter === key ? ' active' : ''}`}
                     onClick={() => setEntryFilter(key)}>
-                    <i className={`ti ${icon}`} />
+                    {icon}
                     {' '}{label}
                     <span className="rank-tab-badge">{entryCounts[key]}</span>
                   </button>
@@ -204,14 +225,14 @@ export function PainelPage({ session, onSession, onBack }: Props) {
 
             {entries.length === 0 && (
               <div className="painel-empty-state">
-                <i className="ti ti-list-search" />
+                <IconListSearch size={20} />
                 <p>Clique em "Atualizar" para carregar as entradas.</p>
               </div>
             )}
 
             {filteredEntries.length === 0 && entries.length > 0 && (
               <div className="painel-empty-state">
-                <i className="ti ti-filter-off" />
+                <IconFilterOff size={20} />
                 <p>Nenhuma entrada encontrada para este filtro.</p>
               </div>
             )}
@@ -223,12 +244,12 @@ export function PainelPage({ session, onSession, onBack }: Props) {
                   <div key={entry.id} className={`painel-entry-card${entry.sandbox_ok === false ? ' entry-disqualified' : entry.is_alive ? ' entry-alive' : ' entry-dead'}`}>
                     <div className="painel-entry-identity">
                       <span className="painel-entry-char">{entry.character_name || '—'}</span>
-                      <span className="painel-entry-player"><i className="ti ti-user" /> {entry.name}</span>
+                      <span className="painel-entry-player"><IconUser size={16} /> {entry.name}</span>
                     </div>
                     <div className="painel-entry-stats">
-                      <span><i className="ti ti-calendar" /> {entry.days}d</span>
-                      <span><i className="ti ti-sword" /> {entry.kills.toLocaleString('pt-BR')}</span>
-                      <span><i className="ti ti-star" /> {entry.score.toLocaleString('pt-BR')} pts</span>
+                      <span><IconCalendar size={14} /> {entry.days}d</span>
+                      <span><IconSword size={14} /> {entry.kills.toLocaleString('pt-BR')}</span>
+                      <span><IconStar size={14} /> {entry.score.toLocaleString('pt-BR')} pts</span>
                       <EntryStatusBadge entry={entry} />
                     </div>
                     <div className="painel-entry-actions">
@@ -238,7 +259,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
                         title="Marcar como Vivo"
                         onClick={() => handleEntryStatus(entry.id!, { is_alive: true, sandbox_ok: true }, 'Vivo')}
                       >
-                        <i className="ti ti-heartbeat" /> Vivo
+                        <IconHeartbeat size={16} /> Vivo
                       </button>
                       <button
                         className="btn-warning btn-sm"
@@ -246,7 +267,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
                         title="Marcar como Morto"
                         onClick={() => handleEntryStatus(entry.id!, { is_alive: false, sandbox_ok: true }, 'Morto')}
                       >
-                        <i className="ti ti-skull" /> Morto
+                        <IconSkull size={16} /> Morto
                       </button>
                       <button
                         className="btn-danger btn-sm"
@@ -254,7 +275,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
                         title="Desclassificar"
                         onClick={() => handleEntryStatus(entry.id!, { sandbox_ok: false }, 'Desclassificado')}
                       >
-                        <i className="ti ti-ban" /> Desc.
+                        <IconBan size={16} /> Desc.
                       </button>
                       <button
                         className="btn-secondary btn-sm"
@@ -262,7 +283,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
                         title="Editar objetivos"
                         onClick={() => setEditObjEntry(entry)}
                       >
-                        <i className="ti ti-target" /> Obj.
+                        <IconTarget size={16} /> Obj.
                       </button>
                       <button
                         className="btn-ghost btn-sm"
@@ -270,7 +291,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
                         title="Remover entrada"
                         onClick={() => setConfirmDeleteEntryId(entry.id!)}
                       >
-                        <i className="ti ti-trash" />
+                        <IconTrash size={16} />
                       </button>
                     </div>
                   </div>

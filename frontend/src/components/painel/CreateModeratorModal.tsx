@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { apiCreateModerator } from '../../lib/api';
+import { IconX } from '@tabler/icons-react';
 
 interface Props {
   token:     string;
@@ -41,7 +42,7 @@ export function CreateModeratorModal({ token, onClose, onSuccess, showToast }: P
     <div className="modal-overlay active" role="dialog" aria-modal="true">
       <div className="modal-box" onClick={e => e.stopPropagation()}>
         <button className="modal-close" aria-label="Fechar" onClick={onClose}>
-          <i className="ti ti-x" />
+          <IconX size={16} />
         </button>
         <h2 className="modal-title">Novo Moderador</h2>
 

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiGetModerators, apiDeleteModerator } from '../../lib/api';
 import type { Moderator } from '../../types';
 import { ConfirmModal } from './ConfirmModal';
+import { IconPlus, IconTrash } from '@tabler/icons-react';
 
 interface Props {
   token:      string;
@@ -46,7 +47,7 @@ export function ModeratorsList({ token, currentId, showToast, onCreateClick }: P
       <div className="painel-section-header">
         <h2>Moderadores</h2>
         <button className="btn-primary btn-sm" onClick={onCreateClick}>
-          <i className="ti ti-plus" /> Novo moderador
+          <IconPlus size={16} /> Novo moderador
         </button>
       </div>
 
@@ -62,7 +63,7 @@ export function ModeratorsList({ token, currentId, showToast, onCreateClick }: P
             <div className="player-card-actions">
               <button className="btn-danger btn-sm" disabled={deleting === m.id}
                 onClick={() => setConfirmDelete({ id: m.id, login: m.login })}>
-                <i className="ti ti-trash" /> Remover
+                <IconTrash size={16} /> Remover
               </button>
             </div>
           )}

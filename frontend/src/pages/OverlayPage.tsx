@@ -3,6 +3,16 @@ import { useParams } from 'react-router-dom';
 import { apiGetPlayerProfile, apiGetEntries } from '../lib/api';
 import { parseSkillMap, TOTAL_SKILLS, MAX_SKILL_LEVEL } from '../lib/skills';
 import type { PlayerProfile, Entry } from '../types';
+import {
+  IconHeartbeat,
+  IconSkull,
+  IconSword,
+  IconCalendar,
+  IconBolt,
+  IconBuildingStore,
+  IconCheck,
+  IconCircle,
+} from '@tabler/icons-react';
 
 const REFRESH_MS = 30_000;
 
@@ -73,29 +83,29 @@ export function OverlayPage() {
         {rank !== null && <span className="overlay-rank">#{rank}</span>}
         <span className="overlay-score">{bestEntry.score.toLocaleString('pt-BR')} pts</span>
         {bestEntry.is_alive
-          ? <span className="overlay-status-badge overlay-badge-alive"><i className="ti ti-heartbeat" /> VIVO</span>
-          : <span className="overlay-status-badge overlay-badge-dead"><i className="ti ti-skull" /> MORTO</span>}
+          ? <span className="overlay-status-badge overlay-badge-alive"><IconHeartbeat size={16} /> VIVO</span>
+          : <span className="overlay-status-badge overlay-badge-dead"><IconSkull size={16} /> MORTO</span>}
       </div>
 
       {/* Stats row */}
       <div className="overlay-stats">
         <div className="overlay-stat">
-          <i className="ti ti-sword" />
+          <IconSword size={16} />
           <span>{bestEntry.kills.toLocaleString('pt-BR')}</span>
           <small>zumbis</small>
         </div>
         <div className="overlay-stat">
-          <i className="ti ti-calendar" />
+          <IconCalendar size={16} />
           <span>{bestEntry.days}d</span>
           <small>sobrevivido</small>
         </div>
         <div className="overlay-stat">
-          <i className="ti ti-bolt" />
+          <IconBolt size={16} />
           <span>{maxedSkills}/{TOTAL_SKILLS}</span>
           <small>habilidades</small>
         </div>
         <div className="overlay-stat">
-          <i className="ti ti-building-store" />
+          <IconBuildingStore size={16} />
           <span>{basesCount}/9</span>
           <small>bases</small>
         </div>
@@ -110,7 +120,7 @@ export function OverlayPage() {
           { label: 'Base Mil.', done: bestEntry.objectives?.military_base ?? false },
         ].map(o => (
           <span key={o.label} className={`overlay-obj-dot ${o.done ? 'overlay-obj-done' : ''}`}>
-            {o.done ? <i className="ti ti-check" /> : <i className="ti ti-circle" />}
+            {o.done ? <IconCheck size={16} /> : <IconCircle size={16} />}
             {o.label}
           </span>
         ))}

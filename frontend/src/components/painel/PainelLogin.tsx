@@ -1,6 +1,15 @@
 import { useState } from 'react';
 import { apiLogin } from '../../lib/api';
 import type { ModSession } from '../../types';
+import {
+  IconArrowLeft,
+  IconShieldLock,
+  IconUser,
+  IconLock,
+  IconLoader2,
+  IconLogin,
+  IconInfoCircle,
+} from '@tabler/icons-react';
 
 interface Props {
   onSuccess: (session: ModSession) => void;
@@ -31,13 +40,13 @@ export function PainelLogin({ onSuccess, onBack, showToast }: Props) {
       <div className="painel-login-scanlines" aria-hidden="true" />
 
       <button className="btn-primary painel-back" onClick={onBack}>
-        <i className="ti ti-arrow-left" /> Voltar ao ranking
+        <IconArrowLeft size={16} /> Voltar ao ranking
       </button>
 
       <div className="painel-login-box">
         {/* ── Ícone de segurança ── */}
         <div className="painel-login-icon-wrap">
-          <i className="ti ti-shield-lock painel-login-icon" />
+          <IconShieldLock size={20} className="painel-login-icon" />
         </div>
 
         <div className="painel-login-tag">// ÁREA RESTRITA</div>
@@ -51,7 +60,7 @@ export function PainelLogin({ onSuccess, onBack, showToast }: Props) {
         <form className="modal-form" onSubmit={handleSubmit} noValidate>
           <div className="painel-login-field">
             <label className="form-label" htmlFor="mod-login">
-              <i className="ti ti-user" /> Login
+              <IconUser size={16} /> Login
             </label>
             <input
               id="mod-login"
@@ -67,7 +76,7 @@ export function PainelLogin({ onSuccess, onBack, showToast }: Props) {
 
           <div className="painel-login-field">
             <label className="form-label" htmlFor="mod-pass">
-              <i className="ti ti-lock" /> Senha
+              <IconLock size={16} /> Senha
             </label>
             <input
               id="mod-pass"
@@ -87,13 +96,13 @@ export function PainelLogin({ onSuccess, onBack, showToast }: Props) {
             disabled={loading || !login || !password}
           >
             {loading
-              ? <><i className="ti ti-loader-2" /> Verificando...</>
-              : <><i className="ti ti-login" /> Entrar</>}
+              ? <><IconLoader2 size={16} className="animate-spin" /> Verificando...</>
+              : <><IconLogin size={16} /> Entrar</>}
           </button>
         </form>
 
         <p className="painel-login-warn">
-          <i className="ti ti-info-circle" />
+          <IconInfoCircle size={16} />
           Tentativas de acesso não autorizado são registradas.
         </p>
       </div>

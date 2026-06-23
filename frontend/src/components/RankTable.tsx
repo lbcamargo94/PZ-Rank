@@ -1,6 +1,20 @@
 import { useNavigate } from 'react-router-dom';
 import type { Entry, SortKey, RankTab } from '../types';
 import { RankRow } from './RankRow';
+import {
+  IconGhost,
+  IconTrophy,
+  IconSkull,
+  IconBan,
+  IconRefresh,
+  IconUserPlus,
+  IconHeartbeat,
+  IconSword,
+  IconCalendar,
+  IconClock,
+  IconStar,
+  IconUser,
+} from '@tabler/icons-react';
 
 interface RankTableProps {
   entries:    Entry[];
@@ -12,11 +26,11 @@ interface RankTableProps {
   tab:        RankTab;
 }
 
-const EMPTY_MESSAGES: Record<RankTab, { icon: string; text: string }> = {
-  rank:         { icon: 'ti-ghost',      text: 'Nenhum sobrevivente ativo no momento.\nCadastre-se e aguarde aprovação dos moderadores!' },
-  records:      { icon: 'ti-trophy',     text: 'Nenhum registro encontrado ainda.'                                                       },
-  dead:         { icon: 'ti-skull',      text: 'Nenhum sobrevivente foi eliminado ainda.'                                               },
-  disqualified: { icon: 'ti-ban',        text: 'Nenhum participante desclassificado.'                                                   },
+const EMPTY_MESSAGES: Record<RankTab, { icon: React.ReactElement; text: string }> = {
+  rank:         { icon: <IconGhost  size={20} />, text: 'Nenhum sobrevivente ativo no momento.\nCadastre-se e aguarde aprovação dos moderadores!' },
+  records:      { icon: <IconTrophy size={20} />, text: 'Nenhum registro encontrado ainda.'                                                       },
+  dead:         { icon: <IconSkull  size={20} />, text: 'Nenhum sobrevivente foi eliminado ainda.'                                               },
+  disqualified: { icon: <IconBan    size={20} />, text: 'Nenhum participante desclassificado.'                                                   },
 };
 
 const SORT_LABELS: { key: SortKey; label: string }[] = [
@@ -60,12 +74,12 @@ function RankCard({ entry, rank, onPlayerClick, hideStatus }: {
           entry.sandbox_ok === false
             ? (
               <span className="alive-badge disqualified rc-status" title="Configurações do sandbox divergem do desafio oficial">
-                <i className="ti ti-ban" /> Desc.
+                <IconBan size={16} /> Desc.
               </span>
             )
             : entry.is_alive
-              ? <span className="alive-badge alive rc-status"><i className="ti ti-heartbeat" /> Vivo</span>
-              : <span className="alive-badge dead rc-status"><i className="ti ti-skull" /> Morto</span>
+              ? <span className="alive-badge alive rc-status"><IconHeartbeat size={16} /> Vivo</span>
+              : <span className="alive-badge dead rc-status"><IconSkull size={16} /> Morto</span>
         )}
       </div>
 
@@ -74,18 +88,18 @@ function RankCard({ entry, rank, onPlayerClick, hideStatus }: {
 
       {/* Stats */}
       <div className="rc-stats">
-        <span className="rc-stat"><i className="ti ti-sword" />{entry.kills.toLocaleString('pt-BR')} zumbis</span>
-        <span className="rc-stat"><i className="ti ti-calendar" />{entry.days}d</span>
-        {entry.time_str && <span className="rc-stat"><i className="ti ti-clock" />{entry.time_str}</span>}
-        {objCount > 0 && <span className="rc-stat rc-obj"><i className="ti ti-star" />{objCount} obj.</span>}
+        <span className="rc-stat"><IconSword size={14} />{entry.kills.toLocaleString('pt-BR')} zumbis</span>
+        <span className="rc-stat"><IconCalendar size={14} />{entry.days}d</span>
+        {entry.time_str && <span className="rc-stat"><IconClock size={14} />{entry.time_str}</span>}
+        {objCount > 0 && <span className="rc-stat rc-obj"><IconStar size={14} />{objCount} obj.</span>}
       </div>
 
       {/* Player + actions */}
       <div className="rc-footer">
-        <span className="rc-player-name"><i className="ti ti-user" /> {entry.name}</span>
+        <span className="rc-player-name"><IconUser size={16} /> {entry.name}</span>
         {entry.player_id && (
           <button className="rc-player-btn" onClick={() => onPlayerClick(entry.player_id!)}>
-            <i className="ti ti-user" /> Ver detalhes
+            <IconUser size={16} /> Ver detalhes
           </button>
         )}
       </div>
@@ -116,17 +130,17 @@ export function RankTable({ entries, sortKey, loading, onSort, onRegister, onRel
         ))}
         <div className="sort-bar-actions">
           <button className="btn-reload" onClick={onReload} disabled={loading} aria-label="Recarregar tabela">
-            <i className={`ti ti-refresh${loading ? ' spin' : ''}`} />
+            <IconRefresh size={16} className={loading ? 'animate-spin' : ''} />
           </button>
           <button className="btn-primary btn-sm sort-register" onClick={onRegister}>
-            <i className="ti ti-user-plus" aria-hidden="true" /> Cadastrar-se
+            <IconUserPlus size={16} aria-hidden="true" /> Cadastrar-se
           </button>
         </div>
       </div>
 
       {entries.length === 0 && !loading ? (
         <div className="empty-state">
-          <i className={`ti ${emptyIcon}`} aria-hidden="true" />
+          {emptyIcon}
           <p>{emptyText.split('\n').map((line, i) => <span key={i}>{line}{i === 0 && emptyText.includes('\n') ? <br /> : ''}</span>)}</p>
         </div>
       ) : (
