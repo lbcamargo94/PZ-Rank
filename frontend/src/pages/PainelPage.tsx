@@ -10,6 +10,7 @@ import { UpdateRankModal }       from '../components/painel/UpdateRankModal';
 import { EditObjectivesModal }   from '../components/painel/EditObjectivesModal';
 import { ModeratorsList }        from '../components/painel/ModeratorsList';
 import { CreateModeratorModal }  from '../components/painel/CreateModeratorModal';
+import { ConfirmModal }          from '../components/painel/ConfirmModal';
 
 type Tab         = 'players' | 'entries' | 'moderators';
 type EntryFilter = 'all' | 'alive' | 'dead' | 'disqualified';
@@ -38,9 +39,10 @@ function EntryStatusBadge({ entry }: { entry: Entry }) {
 export function PainelPage({ session, onSession, onBack }: Props) {
   const [tab,            setTab]            = useState<Tab>('players');
   const [entryFilter,    setEntryFilter]    = useState<EntryFilter>('all');
-  const [showUpdateRank, setShowUpdateRank] = useState(false);
-  const [showCreateMod,  setShowCreateMod]  = useState(false);
-  const [editObjEntry,   setEditObjEntry]   = useState<Entry | null>(null);
+  const [showUpdateRank,       setShowUpdateRank]       = useState(false);
+  const [showCreateMod,        setShowCreateMod]        = useState(false);
+  const [editObjEntry,         setEditObjEntry]         = useState<Entry | null>(null);
+  const [confirmDeleteEntryId, setConfirmDeleteEntryId] = useState<number | null>(null);
   const [entries,        setEntries]        = useState<Entry[]>([]);
   const [sortKey]                           = useState<SortKey>('score');
   const [updatingEntry,  setUpdatingEntry]  = useState<number | null>(null);
@@ -71,8 +73,9 @@ export function PainelPage({ session, onSession, onBack }: Props) {
     disqualified: discEntries.length,
   };
 
-  async function handleDeleteEntry(id: number) {
-    if (!session || !confirm('Remover esta entrada do ranking?')) return;
+  async function doDeleteEntry(id: number) {
+    if (!session) return;
+    setConfirmDeleteEntryId(null);
     try {
       await apiDeleteEntry(session.token, id);
       showToast('Entrada removida.', 'success');
@@ -265,7 +268,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
                         className="btn-ghost btn-sm"
                         disabled={busy}
                         title="Remover entrada"
-                        onClick={() => handleDeleteEntry(entry.id!)}
+                        onClick={() => setConfirmDeleteEntryId(entry.id!)}
                       >
                         <i className="ti ti-trash" />
                       </button>
@@ -305,6 +308,17 @@ export function PainelPage({ session, onSession, onBack }: Props) {
           onClose={() => setShowCreateMod(false)}
           onSuccess={() => {}}
           showToast={showToast}
+        />
+      )}
+
+      {confirmDeleteEntryId !== null && (
+        <ConfirmModal
+          title="Remover entrada"
+          message="Esta entrada será removida permanentemente do ranking. Esta ação não pode ser desfeita."
+          confirmLabel="Remover"
+          danger
+          onConfirm={() => doDeleteEntry(confirmDeleteEntryId)}
+          onCancel={() => setConfirmDeleteEntryId(null)}
         />
       )}
     </div>

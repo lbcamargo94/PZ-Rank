@@ -4144,6 +4144,24 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .pbar-label            { font-size: 16px; }
 .pbar-vals             { font-size: 16px; }
 
+/* ── Modal de confirmação ─────────────────────────────────────── */
+.modal-box--sm { max-width: 380px; }
+
+.confirm-modal-msg {
+  font-size: 16px;
+  color: var(--text-2);
+  line-height: 1.6;
+  margin-top: -4px;
+}
+
+.confirm-modal-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
 /* ══════════════════════════════════════════════════════════════
    PAINEL DE MODERADORES — RESPONSIVO
    Breakpoints: ≤ 768px | ≤ 640px | ≤ 480px

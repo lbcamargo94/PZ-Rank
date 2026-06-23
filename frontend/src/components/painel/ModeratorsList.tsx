@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiGetModerators, apiDeleteModerator } from '../../lib/api';
 import type { Moderator } from '../../types';
+import { ConfirmModal } from './ConfirmModal';
 
 interface Props {
   token:      string;
@@ -12,9 +13,10 @@ interface Props {
 const ROLE_LABELS = { master: 'Master', moderator: 'Moderador' };
 
 export function ModeratorsList({ token, currentId, showToast, onCreateClick }: Props) {
-  const [mods,     setMods]     = useState<Moderator[]>([]);
-  const [loading,  setLoading]  = useState(false);
-  const [deleting, setDeleting] = useState<string | null>(null);
+  const [mods,          setMods]          = useState<Moderator[]>([]);
+  const [loading,       setLoading]       = useState(false);
+  const [deleting,      setDeleting]      = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; login: string } | null>(null);
 
   const fetchMods = useCallback(async () => {
     setLoading(true);
@@ -25,8 +27,8 @@ export function ModeratorsList({ token, currentId, showToast, onCreateClick }: P
 
   useEffect(() => { fetchMods(); }, [fetchMods]);
 
-  async function handleDelete(id: string, login: string) {
-    if (!confirm(`Remover moderador ${login}?`)) return;
+  async function doDelete(id: string) {
+    setConfirmDelete(null);
     setDeleting(id);
     try {
       await apiDeleteModerator(token, id);
@@ -59,13 +61,24 @@ export function ModeratorsList({ token, currentId, showToast, onCreateClick }: P
           {m.id !== currentId && m.role !== 'master' && (
             <div className="player-card-actions">
               <button className="btn-danger btn-sm" disabled={deleting === m.id}
-                onClick={() => handleDelete(m.id, m.login)}>
+                onClick={() => setConfirmDelete({ id: m.id, login: m.login })}>
                 <i className="ti ti-trash" /> Remover
               </button>
             </div>
           )}
         </div>
       ))}
+
+      {confirmDelete && (
+        <ConfirmModal
+          title="Remover moderador"
+          message={`Tem certeza que deseja remover o moderador "${confirmDelete.login}"? Esta ação não pode ser desfeita.`}
+          confirmLabel="Remover"
+          danger
+          onConfirm={() => doDelete(confirmDelete.id)}
+          onCancel={() => setConfirmDelete(null)}
+        />
+      )}
     </div>
   );
 }

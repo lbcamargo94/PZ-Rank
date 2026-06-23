@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiGetPlayers, apiUpdatePlayerStatus, apiBlockPlayer, apiUnblockPlayer, apiDeletePlayer, apiRestorePlayer } from '../../lib/api';
 import type { Player, PlayerStatus, PlayerFilter } from '../../types';
+import { ConfirmModal } from './ConfirmModal';
 
 interface Props {
   token:     string;
@@ -23,10 +24,11 @@ const FILTER_LABELS: Record<PlayerFilter, string> = {
 };
 
 export function PendingPlayers({ token, showToast }: Props) {
-  const [players,  setPlayers]  = useState<Player[]>([]);
-  const [filter,   setFilter]   = useState<PlayerFilter>('pending');
-  const [loading,  setLoading]  = useState(false);
-  const [updating, setUpdating] = useState<number | null>(null);
+  const [players,         setPlayers]         = useState<Player[]>([]);
+  const [filter,          setFilter]          = useState<PlayerFilter>('pending');
+  const [loading,         setLoading]         = useState(false);
+  const [updating,        setUpdating]        = useState<number | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
   const fetchPlayers = useCallback(async () => {
     setLoading(true);
@@ -81,8 +83,12 @@ export function PendingPlayers({ token, showToast }: Props) {
     }
   }
 
-  async function handleDelete(id: number) {
-    if (!confirm('Excluir este jogador do rank? O progresso será removido do ranking público.')) return;
+  function handleDelete(id: number) {
+    setConfirmDeleteId(id);
+  }
+
+  async function doDelete(id: number) {
+    setConfirmDeleteId(null);
     setUpdating(id);
     try {
       await apiDeletePlayer(token, id);
@@ -228,6 +234,17 @@ export function PendingPlayers({ token, showToast }: Props) {
           </div>
         ))}
       </div>
+
+      {confirmDeleteId !== null && (
+        <ConfirmModal
+          title="Excluir jogador"
+          message="O progresso deste jogador será removido do ranking público. Esta ação pode ser desfeita restaurando o jogador na aba Excluídos."
+          confirmLabel="Excluir"
+          danger
+          onConfirm={() => doDelete(confirmDeleteId)}
+          onCancel={() => setConfirmDeleteId(null)}
+        />
+      )}
     </div>
   );
 }
