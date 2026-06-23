@@ -1724,13 +1724,13 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   border: 1px solid var(--border);
   color: var(--text-3);
   font-family: var(--font-mono);
-  font-size: 12px;
-  padding: 7px 14px;
+  font-size: 14px;
+  padding: 8px 18px;
   border-radius: var(--radius);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   transition: all 0.15s;
 }
 .painel-tab:hover { color: var(--text-1); border-color: var(--border-mid); }
@@ -1936,8 +1936,54 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .filter-blocked { color: var(--red) !important; }
 .filter-blocked.active { border-color: var(--red) !important; background: rgba(224,64,64,0.12) !important; }
 
+/* ── Barra de filtro separada do header de seção ─────────── */
+.painel-section-filter {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+/* Badges de contagem dentro de sort-btn (escala menor) */
+.sort-btn .rank-tab-badge {
+  font-size: 11px;
+  padding: 1px 5px;
+  min-width: 16px;
+  height: 16px;
+  line-height: 1;
+  margin-left: 1px;
+}
+
+/* Filtros de entradas com cor por estado */
+.sort-btn.filter-entry-alive.active        { background: var(--green-dim);            border-color: var(--green);   color: var(--green-light); }
+.sort-btn.filter-entry-dead.active         { background: rgba(180,60,60,.15);         border-color: #b44;           color: #f88; }
+.sort-btn.filter-entry-disqualified.active { background: rgba(200,140,30,.15);        border-color: var(--amber);   color: #f0a050; }
+
+/* Botão destrutivo — vermelho ao hover */
+.btn-delete:hover {
+  color: var(--red) !important;
+  border-color: rgba(224, 64, 64, 0.45) !important;
+  background: rgba(224, 64, 64, 0.08) !important;
+}
+
+/* Banner informativo da visualização de excluídos */
+.painel-deleted-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(60, 60, 60, 0.12);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-3);
+}
+
 /* ── Exclusão de jogador (soft-delete) ───────────────────── */
-.player-deleted { opacity: 0.55; border-left: 3px solid #666 !important; }
+.player-deleted {
+  opacity: 0.45;
+  border-left-color: #3a3a3a !important;
+  background: rgba(0, 0, 0, 0.2) !important;
+}
 
 .status-badge-deleted {
   background: rgba(120, 120, 120, 0.12);
@@ -3322,6 +3368,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding: 12px 16px;
 }
 
 .painel-entry-card {

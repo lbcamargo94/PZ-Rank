@@ -121,6 +121,9 @@ export function PendingPlayers({ token, showToast }: Props) {
             <span className="painel-pending-badge">{pendingCount}</span>
           )}
         </h2>
+      </div>
+
+      <div className="painel-section-filter">
         <div className="filter-bar">
           {filterOptions.map(f => (
             <button key={f}
@@ -137,6 +140,13 @@ export function PendingPlayers({ token, showToast }: Props) {
           ))}
         </div>
       </div>
+
+      {isDeleted && (
+        <div className="painel-deleted-banner">
+          <i className="ti ti-info-circle" />
+          Jogadores excluídos ficam ocultos do rank público. Clique em Restaurar para reativar.
+        </div>
+      )}
 
       {loading && (
         <div className="painel-loading-row">
@@ -207,7 +217,7 @@ export function PendingPlayers({ token, showToast }: Props) {
                       <i className="ti ti-lock-open" /> Desbloquear
                     </button>
                   )}
-                  <button className="btn-ghost btn-sm" disabled={updating === p.id}
+                  <button className="btn-ghost btn-sm btn-delete" disabled={updating === p.id}
                     title="Excluir jogador do rank"
                     onClick={() => handleDelete(p.id)}>
                     <i className="ti ti-trash" />

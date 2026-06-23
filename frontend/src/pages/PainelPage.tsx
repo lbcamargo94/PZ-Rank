@@ -185,20 +185,32 @@ export function PainelPage({ session, onSession, onBack }: Props) {
             </div>
 
             {/* Filtros de status */}
-            <div className="filter-bar">
-              {ENTRY_FILTER_CONFIG.map(({ key, label, icon }) => (
-                <button key={key}
-                  className={`sort-btn${entryFilter === key ? ' active' : ''}`}
-                  onClick={() => setEntryFilter(key)}>
-                  <i className={`ti ${icon}`} />
-                  {' '}{label}
-                  <span className="rank-tab-badge">{entryCounts[key]}</span>
-                </button>
-              ))}
+            <div className="painel-section-filter">
+              <div className="filter-bar">
+                {ENTRY_FILTER_CONFIG.map(({ key, label, icon }) => (
+                  <button key={key}
+                    className={`sort-btn filter-entry-${key}${entryFilter === key ? ' active' : ''}`}
+                    onClick={() => setEntryFilter(key)}>
+                    <i className={`ti ${icon}`} />
+                    {' '}{label}
+                    <span className="rank-tab-badge">{entryCounts[key]}</span>
+                  </button>
+                ))}
+              </div>
             </div>
 
             {entries.length === 0 && (
-              <p className="painel-empty">Clique em "Atualizar" para carregar as entradas.</p>
+              <div className="painel-empty-state">
+                <i className="ti ti-list-search" />
+                <p>Clique em "Atualizar" para carregar as entradas.</p>
+              </div>
+            )}
+
+            {filteredEntries.length === 0 && entries.length > 0 && (
+              <div className="painel-empty-state">
+                <i className="ti ti-filter-off" />
+                <p>Nenhuma entrada encontrada para este filtro.</p>
+              </div>
             )}
 
             <div className="painel-entries-list">
