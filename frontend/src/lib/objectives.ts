@@ -22,7 +22,7 @@ export const SPIFFOS_RESTAURANTS = [
   { id: 'riverside',      name: 'Riverside'                      },
   { id: 'rosewood',       name: 'Rosewood'                       },
   { id: 'march_ridge',    name: 'March Ridge'                    },
-  { id: 'ekron',          name: 'Ekron'                          },
+  { id: 'ekron',          name: 'Irvington - Autódromo'          },
   { id: 'valley_station', name: 'Valley Station'                 },
   { id: 'brandenburg',    name: 'Brandenburg'                    },
   { id: 'irvington',      name: 'Irvington'                      },
