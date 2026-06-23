@@ -113,6 +113,20 @@ class SqliteQueryBuilder {
     return this;
   }
 
+  is(col: string, val: null | unknown): this {
+    this.conditions.push({ col, op: val === null ? 'IS NULL' : 'IS NOT NULL', val: null });
+    return this;
+  }
+
+  not(col: string, filter: string, val: unknown): this {
+    if (filter === 'is' && val === null) {
+      this.conditions.push({ col, op: 'IS NOT NULL', val: null });
+    } else {
+      this.conditions.push({ col, op: '!=', val });
+    }
+    return this;
+  }
+
   order(col: string, opts?: { ascending?: boolean }): this {
     const safe = /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(col) ? col : 'created_at';
     this.orderBy = { col: safe, asc: opts?.ascending !== false };
@@ -140,10 +154,19 @@ class SqliteQueryBuilder {
 
   private where(): { sql: string; params: unknown[] } {
     if (this.conditions.length === 0) return { sql: '', params: [] };
-    const parts  = this.conditions.map(c =>
-      c.op === 'ILIKE' ? `LOWER(${c.col}) LIKE LOWER(?)` : `${c.col} ${c.op} ?`,
-    );
-    const params = this.conditions.map(c => c.val);
+    const parts:  string[]  = [];
+    const params: unknown[] = [];
+    for (const c of this.conditions) {
+      if (c.op === 'IS NULL' || c.op === 'IS NOT NULL') {
+        parts.push(`${c.col} ${c.op}`);
+      } else if (c.op === 'ILIKE') {
+        parts.push(`LOWER(${c.col}) LIKE LOWER(?)`);
+        params.push(c.val);
+      } else {
+        parts.push(`${c.col} ${c.op} ?`);
+        params.push(c.val);
+      }
+    }
     return { sql: ' WHERE ' + parts.join(' AND '), params };
   }
 
@@ -226,14 +249,20 @@ class SqliteQueryBuilder {
 // ── Fábrica ──────────────────────────────────────────────────────────────────
 
 function runMigrations(db: Database): void {
-  const cols = (db.prepare('PRAGMA table_info(entries)').all() as { name: string }[]).map(c => c.name);
-  if (!cols.includes('sandbox_ok')) {
+  const entryCols  = (db.prepare('PRAGMA table_info(entries)').all()  as { name: string }[]).map(c => c.name);
+  const playerCols = (db.prepare('PRAGMA table_info(players)').all() as { name: string }[]).map(c => c.name);
+
+  if (!entryCols.includes('sandbox_ok')) {
     db.exec('ALTER TABLE entries ADD COLUMN sandbox_ok INTEGER NOT NULL DEFAULT 1');
     console.log('[SQLite] migração: coluna sandbox_ok adicionada');
   }
-  if (!cols.includes('traits')) {
+  if (!entryCols.includes('traits')) {
     db.exec('ALTER TABLE entries ADD COLUMN traits TEXT');
     console.log('[SQLite] migração: coluna traits adicionada');
+  }
+  if (!playerCols.includes('deleted_at')) {
+    db.exec('ALTER TABLE players ADD COLUMN deleted_at TEXT DEFAULT NULL');
+    console.log('[SQLite] migração: coluna deleted_at adicionada');
   }
 }
 

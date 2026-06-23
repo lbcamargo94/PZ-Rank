@@ -78,7 +78,7 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
-// GET /players?status=pending|approved|rejected|blocked|all — moderador
+// GET /players?status=pending|approved|rejected|blocked|deleted|all — moderador
 router.get('/', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
   const statusParam = typeof req.query.status === 'string' ? req.query.status : 'all';
 
@@ -88,10 +88,14 @@ router.get('/', requireModerator, async (req: ModRequest, res: Response): Promis
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (statusParam === 'blocked') {
-      query = query.eq('blocked', true);
-    } else if (statusParam !== 'all') {
-      query = query.eq('status', statusParam as PlayerStatus);
+    if (statusParam === 'deleted') {
+      query = query.not('deleted_at', 'is', null);
+    } else if (statusParam === 'blocked') {
+      query = query.eq('blocked', true).is('deleted_at', null);
+    } else if (statusParam === 'all') {
+      query = query.is('deleted_at', null);
+    } else {
+      query = query.eq('status', statusParam as PlayerStatus).is('deleted_at', null);
     }
 
     const { data, error } = await query;
@@ -182,6 +186,48 @@ router.patch('/:id/unblock', requireModerator, async (req: ModRequest, res: Resp
   } catch (err) {
     console.error('[PATCH /players/:id/unblock] Erro inesperado:', err);
     res.status(500).json({ error: 'Erro interno ao desbloquear jogador.' });
+  }
+});
+
+// PATCH /players/:id/delete — moderador: soft-delete
+router.patch('/:id/delete', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
+  const id = parseInt(String(req.params.id), 10);
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
+
+  try {
+    const { data, error } = await supabase
+      .from('players')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
+    res.json(data);
+  } catch (err) {
+    console.error('[PATCH /players/:id/delete] Erro inesperado:', err);
+    res.status(500).json({ error: 'Erro interno ao excluir jogador.' });
+  }
+});
+
+// PATCH /players/:id/restore — moderador: restaura soft-delete
+router.patch('/:id/restore', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
+  const id = parseInt(String(req.params.id), 10);
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
+
+  try {
+    const { data, error } = await supabase
+      .from('players')
+      .update({ deleted_at: null })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
+    res.json(data);
+  } catch (err) {
+    console.error('[PATCH /players/:id/restore] Erro inesperado:', err);
+    res.status(500).json({ error: 'Erro interno ao restaurar jogador.' });
   }
 });
 

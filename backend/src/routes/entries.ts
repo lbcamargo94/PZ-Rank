@@ -22,13 +22,19 @@ const SORT_COLS: Record<string, string> = {
 router.get('/', async (req: Request, res: Response): Promise<void> => {
   const col = SORT_COLS[typeof req.query.sort === 'string' ? req.query.sort : ''] ?? 'score';
 
-  const { data, error } = await supabase
-    .from(config.tableName)
-    .select('*')
-    .order(col, { ascending: false });
+  const [entriesRes, deletedRes] = await Promise.all([
+    supabase.from(config.tableName).select('*').order(col, { ascending: false }),
+    supabase.from('players').select('id').not('deleted_at', 'is', null),
+  ]);
 
-  if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
-  res.json(data);
+  if (entriesRes.error) { const e = dbError(entriesRes.error); res.status(e.httpStatus).json({ error: e.message }); return; }
+
+  const deletedIds = new Set(((deletedRes.data ?? []) as { id: number }[]).map(p => p.id));
+  const visible = (entriesRes.data ?? []).filter((e: { player_id: number | null }) =>
+    !e.player_id || !deletedIds.has(e.player_id),
+  );
+
+  res.json(visible);
 });
 
 // POST /entries — moderador: valida código + insere entrada
@@ -72,6 +78,10 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
   }
   if ((player as Player & { blocked: boolean }).blocked) {
     res.status(403).json({ error: 'Jogador está bloqueado e não pode ser atualizado no ranking.' });
+    return;
+  }
+  if ((player as Player).deleted_at) {
+    res.status(403).json({ error: 'Jogador foi excluído do ranking.' });
     return;
   }
 

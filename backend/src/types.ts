@@ -10,6 +10,7 @@ export interface Player {
   tiktok_url:  string | null;
   status:      PlayerStatus;
   blocked:     boolean;
+  deleted_at:  string | null;
   created_at:  string;
 }
 

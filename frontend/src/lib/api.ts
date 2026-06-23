@@ -93,6 +93,14 @@ export function apiUnblockPlayer(token: string, id: number): Promise<Player> {
   return request(`/players/${id}/unblock`, { method: 'PATCH', ...auth(token) });
 }
 
+export function apiDeletePlayer(token: string, id: number): Promise<Player> {
+  return request(`/players/${id}/delete`, { method: 'PATCH', ...auth(token) });
+}
+
+export function apiRestorePlayer(token: string, id: number): Promise<Player> {
+  return request(`/players/${id}/restore`, { method: 'PATCH', ...auth(token) });
+}
+
 // ── Entries ─────────────────────────────────────────────────
 
 export function apiGetEntries(sort = 'days'): Promise<Entry[]> {

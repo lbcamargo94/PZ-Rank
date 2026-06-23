@@ -1936,6 +1936,28 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .filter-blocked { color: var(--red) !important; }
 .filter-blocked.active { border-color: var(--red) !important; background: rgba(224,64,64,0.12) !important; }
 
+/* ── Exclusão de jogador (soft-delete) ───────────────────── */
+.player-deleted { opacity: 0.55; border-left: 3px solid #666 !important; }
+
+.status-badge-deleted {
+  background: rgba(120, 120, 120, 0.12);
+  color: #a0a0a0;
+  border: 1px solid rgba(120, 120, 120, 0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.filter-deleted { color: #a0a0a0 !important; }
+.filter-deleted.active { border-color: #888 !important; background: rgba(120,120,120,0.12) !important; }
+
 .btn-warning {
   background: rgba(200, 168, 75, 0.15);
   color: var(--gold);

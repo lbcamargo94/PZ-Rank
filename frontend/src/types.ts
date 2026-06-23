@@ -36,7 +36,7 @@ export interface DecodedCode {
 
 export type ModeratorRole  = 'moderator' | 'master';
 export type PlayerStatus   = 'pending' | 'approved' | 'rejected';
-export type PlayerFilter   = PlayerStatus | 'blocked' | 'all';
+export type PlayerFilter   = PlayerStatus | 'blocked' | 'deleted' | 'all';
 
 export interface Player {
   id:          number;
@@ -47,6 +47,7 @@ export interface Player {
   tiktok_url:  string | null;
   status:      PlayerStatus;
   blocked:     boolean;
+  deleted_at?: string | null;
   created_at:  string;
 }
 
