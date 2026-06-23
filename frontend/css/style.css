@@ -1,7 +1,65 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* ─── Tailwind v4 theme — mapeia tokens do projeto para utilidades CSS ─── */
+@theme inline {
+  /* shadcn/ui color tokens */
+  --color-background:              var(--background);
+  --color-foreground:              var(--foreground);
+  --color-card:                    var(--card);
+  --color-card-foreground:         var(--card-foreground);
+  --color-popover:                 var(--popover);
+  --color-popover-foreground:      var(--popover-foreground);
+  --color-primary:                 var(--primary);
+  --color-primary-foreground:      var(--primary-foreground);
+  --color-secondary:               var(--secondary);
+  --color-secondary-foreground:    var(--secondary-foreground);
+  --color-muted:                   var(--muted);
+  --color-muted-foreground:        var(--muted-foreground);
+  --color-accent:                  var(--accent);
+  --color-accent-foreground:       var(--accent-foreground);
+  --color-destructive:             var(--destructive);
+  --color-destructive-foreground:  var(--destructive-foreground);
+  --color-border:                  var(--border);
+  --color-input:                   var(--input);
+  --color-ring:                    var(--ring);
+
+  /* Tokens do jogo — disponíveis como bg-green, text-text-1, bg-bg-2, etc. */
+  --color-green:       var(--green);
+  --color-green-light: var(--green-light);
+  --color-green-dim:   var(--green-dim);
+  --color-red:         var(--red);
+  --color-gold:        var(--gold);
+  --color-silver:      var(--silver);
+  --color-bronze:      var(--bronze);
+  --color-text-1:      var(--text-1);
+  --color-text-2:      var(--text-2);
+  --color-text-3:      var(--text-3);
+  --color-text-4:      var(--text-4);
+  --color-bg-0:        var(--bg-0);
+  --color-bg-1:        var(--bg-1);
+  --color-bg-2:        var(--bg-2);
+  --color-bg-3:        var(--bg-3);
+  --color-bg-4:        var(--bg-4);
+  --color-border-mid:  var(--border-mid);
+  --color-twitch:      var(--twitch);
+  --color-youtube:     var(--youtube);
+  --color-kick:        var(--kick);
+  --color-tiktok:      var(--tiktok);
+  --color-amber:       var(--amber);
+
+  /* Raios */
+  --radius-sm:  calc(var(--radius) - 2px);
+  --radius-md:  var(--radius);
+  --radius-lg:  var(--radius-lg-val);
+  --radius-xl:  calc(var(--radius-lg-val) + 4px);
+}
+
 /* ===== RESET & BASE ===== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
+  /* ── Tokens do jogo ── */
   --bg-0: #090909;
   --bg-1: #0e0e0e;
   --bg-2: #141414;
@@ -29,6 +87,34 @@
   --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --radius: 6px;
   --radius-lg: 10px;
+  --radius-lg-val: 10px;
+  --twitch: #9147ff;
+  --youtube: #ff2d2d;
+  --kick: #53fc18;
+  --tiktok: #ff0050;
+  --amber: #c87a2a;
+  --amber-dim: #2a1a08;
+  --amber-border: #6b4010;
+
+  /* ── Tokens shadcn/ui ── */
+  --background:                #090909;
+  --foreground:                #e8e0cc;
+  --card:                      #141414;
+  --card-foreground:           #e8e0cc;
+  --popover:                   #141414;
+  --popover-foreground:        #e8e0cc;
+  --primary:                   #5a8a3c;
+  --primary-foreground:        #e8e0cc;
+  --secondary:                 #1a1a1a;
+  --secondary-foreground:      #b0a890;
+  --muted:                     #1a1a1a;
+  --muted-foreground:          #777060;
+  --accent:                    #222222;
+  --accent-foreground:         #e8e0cc;
+  --destructive:               #e04040;
+  --destructive-foreground:    #e8e0cc;
+  --input:                     #1a1a1a;
+  --ring:                      #5a8a3c;
 }
 
 html { scroll-behavior: smooth; }
