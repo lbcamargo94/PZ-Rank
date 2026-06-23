@@ -3394,14 +3394,20 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   min-width: 130px;
 }
 .painel-entry-char {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .painel-entry-player {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 16px;
   color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .painel-entry-stats {
@@ -3443,13 +3449,18 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   font-size: 16px;
   font-weight: 600;
   color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 240px;
 }
 .player-card-info {
   display: flex;
   flex-direction: column;
   gap: 4px;
   flex: 1;
-  min-width: 150px;
+  min-width: 140px;
+  overflow: hidden;
 }
 .player-badges {
   display: flex;
@@ -4132,4 +4143,118 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 /* ── Pbar ────────────────────────────────────────────────────── */
 .pbar-label            { font-size: 16px; }
 .pbar-vals             { font-size: 16px; }
+
+/* ══════════════════════════════════════════════════════════════
+   PAINEL DE MODERADORES — RESPONSIVO
+   Breakpoints: ≤ 768px | ≤ 640px | ≤ 480px
+   ══════════════════════════════════════════════════════════════ */
+
+/*
+ * ≤ 768px
+ * Ações dos cards (player e entry) quebram para linha própria,
+ * alinhadas à direita e separadas por um divisor fino.
+ * Garante que nenhum botão seja cortado em telas médias.
+ */
+@media (max-width: 768px) {
+  .player-card-actions {
+    width: 100%;
+    justify-content: flex-end;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    margin-top: 2px;
+  }
+
+  .painel-entry-actions {
+    width: 100%;
+    justify-content: flex-end;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+
+  /* Stats ganham espaço total da linha quando ações descem */
+  .painel-entry-stats { flex: 1 1 auto; }
+}
+
+/*
+ * ≤ 640px
+ * Header e nav do painel colapsam verticalmente.
+ * Abas do painel ocupam largura total e o botão de atualizar
+ * também fica em linha própria.
+ */
+@media (max-width: 640px) {
+  /* Header: empilha esquerda / direita */
+  .painel-header-inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .painel-header-right {
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  /* E-mail do moderador some — espaço insuficiente */
+  .mod-email { display: none; }
+
+  /* Nav: tabs em cima, botão embaixo */
+  .painel-nav {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 10px 16px;
+    gap: 8px;
+  }
+  .painel-tabs       { width: 100%; gap: 6px; }
+  .painel-nav > .btn-primary { width: 100%; justify-content: center; }
+
+  /* Filtros: gap menor para caber melhor */
+  .painel-section-filter .filter-bar { gap: 4px; }
+  .painel-section-filter .sort-btn   { padding: 6px 10px; font-size: 14px; }
+}
+
+/*
+ * ≤ 480px
+ * Botões de ação viram icon-only (font-size: 0 oculta o texto;
+ * o ícone .ti é restaurado explicitamente).
+ * Entry card: cada região ocupa sua própria linha.
+ * Tabs: distribuídas uniformemente.
+ */
+@media (max-width: 480px) {
+  .painel-main { padding: 10px; gap: 10px; }
+
+  /* Tabs uniformes */
+  .painel-tab { flex: 1; justify-content: center; font-size: 13px; padding: 8px 6px; }
+
+  /* Entry card: coluna por região */
+  .painel-entry-identity { width: 100%; flex: none; min-width: 0; }
+  .painel-entry-stats    { width: 100%; flex: none; gap: 8px; font-size: 14px; }
+
+  /* Filtros de entrada: sem badge de contagem (pouco espaço) */
+  .painel-section-filter .sort-btn .rank-tab-badge { display: none; }
+  .painel-section-filter .sort-btn { font-size: 13px; padding: 5px 8px; }
+
+  /* ── Botões icon-only ──────────────────────────────────────
+   * font-size: 0 no botão oculta o texto e redimensiona o ícone.
+   * O ícone .ti é restaurado em 16px para manter legibilidade.
+   */
+  .player-card-actions .btn-sm,
+  .painel-entry-actions .btn-sm {
+    font-size: 0 !important;
+    padding: 9px !important;
+    min-width: 36px;
+    justify-content: center;
+  }
+  .player-card-actions .btn-sm > .ti,
+  .painel-entry-actions .btn-sm > .ti {
+    font-size: 16px !important;
+    line-height: 1;
+    display: block;
+  }
+
+  /* Player nick: janela menor */
+  .player-nick { max-width: 160px; }
+
+  /* Player card: links menores */
+  .player-card-links { font-size: 16px; gap: 8px; }
+}
 
