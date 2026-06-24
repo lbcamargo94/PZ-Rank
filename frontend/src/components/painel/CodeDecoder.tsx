@@ -1,10 +1,22 @@
 import { useState, useRef, useEffect } from 'react';
 import { parsePzrCode } from '../../lib/decoder';
 import { computeScore, SCORE_KILLS_MAX } from '../../lib/objectives';
-import { resolveTrait } from '../../lib/traits';
+import { resolveTrait, getTraitImageUrl } from '../../lib/traits';
+import { SKILLS } from '../../lib/skills';
 import type { DecodedCode } from '../../types';
 
 const KILLS_TARGET = SCORE_KILLS_MAX;
+
+// PT-BR lookup por ID da skill (e.g. "Fitness" → "Aptidão Física")
+const SKILL_NAME_BY_ID = new Map(SKILLS.map(s => [s.id, s.name]));
+
+// Parseia "Fitness 4" → { id: "Fitness", ptName: "Aptidão Física", level: 4 }
+function parseSkillRaw(raw: string): { id: string; ptName: string; level: number } {
+  const lastSpace = raw.lastIndexOf(' ');
+  const id    = lastSpace !== -1 ? raw.slice(0, lastSpace) : raw;
+  const level = lastSpace !== -1 ? parseInt(raw.slice(lastSpace + 1), 10) : 0;
+  return { id, ptName: SKILL_NAME_BY_ID.get(id) ?? id, level: isNaN(level) ? 0 : level };
+}
 
 function verdict(d: DecodedCode): { ok: boolean; reasons: string[] } {
   const reasons: string[] = [];
@@ -13,20 +25,22 @@ function verdict(d: DecodedCode): { ok: boolean; reasons: string[] } {
 }
 
 function TraitBadge({ raw }: { raw: string }) {
-  const def   = resolveTrait(raw);
-  const label = def.name;
-  const type  = def.type;
-  return <span className={`dc-trait-badge dc-trait-${type}`}>{label}</span>;
+  const def    = resolveTrait(raw);
+  const imgUrl = getTraitImageUrl(def);
+  return (
+    <span className={`dc-trait-badge dc-trait-${def.type}`}>
+      {imgUrl && <img src={imgUrl} alt="" className="dc-trait-img" />}
+      {def.name}
+    </span>
+  );
 }
 
 function SkillPips({ raw }: { raw: string }) {
-  const parts = raw.split(':');
-  const name  = parts[0] ?? raw;
-  const level = parseInt(parts[1] ?? '0', 10);
+  const { ptName, level } = parseSkillRaw(raw);
   const isMax = level >= 10;
   return (
     <div className={`dc-skill-row${isMax ? ' dc-skill-max' : ''}`}>
-      <span className="dc-skill-name">{name}</span>
+      <span className="dc-skill-name">{ptName}</span>
       <span className="srow-pips">
         {Array.from({ length: 10 }, (_, i) => (
           <span key={i} className={i < level ? 'pip pip-on' : 'pip pip-off'} />
@@ -108,7 +122,7 @@ export function CodeDecoder() {
   const positiveTraits = result?.traits.filter(t => resolveTrait(t).type === 'positive') ?? [];
   const negativeTraits = result?.traits.filter(t => resolveTrait(t).type === 'negative') ?? [];
 
-  const maxedSkills = result?.skills.filter(s => parseInt(s.split(':')[1] ?? '0', 10) >= 10).length ?? 0;
+  const maxedSkills = result?.skills.filter(s => parseSkillRaw(s).level >= 10).length ?? 0;
 
   return (
     <div className="painel-section dc-page">
@@ -119,7 +133,6 @@ export function CodeDecoder() {
       {/* ── Input card ── */}
       <div className={`dc-input-card${hasResult ? ' dc-input-compact' : ''}`}>
 
-        {/* Empty-state hint (only when no result yet) */}
         {!hasResult && (
           <div className="dc-guide">
             <i className="ti ti-qrcode dc-guide-icon" />
