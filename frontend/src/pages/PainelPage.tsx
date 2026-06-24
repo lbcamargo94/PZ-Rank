@@ -11,8 +11,9 @@ import { EditObjectivesModal }   from '../components/painel/EditObjectivesModal'
 import { ModeratorsList }        from '../components/painel/ModeratorsList';
 import { CreateModeratorModal }  from '../components/painel/CreateModeratorModal';
 import { ConfirmModal }          from '../components/painel/ConfirmModal';
+import { CodeDecoder }           from '../components/painel/CodeDecoder';
 
-type Tab         = 'players' | 'entries' | 'moderators';
+type Tab         = 'players' | 'entries' | 'moderators' | 'decoder';
 type EntryFilter = 'all' | 'alive' | 'dead' | 'disqualified';
 
 const ENTRY_FILTER_CONFIG: { key: EntryFilter; label: string; icon: string }[] = [
@@ -157,6 +158,10 @@ export function PainelPage({ session, onSession, onBack }: Props) {
             onClick={() => setTab('moderators')}>
             <i className="ti ti-shield-star" /> Moderadores
           </button>
+          <button className={`painel-tab${tab === 'decoder' ? ' active' : ''}`}
+            onClick={() => setTab('decoder')}>
+            <i className="ti ti-zoom-code" /> Decoder
+          </button>
         </div>
         <button className="btn-primary" onClick={() => setShowUpdateRank(true)}>
           <i className="ti ti-trophy" /> Atualizar Rank
@@ -168,6 +173,8 @@ export function PainelPage({ session, onSession, onBack }: Props) {
         {tab === 'players' && (
           <PendingPlayers token={session.token} showToast={showToast} />
         )}
+
+        {tab === 'decoder' && <CodeDecoder />}
 
         {tab === 'moderators' && (
           <ModeratorsList
