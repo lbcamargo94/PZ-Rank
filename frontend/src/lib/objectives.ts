@@ -62,6 +62,16 @@ export const SCORE_ALL_SKILLS  = 500; // pts por maxar todas as habilidades
 export const SCORE_STATUE      = 300; // pts pela Estátua do Spiffo
 export const SCORE_MILITARY    = 300; // pts por limpar a base militar
 
+const BASE_ITEM_COUNT = 6; // bed, windows, sink, power, food, vehicle
+
+export const MAX_POSSIBLE_SCORE =
+  SCORE_KILLS_MAX +
+  SPIFFOS_RESTAURANTS.length * (SCORE_BASE + BASE_ITEM_COUNT * SCORE_BASE_ITEM) +
+  SCORE_KILLS_500K +
+  SCORE_ALL_SKILLS +
+  SCORE_STATUE +
+  SCORE_MILITARY;
+
 export function computeScore(
   kills: number,
   objectives?: Partial<Objectives> | null,

@@ -1,6 +1,7 @@
-import { useNavigate } from 'react-router-dom';
+﻿import { useNavigate } from 'react-router-dom';
 import type { Entry, SortKey, RankTab } from '../types';
 import { RankRow, KILLS_TARGET } from './RankRow';
+import { MAX_POSSIBLE_SCORE } from '../lib/objectives';
 
 interface RankTableProps {
   entries:    Entry[];
@@ -50,10 +51,9 @@ function MiniBar({ value, max, done }: { value: number; max: number; done?: bool
   );
 }
 
-function RankCard({ entry, rank, maxScore, onPlayerClick, hideStatus }: {
+function RankCard({ entry, rank, onPlayerClick, hideStatus }: {
   entry: Entry;
   rank: number;
-  maxScore: number;
   onPlayerClick: (id: number) => void;
   hideStatus?: boolean;
 }) {
@@ -97,7 +97,7 @@ function RankCard({ entry, rank, maxScore, onPlayerClick, hideStatus }: {
       {/* Score + bar */}
       <div className="rc-score">
         <span>{entry.score.toLocaleString('pt-BR')} <span className="rc-pts">pts</span></span>
-        <MiniBar value={entry.score ?? 0} max={maxScore} />
+        <MiniBar value={entry.score ?? 0} max={MAX_POSSIBLE_SCORE} />
       </div>
 
       {/* Stats */}
@@ -131,7 +131,6 @@ export function RankTable({ entries, sortKey, loading, onSort, onRegister, onRel
   const navigate = useNavigate();
   const hideStatus = false;
   const { icon: emptyIcon, text: emptyText } = EMPTY_MESSAGES[tab];
-  const maxScore = entries.reduce((m, e) => Math.max(m, e.score ?? 0), 1);
 
   function handlePlayerClick(playerId: number) {
     navigate(`/player/${playerId}`);
@@ -184,7 +183,7 @@ export function RankTable({ entries, sortKey, loading, onSort, onRegister, onRel
               </thead>
               <tbody>
                 {entries.map((entry, i) => (
-                  <RankRow key={entry.id} entry={entry} rank={i + 1} hideStatus={hideStatus} maxScore={maxScore} />
+                  <RankRow key={entry.id} entry={entry} rank={i + 1} hideStatus={hideStatus} />
                 ))}
               </tbody>
             </table>
@@ -197,7 +196,7 @@ export function RankTable({ entries, sortKey, loading, onSort, onRegister, onRel
                 key={entry.id}
                 entry={entry}
                 rank={i + 1}
-                maxScore={maxScore}
+               
                 onPlayerClick={handlePlayerClick}
                 hideStatus={hideStatus}
               />
