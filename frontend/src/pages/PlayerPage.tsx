@@ -34,6 +34,7 @@ import {
   IconBuildingStore,
   IconCirclePlus,
   IconCircleMinus,
+  IconTrophy,
 } from '@tabler/icons-react';
 
 type SocialIconName = 'ti-brand-twitch' | 'ti-brand-youtube' | 'ti-brand-kick' | 'ti-brand-tiktok';
@@ -228,8 +229,15 @@ function TraitsSection({ traitsRaw }: { traitsRaw: string | null | undefined }) 
 }
 
 function CharacterCard({ entry, rank }: { entry: Entry; rank: number | null }) {
+  const isDisc  = entry.sandbox_ok === false;
+  const isAlive = !isDisc && entry.is_alive;
+  const isDead  = !isDisc && !entry.is_alive;
+
+  const cardCls = `pp-char-card${isAlive ? ' pp-char-alive' : isDead ? ' pp-char-dead' : ' pp-char-disc'}`;
+  const rankCls = `pp-char-rank${rank === 1 ? ' pp-rank-gold' : rank === 2 ? ' pp-rank-silver' : rank === 3 ? ' pp-rank-bronze' : ''}`;
+
   return (
-    <div className={`pp-char-card${entry.is_alive ? '' : ' pp-char-dead'}`}>
+    <div className={cardCls}>
       {/* Card header */}
       <div className="pp-char-header">
         <div className="pp-char-identity">
@@ -244,10 +252,12 @@ function CharacterCard({ entry, rank }: { entry: Entry; rank: number | null }) {
           )}
         </div>
         <div className="pp-char-right">
-          {rank !== null && <span className="pp-char-rank">#{rank}</span>}
-          {entry.is_alive
-            ? <span className="alive-badge alive"><IconHeartbeat size={16} /> Vivo</span>
-            : <span className="alive-badge dead"><IconSkull size={16} /> Morto</span>}
+          {rank !== null && <span className={rankCls}>#{rank}</span>}
+          {isDisc
+            ? <span className="alive-badge disqualified"><IconBan size={16} /> Desclassificado</span>
+            : isAlive
+              ? <span className="alive-badge alive"><IconHeartbeat size={16} /> Vivo</span>
+              : <span className="alive-badge dead"><IconSkull size={16} /> Morto</span>}
         </div>
       </div>
 
@@ -319,11 +329,13 @@ export function PlayerPage() {
     return (
       <div className="player-page player-page-state">
         <div className="container">
-          <IconAlertCircle size={16} /> {error ?? 'Jogador não encontrado.'}
-          <br />
-          <Button asChild size="sm" className="mt-4">
-            <Link to="/"><IconArrowLeft size={16} /> Voltar ao ranking</Link>
-          </Button>
+          <div className="player-page-error">
+            <IconAlertCircle size={24} />
+            <p>{error ?? 'Jogador não encontrado.'}</p>
+            <Button asChild size="sm">
+              <Link to="/"><IconArrowLeft size={16} /> Voltar ao ranking</Link>
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -386,24 +398,28 @@ export function PlayerPage() {
           <div className="pp-summary">
             <Card className="pp-sum-card">
               <CardContent className="flex flex-col gap-1 py-3 px-4">
+                <span className="pp-sum-icon"><IconTrophy size={16} /></span>
                 <span className="pp-sum-label">Melhor posição</span>
                 <span className="pp-sum-value">{bestRank !== null ? `#${bestRank}` : '—'}</span>
               </CardContent>
             </Card>
             <Card className="pp-sum-card">
               <CardContent className="flex flex-col gap-1 py-3 px-4">
+                <span className="pp-sum-icon"><IconStar size={16} /></span>
                 <span className="pp-sum-label">Melhor pontuação</span>
                 <span className="pp-sum-value">{bestEntry.score.toLocaleString('pt-BR')} pts</span>
               </CardContent>
             </Card>
             <Card className="pp-sum-card">
               <CardContent className="flex flex-col gap-1 py-3 px-4">
+                <span className="pp-sum-icon"><IconUsers size={16} /></span>
                 <span className="pp-sum-label">Personagens</span>
                 <span className="pp-sum-value">{entries.length}</span>
               </CardContent>
             </Card>
             <Card className="pp-sum-card">
               <CardContent className="flex flex-col gap-1 py-3 px-4">
+                <span className="pp-sum-icon"><IconSword size={16} /></span>
                 <span className="pp-sum-label">Maior massacre</span>
                 <span className="pp-sum-value">{bestEntry.kills.toLocaleString('pt-BR')}</span>
               </CardContent>

@@ -1,7 +1,7 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 @import "tw-animate-css";
 
-/* ─── Tailwind v4 theme — mapeia tokens do projeto para utilidades CSS ─── */
+/* â”€â”€â”€ Tailwind v4 theme â€” mapeia tokens do projeto para utilidades CSS â”€â”€â”€ */
 @theme inline {
   /* shadcn/ui color tokens */
   --color-background:              var(--background);
@@ -24,7 +24,7 @@
   --color-input:                   var(--input);
   --color-ring:                    var(--ring);
 
-  /* Tokens do jogo — disponíveis como bg-green, text-text-1, bg-bg-2, etc. */
+  /* Tokens do jogo â€” disponÃ­veis como bg-green, text-text-1, bg-bg-2, etc. */
   --color-green:       var(--green);
   --color-green-light: var(--green-light);
   --color-green-dim:   var(--green-dim);
@@ -59,7 +59,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  /* ── Tokens do jogo ── */
+  /* â”€â”€ Tokens do jogo â”€â”€ */
   --bg-0: #090909;
   --bg-1: #0e0e0e;
   --bg-2: #141414;
@@ -96,7 +96,7 @@
   --amber-dim: #2a1a08;
   --amber-border: #6b4010;
 
-  /* ── Tokens shadcn/ui ── */
+  /* â”€â”€ Tokens shadcn/ui â”€â”€ */
   --background:                #090909;
   --foreground:                #e8e0cc;
   --card:                      #141414;
@@ -504,7 +504,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   gap: 10px;
 }
 
-/* código do mod */
+/* cÃ³digo do mod */
 .decoded-info {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -532,7 +532,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   border-radius: var(--radius);
 }
 
-/* profissão e habilidades resumidas na linha do ranking */
+/* profissÃ£o e habilidades resumidas na linha do ranking */
 .player-profession {
   font-family: var(--font-mono);
   font-size: 10px;
@@ -714,10 +714,10 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 
 
 /* ===================================================================
-   REACT COMPONENTS — classes usadas pelos componentes React
+   REACT COMPONENTS â€” classes usadas pelos componentes React
    =================================================================== */
 
-/* ── Variáveis extras ─────────────────────────────────────── */
+/* â”€â”€ VariÃ¡veis extras â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 :root {
   --twitch:  #9147ff;
   --youtube: #ff2d2d;
@@ -730,7 +730,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 
 
 
-/* ── Formulário (React) ───────────────────────────────────── */
+/* â”€â”€ FormulÃ¡rio (React) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .modal-form {
   display: flex;
   flex-direction: column;
@@ -806,7 +806,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .decoded-value.sandbox-ok    { color: var(--green-light); }
 .decoded-value.sandbox-invalid { color: #e07820; }
 
-/* ── Rank tabs ────────────────────────────────────────────── */
+/* â”€â”€ Rank tabs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .rank-tabs-bar {
   padding-top: 4px;
   padding-bottom: 0;
@@ -835,12 +835,12 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 }
 
 
-/* ── StatsBar colorida ────────────────────────────────────── */
+/* â”€â”€ StatsBar colorida â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .stat-alive .stat-label { color: var(--green-light); }
 .stat-dead  .stat-label { color: var(--red); }
 .stat-disc  .stat-label { color: #e07820; }
 
-/* ── Tabela React ─────────────────────────────────────────── */
+/* â”€â”€ Tabela React â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .table-section { padding-bottom: 48px; }
 
 .sort-bar {
@@ -950,7 +950,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .rank-time { font-family: var(--font-mono); font-size: 13px; color: var(--text-3); }
 .rank-kills { font-family: var(--font-mono); font-size: 14px; color: var(--text-2); }
 
-/* ── Coluna de habilidades — contador (botão) ─────────────── */
+/* â”€â”€ Coluna de habilidades â€” contador (botÃ£o) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .rank-skills { white-space: nowrap; }
 
 .skills-no-data { color: var(--text-4); font-family: var(--font-mono); font-size: 13px; }
@@ -990,7 +990,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 
 .skills-sep { color: var(--text-4); font-weight: 400; margin: 0 1px; }
 
-/* ── Modal de habilidades ─────────────────────────────────── */
+/* â”€â”€ Modal de habilidades â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sm-overlay {
   position: fixed;
   inset: 0;
@@ -1111,7 +1111,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 
 .srow-max .srow-name { color: var(--gold); font-weight: 700; }
 
-/* pips de progresso (10 quadradinhos = nível 0–10) */
+/* pips de progresso (10 quadradinhos = nÃ­vel 0â€“10) */
 .srow-pips {
   flex: 1;
   display: flex;
@@ -1129,7 +1129,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .pip-on  { background: var(--gold); }
 .pip-off { background: var(--bg-4); border: 1px solid rgba(255, 255, 255, 0.07); }
 
-/* nível numérico */
+/* nÃ­vel numÃ©rico */
 .srow-lvl {
   width: 16px;
   flex-shrink: 0;
@@ -1165,7 +1165,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   letter-spacing: 0.5px;
 }
 
-/* ── Modal de cadastro de jogador ─────────────────────────── */
+/* â”€â”€ Modal de cadastro de jogador â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .reg-header {
   padding: 24px 24px 18px;
   border-bottom: 1px solid var(--border);
@@ -1224,7 +1224,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 }
 .reg-nick-input:focus { border-color: var(--green) !important; }
 
-/* cabeçalho da seção de canais */
+/* cabeÃ§alho da seÃ§Ã£o de canais */
 .reg-socials-header {
   display: flex;
   align-items: center;
@@ -1244,7 +1244,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   border-radius: 10px;
 }
 
-/* grade 2×2 dos canais */
+/* grade 2Ã—2 dos canais */
 .reg-socials-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1282,7 +1282,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .social-tiktok  .reg-social-label { color: var(--tiktok);  }
 .social-tiktok  .reg-social-input:focus { border-color: var(--tiktok);  box-shadow: 0 0 0 2px rgba(255,0,80,.12); }
 
-/* ── Painel de moderadores — login ────────────────────────── */
+/* â”€â”€ Painel de moderadores â€” login â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .painel-login-wrap {
   min-height: 100vh;
   background: var(--bg-0);
@@ -1403,7 +1403,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   gap: 5px;
 }
 
-/* ── Painel — geral ───────────────────────────────────────── */
+/* â”€â”€ Painel â€” geral â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .painel-wrap {
   min-height: 100vh;
   background: var(--bg-0);
@@ -1492,7 +1492,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   text-align: center;
 }
 
-/* ── Player card (painel) ─────────────────────────────────── */
+/* â”€â”€ Player card (painel) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .player-card {
   display: flex;
   align-items: center;
@@ -1545,10 +1545,10 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   white-space: nowrap;
 }
 
-/* ── Filtros de status ────────────────────────────────────── */
-.filter-bar { display: flex; gap: 4px; flex-wrap: wrap; }
+/* â”€â”€ Filtros de status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.filter-bar { display: flex; gap: 6px; flex-wrap: wrap; }
 
-/* ── Alive/Dead toggle no modal ───────────────────────────── */
+/* â”€â”€ Alive/Dead toggle no modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .alive-toggle-group { display: flex; flex-direction: column; gap: 8px; }
 
 .alive-toggle-row { display: flex; gap: 8px; }
@@ -1584,14 +1584,14 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   color: var(--red);
 }
 
-/* ── Status vivo/morto na tabela ─────────────────────────── */
+/* â”€â”€ Status vivo/morto na tabela â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .rank-alive { white-space: nowrap; }
 
 .alive-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 3px 8px;
+  gap: 6px;
+  padding: 4px 10px;
   border-radius: 20px;
   font-family: var(--font-mono);
   font-size: 12px;
@@ -1618,7 +1618,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   border: 1px solid rgba(180, 100, 0, 0.35);
 }
 
-/* ── Bloqueio de jogador ──────────────────────────────────── */
+/* â”€â”€ Bloqueio de jogador â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .player-blocked { opacity: 0.7; border-left: 3px solid var(--red) !important; }
 
 
@@ -1627,7 +1627,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .filter-blocked { color: var(--red) !important; }
 .filter-blocked.active { border-color: var(--red) !important; background: rgba(224,64,64,0.12) !important; }
 
-/* ── Barra de filtro separada do header de seção ─────────── */
+/* â”€â”€ Barra de filtro separada do header de seÃ§Ã£o â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .painel-section-filter {
   padding: 10px 16px;
   border-bottom: 1px solid var(--border);
@@ -1644,19 +1644,9 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   margin-left: 1px;
 }
 
-/* Filtros de entradas com cor por estado */
-.sort-btn.filter-entry-alive.active        { background: var(--green-dim);            border-color: var(--green);   color: var(--green-light); }
-.sort-btn.filter-entry-dead.active         { background: rgba(180,60,60,.15);         border-color: #b44;           color: #f88; }
-.sort-btn.filter-entry-disqualified.active { background: rgba(200,140,30,.15);        border-color: var(--amber);   color: #f0a050; }
 
-/* Botão destrutivo — vermelho ao hover */
-.btn-delete:hover {
-  color: var(--red) !important;
-  border-color: rgba(224, 64, 64, 0.45) !important;
-  background: rgba(224, 64, 64, 0.08) !important;
-}
 
-/* Banner informativo da visualização de excluídos */
+/* Banner informativo da visualizaÃ§Ã£o de excluÃ­dos */
 .painel-deleted-banner {
   display: flex;
   align-items: center;
@@ -1669,7 +1659,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   color: var(--text-3);
 }
 
-/* ── Exclusão de jogador (soft-delete) ───────────────────── */
+/* â”€â”€ ExclusÃ£o de jogador (soft-delete) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .player-deleted {
   opacity: 0.45;
   border-left-color: #3a3a3a !important;
@@ -1681,7 +1671,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .filter-deleted.active { border-color: #888 !important; background: rgba(120,120,120,0.12) !important; }
 
 
-/* ── Pontuação na tabela ──────────────────────────────────── */
+/* â”€â”€ PontuaÃ§Ã£o na tabela â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .rank-score {
   font-family: var(--font-mono);
   font-size: 14px;
@@ -1693,7 +1683,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .rank-top.rank-2 .rank-score { color: var(--silver); }
 .rank-top.rank-3 .rank-score { color: var(--bronze); }
 
-/* ── Modal de Regras ──────────────────────────────────────── */
+/* â”€â”€ Modal de Regras â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 
 .rules-banner {
@@ -1843,7 +1833,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 }
 .rules-max-note strong { color: var(--green-light); }
 
-/* ── Objetivos no UpdateRankModal ─────────────────────────── */
+/* â”€â”€ Objetivos no UpdateRankModal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .objectives-section {
   display: flex;
   flex-direction: column;
@@ -2004,7 +1994,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   gap: 16px;
 }
 
-/* ── Cabeçalho ── */
+/* â”€â”€ CabeÃ§alho â”€â”€ */
 .pc-header {
   display: flex;
   align-items: flex-start;
@@ -2024,7 +2014,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   letter-spacing: 0.5px;
 }
 
-/* ── Canais sociais ── */
+/* â”€â”€ Canais sociais â”€â”€ */
 .pc-socials { display: flex; flex-wrap: wrap; gap: 6px; }
 .pc-social-link {
   display: inline-flex;
@@ -2045,7 +2035,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .pc-social-link.social-tiktok  { background: #ff004422; border-color: #ff004455; color: #ff6699; }
 .pc-no-socials { font-size: 12px; color: var(--text-3); font-family: var(--font-mono); }
 
-/* ── Melhor pontuação ── */
+/* â”€â”€ Melhor pontuaÃ§Ã£o â”€â”€ */
 .pc-best {
   display: flex;
   align-items: center;
@@ -2076,7 +2066,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   color: var(--text-2);
 }
 
-/* ── Seção de personagens ── */
+/* â”€â”€ SeÃ§Ã£o de personagens â”€â”€ */
 .pc-section-title {
   font-family: var(--font-mono);
   font-size: 12px;
@@ -2158,7 +2148,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 }
 .pc-live-link:hover { background: #9146ff22; }
 
-/* ── Botão "Ver detalhes" na tabela de rank ── */
+/* â”€â”€ BotÃ£o "Ver detalhes" na tabela de rank â”€â”€ */
 .btn-details {
   display: inline-flex;
   align-items: center;
@@ -2180,7 +2170,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   border-color: var(--green);
 }
 
-/* ── Header brand link ──────────────────────────────────────── */
+/* â”€â”€ Header brand link â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .header-brand {
   text-decoration: none;
   color: inherit;
@@ -2188,7 +2178,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 }
 .header-brand:hover .site-title { color: var(--green-light); }
 
-/* ── Back link ──────────────────────────────────────────────── */
+/* â”€â”€ Back link â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .back-link {
   display: inline-flex;
   align-items: center;
@@ -2205,7 +2195,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 }
 .back-link:hover { color: var(--green-light); }
 
-/* ── Progress Bar ───────────────────────────────────────────── */
+/* â”€â”€ Progress Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .pbar-wrap { width: 100%; }
 .pbar-header {
   display: flex;
@@ -2225,7 +2215,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 }
 .pbar-vals.pbar-done { color: var(--gold); }
 
-/* ── Rank Cards (mobile) ────────────────────────────────────── */
+/* â”€â”€ Rank Cards (mobile) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .rank-cards { display: none; flex-direction: column; gap: 10px; }
 
 .rank-card {
@@ -2290,7 +2280,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .rc-stat {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--text-2);
@@ -2343,11 +2333,23 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   .rank-cards { display: flex; }
 }
 
-/* ── Player Profile Page ────────────────────────────────────── */
+/* â”€â”€ Player Profile Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .player-page {
   min-height: 100vh;
   padding: 24px 0 60px;
 }
+.player-page-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-3);
+}
+.player-page-error p { margin: 0; }
+
 .player-page-state {
   display: flex;
   align-items: center;
@@ -2404,6 +2406,12 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   flex-direction: column;
   gap: 4px;
 }
+.pp-sum-icon {
+  color: var(--text-4);
+  display: flex;
+  margin-bottom: 2px;
+}
+
 .pp-sum-label {
   font-family: var(--font-mono);
   font-size: 10px;
@@ -2450,7 +2458,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   padding: 12px 0;
 }
 
-/* ── Características (traits) ───────────────────────────── */
+/* â”€â”€ CaracterÃ­sticas (traits) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .pp-traits {
   display: flex;
   flex-direction: column;
@@ -2508,10 +2516,20 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .pp-char-card {
   background: var(--bg-2);
   border: 1px solid var(--border);
+  border-left: 3px solid transparent;
   border-radius: var(--radius-lg);
   overflow: hidden;
+  transition: border-color 0.15s;
 }
-.pp-char-dead { opacity: 0.75; }
+.pp-char-alive { border-left-color: var(--green); }
+.pp-char-dead  { border-left-color: var(--red); filter: grayscale(0.2); opacity: 0.85; }
+.pp-char-disc  { border-left-color: #e07820; filter: grayscale(0.3); opacity: 0.8; }
+
+.pp-char-alive .pp-char-header { background: rgba(60, 110, 40, 0.08); }
+.pp-char-dead  .pp-char-header { background: rgba(224, 64, 64, 0.06); }
+.pp-char-disc  .pp-char-header { background: rgba(180, 100, 0, 0.06); }
+
+.pp-char-disc .pp-score-val { color: var(--text-4); }
 
 .pp-char-header {
   display: flex;
@@ -2541,8 +2559,11 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   font-family: var(--font-mono);
   font-size: 22px;
   font-weight: 700;
-  color: var(--gold);
+  color: var(--text-3);
 }
+.pp-rank-gold   { color: var(--gold); }
+.pp-rank-silver { color: var(--silver); }
+.pp-rank-bronze { color: var(--bronze); }
 
 .pp-char-score {
   padding: 12px 20px 0;
@@ -2570,7 +2591,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .pp-stat {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--text-2);
@@ -2591,23 +2612,6 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   border-top: 1px solid var(--border);
   background: var(--bg-3);
 }
-.pp-tab {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-family: var(--font-mono);
-  font-size: 16px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--text-3);
-  padding: 10px 20px;
-  transition: color 0.15s, background 0.15s;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-}
-.pp-tab:hover  { color: var(--text-2); background: var(--bg-4); }
-.pp-tab.active { color: var(--green); border-bottom-color: var(--green); }
-
 .pp-tab-body { padding: 16px 20px 20px; }
 
 /* Objectives */
@@ -2793,7 +2797,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   .pp-srow-pips { overflow: hidden; }
 }
 
-/* ── OBS Overlay ────────────────────────────────────────────── */
+/* â”€â”€ OBS Overlay â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .overlay-root {
   position: fixed;
   inset: 0;
@@ -2899,11 +2903,11 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 }
 .overlay-obj-done i { color: var(--gold); }
 
-/* ════════════════════════════════════════════════════════════
-   AJUSTES — tasks 1-12 (BRASILEIRÃO PZ)
-   ════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   AJUSTES â€” tasks 1-12 (BRASILEIRÃƒO PZ)
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* ── Task 4: fonte mínima 16px no rank ──────────────────── */
+/* â”€â”€ Task 4: fonte mÃ­nima 16px no rank â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .rank-table       { font-size: 16px; }
 .rank-table td    { font-size: 16px; }
 .char-name        { font-size: 16px; }
@@ -2917,7 +2921,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .sort-label       { font-size: 14px; }
 .alive-badge      { font-size: 14px; }
 
-/* ── Task 5: fontes do modal de Regras ───────────────────── */
+/* â”€â”€ Task 5: fontes do modal de Regras â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .rules-section-title  { font-size: 17px; }
 .rules-intro,
 .rules-desc           { font-size: 15px; }
@@ -2926,7 +2930,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .rules-score-table td { font-size: 15px; padding: 6px 8px; }
 .rules-max-note       { font-size: 14px; }
 
-/* ── Task 7: box para "objetivos não registrados" ────────── */
+/* â”€â”€ Task 7: box para "objetivos nÃ£o registrados" â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .pp-no-data-box {
   display: flex;
   flex-direction: column;
@@ -2956,7 +2960,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   line-height: 1.5;
 }
 
-/* ── Task 8: botão ← Ranking na tela de detalhes ─────────── */
+/* â”€â”€ Task 8: botÃ£o â† Ranking na tela de detalhes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .back-btn-rank {
   display: inline-flex;
   align-items: center;
@@ -2965,7 +2969,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   text-decoration: none;
 }
 
-/* ── Task 9: filtro de personagens na PlayerPage ─────────── */
+/* â”€â”€ Task 9: filtro de personagens na PlayerPage â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .pp-chars-header {
   display: flex;
   align-items: flex-start;
@@ -2980,11 +2984,8 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   flex-wrap: wrap;
   align-items: center;
 }
-.sort-btn.filter-alive.active { background: rgba(64,200,128,.15); border-color: var(--green); color: var(--green-light); }
-.sort-btn.filter-dead.active  { background: rgba(180,60,60,.15);  border-color: #b44;        color: #f88; }
-.sort-btn.filter-disq.active  { background: rgba(200,140,30,.15); border-color: var(--amber); color: var(--amber); }
 
-/* ── Task 10: botão ← Voltar no PainelLogin ─────────────── */
+/* â”€â”€ Task 10: botÃ£o â† Voltar no PainelLogin â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .painel-back {
   position: fixed;
   top: 16px;
@@ -2992,7 +2993,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   z-index: 10;
 }
 
-/* ── Tasks 11 + 12: entradas no painel de moderadores ────── */
+/* â”€â”€ Tasks 11 + 12: entradas no painel de moderadores â”€â”€â”€â”€â”€â”€ */
 .painel-entries-list {
   display: flex;
   flex-direction: column;
@@ -3057,7 +3058,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   flex-wrap: wrap;
 }
 
-/* ── PendingPlayers — melhorias UX task 12 ───────────────── */
+/* â”€â”€ PendingPlayers â€” melhorias UX task 12 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .player-card {
   display: flex;
   align-items: center;
@@ -3150,11 +3151,11 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .painel-empty-state i { font-size: 32px; }
 .painel-empty-state p { font-family: var(--font-mono); font-size: 14px; margin: 0; }
 
-/* ════════════════════════════════════════════════════════════
-   NOVOS COMPONENTES — tasks 1-6 (v2.5.0)
-   ════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   NOVOS COMPONENTES â€” tasks 1-6 (v2.5.0)
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* ── Task 1: banner "objetivos pendentes" na PlayerPage ──── */
+/* â”€â”€ Task 1: banner "objetivos pendentes" na PlayerPage â”€â”€â”€â”€ */
 .pp-obj-pending-banner {
   display: flex;
   align-items: center;
@@ -3170,7 +3171,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 }
 .pp-obj-pending-banner i { font-size: 16px; flex-shrink: 0; }
 
-/* ── Task 2: modal de Configurações do Desafio ────────────── */
+/* â”€â”€ Task 2: modal de ConfiguraÃ§Ãµes do Desafio â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .settings-modal-box {
   max-width: 600px;
   padding: 0;
@@ -3260,7 +3261,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   white-space: nowrap;
 }
 
-/* ── Task 5: modal de Cadastro refatorado ─────────────────── */
+/* â”€â”€ Task 5: modal de Cadastro refatorado â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .reg-header {
   display: flex;
   flex-direction: column;
@@ -3356,7 +3357,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .reg-success-title { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--text-1); margin: 0; }
 .reg-success-msg { font-family: var(--font-mono); font-size: 14px; color: var(--text-3); max-width: 320px; line-height: 1.6; margin: 0; }
 
-/* ── Task 6: modal de Regras refatorado ─────────────────────── */
+/* â”€â”€ Task 6: modal de Regras refatorado â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .rules-modal-header {
   padding: 24px 24px 0;
   display: flex;
@@ -3511,7 +3512,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   color: var(--text-2);
 }
 .rules-restaurant-chip i { color: var(--green); font-size: 12px; }
-/* Aba Pontuação */
+/* Aba PontuaÃ§Ã£o */
 .rules-score-section { display: flex; flex-direction: column; gap: 16px; }
 .rules-score-table { width: 100%; border-collapse: collapse; }
 .rules-score-table td {
@@ -3542,14 +3543,14 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .rules-max-label { font-family: var(--font-mono); font-size: 14px; color: var(--green); }
 .rules-max-value { font-family: var(--font-mono); font-size: 18px; font-weight: 700; color: var(--green-light); }
 
-/* ════════════════════════════════════════════════════════════
-   CORREÇÕES DE UX/MOBILE (v2.6.4)
-   ════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   CORREÃ‡Ã•ES DE UX/MOBILE (v2.6.4)
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 
-/* ── 2. Modal "Regras" — abas scrolláveis em telas ≤480px ─── */
+/* â”€â”€ 2. Modal "Regras" â€” abas scrollÃ¡veis em telas â‰¤480px â”€â”€â”€ */
 @media (max-width: 480px) {
-  /* Abas distribuídas igualmente — todas visíveis sem scroll */
+  /* Abas distribuÃ­das igualmente â€” todas visÃ­veis sem scroll */
   .rules-tabs {
     padding: 0;
     justify-content: stretch;
@@ -3573,23 +3574,12 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   .rules-tab-body { padding: 16px 16px 20px; }
 }
 
-/* ── PlayerPage — abas distribuídas em mobile ────────────────── */
+/* â”€â”€ PlayerPage â€” abas distribuÃ­das em mobile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (max-width: 560px) {
   .pp-tabs { justify-content: flex-start; }
-  .pp-tab  {
-    flex: 1;
-    text-align: center;
-    text-transform: none;
-    letter-spacing: 0;
-    padding: 8px 2px;
-    white-space: normal;
-    overflow-wrap: anywhere;
-    hyphens: auto;
-    line-height: 1.25;
-  }
 }
 
-/* ── 3. Modal "Configurações" — overflow correto em mobile ─── */
+/* â”€â”€ 3. Modal "ConfiguraÃ§Ãµes" â€” overflow correto em mobile â”€â”€â”€ */
 .settings-modal-body {
   max-height: calc(100dvh - 220px);
 }
@@ -3597,7 +3587,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   .settings-modal-body { max-height: calc(100vh - 220px); }
 }
 
-/* ── 4. Modal habilidades — coluna única em mobile ────────── */
+/* â”€â”€ 4. Modal habilidades â€” coluna Ãºnica em mobile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (max-width: 560px) {
   .sm-body {
     grid-template-columns: 1fr;
@@ -3607,11 +3597,11 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   .srow-name { width: 100px; }
 }
 
-/* ── 5. Fontes do modal de habilidades ────────────────────── */
+/* â”€â”€ 5. Fontes do modal de habilidades â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .srow-name { font-size: 12px; }
 .srow-lvl  { font-size: 12px; }
 
-/* ── 6. Botão "Ver detalhes" nos cards mobile ─────────────── */
+/* â”€â”€ 6. BotÃ£o "Ver detalhes" nos cards mobile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .rc-player-btn {
   display: inline-flex;
   align-items: center;
@@ -3634,18 +3624,18 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   border-color: var(--green);
 }
 
-/* ── 7. Características — tamanho legível ─────────────────── */
+/* â”€â”€ 7. CaracterÃ­sticas â€” tamanho legÃ­vel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
-/* ── 8. PlayerPage — fontes das habilidades ───────────────── */
+/* â”€â”€ 8. PlayerPage â€” fontes das habilidades â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .pp-srow-name { font-size: 14px; }
 .pp-srow-lvl  { font-size: 14px; }
 
-/* ════════════════════════════════════════════════════════════
-   REGRA GLOBAL: FONTE MÍNIMA 16px — SEM EXCEÇÕES
-   Tamanhos de ícones (.ti) não contam como texto.
-   ════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   REGRA GLOBAL: FONTE MÃNIMA 16px â€” SEM EXCEÃ‡Ã•ES
+   Tamanhos de Ã­cones (.ti) nÃ£o contam como texto.
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* ── Formulários — 16px previne auto-zoom em mobile (crítico) ─ */
+/* â”€â”€ FormulÃ¡rios â€” 16px previne auto-zoom em mobile (crÃ­tico) â”€ */
 .form-input            { font-size: 16px; }
 .form-select           { font-size: 16px; }
 .field-input           { font-size: 16px; }
@@ -3657,7 +3647,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .decoded-value         { font-size: 16px; }
 
 
-/* ── Sort/filter bar ─────────────────────────────────────────── */
+/* â”€â”€ Sort/filter bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sort-label            { font-size: 16px; }
 
 
@@ -3675,7 +3665,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .rules-pts-badge       { font-size: 16px; }
 .rules-pts-badge-sm    { font-size: 16px; }
 
-/* Modal Configurações */
+/* Modal ConfiguraÃ§Ãµes */
 .settings-modal-sub    { font-size: 16px; }
 .settings-row-label    { font-size: 16px; }
 .settings-row-value    { font-size: 16px; }
@@ -3689,7 +3679,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .reg-info-box          { font-size: 16px; }
 .reg-success-msg       { font-size: 16px; }
 
-/* ── Painel de moderadores ───────────────────────────────────── */
+/* â”€â”€ Painel de moderadores â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .painel-section-header h2 { font-size: 16px; }
 .painel-loading,
 .painel-empty          { font-size: 16px; }
@@ -3698,11 +3688,11 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .painel-entry-player   { font-size: 16px; }
 .mod-email             { font-size: 16px; }
 
-/* ── Profession + trait badges ───────────────────────────────── */
+/* â”€â”€ Profession + trait badges â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .profession-badge      { font-size: 16px; }
 .trait-badge           { font-size: 16px; }
 
-/* ── Player Card Modal ───────────────────────────────────────── */
+/* â”€â”€ Player Card Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .pc-best-label         { font-size: 16px; }
 .pc-best-char          { font-size: 16px; }
 .pc-section-title      { font-size: 16px; }
@@ -3711,7 +3701,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .pc-social-link        { font-size: 16px; }
 .pc-no-socials         { font-size: 16px; }
 
-/* ── PlayerPage ──────────────────────────────────────────────── */
+/* â”€â”€ PlayerPage â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .pp-sum-label          { font-size: 16px; }
 .pp-sum-value          { font-size: 20px; }
 .pp-score-label        { font-size: 16px; }
@@ -3730,30 +3720,30 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .pp-srow-name          { font-size: 16px; }
 .pp-srow-lvl           { font-size: 16px; }
 
-/* ── Rank cards (mobile) ─────────────────────────────────────── */
+/* â”€â”€ Rank cards (mobile) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .rc-char-name          { font-size: 16px; }
 .rc-stat               { font-size: 16px; }
 .rc-player-name        { font-size: 16px; }
 
-/* ── Modal de habilidades ────────────────────────────────────── */
+/* â”€â”€ Modal de habilidades â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sm-subtitle           { font-size: 16px; }
 .sm-char               { font-size: 16px; }
 .srow-name             { font-size: 16px; }
 .srow-lvl              { font-size: 16px; }
 
-/* ── Objective checkboxes ────────────────────────────────────── */
+/* â”€â”€ Objective checkboxes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .obj-checkbox-label    { font-size: 16px; }
 .obj-checkbox-label.sub { font-size: 16px; }
 
-/* ── Alive/status badges ─────────────────────────────────────── */
+/* â”€â”€ Alive/status badges â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .alive-badge           { font-size: 16px; }
 
-/* ── Pbar ────────────────────────────────────────────────────── */
+/* â”€â”€ Pbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .pbar-label            { font-size: 16px; }
 .pbar-vals             { font-size: 16px; }
 
 
-/* ── Modal de confirmação ─────────────────────────────────────── */
+/* â”€â”€ Modal de confirmaÃ§Ã£o â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .confirm-modal-msg {
   font-size: 16px;
   color: var(--text-2);
@@ -3769,16 +3759,16 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   border-top: 1px solid var(--border);
 }
 
-/* ══════════════════════════════════════════════════════════════
-   PAINEL DE MODERADORES — RESPONSIVO
-   Breakpoints: ≤ 768px | ≤ 640px | ≤ 480px
-   ══════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   PAINEL DE MODERADORES â€” RESPONSIVO
+   Breakpoints: â‰¤ 768px | â‰¤ 640px | â‰¤ 480px
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 /*
- * ≤ 768px
- * Ações dos cards (player e entry) quebram para linha própria,
- * alinhadas à direita e separadas por um divisor fino.
- * Garante que nenhum botão seja cortado em telas médias.
+ * â‰¤ 768px
+ * AÃ§Ãµes dos cards (player e entry) quebram para linha prÃ³pria,
+ * alinhadas Ã  direita e separadas por um divisor fino.
+ * Garante que nenhum botÃ£o seja cortado em telas mÃ©dias.
  */
 @media (max-width: 768px) {
   .player-card-actions {
@@ -3798,15 +3788,15 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
     flex-shrink: 0;
   }
 
-  /* Stats ganham espaço total da linha quando ações descem */
+  /* Stats ganham espaÃ§o total da linha quando aÃ§Ãµes descem */
   .painel-entry-stats { flex: 1 1 auto; }
 }
 
 /*
- * ≤ 640px
+ * â‰¤ 640px
  * Header e nav do painel colapsam verticalmente.
- * Abas do painel ocupam largura total e o botão de atualizar
- * também fica em linha própria.
+ * Abas do painel ocupam largura total e o botÃ£o de atualizar
+ * tambÃ©m fica em linha prÃ³pria.
  */
 @media (max-width: 640px) {
   /* Header: empilha esquerda / direita */
@@ -3819,10 +3809,10 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
     justify-content: space-between;
     flex-wrap: wrap;
   }
-  /* E-mail do moderador some — espaço insuficiente */
+  /* E-mail do moderador some â€” espaÃ§o insuficiente */
   .mod-email { display: none; }
 
-  /* Nav: tabs em cima, botão embaixo */
+  /* Nav: tabs em cima, botÃ£o embaixo */
   .painel-nav {
     flex-direction: column;
     align-items: stretch;
@@ -3833,29 +3823,23 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 
   /* Filtros: gap menor para caber melhor */
   .painel-section-filter .filter-bar { gap: 4px; }
-  .painel-section-filter .sort-btn   { padding: 6px 10px; font-size: 14px; }
 }
 
 /*
- * ≤ 480px
- * Botões de ação viram icon-only (font-size: 0 oculta o texto;
- * o ícone .ti é restaurado explicitamente).
- * Entry card: cada região ocupa sua própria linha.
- * Tabs: distribuídas uniformemente.
+ * â‰¤ 480px
+ * BotÃµes de aÃ§Ã£o viram icon-only (font-size: 0 oculta o texto;
+ * o Ã­cone .ti Ã© restaurado explicitamente).
+ * Entry card: cada regiÃ£o ocupa sua prÃ³pria linha.
+ * Tabs: distribuÃ­das uniformemente.
  */
 @media (max-width: 480px) {
   .painel-main { padding: 10px; gap: 10px; }
 
   /* Tabs uniformes */
-  .painel-tab { flex: 1; justify-content: center; font-size: 13px; padding: 8px 6px; }
-
-  /* Entry card: coluna por região */
+  /* Entry card: coluna por regiÃ£o */
   .painel-entry-identity { width: 100%; flex: none; min-width: 0; }
   .painel-entry-stats    { width: 100%; flex: none; gap: 8px; font-size: 14px; }
 
-  /* Filtros de entrada: sem badge de contagem (pouco espaço) */
-  .painel-section-filter .sort-btn .rank-tab-badge { display: none; }
-  .painel-section-filter .sort-btn { font-size: 13px; padding: 5px 8px; }
 
   /* Player nick: janela menor */
   .player-nick { max-width: 160px; }
