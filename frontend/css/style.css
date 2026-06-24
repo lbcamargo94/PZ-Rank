@@ -1424,126 +1424,6 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   letter-spacing: 0.5px;
 }
 
-/* ── Modal de cadastro de jogador ─────────────────────────── */
-.reg-modal-box { max-width: 520px; gap: 0; padding: 0; overflow: hidden; }
-
-.reg-header {
-  padding: 24px 24px 18px;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg-1);
-}
-
-.reg-header-tag {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 2px;
-  color: var(--green);
-  text-transform: uppercase;
-  display: block;
-  margin-bottom: 6px;
-}
-
-.reg-title {
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--text-1);
-}
-
-.reg-subtitle {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text-3);
-  margin-top: 6px;
-  line-height: 1.6;
-}
-
-.reg-modal-box .modal-close { top: 18px; right: 18px; }
-.reg-modal-box .modal-form  { padding: 20px 24px 24px; gap: 16px; }
-
-/* campo nick */
-.reg-nick-wrap { display: flex; flex-direction: column; gap: 4px; }
-
-.reg-nick-input-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.reg-nick-icon {
-  position: absolute;
-  left: 11px;
-  font-size: 15px;
-  color: var(--text-3);
-  pointer-events: none;
-}
-
-.reg-nick-input {
-  padding-left: 34px;
-  font-size: 15px !important;
-  border-color: var(--green-border) !important;
-  background: var(--bg-0) !important;
-}
-.reg-nick-input:focus { border-color: var(--green) !important; }
-
-/* cabeçalho da seção de canais */
-.reg-socials-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: -4px;
-}
-
-.optional-chip {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  color: var(--text-4);
-  background: var(--bg-3);
-  border: 1px solid var(--border);
-  padding: 1px 6px;
-  border-radius: 10px;
-}
-
-/* grade 2×2 dos canais */
-.reg-socials-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.reg-social-item {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.reg-social-label {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.reg-social-input { padding: 7px 10px; font-size: 11px !important; }
-
-/* acento de cor por plataforma */
-.social-twitch  .reg-social-label { color: var(--twitch);  }
-.social-twitch  .reg-social-input:focus { border-color: var(--twitch);  box-shadow: 0 0 0 2px rgba(145,71,255,.12); }
-
-.social-youtube .reg-social-label { color: var(--youtube); }
-.social-youtube .reg-social-input:focus { border-color: var(--youtube); box-shadow: 0 0 0 2px rgba(255,45,45,.12); }
-
-.social-kick    .reg-social-label { color: var(--kick);    }
-.social-kick    .reg-social-input:focus { border-color: var(--kick);    box-shadow: 0 0 0 2px rgba(83,252,24,.08); }
-
-.social-tiktok  .reg-social-label { color: var(--tiktok);  }
-.social-tiktok  .reg-social-input:focus { border-color: var(--tiktok);  box-shadow: 0 0 0 2px rgba(255,0,80,.12); }
-
 /* ── Painel de moderadores — login ────────────────────────── */
 .painel-login-wrap {
   min-height: 100vh;
@@ -3732,7 +3612,20 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   font-weight: 600;
   color: var(--social-color, var(--text-3));
 }
-.reg-social-input { font-size: 14px !important; }
+.reg-social-input { font-size: 16px !important; }
+.optional-chip {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-4);
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+.reg-modal-box .modal-close { top: 18px; right: 18px; }
+.reg-modal-box .modal-form  { padding: 20px 24px 24px; gap: 16px; }
 .reg-info-box {
   display: flex;
   align-items: flex-start;
@@ -4305,4 +4198,10 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 
   /* Player card: links menores */
   .player-card-links { font-size: 16px; gap: 8px; }
+}
+
+/* ── Modal de cadastro — padding reduzido em telas pequenas ─── */
+@media (max-width: 480px) {
+  .reg-modal-box .modal-form { padding: 16px; }
+  .reg-header { padding: 20px 16px 16px; }
 }
