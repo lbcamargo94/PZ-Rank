@@ -121,13 +121,13 @@ function fmtDate(iso: string | null | undefined): string {
 }
 
 function MiniBar({ value, max, done }: { value: number; max: number; done?: boolean }) {
-  const pct = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0;
+  const raw = max > 0 ? Math.min(100, (value / max) * 100) : 0;
   return (
     <div className="rk-bar-row">
       <div className="rk-bar-track">
-        <div className={`rk-bar-fill${done ? ' rk-bar-done' : ''}`} style={{ width: pct + '%' }} />
+        <div className={`rk-bar-fill${done ? ' rk-bar-done' : ''}`} style={{ width: raw + '%' }} />
       </div>
-      <span className={`rk-bar-pct${done ? ' rk-bar-pct-done' : ''}`}>{pct}%</span>
+      <span className={`rk-bar-pct${done ? ' rk-bar-pct-done' : ''}`}>{raw.toFixed(2)}%</span>
     </div>
   );
 }
