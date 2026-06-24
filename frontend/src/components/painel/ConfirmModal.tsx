@@ -1,4 +1,11 @@
-import { useEffect } from 'react';
+import {
+  IconAlertTriangle,
+  IconHelpCircle,
+  IconTrash,
+  IconCheck,
+} from '@tabler/icons-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 interface Props {
   title:         string;
@@ -17,33 +24,24 @@ export function ConfirmModal({
   onConfirm,
   onCancel,
 }: Props) {
-  useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onCancel(); };
-    window.addEventListener('keydown', onKey);
-    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
-  }, [onCancel]);
-
   return (
-    <div className="modal-overlay active" role="alertdialog" aria-modal="true">
-      <div className="modal-box modal-box--sm" onClick={e => e.stopPropagation()}>
-        <button className="modal-close" aria-label="Fechar" onClick={onCancel}>
-          <i className="ti ti-x" />
-        </button>
-        <h2 className="modal-title">
-          <i className={`ti ${danger ? 'ti-alert-triangle' : 'ti-help-circle'}`} /> {title}
-        </h2>
-        <p className="confirm-modal-msg">{message}</p>
-        <div className="confirm-modal-actions">
-          <button className="btn-secondary" onClick={onCancel}>
-            Cancelar
-          </button>
-          <button className={danger ? 'btn-danger' : 'btn-primary'} onClick={onConfirm}>
-            <i className={`ti ${danger ? 'ti-trash' : 'ti-check'}`} /> {confirmLabel}
-          </button>
-        </div>
-      </div>
-    </div>
+    <Dialog open onOpenChange={onCancel}>
+      <DialogContent className="max-w-[380px]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            {danger ? <IconAlertTriangle size={18} /> : <IconHelpCircle size={18} />}
+            {title}
+          </DialogTitle>
+          <DialogDescription>{message}</DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="secondary" onClick={onCancel}>Cancelar</Button>
+          <Button variant={danger ? 'destructive' : 'default'} onClick={onConfirm}>
+            {danger ? <IconTrash size={16} /> : <IconCheck size={16} />}
+            {confirmLabel}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

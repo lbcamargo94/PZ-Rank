@@ -1,22 +1,44 @@
 import { useNavigate } from 'react-router-dom';
 import type { Entry, SortKey, RankTab } from '../types';
 import { RankRow } from './RankRow';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  IconGhost,
+  IconTrophy,
+  IconSkull,
+  IconBan,
+  IconRefresh,
+  IconUserPlus,
+  IconHeartbeat,
+  IconSword,
+  IconCalendar,
+  IconClock,
+  IconStar,
+  IconUser,
+} from '@tabler/icons-react';
 
 interface RankTableProps {
-  entries:    Entry[];
-  sortKey:    SortKey;
-  loading:    boolean;
-  onSort:     (key: SortKey) => void;
-  onRegister: () => void;
-  onReload:   () => void;
-  tab:        RankTab;
+  entries:     Entry[];
+  sortKey:     SortKey;
+  loading:     boolean;
+  onSort:      (key: SortKey) => void;
+  onRegister:  () => void;
+  onReload:    () => void;
+  tab:         RankTab;
+  onTabChange: (tab: RankTab) => void;
+  aliveCount:  number;
+  deadCount:   number;
+  discCount:   number;
+  totalCount:  number;
 }
 
-const EMPTY_MESSAGES: Record<RankTab, { icon: string; text: string }> = {
-  rank:         { icon: 'ti-ghost',      text: 'Nenhum sobrevivente ativo no momento.\nCadastre-se e aguarde aprovação dos moderadores!' },
-  records:      { icon: 'ti-trophy',     text: 'Nenhum registro encontrado ainda.'                                                       },
-  dead:         { icon: 'ti-skull',      text: 'Nenhum sobrevivente foi eliminado ainda.'                                               },
-  disqualified: { icon: 'ti-ban',        text: 'Nenhum participante desclassificado.'                                                   },
+const EMPTY_MESSAGES: Record<RankTab, { icon: React.ReactElement; text: string }> = {
+  rank:         { icon: <IconGhost  size={20} />, text: 'Nenhum sobrevivente ativo no momento.\nCadastre-se e aguarde aprovação dos moderadores!' },
+  records:      { icon: <IconTrophy size={20} />, text: 'Nenhum registro encontrado ainda.'                                                       },
+  dead:         { icon: <IconSkull  size={20} />, text: 'Nenhum sobrevivente foi eliminado ainda.'                                               },
+  disqualified: { icon: <IconBan    size={20} />, text: 'Nenhum participante desclassificado.'                                                   },
 };
 
 const SORT_LABELS: { key: SortKey; label: string }[] = [
@@ -60,12 +82,12 @@ function RankCard({ entry, rank, onPlayerClick, hideStatus }: {
           entry.sandbox_ok === false
             ? (
               <span className="alive-badge disqualified rc-status" title="Configurações do sandbox divergem do desafio oficial">
-                <i className="ti ti-ban" /> Desc.
+                <IconBan size={16} /> Desc.
               </span>
             )
             : entry.is_alive
-              ? <span className="alive-badge alive rc-status"><i className="ti ti-heartbeat" /> Vivo</span>
-              : <span className="alive-badge dead rc-status"><i className="ti ti-skull" /> Morto</span>
+              ? <span className="alive-badge alive rc-status"><IconHeartbeat size={16} /> Vivo</span>
+              : <span className="alive-badge dead rc-status"><IconSkull size={16} /> Morto</span>
         )}
       </div>
 
@@ -74,18 +96,18 @@ function RankCard({ entry, rank, onPlayerClick, hideStatus }: {
 
       {/* Stats */}
       <div className="rc-stats">
-        <span className="rc-stat"><i className="ti ti-sword" />{entry.kills.toLocaleString('pt-BR')} zumbis</span>
-        <span className="rc-stat"><i className="ti ti-calendar" />{entry.days}d</span>
-        {entry.time_str && <span className="rc-stat"><i className="ti ti-clock" />{entry.time_str}</span>}
-        {objCount > 0 && <span className="rc-stat rc-obj"><i className="ti ti-star" />{objCount} obj.</span>}
+        <span className="rc-stat"><IconSword size={14} />{entry.kills.toLocaleString('pt-BR')} zumbis</span>
+        <span className="rc-stat"><IconCalendar size={14} />{entry.days}d</span>
+        {entry.time_str && <span className="rc-stat"><IconClock size={14} />{entry.time_str}</span>}
+        {objCount > 0 && <span className="rc-stat rc-obj"><IconStar size={14} />{objCount} obj.</span>}
       </div>
 
       {/* Player + actions */}
       <div className="rc-footer">
-        <span className="rc-player-name"><i className="ti ti-user" /> {entry.name}</span>
+        <span className="rc-player-name"><IconUser size={16} /> {entry.name}</span>
         {entry.player_id && (
           <button className="rc-player-btn" onClick={() => onPlayerClick(entry.player_id!)}>
-            <i className="ti ti-user" /> Ver detalhes
+            <IconUser size={16} /> Ver detalhes
           </button>
         )}
       </div>
@@ -93,10 +115,18 @@ function RankCard({ entry, rank, onPlayerClick, hideStatus }: {
   );
 }
 
-export function RankTable({ entries, sortKey, loading, onSort, onRegister, onReload, tab }: RankTableProps) {
+const TAB_CONFIG: { key: RankTab; label: string; countKey: 'aliveCount' | 'deadCount' | 'discCount' | 'totalCount' }[] = [
+  { key: 'rank',         label: 'Ranking',          countKey: 'aliveCount'  },
+  { key: 'records',      label: 'Recordes',         countKey: 'totalCount'  },
+  { key: 'dead',         label: 'Mortos',           countKey: 'deadCount'   },
+  { key: 'disqualified', label: 'Desclassificados', countKey: 'discCount'   },
+];
+
+export function RankTable({ entries, sortKey, loading, onSort, onRegister, onReload, tab, onTabChange, aliveCount, deadCount, discCount, totalCount }: RankTableProps) {
   const navigate = useNavigate();
   const hideStatus = tab === 'rank';
   const { icon: emptyIcon, text: emptyText } = EMPTY_MESSAGES[tab];
+  const counts = { aliveCount, deadCount, discCount, totalCount };
 
   function handlePlayerClick(playerId: number) {
     navigate(`/player/${playerId}`);
@@ -104,29 +134,44 @@ export function RankTable({ entries, sortKey, loading, onSort, onRegister, onRel
 
   return (
     <div className="container table-section">
+
+      <Tabs value={tab} onValueChange={v => onTabChange(v as RankTab)}>
+        <TabsList className="rank-tabs-bar">
+          {TAB_CONFIG.map(({ key, label, countKey }) => (
+            <TabsTrigger key={key} value={key}>
+              {label}
+              <Badge variant="default" className="rank-tab-badge">{counts[countKey]}</Badge>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
+
       <div className="sort-bar">
         <span className="sort-label">Ordenar por:</span>
         {SORT_LABELS.map(({ key, label }) => (
-          <button key={key}
-            className={`sort-btn${sortKey === key ? ' active' : ''}`}
+          <Button
+            key={key}
+            variant={sortKey === key ? 'secondary' : 'ghost'}
+            size="sm"
             onClick={() => onSort(key)}
-            aria-pressed={sortKey === key}>
+            aria-pressed={sortKey === key}
+          >
             {label}
-          </button>
+          </Button>
         ))}
         <div className="sort-bar-actions">
-          <button className="btn-reload" onClick={onReload} disabled={loading} aria-label="Recarregar tabela">
-            <i className={`ti ti-refresh${loading ? ' spin' : ''}`} />
-          </button>
-          <button className="btn-primary btn-sm sort-register" onClick={onRegister}>
-            <i className="ti ti-user-plus" aria-hidden="true" /> Cadastrar-se
-          </button>
+          <Button variant="ghost" size="icon" onClick={onReload} disabled={loading} aria-label="Recarregar tabela">
+            <IconRefresh size={16} className={loading ? 'animate-spin' : ''} />
+          </Button>
+          <Button size="sm" onClick={onRegister}>
+            <IconUserPlus size={16} aria-hidden="true" /> Cadastrar-se
+          </Button>
         </div>
       </div>
 
       {entries.length === 0 && !loading ? (
         <div className="empty-state">
-          <i className={`ti ${emptyIcon}`} aria-hidden="true" />
+          {emptyIcon}
           <p>{emptyText.split('\n').map((line, i) => <span key={i}>{line}{i === 0 && emptyText.includes('\n') ? <br /> : ''}</span>)}</p>
         </div>
       ) : (

@@ -1,4 +1,13 @@
 import { Link } from 'react-router-dom';
+import {
+  IconBook,
+  IconSettings,
+  IconShieldHalf,
+  IconSkull,
+  IconCalendar,
+  IconUserCheck,
+} from '@tabler/icons-react';
+import { Button } from '@/components/ui/button';
 
 interface HeaderProps {
   onPainel:   () => void;
@@ -16,22 +25,22 @@ export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
           <p className="site-sub">Desafio BRASILEIRÃO PZ</p>
         </Link>
         <div className="header-actions">
-          <button className="btn-primary btn-sm" onClick={onRules} aria-label="Regras do desafio">
-            <i className="ti ti-book" aria-hidden="true" /> Regras
-          </button>
-          <button className="btn-primary btn-sm" onClick={onSettings} aria-label="Configurações do desafio">
-            <i className="ti ti-settings" aria-hidden="true" /> Configurações
-          </button>
-          <button className="btn-primary btn-sm" onClick={onPainel} aria-label="Painel de moderadores">
-            <i className="ti ti-shield-half" aria-hidden="true" /> Moderadores
-          </button>
+          <Button variant="ghost" size="sm" onClick={onRules} aria-label="Regras do desafio">
+            <IconBook size={16} aria-hidden="true" /> Regras
+          </Button>
+          <Button variant="ghost" size="sm" onClick={onSettings} aria-label="Configurações do desafio">
+            <IconSettings size={16} aria-hidden="true" /> Configurações
+          </Button>
+          <Button variant="ghost" size="sm" onClick={onPainel} aria-label="Painel de moderadores">
+            <IconShieldHalf size={16} aria-hidden="true" /> Moderadores
+          </Button>
         </div>
       </div>
       <div className="container rules-bar">
-        <span className="rule-tag"><i className="ti ti-skull" aria-hidden="true" /> Stats do mod</span>
-        <span className="rule-tag"><i className="ti ti-calendar" aria-hidden="true" /> Tempo, dias, zumbis</span>
-        <span className="rule-tag"><i className="ti ti-settings" aria-hidden="true" /> Sandbox validado</span>
-        <span className="rule-tag"><i className="ti ti-user-check" aria-hidden="true" /> Aprovado por moderador</span>
+        <span className="rule-tag"><IconSkull size={16} aria-hidden="true" /> Stats do mod</span>
+        <span className="rule-tag"><IconCalendar size={16} aria-hidden="true" /> Tempo, dias, zumbis</span>
+        <span className="rule-tag"><IconSettings size={16} aria-hidden="true" /> Sandbox validado</span>
+        <span className="rule-tag"><IconUserCheck size={16} aria-hidden="true" /> Aprovado por moderador</span>
       </div>
     </header>
   );

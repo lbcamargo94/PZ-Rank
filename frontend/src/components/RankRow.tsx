@@ -4,6 +4,14 @@ import { Link } from 'react-router-dom';
 import type { Entry } from '../types';
 import { parseSkillMap, SKILL_CATEGORIES, TOTAL_SKILLS, MAX_SKILL_LEVEL } from '../lib/skills';
 import { getProfessionImageUrl } from '../lib/professions';
+import {
+  IconSword,
+  IconX,
+  IconUser,
+  IconBan,
+  IconHeartbeat,
+  IconSkull,
+} from '@tabler/icons-react';
 
 interface RankRowProps {
   entry:       Entry;
@@ -38,7 +46,7 @@ function SkillsModal({ skillMap, charName, onClose }: {
         <div className="sm-header">
           <div className="sm-header-info">
             <div className="sm-title">
-              <i className="ti ti-sword" />
+              <IconSword size={16} />
               Habilidades
               {charName && <span className="sm-char">· {charName}</span>}
             </div>
@@ -48,7 +56,7 @@ function SkillsModal({ skillMap, charName, onClose }: {
             </div>
           </div>
           <button className="sm-close" onClick={onClose} aria-label="Fechar">
-            <i className="ti ti-x" />
+            <IconX size={16} />
           </button>
         </div>
 
@@ -124,7 +132,7 @@ export function RankRow({ entry, rank, hideStatus }: RankRowProps) {
         <span className="player-alias">{entry.name}</span>
         {entry.player_id && (
           <Link to={`/player/${entry.player_id}`} className="btn-details">
-            <i className="ti ti-user" /> Ver detalhes
+            <IconUser size={16} /> Ver detalhes
           </Link>
         )}
       </td>
@@ -133,12 +141,12 @@ export function RankRow({ entry, rank, hideStatus }: RankRowProps) {
           {entry.sandbox_ok === false
             ? (
               <span className="alive-badge disqualified" title="Configurações do sandbox divergem do desafio oficial">
-                <i className="ti ti-ban" /> Desclassificado
+                <IconBan size={16} /> Desclassificado
               </span>
             )
             : entry.is_alive
-              ? <span className="alive-badge alive"><i className="ti ti-heartbeat" /> Vivo</span>
-              : <span className="alive-badge dead"><i className="ti ti-skull" /> Morto</span>
+              ? <span className="alive-badge alive"><IconHeartbeat size={16} /> Vivo</span>
+              : <span className="alive-badge dead"><IconSkull size={16} /> Morto</span>
           }
         </td>
       )}

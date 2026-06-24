@@ -7,14 +7,50 @@ import { parseTraitList, resolveTrait, getTraitImageUrl } from '../lib/traits';
 import { getProfessionImageUrl } from '../lib/professions';
 import { SPIFFOS_RESTAURANTS, BASE_ITEMS, initObjectives } from '../lib/objectives';
 import { ProgressBar } from '../components/ProgressBar';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import type { PlayerProfile, Entry } from '../types';
 import type { Objectives } from '../lib/objectives';
+import {
+  IconLoader2,
+  IconAlertCircle,
+  IconArrowLeft,
+  IconBrandTwitch,
+  IconBrandYoutube,
+  IconBrandKick,
+  IconBrandTiktok,
+  IconHeartbeat,
+  IconSkull,
+  IconCalendar,
+  IconClock,
+  IconSword,
+  IconUsers,
+  IconBan,
+  IconInfoCircle,
+  IconStar,
+  IconCheck,
+  IconX,
+  IconBuildingStore,
+  IconCirclePlus,
+  IconCircleMinus,
+  IconTrophy,
+} from '@tabler/icons-react';
+
+type SocialIconName = 'ti-brand-twitch' | 'ti-brand-youtube' | 'ti-brand-kick' | 'ti-brand-tiktok';
+
+const SOCIAL_ICON_MAP: Record<SocialIconName, React.ReactElement> = {
+  'ti-brand-twitch':  <IconBrandTwitch  size={16} />,
+  'ti-brand-youtube': <IconBrandYoutube size={16} />,
+  'ti-brand-kick':    <IconBrandKick    size={16} />,
+  'ti-brand-tiktok':  <IconBrandTiktok  size={16} />,
+};
 
 const SOCIALS = [
-  { field: 'twitch_url',  icon: 'ti-brand-twitch',  label: 'Twitch',  cls: 'social-twitch'  },
-  { field: 'youtube_url', icon: 'ti-brand-youtube', label: 'YouTube', cls: 'social-youtube' },
-  { field: 'kick_url',    icon: 'ti-brand-kick',    label: 'Kick',    cls: 'social-kick'    },
-  { field: 'tiktok_url',  icon: 'ti-brand-tiktok',  label: 'TikTok',  cls: 'social-tiktok'  },
+  { field: 'twitch_url',  icon: 'ti-brand-twitch'  as SocialIconName, label: 'Twitch',  cls: 'social-twitch'  },
+  { field: 'youtube_url', icon: 'ti-brand-youtube' as SocialIconName, label: 'YouTube', cls: 'social-youtube' },
+  { field: 'kick_url',    icon: 'ti-brand-kick'    as SocialIconName, label: 'Kick',    cls: 'social-kick'    },
+  { field: 'tiktok_url',  icon: 'ti-brand-tiktok'  as SocialIconName, label: 'TikTok',  cls: 'social-tiktok'  },
 ] as const;
 
 function ObjectivesSection({ objectives, kills }: { objectives: Objectives | null | undefined; kills: number }) {
@@ -28,18 +64,18 @@ function ObjectivesSection({ objectives, kills }: { objectives: Objectives | nul
     <div className="pp-objectives">
       {pending && (
         <div className="pp-obj-pending-banner">
-          <i className="ti ti-info-circle" />
+          <IconInfoCircle size={16} />
           Objetivos ainda não registrados pelo moderador. Mostrando estado inicial.
         </div>
       )}
 
       {/* Special objectives */}
       <div className="pp-obj-group">
-        <h4 className="pp-obj-group-title"><i className="ti ti-star" /> Objetivos Especiais</h4>
+        <h4 className="pp-obj-group-title"><IconStar size={16} /> Objetivos Especiais</h4>
 
         <div className="pp-obj-item">
           <div className={`pp-obj-badge ${obj.kills_500k ? 'pp-obj-done' : ''}`}>
-            {obj.kills_500k ? <i className="ti ti-check" /> : <i className="ti ti-clock" />}
+            {obj.kills_500k ? <IconCheck size={16} /> : <IconClock size={16} />}
           </div>
           <div className="pp-obj-body">
             <span className="pp-obj-name">500.000 Zumbis Abatidos</span>
@@ -49,7 +85,7 @@ function ObjectivesSection({ objectives, kills }: { objectives: Objectives | nul
 
         <div className="pp-obj-item">
           <div className={`pp-obj-badge ${obj.all_skills_10 ? 'pp-obj-done' : ''}`}>
-            {obj.all_skills_10 ? <i className="ti ti-check" /> : <i className="ti ti-clock" />}
+            {obj.all_skills_10 ? <IconCheck size={16} /> : <IconClock size={16} />}
           </div>
           <div className="pp-obj-body">
             <span className="pp-obj-name">Todas as Habilidades no Nível 10</span>
@@ -59,7 +95,7 @@ function ObjectivesSection({ objectives, kills }: { objectives: Objectives | nul
 
         <div className="pp-obj-item">
           <div className={`pp-obj-badge ${obj.spiffo_statue ? 'pp-obj-done' : ''}`}>
-            {obj.spiffo_statue ? <i className="ti ti-check" /> : <i className="ti ti-clock" />}
+            {obj.spiffo_statue ? <IconCheck size={16} /> : <IconClock size={16} />}
           </div>
           <div className="pp-obj-body">
             <span className="pp-obj-name">Estátua do Spiffo (Louisville)</span>
@@ -68,7 +104,7 @@ function ObjectivesSection({ objectives, kills }: { objectives: Objectives | nul
 
         <div className="pp-obj-item">
           <div className={`pp-obj-badge ${obj.military_base ? 'pp-obj-done' : ''}`}>
-            {obj.military_base ? <i className="ti ti-check" /> : <i className="ti ti-clock" />}
+            {obj.military_base ? <IconCheck size={16} /> : <IconClock size={16} />}
           </div>
           <div className="pp-obj-body">
             <span className="pp-obj-name">Base Militar de Rosewood Limpa</span>
@@ -79,7 +115,7 @@ function ObjectivesSection({ objectives, kills }: { objectives: Objectives | nul
       {/* Bases Spiffo's */}
       <div className="pp-obj-group">
         <h4 className="pp-obj-group-title">
-          <i className="ti ti-building-store" /> Bases nos Spiffo's
+          <IconBuildingStore size={16} /> Bases nos Spiffo's
           <span className="pp-obj-count">{basesCount}/{SPIFFOS_RESTAURANTS.length}</span>
         </h4>
         <ProgressBar value={basesCount} max={SPIFFOS_RESTAURANTS.length} />
@@ -89,7 +125,7 @@ function ObjectivesSection({ objectives, kills }: { objectives: Objectives | nul
             return (
               <div key={b.id} className={`pp-base ${b.has_base ? 'pp-base-done' : ''}`}>
                 <span className="pp-base-icon">
-                  {b.has_base ? <i className="ti ti-check" /> : <i className="ti ti-x" />}
+                  {b.has_base ? <IconCheck size={16} /> : <IconX size={16} />}
                 </span>
                 <span className="pp-base-name">{b.name}</span>
                 {b.has_base && (
@@ -156,7 +192,7 @@ function TraitsSection({ traitsRaw }: { traitsRaw: string | null | undefined }) 
     <div className="pp-traits">
       {positive.length > 0 && (
         <div className="pp-trait-group">
-          <span className="pp-trait-group-label"><i className="ti ti-circle-plus" /> Positivas</span>
+          <span className="pp-trait-group-label"><IconCirclePlus size={16} /> Positivas</span>
           <div className="pp-trait-list">
             {positive.map(id => {
               const def = resolveTrait(id);
@@ -173,7 +209,7 @@ function TraitsSection({ traitsRaw }: { traitsRaw: string | null | undefined }) 
       )}
       {negative.length > 0 && (
         <div className="pp-trait-group">
-          <span className="pp-trait-group-label"><i className="ti ti-circle-minus" /> Negativas</span>
+          <span className="pp-trait-group-label"><IconCircleMinus size={16} /> Negativas</span>
           <div className="pp-trait-list">
             {negative.map(id => {
               const def = resolveTrait(id);
@@ -193,10 +229,15 @@ function TraitsSection({ traitsRaw }: { traitsRaw: string | null | undefined }) 
 }
 
 function CharacterCard({ entry, rank }: { entry: Entry; rank: number | null }) {
-  const [tab, setTab] = useState<'stats' | 'skills' | 'traits'>('stats');
+  const isDisc  = entry.sandbox_ok === false;
+  const isAlive = !isDisc && entry.is_alive;
+  const isDead  = !isDisc && !entry.is_alive;
+
+  const cardCls = `pp-char-card${isAlive ? ' pp-char-alive' : isDead ? ' pp-char-dead' : ' pp-char-disc'}`;
+  const rankCls = `pp-char-rank${rank === 1 ? ' pp-rank-gold' : rank === 2 ? ' pp-rank-silver' : rank === 3 ? ' pp-rank-bronze' : ''}`;
 
   return (
-    <div className={`pp-char-card${entry.is_alive ? '' : ' pp-char-dead'}`}>
+    <div className={cardCls}>
       {/* Card header */}
       <div className="pp-char-header">
         <div className="pp-char-identity">
@@ -211,10 +252,12 @@ function CharacterCard({ entry, rank }: { entry: Entry; rank: number | null }) {
           )}
         </div>
         <div className="pp-char-right">
-          {rank !== null && <span className="pp-char-rank">#{rank}</span>}
-          {entry.is_alive
-            ? <span className="alive-badge alive"><i className="ti ti-heartbeat" /> Vivo</span>
-            : <span className="alive-badge dead"><i className="ti ti-skull" /> Morto</span>}
+          {rank !== null && <span className={rankCls}>#{rank}</span>}
+          {isDisc
+            ? <span className="alive-badge disqualified"><IconBan size={16} /> Desclassificado</span>
+            : isAlive
+              ? <span className="alive-badge alive"><IconHeartbeat size={16} /> Vivo</span>
+              : <span className="alive-badge dead"><IconSkull size={16} /> Morto</span>}
         </div>
       </div>
 
@@ -226,29 +269,22 @@ function CharacterCard({ entry, rank }: { entry: Entry; rank: number | null }) {
 
       {/* Quick stats row */}
       <div className="pp-char-stats-row">
-        <span className="pp-stat"><i className="ti ti-calendar" />{entry.days}d</span>
-        <span className="pp-stat"><i className="ti ti-clock" />{entry.time_str ?? '—'}</span>
-        <span className="pp-stat"><i className="ti ti-sword" />{entry.kills.toLocaleString('pt-BR')}</span>
+        <span className="pp-stat"><IconCalendar size={14} />{entry.days}d</span>
+        <span className="pp-stat"><IconClock size={14} />{entry.time_str ?? '—'}</span>
+        <span className="pp-stat"><IconSword size={14} />{entry.kills.toLocaleString('pt-BR')}</span>
       </div>
 
       {/* Tabs */}
-      <div className="pp-tabs">
-        <button className={`pp-tab${tab === 'stats' ? ' active' : ''}`} onClick={() => setTab('stats')}>
-          Objetivos
-        </button>
-        <button className={`pp-tab${tab === 'skills' ? ' active' : ''}`} onClick={() => setTab('skills')}>
-          Habilidades
-        </button>
-        <button className={`pp-tab${tab === 'traits' ? ' active' : ''}`} onClick={() => setTab('traits')}>
-          Características
-        </button>
-      </div>
-
-      <div className="pp-tab-body">
-        {tab === 'stats'  && <ObjectivesSection objectives={entry.objectives} kills={entry.kills} />}
-        {tab === 'skills' && <SkillsSection skillsStr={entry.skills} />}
-        {tab === 'traits' && <TraitsSection traitsRaw={entry.traits} />}
-      </div>
+      <Tabs defaultValue="stats" className="pp-tabs-root">
+        <TabsList className="pp-tabs">
+          <TabsTrigger value="stats">Objetivos</TabsTrigger>
+          <TabsTrigger value="skills">Habilidades</TabsTrigger>
+          <TabsTrigger value="traits">Características</TabsTrigger>
+        </TabsList>
+        <TabsContent value="stats"  className="pp-tab-body"><ObjectivesSection objectives={entry.objectives} kills={entry.kills} /></TabsContent>
+        <TabsContent value="skills" className="pp-tab-body"><SkillsSection skillsStr={entry.skills} /></TabsContent>
+        <TabsContent value="traits" className="pp-tab-body"><TraitsSection traitsRaw={entry.traits} /></TabsContent>
+      </Tabs>
     </div>
   );
 }
@@ -283,7 +319,7 @@ export function PlayerPage() {
     return (
       <div className="player-page player-page-state">
         <div className="container">
-          <i className="ti ti-loader-2 spin" /> Carregando perfil...
+          <IconLoader2 size={16} className="animate-spin" /> Carregando perfil...
         </div>
       </div>
     );
@@ -293,20 +329,19 @@ export function PlayerPage() {
     return (
       <div className="player-page player-page-state">
         <div className="container">
-          <i className="ti ti-alert-circle" /> {error ?? 'Jogador não encontrado.'}
-          <br />
-          <Link to="/" className="back-link" style={{ marginTop: 16, display: 'inline-block' }}>
-            ← Voltar ao ranking
-          </Link>
+          <div className="player-page-error">
+            <IconAlertCircle size={24} />
+            <p>{error ?? 'Jogador não encontrado.'}</p>
+            <Button asChild size="sm">
+              <Link to="/"><IconArrowLeft size={16} /> Voltar ao ranking</Link>
+            </Button>
+          </div>
         </div>
       </div>
     );
   }
 
-  // Rank position map (index in global sorted-by-score list)
   const rankMap = new Map(allEntries.map((e, i) => [e.id, i + 1]));
-
-  // Sort this player's entries by score desc
   const entries = [...profile.entries].sort((a, b) => b.score - a.score);
 
   const filteredEntries = entries.filter(e => {
@@ -331,9 +366,9 @@ export function PlayerPage() {
     <div className="player-page">
       <div className="container">
         {/* Back link */}
-        <Link to="/" className="btn-primary btn-sm back-btn-rank">
-          <i className="ti ti-arrow-left" /> Ranking
-        </Link>
+        <Button asChild size="sm" variant="ghost" className="back-btn-rank">
+          <Link to="/"><IconArrowLeft size={16} /> Ranking</Link>
+        </Button>
 
         {/* Player header */}
         <div className="pp-header">
@@ -349,7 +384,7 @@ export function PlayerPage() {
                   return url ? (
                     <a key={s.field} href={url} target="_blank" rel="noopener noreferrer"
                       className={`pc-social-link ${s.cls}`} title={s.label}>
-                      <i className={`ti ${s.icon}`} /> {s.label}
+                      {SOCIAL_ICON_MAP[s.icon]} {s.label}
                     </a>
                   ) : null;
                 })}
@@ -361,22 +396,34 @@ export function PlayerPage() {
         {/* Summary bar */}
         {bestEntry && (
           <div className="pp-summary">
-            <div className="pp-sum-card">
-              <span className="pp-sum-label">Melhor posição</span>
-              <span className="pp-sum-value">{bestRank !== null ? `#${bestRank}` : '—'}</span>
-            </div>
-            <div className="pp-sum-card">
-              <span className="pp-sum-label">Melhor pontuação</span>
-              <span className="pp-sum-value">{bestEntry.score.toLocaleString('pt-BR')} pts</span>
-            </div>
-            <div className="pp-sum-card">
-              <span className="pp-sum-label">Personagens</span>
-              <span className="pp-sum-value">{entries.length}</span>
-            </div>
-            <div className="pp-sum-card">
-              <span className="pp-sum-label">Maior massacre</span>
-              <span className="pp-sum-value">{bestEntry.kills.toLocaleString('pt-BR')}</span>
-            </div>
+            <Card className="pp-sum-card">
+              <CardContent className="flex flex-col gap-1 py-3 px-4">
+                <span className="pp-sum-icon"><IconTrophy size={16} /></span>
+                <span className="pp-sum-label">Melhor posição</span>
+                <span className="pp-sum-value">{bestRank !== null ? `#${bestRank}` : '—'}</span>
+              </CardContent>
+            </Card>
+            <Card className="pp-sum-card">
+              <CardContent className="flex flex-col gap-1 py-3 px-4">
+                <span className="pp-sum-icon"><IconStar size={16} /></span>
+                <span className="pp-sum-label">Melhor pontuação</span>
+                <span className="pp-sum-value">{bestEntry.score.toLocaleString('pt-BR')} pts</span>
+              </CardContent>
+            </Card>
+            <Card className="pp-sum-card">
+              <CardContent className="flex flex-col gap-1 py-3 px-4">
+                <span className="pp-sum-icon"><IconUsers size={16} /></span>
+                <span className="pp-sum-label">Personagens</span>
+                <span className="pp-sum-value">{entries.length}</span>
+              </CardContent>
+            </Card>
+            <Card className="pp-sum-card">
+              <CardContent className="flex flex-col gap-1 py-3 px-4">
+                <span className="pp-sum-icon"><IconSword size={16} /></span>
+                <span className="pp-sum-label">Maior massacre</span>
+                <span className="pp-sum-value">{bestEntry.kills.toLocaleString('pt-BR')}</span>
+              </CardContent>
+            </Card>
           </div>
         )}
 
@@ -384,35 +431,27 @@ export function PlayerPage() {
         <div className="pp-chars-section">
           <div className="pp-chars-header">
             <h2 className="pp-section-title">
-              <i className="ti ti-users" /> Personagens no Ranking
+              <IconUsers size={18} /> Personagens no Ranking
               <span className="pp-section-count">{entries.length}</span>
             </h2>
             <div className="pp-char-filter">
-              <button
-                className={`sort-btn${charFilter === 'all' ? ' active' : ''}`}
-                onClick={() => setCharFilter('all')}
-              >
+              <Button variant={charFilter === 'all' ? 'secondary' : 'ghost'} size="sm"
+                onClick={() => setCharFilter('all')}>
                 Todos ({entries.length})
-              </button>
-              <button
-                className={`sort-btn filter-alive${charFilter === 'alive' ? ' active' : ''}`}
-                onClick={() => setCharFilter('alive')}
-              >
-                <i className="ti ti-heartbeat" /> Vivos ({aliveCount})
-              </button>
-              <button
-                className={`sort-btn filter-dead${charFilter === 'dead' ? ' active' : ''}`}
-                onClick={() => setCharFilter('dead')}
-              >
-                <i className="ti ti-skull" /> Mortos ({deadCount})
-              </button>
+              </Button>
+              <Button variant={charFilter === 'alive' ? 'secondary' : 'ghost'} size="sm"
+                onClick={() => setCharFilter('alive')}>
+                <IconHeartbeat size={16} /> Vivos ({aliveCount})
+              </Button>
+              <Button variant={charFilter === 'dead' ? 'secondary' : 'ghost'} size="sm"
+                onClick={() => setCharFilter('dead')}>
+                <IconSkull size={16} /> Mortos ({deadCount})
+              </Button>
               {descCount > 0 && (
-                <button
-                  className={`sort-btn filter-disq${charFilter === 'disqualified' ? ' active' : ''}`}
-                  onClick={() => setCharFilter('disqualified')}
-                >
-                  <i className="ti ti-ban" /> Desclassificados ({descCount})
-                </button>
+                <Button variant={charFilter === 'disqualified' ? 'secondary' : 'ghost'} size="sm"
+                  onClick={() => setCharFilter('disqualified')}>
+                  <IconBan size={16} /> Desclassificados ({descCount})
+                </Button>
               )}
             </div>
           </div>

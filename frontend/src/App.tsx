@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { apiGetEntries } from './lib/api';
 import type { Entry, SortKey, RankTab, ModSession } from './types';
-import { useToast } from './hooks/useToast';
-import { Toast } from './components/Toast';
 import { Header } from './components/Header';
 import { StatsBar } from './components/StatsBar';
 import { RankTable } from './components/RankTable';
@@ -14,13 +13,6 @@ import { PainelPage } from './pages/PainelPage';
 import { PlayerPage } from './pages/PlayerPage';
 import { OverlayPage } from './pages/OverlayPage';
 
-const TAB_CONFIG: { key: RankTab; label: string; icon: string }[] = [
-  { key: 'rank',          label: 'Rank',             icon: 'ti-heartbeat' },
-  { key: 'records',       label: 'Records',          icon: 'ti-trophy'    },
-  { key: 'dead',          label: 'Mortos',           icon: 'ti-skull'     },
-  { key: 'disqualified',  label: 'Desclassificados', icon: 'ti-ban'       },
-];
-
 function MainView() {
   const navigate = useNavigate();
   const [entries,       setEntries]      = useState<Entry[]>([]);
@@ -30,27 +22,19 @@ function MainView() {
   const [showRegister,  setShowRegister] = useState(false);
   const [showRules,     setShowRules]    = useState(false);
   const [showSettings,  setShowSettings] = useState(false);
-  const { toast, showToast } = useToast();
 
   const fetchEntries = useCallback(async () => {
     setLoadingRank(true);
     try { setEntries(await apiGetEntries(sortKey)); }
-    catch (err) { showToast((err as Error).message || 'Erro ao carregar ranking.', 'error'); }
+    catch (err) { toast.error((err as Error).message || 'Erro ao carregar ranking.'); }
     finally { setLoadingRank(false); }
-  }, [sortKey, showToast]);
+  }, [sortKey]);
 
   useEffect(() => { fetchEntries(); }, [fetchEntries]);
 
   const aliveEntries = useMemo(() => entries.filter(e => e.sandbox_ok !== false && e.is_alive),  [entries]);
   const deadEntries  = useMemo(() => entries.filter(e => e.sandbox_ok !== false && !e.is_alive), [entries]);
   const discEntries  = useMemo(() => entries.filter(e => e.sandbox_ok === false),                 [entries]);
-
-  const tabCounts: Record<RankTab, number> = {
-    rank:         aliveEntries.length,
-    records:      entries.length,
-    dead:         deadEntries.length,
-    disqualified: discEntries.length,
-  };
 
   const filteredEntries = useMemo(() => {
     switch (activeTab) {
@@ -75,22 +59,6 @@ function MainView() {
           disqualified={discEntries.length}
         />
 
-        <div className="container rank-tabs-bar">
-          <div className="rank-tabs">
-            {TAB_CONFIG.map(({ key, label, icon }) => (
-              <button
-                key={key}
-                className={`rank-tab tab-${key}${activeTab === key ? ' active' : ''}`}
-                onClick={() => setActiveTab(key)}
-              >
-                <i className={`ti ${icon}`} />
-                {label}
-                <span className="rank-tab-badge">{tabCounts[key]}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
         <RankTable
           entries={filteredEntries}
           sortKey={sortKey}
@@ -99,19 +67,19 @@ function MainView() {
           onRegister={() => setShowRegister(true)}
           onReload={fetchEntries}
           tab={activeTab}
+          onTabChange={setActiveTab}
+          aliveCount={aliveEntries.length}
+          deadCount={deadEntries.length}
+          discCount={discEntries.length}
+          totalCount={entries.length}
         />
       </main>
 
-      <Toast {...toast} />
-
       {showRegister && (
-        <PlayerRegisterModal
-          onClose={() => setShowRegister(false)}
-          showToast={showToast}
-        />
+        <PlayerRegisterModal onClose={() => setShowRegister(false)} />
       )}
-      {showRules     && <RulesModal             onClose={() => setShowRules(false)}    />}
-      {showSettings  && <ChallengeSettingsModal onClose={() => setShowSettings(false)} />}
+      {showRules    && <RulesModal             onClose={() => setShowRules(false)}    />}
+      {showSettings && <ChallengeSettingsModal onClose={() => setShowSettings(false)} />}
     </>
   );
 }

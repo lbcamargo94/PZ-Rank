@@ -1,25 +1,22 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { apiCreateModerator } from '../../lib/api';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { IconLoader2 } from '@tabler/icons-react';
 
 interface Props {
   token:     string;
   onClose:   () => void;
   onSuccess: () => void;
-  showToast: (msg: string, type?: string) => void;
 }
 
-export function CreateModeratorModal({ token, onClose, onSuccess, showToast }: Props) {
+export function CreateModeratorModal({ token, onClose, onSuccess }: Props) {
   const [login,    setLogin]    = useState('');
   const [password, setPassword] = useState('');
   const [loading,  setLoading]  = useState(false);
-
-  useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', onKey);
-    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
-  }, [onClose]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -27,41 +24,46 @@ export function CreateModeratorModal({ token, onClose, onSuccess, showToast }: P
     setLoading(true);
     try {
       await apiCreateModerator(token, { login, password });
-      showToast(`Moderador ${login} criado com sucesso.`, 'success');
+      toast.success(`Moderador ${login} criado com sucesso.`);
       onSuccess();
       onClose();
     } catch (err) {
-      showToast((err as Error).message, 'error');
+      toast.error((err as Error).message);
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="modal-overlay active" role="dialog" aria-modal="true">
-      <div className="modal-box" onClick={e => e.stopPropagation()}>
-        <button className="modal-close" aria-label="Fechar" onClick={onClose}>
-          <i className="ti ti-x" />
-        </button>
-        <h2 className="modal-title">Novo Moderador</h2>
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Novo Moderador</DialogTitle>
+        </DialogHeader>
 
-        <form className="modal-form" onSubmit={handleSubmit} noValidate>
-          <label className="form-label" htmlFor="cm-login">Login</label>
-          <input id="cm-login" className="form-input" type="text"
-            placeholder="nome_do_moderador" value={login}
-            onChange={e => setLogin(e.target.value)} required />
+        <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4 py-2">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="cm-login">Login</Label>
+            <Input id="cm-login" type="text" placeholder="nome_do_moderador"
+              value={login} onChange={e => setLogin(e.target.value)} required />
+          </div>
 
-          <label className="form-label" htmlFor="cm-pass">Senha inicial</label>
-          <input id="cm-pass" className="form-input" type="password"
-            placeholder="mínimo 6 caracteres" value={password}
-            onChange={e => setPassword(e.target.value)} required />
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="cm-pass">Senha inicial</Label>
+            <Input id="cm-pass" type="password" placeholder="mínimo 6 caracteres"
+              value={password} onChange={e => setPassword(e.target.value)} required />
+          </div>
 
-          <button className="btn-primary btn-block" type="submit"
-            disabled={loading || !login || !password}>
-            {loading ? 'Criando...' : 'Criar moderador'}
-          </button>
+          <DialogFooter className="pt-2">
+            <Button type="button" variant="secondary" onClick={onClose}>Cancelar</Button>
+            <Button type="submit" disabled={loading || !login || !password}>
+              {loading
+                ? <><IconLoader2 size={16} className="animate-spin" /> Criando...</>
+                : 'Criar moderador'}
+            </Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

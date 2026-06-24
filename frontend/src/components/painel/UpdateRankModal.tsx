@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { apiGetPlayers, apiCreateEntry } from '../../lib/api';
 import { parsePzrCode } from '../../lib/decoder';
 import {
@@ -7,15 +8,29 @@ import {
 } from '../../lib/objectives';
 import type { Objectives } from '../../lib/objectives';
 import type { Player } from '../../types';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import {
+  IconHeartbeat,
+  IconSkull,
+  IconCheck,
+  IconBan,
+  IconAlertTriangle,
+  IconStar,
+  IconBuildingStore,
+  IconChevronUp,
+  IconChevronDown,
+  IconTrophy,
+  IconSword,
+} from '@tabler/icons-react';
 
 interface Props {
   token:     string;
   onClose:   () => void;
   onSuccess: () => void;
-  showToast: (msg: string, type?: string) => void;
 }
 
-export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props) {
+export function UpdateRankModal({ token, onClose, onSuccess }: Props) {
   const [players,      setPlayers]     = useState<Player[]>([]);
   const [playerId,     setPlayerId]    = useState<number | ''>('');
   const [code,         setCode]        = useState('');
@@ -29,18 +44,10 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
     : 0;
 
   useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', onKey);
-    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
-  }, [onClose]);
-
-  useEffect(() => {
     apiGetPlayers(token, 'approved')
       .then(data => setPlayers(data.filter(p => !p.blocked)))
-      .catch(err => showToast((err as Error).message, 'error'));
-  }, [token, showToast]);
+      .catch(err => toast.error((err as Error).message));
+  }, [token]);
 
   useEffect(() => {
     const d = parsePzrCode(code.trim());
@@ -86,23 +93,22 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
         code:       code.trim(),
         objectives,
       });
-      showToast('Rank atualizado com sucesso!', 'success');
+      toast.success('Rank atualizado com sucesso!');
       onSuccess();
       onClose();
     } catch (err) {
-      showToast((err as Error).message, 'error');
+      toast.error((err as Error).message);
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="modal-overlay active" role="dialog" aria-modal="true">
-      <div className="modal-box update-modal-box" onClick={e => e.stopPropagation()}>
-        <button className="modal-close" aria-label="Fechar" onClick={onClose}>
-          <i className="ti ti-x" />
-        </button>
-        <h2 className="modal-title">Atualizar Rank</h2>
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-[560px]">
+        <DialogHeader>
+          <DialogTitle>Atualizar Rank</DialogTitle>
+        </DialogHeader>
 
         <form className="modal-form" onSubmit={handleSubmit} noValidate>
 
@@ -125,8 +131,8 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
               <span className="form-label">Status do jogador</span>
               <div className="alive-toggle-row">
                 {decoded.isAlive
-                  ? <span className="alive-badge alive"><i className="ti ti-heartbeat" /> Vivo</span>
-                  : <span className="alive-badge dead"><i className="ti ti-skull" /> Morto</span>}
+                  ? <span className="alive-badge alive"><IconHeartbeat size={16} /> Vivo</span>
+                  : <span className="alive-badge dead"><IconSkull size={16} /> Morto</span>}
               </div>
             </div>
           )}
@@ -148,15 +154,15 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
               <div className="decoded-row">
                 <span className="decoded-label">Sandbox</span>
                 {decoded.sandboxOk
-                  ? <span className="decoded-value sandbox-ok"><i className="ti ti-check" /> Válido</span>
-                  : <span className="decoded-value sandbox-invalid"><i className="ti ti-ban" /> Inválido — jogador será desclassificado</span>
+                  ? <span className="decoded-value sandbox-ok"><IconCheck size={16} /> Válido</span>
+                  : <span className="decoded-value sandbox-invalid"><IconBan size={16} /> Inválido — jogador será desclassificado</span>
                 }
               </div>
             </div>
           )}
           {decoded && !decoded.sandboxOk && (
             <p className="form-warning">
-              <i className="ti ti-alert-triangle" /> Sandbox inválido: as configurações do servidor divergem do desafio oficial. A entrada será salva com score 0 e marcada como <strong>Desclassificado</strong> no ranking.
+              <IconAlertTriangle size={16} /> Sandbox inválido: as configurações do servidor divergem do desafio oficial. A entrada será salva com score 0 e marcada como <strong>Desclassificado</strong> no ranking.
             </p>
           )}
           {!decoded && code.length > 6 && (
@@ -169,14 +175,14 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
               <span className="form-label">Objetivos concluídos</span>
               {decoded && (
                 <span className="objectives-score-preview">
-                  <i className="ti ti-star" /> {previewScore.toLocaleString('pt-BR')} pts
+                  <IconStar size={16} /> {previewScore.toLocaleString('pt-BR')} pts
                 </span>
               )}
             </div>
 
             {/* Bases Spiffo's */}
             <div className="objectives-group">
-              <p className="objectives-group-title"><i className="ti ti-building-store" /> Bases nos Restaurantes Spiffo's</p>
+              <p className="objectives-group-title"><IconBuildingStore size={16} /> Bases nos Restaurantes Spiffo's</p>
               {SPIFFOS_RESTAURANTS.map(r => {
                 const base = objectives.bases[r.id]!;
                 const isExpanded = expandedBase === r.id;
@@ -195,7 +201,7 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
                       {base.has_base && (
                         <button type="button" className="base-expand-btn"
                           onClick={() => setExpandedBase(isExpanded ? null : r.id)}>
-                          <i className={`ti ti-chevron-${isExpanded ? 'up' : 'down'}`} />
+                          {isExpanded ? <IconChevronUp size={16} /> : <IconChevronDown size={16} />}
                         </button>
                       )}
                     </div>
@@ -219,44 +225,43 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
 
             {/* Objetivos especiais */}
             <div className="objectives-group">
-              <p className="objectives-group-title"><i className="ti ti-star" /> Objetivos Especiais</p>
+              <p className="objectives-group-title"><IconStar size={16} /> Objetivos Especiais</p>
               <label className="obj-checkbox-label special">
                 <input type="checkbox" checked={objectives.spiffo_statue}
                   onChange={e => toggleGlobal('spiffo_statue', e.target.checked)} />
                 <span className="obj-check-text">
-                  <i className="ti ti-trophy" /> Dominou a Sede Spiffo's em Louisville e pegou a Estátua do Spiffo
+                  <IconTrophy size={16} /> Dominou a Sede Spiffo's em Louisville e pegou a Estátua do Spiffo
                 </span>
               </label>
               <label className="obj-checkbox-label special">
                 <input type="checkbox" checked={objectives.military_base}
                   onChange={e => toggleGlobal('military_base', e.target.checked)} />
                 <span className="obj-check-text">
-                  <i className="ti ti-sword" /> Limpou a base militar secreta de Rosewood
+                  <IconSword size={16} /> Limpou a base militar secreta de Rosewood
                 </span>
               </label>
               <label className="obj-checkbox-label special">
                 <input type="checkbox" checked={objectives.kills_500k}
                   onChange={e => toggleGlobal('kills_500k', e.target.checked)} />
                 <span className="obj-check-text">
-                  <i className="ti ti-skull" /> Atingiu 500.000 zumbis abatidos
+                  <IconSkull size={16} /> Atingiu 500.000 zumbis abatidos
                 </span>
               </label>
               <label className="obj-checkbox-label special">
                 <input type="checkbox" checked={objectives.all_skills_10}
                   onChange={e => toggleGlobal('all_skills_10', e.target.checked)} />
                 <span className="obj-check-text">
-                  <i className="ti ti-star" /> Maximizou todas as habilidades (nível 10)
+                  <IconStar size={16} /> Maximizou todas as habilidades (nível 10)
                 </span>
               </label>
             </div>
           </div>
 
-          <button className="btn-primary btn-block" type="submit"
-            disabled={loading || !playerId || !decoded}>
+          <Button type="submit" className="w-full" disabled={loading || !playerId || !decoded}>
             {loading ? 'Salvando...' : 'Confirmar'}
-          </button>
+          </Button>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
