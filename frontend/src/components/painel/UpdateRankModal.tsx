@@ -8,8 +8,9 @@ import {
 } from '../../lib/objectives';
 import type { Objectives } from '../../lib/objectives';
 import type { Player } from '../../types';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import {
-  IconX,
   IconHeartbeat,
   IconSkull,
   IconCheck,
@@ -103,12 +104,11 @@ export function UpdateRankModal({ token, onClose, onSuccess }: Props) {
   }
 
   return (
-    <div className="modal-overlay active" role="dialog" aria-modal="true">
-      <div className="modal-box update-modal-box" onClick={e => e.stopPropagation()}>
-        <button className="modal-close" aria-label="Fechar" onClick={onClose}>
-          <IconX size={16} />
-        </button>
-        <h2 className="modal-title">Atualizar Rank</h2>
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-[560px]">
+        <DialogHeader>
+          <DialogTitle>Atualizar Rank</DialogTitle>
+        </DialogHeader>
 
         <form className="modal-form" onSubmit={handleSubmit} noValidate>
 
@@ -257,12 +257,11 @@ export function UpdateRankModal({ token, onClose, onSuccess }: Props) {
             </div>
           </div>
 
-          <button className="btn-primary btn-block" type="submit"
-            disabled={loading || !playerId || !decoded}>
+          <Button type="submit" className="w-full" disabled={loading || !playerId || !decoded}>
             {loading ? 'Salvando...' : 'Confirmar'}
-          </button>
+          </Button>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

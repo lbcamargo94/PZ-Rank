@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { apiGetPlayerProfile } from '../lib/api';
 import type { PlayerProfile, Entry } from '../types';
 import {
-  IconX,
   IconLoader2,
   IconUserCircle,
   IconBrandTwitch,
@@ -18,6 +17,7 @@ import {
   IconSword,
   IconClock,
 } from '@tabler/icons-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface Props {
   playerId: number;
@@ -46,14 +46,6 @@ export function PlayerCardModal({ playerId, onClose }: Props) {
   const [error,   setError]   = useState<string | null>(null);
 
   useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', onKey);
-    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
-  }, [onClose]);
-
-  useEffect(() => {
     setLoading(true);
     setError(null);
     apiGetPlayerProfile(playerId)
@@ -68,43 +60,36 @@ export function PlayerCardModal({ playerId, onClose }: Props) {
   );
 
   return (
-    <div className="modal-overlay active" role="dialog" aria-modal="true">
-      <div className="modal-box player-card-box" onClick={e => e.stopPropagation()}>
-        <button className="modal-close" aria-label="Fechar" onClick={onClose}>
-          <IconX size={16} />
-        </button>
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-[480px]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <IconUserCircle size={20} />
+            {profile?.player.nick ?? 'Perfil do Jogador'}
+          </DialogTitle>
+        </DialogHeader>
 
         {loading && <p className="painel-loading"><IconLoader2 size={16} className="animate-spin" /> Carregando...</p>}
         {error   && <p className="form-error">{error}</p>}
 
         {profile && (
           <>
-            {/* ── Cabeçalho ── */}
-            <div className="pc-header">
-              <IconUserCircle size={20} className="pc-avatar" />
-              <div className="pc-header-info">
-                <h2 className="pc-nick">{profile.player.nick}</h2>
-
-                {/* Canais sociais */}
-                <div className="pc-socials">
-                  {SOCIALS.map(s => {
-                    const url = profile.player[s.field as keyof typeof profile.player] as string | null;
-                    return url ? (
-                      <a key={s.field} href={url} target="_blank" rel="noopener noreferrer"
-                        className={`pc-social-link ${s.cls}`} title={s.label}>
-                        {SOCIAL_ICON_MAP[s.icon]}
-                        <span>{s.label}</span>
-                      </a>
-                    ) : null;
-                  })}
-                  {SOCIALS.every(s => !profile.player[s.field as keyof typeof profile.player]) && (
-                    <span className="pc-no-socials">Sem canais cadastrados</span>
-                  )}
-                </div>
-              </div>
+            <div className="pc-socials">
+              {SOCIALS.map(s => {
+                const url = profile.player[s.field as keyof typeof profile.player] as string | null;
+                return url ? (
+                  <a key={s.field} href={url} target="_blank" rel="noopener noreferrer"
+                    className={`pc-social-link ${s.cls}`} title={s.label}>
+                    {SOCIAL_ICON_MAP[s.icon]}
+                    <span>{s.label}</span>
+                  </a>
+                ) : null;
+              })}
+              {SOCIALS.every(s => !profile.player[s.field as keyof typeof profile.player]) && (
+                <span className="pc-no-socials">Sem canais cadastrados</span>
+              )}
             </div>
 
-            {/* ── Melhor pontuação ── */}
             {bestEntry && (
               <div className="pc-best">
                 <span className="pc-best-label"><IconTrophy size={16} /> Melhor pontuação</span>
@@ -115,7 +100,6 @@ export function PlayerCardModal({ playerId, onClose }: Props) {
               </div>
             )}
 
-            {/* ── Personagens ── */}
             <div className="pc-chars-section">
               <p className="pc-section-title">
                 <IconUsers size={16} /> Personagens no rank
@@ -138,21 +122,19 @@ export function PlayerCardModal({ playerId, onClose }: Props) {
                         ? <span className="alive-badge alive"><IconHeartbeat size={16} /> Vivo</span>
                         : <span className="alive-badge dead"><IconSkull size={16} /> Morto</span>}
                     </div>
-
                     <div className="pc-char-stats">
                       <span className="pc-stat"><IconStar size={14} />{e.score.toLocaleString('pt-BR')} pts</span>
                       <span className="pc-stat"><IconCalendar size={14} />{e.days}d</span>
                       <span className="pc-stat"><IconSword size={14} />{e.kills.toLocaleString('pt-BR')}</span>
                       {e.time_str && <span className="pc-stat"><IconClock size={14} />{e.time_str}</span>}
                     </div>
-
                   </div>
                 ))}
               </div>
             </div>
           </>
         )}
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

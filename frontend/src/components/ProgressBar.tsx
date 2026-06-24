@@ -1,13 +1,15 @@
+import { Progress } from '@/components/ui/progress';
+
 interface ProgressBarProps {
-  value:     number;
-  max:       number;
-  label?:    string;
+  value:       number;
+  max:         number;
+  label?:      string;
   showValues?: boolean;
-  className?: string;
+  className?:  string;
 }
 
 export function ProgressBar({ value, max, label, showValues = true, className = '' }: ProgressBarProps) {
-  const pct = max > 0 ? Math.min(100, (value / max) * 100) : 0;
+  const pct  = max > 0 ? Math.min(100, (value / max) * 100) : 0;
   const done = value >= max && max > 0;
 
   return (
@@ -22,12 +24,7 @@ export function ProgressBar({ value, max, label, showValues = true, className = 
           )}
         </div>
       )}
-      <div className="pbar-track">
-        <div
-          className={`pbar-fill${done ? ' pbar-fill-done' : ''}`}
-          style={{ width: `${pct}%` }}
-        />
-      </div>
+      <Progress value={pct} className={done ? 'progress-done' : ''} />
     </div>
   );
 }

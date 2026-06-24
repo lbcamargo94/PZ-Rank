@@ -10,6 +10,9 @@ import { EditObjectivesModal }   from '../components/painel/EditObjectivesModal'
 import { ModeratorsList }        from '../components/painel/ModeratorsList';
 import { CreateModeratorModal }  from '../components/painel/CreateModeratorModal';
 import { ConfirmModal }          from '../components/painel/ConfirmModal';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   IconArrowLeft,
   IconLogout,
@@ -50,10 +53,10 @@ interface Props {
 
 function EntryStatusBadge({ entry }: { entry: Entry }) {
   if (entry.sandbox_ok === false)
-    return <span className="alive-badge disqualified"><IconBan size={16} /> Desclassificado</span>;
+    return <Badge variant="disqualified"><IconBan size={14} /> Desclassificado</Badge>;
   if (entry.is_alive)
-    return <span className="alive-badge alive"><IconHeartbeat size={16} /> Vivo</span>;
-  return <span className="alive-badge dead"><IconSkull size={16} /> Morto</span>;
+    return <Badge variant="alive"><IconHeartbeat size={14} /> Vivo</Badge>;
+  return <Badge variant="dead"><IconSkull size={14} /> Morto</Badge>;
 }
 
 export function PainelPage({ session, onSession, onBack }: Props) {
@@ -138,43 +141,48 @@ export function PainelPage({ session, onSession, onBack }: Props) {
       <header className="painel-header">
         <div className="container painel-header-inner">
           <div className="painel-header-left">
-            <button className="btn-primary btn-sm" onClick={onBack}>
+            <Button size="sm" onClick={onBack}>
               <IconArrowLeft size={16} /> Ranking público
-            </button>
+            </Button>
             <span className="painel-title">Painel de Moderadores</span>
           </div>
           <div className="painel-header-right">
             <span className="mod-email">{session.login}</span>
-            <span className={`player-status status-badge-${session.role}`}>
+            <Badge variant={session.role as 'master' | 'moderator'}>
               {session.role === 'master' ? 'Master' : 'Moderador'}
-            </span>
-            <button className="btn-secondary btn-sm" onClick={handleLogout}>
+            </Badge>
+            <Button variant="secondary" size="sm" onClick={handleLogout}>
               <IconLogout size={16} /> Sair
-            </button>
+            </Button>
           </div>
         </div>
       </header>
 
       {/* ── Navegação ── */}
       <div className="container painel-nav">
-        <div className="painel-tabs">
-          <button className={`painel-tab${tab === 'players' ? ' active' : ''}`}
-            onClick={() => setTab('players')}>
-            <IconUsers size={16} /> Jogadores
-          </button>
-          <button className={`painel-tab${tab === 'entries' ? ' active' : ''}`}
-            onClick={() => { setTab('entries'); fetchEntries(); }}>
-            <IconListNumbers size={16} /> Entradas
-            {entries.length > 0 && <span className="rank-tab-badge">{entries.length}</span>}
-          </button>
-          <button className={`painel-tab${tab === 'moderators' ? ' active' : ''}`}
-            onClick={() => setTab('moderators')}>
-            <IconShieldStar size={16} /> Moderadores
-          </button>
-        </div>
-        <button className="btn-primary" onClick={() => setShowUpdateRank(true)}>
+        <Tabs value={tab} onValueChange={v => {
+          const t = v as Tab;
+          setTab(t);
+          if (t === 'entries') fetchEntries();
+        }}>
+          <TabsList className="painel-tabs">
+            <TabsTrigger value="players">
+              <IconUsers size={16} /> Jogadores
+            </TabsTrigger>
+            <TabsTrigger value="entries">
+              <IconListNumbers size={16} /> Entradas
+              {entries.length > 0 && (
+                <Badge variant="default" className="rank-tab-badge">{entries.length}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="moderators">
+              <IconShieldStar size={16} /> Moderadores
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <Button onClick={() => setShowUpdateRank(true)}>
           <IconTrophy size={16} /> Atualizar Rank
-        </button>
+        </Button>
       </div>
 
       {/* ── Conteúdo ── */}
@@ -195,21 +203,21 @@ export function PainelPage({ session, onSession, onBack }: Props) {
           <div className="painel-section">
             <div className="painel-section-header">
               <h2><IconListNumbers size={18} /> Entradas no Ranking</h2>
-              <button className="btn-primary btn-sm" onClick={fetchEntries}>
+              <Button size="sm" onClick={fetchEntries}>
                 <IconRefresh size={16} /> Atualizar
-              </button>
+              </Button>
             </div>
 
             <div className="painel-section-filter">
               <div className="filter-bar">
                 {ENTRY_FILTER_CONFIG.map(({ key, label, icon }) => (
-                  <button key={key}
-                    className={`sort-btn filter-entry-${key}${entryFilter === key ? ' active' : ''}`}
+                  <Button key={key}
+                    variant={entryFilter === key ? 'secondary' : 'ghost'}
+                    size="sm"
                     onClick={() => setEntryFilter(key)}>
-                    {icon}
-                    {' '}{label}
-                    <span className="rank-tab-badge">{entryCounts[key]}</span>
-                  </button>
+                    {icon} {label}
+                    <Badge variant="default" className="rank-tab-badge">{entryCounts[key]}</Badge>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -244,46 +252,36 @@ export function PainelPage({ session, onSession, onBack }: Props) {
                       <EntryStatusBadge entry={entry} />
                     </div>
                     <div className="painel-entry-actions">
-                      <button
-                        className="btn-success btn-sm"
+                      <Button variant="success" size="sm"
                         disabled={busy || (entry.is_alive && entry.sandbox_ok !== false)}
                         title="Marcar como Vivo"
-                        onClick={() => handleEntryStatus(entry.id!, { is_alive: true, sandbox_ok: true }, 'Vivo')}
-                      >
+                        onClick={() => handleEntryStatus(entry.id!, { is_alive: true, sandbox_ok: true }, 'Vivo')}>
                         <IconHeartbeat size={16} /> Vivo
-                      </button>
-                      <button
-                        className="btn-warning btn-sm"
+                      </Button>
+                      <Button variant="warning" size="sm"
                         disabled={busy || (!entry.is_alive && entry.sandbox_ok !== false)}
                         title="Marcar como Morto"
-                        onClick={() => handleEntryStatus(entry.id!, { is_alive: false, sandbox_ok: true }, 'Morto')}
-                      >
+                        onClick={() => handleEntryStatus(entry.id!, { is_alive: false, sandbox_ok: true }, 'Morto')}>
                         <IconSkull size={16} /> Morto
-                      </button>
-                      <button
-                        className="btn-danger btn-sm"
+                      </Button>
+                      <Button variant="destructive" size="sm"
                         disabled={busy || entry.sandbox_ok === false}
                         title="Desclassificar"
-                        onClick={() => handleEntryStatus(entry.id!, { sandbox_ok: false }, 'Desclassificado')}
-                      >
+                        onClick={() => handleEntryStatus(entry.id!, { sandbox_ok: false }, 'Desclassificado')}>
                         <IconBan size={16} /> Desc.
-                      </button>
-                      <button
-                        className="btn-secondary btn-sm"
+                      </Button>
+                      <Button variant="secondary" size="sm"
                         disabled={busy}
                         title="Editar objetivos"
-                        onClick={() => setEditObjEntry(entry)}
-                      >
+                        onClick={() => setEditObjEntry(entry)}>
                         <IconTarget size={16} /> Obj.
-                      </button>
-                      <button
-                        className="btn-ghost btn-sm"
+                      </Button>
+                      <Button variant="ghost" size="icon-sm"
                         disabled={busy}
                         title="Remover entrada"
-                        onClick={() => setConfirmDeleteEntryId(entry.id!)}
-                      >
+                        onClick={() => setConfirmDeleteEntryId(entry.id!)}>
                         <IconTrash size={16} />
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 );

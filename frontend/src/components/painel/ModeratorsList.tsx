@@ -3,6 +3,8 @@ import { toast } from 'sonner';
 import { apiGetModerators, apiDeleteModerator } from '../../lib/api';
 import type { Moderator } from '../../types';
 import { ConfirmModal } from './ConfirmModal';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { IconPlus, IconTrash } from '@tabler/icons-react';
 
 interface Props {
@@ -46,9 +48,9 @@ export function ModeratorsList({ token, currentId, onCreateClick }: Props) {
     <div className="painel-section">
       <div className="painel-section-header">
         <h2>Moderadores</h2>
-        <button className="btn-primary btn-sm" onClick={onCreateClick}>
+        <Button size="sm" onClick={onCreateClick}>
           <IconPlus size={16} /> Novo moderador
-        </button>
+        </Button>
       </div>
 
       {loading && <p className="painel-loading">Carregando...</p>}
@@ -57,14 +59,14 @@ export function ModeratorsList({ token, currentId, onCreateClick }: Props) {
         <div key={m.id} className="player-card">
           <div className="player-card-info">
             <span className="player-nick">{m.login}</span>
-            <span className={`player-status status-badge-${m.role}`}>{ROLE_LABELS[m.role]}</span>
+            <Badge variant={m.role as 'master' | 'moderator'}>{ROLE_LABELS[m.role]}</Badge>
           </div>
           {m.id !== currentId && m.role !== 'master' && (
             <div className="player-card-actions">
-              <button className="btn-danger btn-sm" disabled={deleting === m.id}
+              <Button variant="destructive" size="sm" disabled={deleting === m.id}
                 onClick={() => setConfirmDelete({ id: m.id, login: m.login })}>
                 <IconTrash size={16} /> Remover
-              </button>
+              </Button>
             </div>
           )}
         </div>

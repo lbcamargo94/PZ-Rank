@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { apiLogin } from '../../lib/api';
 import type { ModSession } from '../../types';
+import { Button } from '@/components/ui/button';
 import {
   IconArrowLeft,
   IconShieldLock,
@@ -39,12 +40,11 @@ export function PainelLogin({ onSuccess, onBack }: Props) {
     <div className="painel-login-wrap">
       <div className="painel-login-scanlines" aria-hidden="true" />
 
-      <button className="btn-primary painel-back" onClick={onBack}>
+      <Button variant="ghost" className="painel-back" onClick={onBack}>
         <IconArrowLeft size={16} /> Voltar ao ranking
-      </button>
+      </Button>
 
       <div className="painel-login-box">
-        {/* ── Ícone de segurança ── */}
         <div className="painel-login-icon-wrap">
           <IconShieldLock size={20} className="painel-login-icon" />
         </div>
@@ -90,15 +90,15 @@ export function PainelLogin({ onSuccess, onBack }: Props) {
             />
           </div>
 
-          <button
-            className="btn-primary btn-block painel-login-btn"
+          <Button
             type="submit"
+            className="w-full painel-login-btn"
             disabled={loading || !login || !password}
           >
             {loading
               ? <><IconLoader2 size={16} className="animate-spin" /> Verificando...</>
               : <><IconLogin size={16} /> Entrar</>}
-          </button>
+          </Button>
         </form>
 
         <p className="painel-login-warn">

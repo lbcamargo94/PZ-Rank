@@ -1,6 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import type { Entry, SortKey, RankTab } from '../types';
 import { RankRow } from './RankRow';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   IconGhost,
   IconTrophy,
@@ -131,34 +134,38 @@ export function RankTable({ entries, sortKey, loading, onSort, onRegister, onRel
 
   return (
     <div className="container table-section">
-      <div className="rank-tabs-bar">
-        {TAB_CONFIG.map(({ key, label, countKey }) => (
-          <button key={key}
-            className={`rank-tab-btn${tab === key ? ' active' : ''}`}
-            onClick={() => onTabChange(key)}>
-            {label}
-            <span className="rank-tab-badge">{counts[countKey]}</span>
-          </button>
-        ))}
-      </div>
+
+      <Tabs value={tab} onValueChange={v => onTabChange(v as RankTab)}>
+        <TabsList className="rank-tabs-bar">
+          {TAB_CONFIG.map(({ key, label, countKey }) => (
+            <TabsTrigger key={key} value={key}>
+              {label}
+              <Badge variant="default" className="rank-tab-badge">{counts[countKey]}</Badge>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
 
       <div className="sort-bar">
         <span className="sort-label">Ordenar por:</span>
         {SORT_LABELS.map(({ key, label }) => (
-          <button key={key}
-            className={`sort-btn${sortKey === key ? ' active' : ''}`}
+          <Button
+            key={key}
+            variant={sortKey === key ? 'secondary' : 'ghost'}
+            size="sm"
             onClick={() => onSort(key)}
-            aria-pressed={sortKey === key}>
+            aria-pressed={sortKey === key}
+          >
             {label}
-          </button>
+          </Button>
         ))}
         <div className="sort-bar-actions">
-          <button className="btn-reload" onClick={onReload} disabled={loading} aria-label="Recarregar tabela">
+          <Button variant="ghost" size="icon" onClick={onReload} disabled={loading} aria-label="Recarregar tabela">
             <IconRefresh size={16} className={loading ? 'animate-spin' : ''} />
-          </button>
-          <button className="btn-primary btn-sm sort-register" onClick={onRegister}>
+          </Button>
+          <Button size="sm" onClick={onRegister}>
             <IconUserPlus size={16} aria-hidden="true" /> Cadastrar-se
-          </button>
+          </Button>
         </div>
       </div>
 

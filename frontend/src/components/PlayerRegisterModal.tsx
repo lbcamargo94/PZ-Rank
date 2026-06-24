@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { apiRegisterPlayer } from '../lib/api';
 import {
-  IconX,
   IconCircleCheck,
   IconArrowLeft,
   IconTrophy,
@@ -15,6 +14,8 @@ import {
   IconLoader2,
   IconSend,
 } from '@tabler/icons-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 interface Props {
   onClose: () => void;
@@ -71,12 +72,8 @@ export function PlayerRegisterModal({ onClose }: Props) {
   }
 
   return (
-    <div className="modal-overlay active" role="dialog" aria-modal="true">
-      <div className="modal-box reg-modal-box" onClick={e => e.stopPropagation()}>
-        <button className="modal-close" aria-label="Fechar" onClick={onClose}>
-          <IconX size={16} />
-        </button>
-
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-[480px]">
         {done ? (
           /* ── Estado de sucesso ── */
           <div className="reg-success">
@@ -85,20 +82,20 @@ export function PlayerRegisterModal({ onClose }: Props) {
             <p className="reg-success-msg">
               Seu pedido foi recebido. Um moderador vai revisar e aprovar sua inscrição em breve.
             </p>
-            <button className="btn-primary btn-block" onClick={onClose}>
+            <Button className="w-full" onClick={onClose}>
               <IconArrowLeft size={16} /> Voltar ao ranking
-            </button>
+            </Button>
           </div>
         ) : (
           <>
-            {/* ── Cabeçalho ── */}
-            <div className="reg-header">
-              <div className="reg-header-icon"><IconTrophy size={20} /></div>
-              <h2 className="reg-title">Entrar no Ranking</h2>
-              <p className="reg-subtitle">
-                Preencha seus dados. Um moderador vai revisar e aprovar seu cadastro.
-              </p>
-            </div>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <IconTrophy size={20} /> Entrar no Ranking
+              </DialogTitle>
+            </DialogHeader>
+            <p className="reg-subtitle">
+              Preencha seus dados. Um moderador vai revisar e aprovar seu cadastro.
+            </p>
 
             <form className="modal-form" onSubmit={handleSubmit} noValidate>
 
@@ -161,19 +158,19 @@ export function PlayerRegisterModal({ onClose }: Props) {
                 </span>
               </div>
 
-              <button
-                className="btn-primary btn-block"
+              <Button
                 type="submit"
+                className="w-full"
                 disabled={loading || !nick.trim()}
               >
                 {loading
                   ? <><IconLoader2 size={16} className="animate-spin" /> Enviando...</>
                   : <><IconSend size={16} /> Enviar cadastro</>}
-              </button>
+              </Button>
             </form>
           </>
         )}
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

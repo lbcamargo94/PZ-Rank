@@ -1,6 +1,4 @@
-import { useEffect } from 'react';
 import {
-  IconX,
   IconSettings,
   IconUsers,
   IconBrain,
@@ -11,6 +9,7 @@ import {
   IconCar,
   IconPaw,
 } from '@tabler/icons-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface Props {
   onClose: () => void;
@@ -142,30 +141,20 @@ const SETTINGS_GROUPS = [
 ];
 
 export function ChallengeSettingsModal({ onClose }: Props) {
-  useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', onKey);
-    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
-  }, [onClose]);
-
   return (
-    <div className="modal-overlay active" role="dialog" aria-modal="true">
-      <div className="modal-box settings-modal-box" onClick={e => e.stopPropagation()}>
-        <button className="modal-close" aria-label="Fechar" onClick={onClose}>
-          <IconX size={16} />
-        </button>
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-[560px]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <IconSettings size={18} /> Configurações do Desafio
+          </DialogTitle>
+        </DialogHeader>
 
-        <div className="settings-modal-header">
-          <span className="settings-modal-tag">// CONFIGURAÇÕES OFICIAIS</span>
-          <h2 className="modal-title"><IconSettings size={18} /> Configurações do Desafio</h2>
-          <p className="settings-modal-sub">
-            Todas as configurações do sandbox devem ser idênticas ao preset oficial
-            <strong> "Brasileirão PZ"</strong>. O mod verifica automaticamente e marca
-            o jogador como <strong>Desclassificado</strong> se houver divergência.
-          </p>
-        </div>
+        <p className="settings-modal-sub">
+          Todas as configurações do sandbox devem ser idênticas ao preset oficial
+          <strong> "Brasileirão PZ"</strong>. O mod verifica automaticamente e marca
+          o jogador como <strong>Desclassificado</strong> se houver divergência.
+        </p>
 
         <div className="settings-modal-body">
           {SETTINGS_GROUPS.map(group => (
@@ -184,7 +173,7 @@ export function ChallengeSettingsModal({ onClose }: Props) {
             </section>
           ))}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -8,7 +8,6 @@ import {
 import type { Objectives } from '../../lib/objectives';
 import type { Entry } from '../../types';
 import {
-  IconX,
   IconTarget,
   IconStar,
   IconBuildingStore,
@@ -18,6 +17,8 @@ import {
   IconSword,
   IconSkull,
 } from '@tabler/icons-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 interface Props {
   token:     string;
@@ -69,14 +70,13 @@ export function EditObjectivesModal({ token, entry, onClose, onSuccess }: Props)
   }
 
   return (
-    <div className="modal-overlay active" role="dialog" aria-modal="true">
-      <div className="modal-box update-modal-box" onClick={e => e.stopPropagation()}>
-        <button className="modal-close" aria-label="Fechar" onClick={onClose}>
-          <IconX size={16} />
-        </button>
-        <h2 className="modal-title">
-          <IconTarget size={18} /> Objetivos — {entry.character_name || entry.name}
-        </h2>
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-[560px]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <IconTarget size={18} /> Objetivos — {entry.character_name || entry.name}
+          </DialogTitle>
+        </DialogHeader>
 
         <form className="modal-form" onSubmit={handleSubmit} noValidate>
           <div className="objectives-section">
@@ -155,11 +155,11 @@ export function EditObjectivesModal({ token, entry, onClose, onSuccess }: Props)
             </div>
           </div>
 
-          <button className="btn-primary btn-block" type="submit" disabled={loading}>
+          <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Salvando...' : 'Salvar objetivos'}
-          </button>
+          </Button>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

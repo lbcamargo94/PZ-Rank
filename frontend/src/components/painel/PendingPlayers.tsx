@@ -3,6 +3,8 @@ import { toast } from 'sonner';
 import { apiGetPlayers, apiUpdatePlayerStatus, apiBlockPlayer, apiUnblockPlayer, apiDeletePlayer, apiRestorePlayer } from '../../lib/api';
 import type { Player, PlayerStatus, PlayerFilter } from '../../types';
 import { ConfirmModal } from './ConfirmModal';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   IconUsers,
   IconClock,
@@ -39,6 +41,15 @@ const FILTER_LABELS: Record<PlayerFilter, string> = {
   blocked:  'Bloqueados',
   deleted:  'Excluídos',
   all:      'Todos',
+};
+
+const FILTER_ICONS: Record<PlayerFilter, React.ReactElement> = {
+  pending:  <IconClock  size={16} />,
+  approved: <IconCheck  size={16} />,
+  rejected: <IconX      size={16} />,
+  blocked:  <IconLock   size={16} />,
+  deleted:  <IconTrash  size={16} />,
+  all:      <IconList   size={16} />,
 };
 
 export function PendingPlayers({ token }: Props) {
@@ -138,7 +149,7 @@ export function PendingPlayers({ token }: Props) {
         <h2>
           <IconUsers size={18} /> Jogadores Cadastrados
           {filter === 'pending' && pendingCount > 0 && (
-            <span className="painel-pending-badge">{pendingCount}</span>
+            <Badge variant="pending" className="ml-2">{pendingCount}</Badge>
           )}
         </h2>
       </div>
@@ -146,17 +157,12 @@ export function PendingPlayers({ token }: Props) {
       <div className="painel-section-filter">
         <div className="filter-bar">
           {filterOptions.map(f => (
-            <button key={f}
-              className={`sort-btn${filter === f ? ' active' : ''}${f === 'blocked' ? ' filter-blocked' : ''}${f === 'deleted' ? ' filter-deleted' : ''}`}
+            <Button key={f}
+              variant={filter === f ? 'secondary' : 'ghost'}
+              size="sm"
               onClick={() => setFilter(f)}>
-              {f === 'pending'  && <IconClock   size={16} />}
-              {f === 'approved' && <IconCheck   size={16} />}
-              {f === 'rejected' && <IconX       size={16} />}
-              {f === 'blocked'  && <IconLock    size={16} />}
-              {f === 'deleted'  && <IconTrash   size={16} />}
-              {f === 'all'      && <IconList    size={16} />}
-              {' '}{FILTER_LABELS[f]}
-            </button>
+              {FILTER_ICONS[f]} {FILTER_LABELS[f]}
+            </Button>
           ))}
         </div>
       </div>
@@ -188,13 +194,15 @@ export function PendingPlayers({ token }: Props) {
               <span className="player-nick">{p.nick}</span>
               <div className="player-badges">
                 {!isDeleted && (
-                  <span className={`player-status status-badge-${p.status}`}>{STATUS_LABELS[p.status]}</span>
+                  <Badge variant={p.status as 'pending' | 'approved' | 'rejected'}>
+                    {STATUS_LABELS[p.status]}
+                  </Badge>
                 )}
                 {p.blocked && !isDeleted && (
-                  <span className="player-status status-badge-blocked"><IconLock size={16} /> Bloqueado</span>
+                  <Badge variant="blocked"><IconLock size={14} /> Bloqueado</Badge>
                 )}
                 {isDeleted && (
-                  <span className="player-status status-badge-deleted"><IconTrash size={16} /> Excluído</span>
+                  <Badge variant="deleted"><IconTrash size={14} /> Excluído</Badge>
                 )}
               </div>
             </div>
@@ -208,40 +216,40 @@ export function PendingPlayers({ token }: Props) {
 
             <div className="player-card-actions">
               {isDeleted ? (
-                <button className="btn-success btn-sm" disabled={updating === p.id}
+                <Button variant="success" size="sm" disabled={updating === p.id}
                   onClick={() => handleRestore(p.id)}>
                   <IconRefresh size={16} /> Restaurar
-                </button>
+                </Button>
               ) : (
                 <>
                   {p.status !== 'approved' && (
-                    <button className="btn-success btn-sm" disabled={updating === p.id}
+                    <Button variant="success" size="sm" disabled={updating === p.id}
                       onClick={() => handleStatus(p.id, 'approved')}>
                       <IconCheck size={16} /> Aprovar
-                    </button>
+                    </Button>
                   )}
                   {p.status !== 'rejected' && (
-                    <button className="btn-danger btn-sm" disabled={updating === p.id}
+                    <Button variant="destructive" size="sm" disabled={updating === p.id}
                       onClick={() => handleStatus(p.id, 'rejected')}>
                       <IconX size={16} /> Rejeitar
-                    </button>
+                    </Button>
                   )}
                   {!p.blocked ? (
-                    <button className="btn-warning btn-sm" disabled={updating === p.id}
+                    <Button variant="warning" size="sm" disabled={updating === p.id}
                       onClick={() => handleBlock(p.id)}>
                       <IconLock size={16} /> Bloquear
-                    </button>
+                    </Button>
                   ) : (
-                    <button className="btn-ghost btn-sm" disabled={updating === p.id}
+                    <Button variant="ghost" size="sm" disabled={updating === p.id}
                       onClick={() => handleUnblock(p.id)}>
                       <IconLockOpen size={16} /> Desbloquear
-                    </button>
+                    </Button>
                   )}
-                  <button className="btn-ghost btn-sm btn-delete" disabled={updating === p.id}
+                  <Button variant="ghost" size="icon-sm" disabled={updating === p.id}
                     title="Excluir jogador do rank"
                     onClick={() => setConfirmDeleteId(p.id)}>
                     <IconTrash size={16} />
-                  </button>
+                  </Button>
                 </>
               )}
             </div>

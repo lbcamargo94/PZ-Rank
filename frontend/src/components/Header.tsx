@@ -7,6 +7,7 @@ import {
   IconCalendar,
   IconUserCheck,
 } from '@tabler/icons-react';
+import { Button } from '@/components/ui/button';
 
 interface HeaderProps {
   onPainel:   () => void;
@@ -24,15 +25,15 @@ export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
           <p className="site-sub">Desafio BRASILEIRÃO PZ</p>
         </Link>
         <div className="header-actions">
-          <button className="btn-primary btn-sm" onClick={onRules} aria-label="Regras do desafio">
+          <Button variant="ghost" size="sm" onClick={onRules} aria-label="Regras do desafio">
             <IconBook size={16} aria-hidden="true" /> Regras
-          </button>
-          <button className="btn-primary btn-sm" onClick={onSettings} aria-label="Configurações do desafio">
+          </Button>
+          <Button variant="ghost" size="sm" onClick={onSettings} aria-label="Configurações do desafio">
             <IconSettings size={16} aria-hidden="true" /> Configurações
-          </button>
-          <button className="btn-primary btn-sm" onClick={onPainel} aria-label="Painel de moderadores">
+          </Button>
+          <Button variant="ghost" size="sm" onClick={onPainel} aria-label="Painel de moderadores">
             <IconShieldHalf size={16} aria-hidden="true" /> Moderadores
-          </button>
+          </Button>
         </div>
       </div>
       <div className="container rules-bar">

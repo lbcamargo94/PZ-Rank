@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   SPIFFOS_RESTAURANTS, BASE_ITEMS,
   SCORE_KILLS, SCORE_KILLS_MAX, SCORE_BASE, SCORE_BASE_ITEM,
   SCORE_KILLS_500K, SCORE_ALL_SKILLS, SCORE_STATUE, SCORE_MILITARY,
 } from '../lib/objectives';
 import {
-  IconX,
   IconShieldStar,
   IconTarget,
   IconBuildingStore,
@@ -18,6 +17,7 @@ import {
   IconCheck,
   IconMapPin,
 } from '@tabler/icons-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface Props {
   onClose: () => void;
@@ -33,31 +33,19 @@ const MAX_SCORE =
 export function RulesModal({ onClose }: Props) {
   const [tab, setTab] = useState<Tab>('objectives');
 
-  useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', onKey);
-    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
-  }, [onClose]);
-
   return (
-    <div className="modal-overlay active" role="dialog" aria-modal="true">
-      <div className="modal-box rules-modal-box" onClick={e => e.stopPropagation()}>
-        <button className="modal-close" aria-label="Fechar" onClick={onClose}>
-          <IconX size={16} />
-        </button>
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-[600px]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <IconShieldStar size={20} /> Regras do Desafio
+          </DialogTitle>
+        </DialogHeader>
 
-        {/* ── Header ── */}
-        <div className="rules-modal-header">
-          <div className="rules-modal-icon"><IconShieldStar size={20} /></div>
-          <h2 className="modal-title">Regras do Desafio</h2>
-          <p className="rules-modal-sub">
-            Sobreviva o máximo possível e complete objetivos para acumular pontos.
-          </p>
-        </div>
+        <p className="rules-modal-sub">
+          Sobreviva o máximo possível e complete objetivos para acumular pontos.
+        </p>
 
-        {/* ── Tabs ── */}
         <div className="rules-tabs">
           <button className={`rules-tab${tab === 'objectives' ? ' active' : ''}`} onClick={() => setTab('objectives')}>
             <IconTarget size={16} /> Objetivos
@@ -72,10 +60,8 @@ export function RulesModal({ onClose }: Props) {
 
         <div className="rules-tab-body">
 
-          {/* ── Aba Objetivos ── */}
           {tab === 'objectives' && (
             <div className="rules-section-list">
-
               <div className="rules-obj-card">
                 <div className="rules-obj-icon"><IconSkull size={20} /></div>
                 <div className="rules-obj-content">
@@ -84,7 +70,6 @@ export function RulesModal({ onClose }: Props) {
                   <span className="rules-pts-badge">+{SCORE_KILLS_500K.toLocaleString('pt-BR')} pts</span>
                 </div>
               </div>
-
               <div className="rules-obj-card">
                 <div className="rules-obj-icon"><IconStar size={20} /></div>
                 <div className="rules-obj-content">
@@ -93,29 +78,22 @@ export function RulesModal({ onClose }: Props) {
                   <span className="rules-pts-badge">+{SCORE_ALL_SKILLS.toLocaleString('pt-BR')} pts</span>
                 </div>
               </div>
-
               <div className="rules-obj-card">
                 <div className="rules-obj-icon"><IconTrophy size={20} /></div>
                 <div className="rules-obj-content">
                   <span className="rules-obj-title">Estátua do Spiffo</span>
-                  <span className="rules-obj-desc">
-                    Domine a Sede do Spiffo's em Louisville e colete a Estátua do Spiffo.
-                  </span>
+                  <span className="rules-obj-desc">Domine a Sede do Spiffo's em Louisville e colete a Estátua do Spiffo.</span>
                   <span className="rules-pts-badge">+{SCORE_STATUE.toLocaleString('pt-BR')} pts</span>
                 </div>
               </div>
-
               <div className="rules-obj-card">
                 <div className="rules-obj-icon"><IconSword size={20} /></div>
                 <div className="rules-obj-content">
                   <span className="rules-obj-title">Base Militar de Rosewood</span>
-                  <span className="rules-obj-desc">
-                    Limpe completamente a base militar secreta de Rosewood.
-                  </span>
+                  <span className="rules-obj-desc">Limpe completamente a base militar secreta de Rosewood.</span>
                   <span className="rules-pts-badge">+{SCORE_MILITARY.toLocaleString('pt-BR')} pts</span>
                 </div>
               </div>
-
               <div className="rules-obj-card rules-obj-card-wide">
                 <div className="rules-obj-icon"><IconBuildingStore size={20} /></div>
                 <div className="rules-obj-content">
@@ -130,17 +108,14 @@ export function RulesModal({ onClose }: Props) {
                   </button>
                 </div>
               </div>
-
             </div>
           )}
 
-          {/* ── Aba Bases Spiffo's ── */}
           {tab === 'bases' && (
             <div className="rules-bases-section">
               <p className="rules-bases-intro">
                 Estabeleça uma base em cada restaurante com os itens abaixo para maximizar sua pontuação:
               </p>
-
               <div className="rules-base-items-list">
                 {BASE_ITEMS.map(item => (
                   <div key={item.id} className="rules-base-item-row">
@@ -150,7 +125,6 @@ export function RulesModal({ onClose }: Props) {
                   </div>
                 ))}
               </div>
-
               <div className="rules-restaurants-grid">
                 {SPIFFOS_RESTAURANTS.map(r => (
                   <div key={r.id} className="rules-restaurant-chip">
@@ -161,7 +135,6 @@ export function RulesModal({ onClose }: Props) {
             </div>
           )}
 
-          {/* ── Aba Pontuação ── */}
           {tab === 'score' && (
             <div className="rules-score-section">
               <table className="rules-score-table">
@@ -199,7 +172,6 @@ export function RulesModal({ onClose }: Props) {
                   </tr>
                 </tbody>
               </table>
-
               <div className="rules-max-score">
                 <span className="rules-max-label">Pontuação máxima possível</span>
                 <span className="rules-max-value">{MAX_SCORE.toLocaleString('pt-BR')} pts</span>
@@ -208,7 +180,7 @@ export function RulesModal({ onClose }: Props) {
           )}
 
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
