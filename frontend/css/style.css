@@ -1,4 +1,4 @@
-/* ===== RESET & BASE ===== */
+﻿/* ===== RESET & BASE ===== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
@@ -653,8 +653,8 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   top: 16px;
   right: 20px;
   background: var(--bg-3);
-  border: 1px solid var(--border-mid);
-  color: var(--text-2);
+  border: 1px solid rgba(224,64,64,0.35);
+  color: var(--red);
   width: 36px;
   height: 36px;
   border-radius: var(--radius);
@@ -667,7 +667,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   z-index: 201;
 }
 
-.img-close:hover { color: var(--text-1); }
+.img-close:hover { color: #ff6060; border-color: var(--red); background: rgba(224,64,64,0.1); }
 
 /* ===== TOAST ===== */
 .toast {
@@ -909,8 +909,8 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   top: 14px;
   right: 14px;
   background: var(--bg-3);
-  border: 1px solid var(--border);
-  color: var(--text-3);
+  border: 1px solid rgba(224,64,64,0.35);
+  color: var(--red);
   width: 30px;
   height: 30px;
   border-radius: var(--radius);
@@ -921,7 +921,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   justify-content: center;
   transition: color 0.15s, border-color 0.15s;
 }
-.modal-close:hover { color: var(--text-1); border-color: var(--border-mid); }
+.modal-close:hover { color: #ff6060; border-color: var(--red); background: rgba(224,64,64,0.1); }
 
 .modal-title {
   font-family: var(--font-display);
@@ -1212,6 +1212,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 
 /* ── Coluna de habilidades — contador (botão) ─────────────── */
 .rank-skills { white-space: nowrap; }
+.rank-updated { font-family: var(--font-mono); font-size: 12px; color: var(--text-3); white-space: nowrap; }
 
 .skills-no-data { color: var(--text-4); font-family: var(--font-mono); font-size: 13px; }
 
@@ -1268,7 +1269,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   border: 1px solid var(--border-mid);
   border-radius: var(--radius-lg);
   width: 100%;
-  max-width: 540px;
+  max-width: 420px;
   max-height: 88vh;
   display: flex;
   flex-direction: column;
@@ -1310,8 +1311,8 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 
 .sm-close {
   background: var(--bg-3);
-  border: 1px solid var(--border);
-  color: var(--text-3);
+  border: 1px solid rgba(224,64,64,0.35);
+  color: var(--red);
   width: 30px;
   height: 30px;
   border-radius: var(--radius);
@@ -1323,15 +1324,13 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   flex-shrink: 0;
   transition: color 0.15s, border-color 0.15s;
 }
-.sm-close:hover { color: var(--text-1); border-color: var(--border-mid); }
+.sm-close:hover { color: #ff6060; border-color: var(--red); background: rgba(224,64,64,0.1); }
 
 .sm-body {
   padding: 16px 20px 20px;
   overflow-y: auto;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0 24px;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
   scrollbar-width: thin;
   scrollbar-color: var(--border-mid) transparent;
 }
@@ -2667,6 +2666,8 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 }
 .rc-stat i { color: var(--text-3); }
 .rc-obj i  { color: var(--gold); }
+.rc-updated { display: flex; align-items: center; gap: 4px; font-family: var(--font-mono); font-size: 12px; color: var(--text-4); margin-top: 2px; }
+.rc-updated i { font-size: 13px; }
 
 .rc-footer {
   display: flex;
@@ -3978,15 +3979,6 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   .settings-modal-body { max-height: calc(100vh - 220px); }
 }
 
-/* ── 4. Modal habilidades — coluna única em mobile ────────── */
-@media (max-width: 560px) {
-  .sm-body {
-    grid-template-columns: 1fr;
-    padding: 14px 16px 16px;
-    gap: 0;
-  }
-  .srow-name { width: 100px; }
-}
 
 /* ── 5. Fontes do modal de habilidades ────────────────────── */
 .srow-name { font-size: 12px; }
@@ -4275,4 +4267,3 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   /* Player card: links menores */
   .player-card-links { font-size: 16px; gap: 8px; }
 }
-

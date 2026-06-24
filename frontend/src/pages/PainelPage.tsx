@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+﻿import { useState, useCallback, useMemo } from 'react';
 import { apiLogout, apiDeleteEntry, apiGetEntries, apiUpdateEntryStatus } from '../lib/api';
 import type { Entry, SortKey } from '../types';
 import type { ModSession } from '../types';
@@ -125,7 +125,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
         <div className="container painel-header-inner">
           <div className="painel-header-left">
             <button className="btn-primary btn-sm" onClick={onBack}>
-              <i className="ti ti-arrow-left" /> Ranking público
+              <i className="ti ti-arrow-left" /> Voltar ao Ranking
             </button>
             <span className="painel-title">Painel de Moderadores</span>
           </div>

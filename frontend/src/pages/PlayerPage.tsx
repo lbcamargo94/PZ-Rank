@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import avatarDefault from '../../assets/avatar.png';
 import { apiGetPlayerProfile, apiGetEntries } from '../lib/api';
@@ -296,7 +296,7 @@ export function PlayerPage() {
           <i className="ti ti-alert-circle" /> {error ?? 'Jogador não encontrado.'}
           <br />
           <Link to="/" className="back-link" style={{ marginTop: 16, display: 'inline-block' }}>
-            ← Voltar ao ranking
+            ← Voltar ao Ranking
           </Link>
         </div>
       </div>
@@ -332,7 +332,7 @@ export function PlayerPage() {
       <div className="container">
         {/* Back link */}
         <Link to="/" className="btn-primary btn-sm back-btn-rank">
-          <i className="ti ti-arrow-left" /> Ranking
+          <i className="ti ti-arrow-left" /> Voltar ao Ranking
         </Link>
 
         {/* Player header */}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { apiRegisterPlayer } from '../lib/api';
 
 interface Props {
@@ -71,7 +71,7 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
               Seu pedido foi recebido. Um moderador vai revisar e aprovar sua inscrição em breve.
             </p>
             <button className="btn-primary btn-block" onClick={onClose}>
-              <i className="ti ti-arrow-left" /> Voltar ao ranking
+              <i className="ti ti-arrow-left" /> Voltar ao Ranking
             </button>
           </div>
         ) : (

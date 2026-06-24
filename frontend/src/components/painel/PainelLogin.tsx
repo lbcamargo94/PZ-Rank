@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { apiLogin } from '../../lib/api';
 import type { ModSession } from '../../types';
 
@@ -31,7 +31,7 @@ export function PainelLogin({ onSuccess, onBack, showToast }: Props) {
       <div className="painel-login-scanlines" aria-hidden="true" />
 
       <button className="btn-primary painel-back" onClick={onBack}>
-        <i className="ti ti-arrow-left" /> Voltar ao ranking
+        <i className="ti ti-arrow-left" /> Voltar ao Ranking
       </button>
 
       <div className="painel-login-box">
