@@ -1,6 +1,6 @@
-﻿import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import type { Entry, SortKey, RankTab } from '../types';
-import { RankRow } from './RankRow';
+import { RankRow, KILLS_TARGET } from './RankRow';
 
 interface RankTableProps {
   entries:    Entry[];
@@ -28,9 +28,32 @@ const SORT_LABELS: { key: SortKey; label: string }[] = [
 
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
-function RankCard({ entry, rank, onPlayerClick, hideStatus }: {
+function fmtDate(iso: string | undefined): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const dd  = String(d.getDate()).padStart(2, '0');
+  const mm  = String(d.getMonth() + 1).padStart(2, '0');
+  const hh  = String(d.getHours()).padStart(2, '0');
+  const min = String(d.getMinutes()).padStart(2, '0');
+  return dd + '/' + mm + '/' + d.getFullYear() + ' - ' + hh + ':' + min;
+}
+
+function MiniBar({ value, max, done }: { value: number; max: number; done?: boolean }) {
+  const pct = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0;
+  return (
+    <div className="rk-bar-row">
+      <div className="rk-bar-track">
+        <div className={`rk-bar-fill${done ? ' rk-bar-done' : ''}`} style={{ width: pct + '%' }} />
+      </div>
+      <span className={`rk-bar-pct${done ? ' rk-bar-pct-done' : ''}`}>{pct}%</span>
+    </div>
+  );
+}
+
+function RankCard({ entry, rank, maxScore, onPlayerClick, hideStatus }: {
   entry: Entry;
   rank: number;
+  maxScore: number;
   onPlayerClick: (id: number) => void;
   hideStatus?: boolean;
 }) {
@@ -43,6 +66,8 @@ function RankCard({ entry, rank, onPlayerClick, hideStatus }: {
         ...Object.values(entry.objectives.bases ?? {}).map(b => b.has_base),
       ].filter(Boolean).length
     : 0;
+
+  const killsDone = entry.kills >= KILLS_TARGET;
 
   return (
     <div
@@ -69,18 +94,24 @@ function RankCard({ entry, rank, onPlayerClick, hideStatus }: {
         )}
       </div>
 
-      {/* Score */}
-      <div className="rc-score">{entry.score.toLocaleString('pt-BR')} <span className="rc-pts">pts</span></div>
+      {/* Score + bar */}
+      <div className="rc-score">
+        <span>{entry.score.toLocaleString('pt-BR')} <span className="rc-pts">pts</span></span>
+        <MiniBar value={entry.score ?? 0} max={maxScore} />
+      </div>
 
       {/* Stats */}
       <div className="rc-stats">
-        <span className="rc-stat"><i className="ti ti-sword" />{entry.kills.toLocaleString('pt-BR')} zumbis</span>
+        <div className="rc-stat-kills">
+          <span className="rc-stat"><i className="ti ti-sword" />{entry.kills.toLocaleString('pt-BR')} zumbis</span>
+          <MiniBar value={entry.kills} max={KILLS_TARGET} done={killsDone} />
+        </div>
         <span className="rc-stat"><i className="ti ti-calendar" />{entry.days}d</span>
         {entry.time_str && <span className="rc-stat"><i className="ti ti-clock" />{entry.time_str}</span>}
         {objCount > 0 && <span className="rc-stat rc-obj"><i className="ti ti-star" />{objCount} obj.</span>}
       </div>
       {entry.updated_at && (
-        <div className="rc-updated"><i className="ti ti-clock-edit" />{(() => { const d = new Date(entry.updated_at); const dd = String(d.getDate()).padStart(2,'0'); const mm = String(d.getMonth()+1).padStart(2,'0'); const hh = String(d.getHours()).padStart(2,'0'); const min = String(d.getMinutes()).padStart(2,'0'); return `${dd}/${mm}/${d.getFullYear()} - ${hh}:${min}`; })()}</div>
+        <div className="rc-updated"><i className="ti ti-clock-edit" />{fmtDate(entry.updated_at)}</div>
       )}
 
       {/* Player + actions */}
@@ -98,8 +129,9 @@ function RankCard({ entry, rank, onPlayerClick, hideStatus }: {
 
 export function RankTable({ entries, sortKey, loading, onSort, onRegister, onReload, tab }: RankTableProps) {
   const navigate = useNavigate();
-  const hideStatus = tab === 'rank';
+  const hideStatus = false;
   const { icon: emptyIcon, text: emptyText } = EMPTY_MESSAGES[tab];
+  const maxScore = entries.reduce((m, e) => Math.max(m, e.score ?? 0), 1);
 
   function handlePlayerClick(playerId: number) {
     navigate(`/player/${playerId}`);
@@ -152,7 +184,7 @@ export function RankTable({ entries, sortKey, loading, onSort, onRegister, onRel
               </thead>
               <tbody>
                 {entries.map((entry, i) => (
-                  <RankRow key={entry.id} entry={entry} rank={i + 1} hideStatus={hideStatus} />
+                  <RankRow key={entry.id} entry={entry} rank={i + 1} hideStatus={hideStatus} maxScore={maxScore} />
                 ))}
               </tbody>
             </table>
@@ -165,6 +197,7 @@ export function RankTable({ entries, sortKey, loading, onSort, onRegister, onRel
                 key={entry.id}
                 entry={entry}
                 rank={i + 1}
+                maxScore={maxScore}
                 onPlayerClick={handlePlayerClick}
                 hideStatus={hideStatus}
               />

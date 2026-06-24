@@ -1,14 +1,17 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import type { Entry } from '../types';
 import { parseSkillMap, SKILL_CATEGORIES, TOTAL_SKILLS, MAX_SKILL_LEVEL } from '../lib/skills';
 import { getProfessionImageUrl } from '../lib/professions';
 
+export const KILLS_TARGET = 500_000;
+
 interface RankRowProps {
   entry:       Entry;
   rank:        number;
   hideStatus?: boolean;
+  maxScore:    number;
 }
 
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
@@ -117,7 +120,22 @@ function fmtDate(iso: string | null | undefined): string {
   return dd + '/' + mm + '/' + d.getFullYear() + ' - ' + hh + ':' + min;
 }
 
-export function RankRow({ entry, rank, hideStatus }: RankRowProps) {
+function MiniBar({ value, max, done }: { value: number; max: number; done?: boolean }) {
+  const pct = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0;
+  return (
+    <div className="rk-bar-row">
+      <div className="rk-bar-track">
+        <div className={`rk-bar-fill${done ? ' rk-bar-done' : ''}`} style={{ width: pct + '%' }} />
+      </div>
+      <span className={`rk-bar-pct${done ? ' rk-bar-pct-done' : ''}`}>{pct}%</span>
+    </div>
+  );
+}
+
+export function RankRow({ entry, rank, hideStatus, maxScore }: RankRowProps) {
+  const score     = entry.score ?? 0;
+  const killsDone = entry.kills >= KILLS_TARGET;
+
   return (
     <tr className={rank <= 3 ? `rank-top rank-${rank}` : ''}>
       <td className="rank-pos">{MEDALS[rank] ?? rank}</td>
@@ -152,10 +170,20 @@ export function RankRow({ entry, rank, hideStatus }: RankRowProps) {
           }
         </td>
       )}
-      <td className="rank-score">{(entry.score ?? 0).toLocaleString('pt-BR')}</td>
+      <td className="rank-score">
+        <div className="rk-bar-cell">
+          <span>{score.toLocaleString('pt-BR')}</span>
+          <MiniBar value={score} max={maxScore} />
+        </div>
+      </td>
       <td className="rank-days">{entry.days}d</td>
       <td className="rank-time">{entry.time_str ?? '—'}</td>
-      <td className="rank-kills">{entry.kills.toLocaleString('pt-BR')}</td>
+      <td className="rank-kills">
+        <div className="rk-bar-cell">
+          <span>{entry.kills.toLocaleString('pt-BR')}</span>
+          <MiniBar value={entry.kills} max={KILLS_TARGET} done={killsDone} />
+        </div>
+      </td>
       <td className="rank-skills">
         <SkillsCell skills={entry.skills} charName={entry.character_name ?? undefined} />
       </td>

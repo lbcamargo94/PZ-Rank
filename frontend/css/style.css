@@ -2032,6 +2032,45 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .rank-top.rank-2 .rank-score { color: var(--silver); }
 .rank-top.rank-3 .rank-score { color: var(--bronze); }
 
+/* ── Mini barras de progresso (score / zumbis) ──────────────── */
+.rk-bar-cell { display: flex; flex-direction: column; gap: 3px; }
+.rk-bar-row  { display: flex; align-items: center; gap: 5px; }
+.rk-bar-track {
+  flex: 1;
+  min-width: 60px;
+  height: 4px;
+  background: var(--bg-4);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.rk-bar-fill {
+  height: 100%;
+  background: var(--green);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+  min-width: 2px;
+}
+.rk-bar-done              { background: var(--gold); }
+.rk-bar-pct               { font-family: var(--font-mono); font-size: 11px; color: var(--text-3); min-width: 30px; text-align: right; }
+.rk-bar-pct-done          { color: var(--gold); }
+
+/* score top-3 bar colors */
+.rank-top.rank-1 .rk-bar-fill { background: var(--gold); }
+.rank-top.rank-2 .rk-bar-fill { background: var(--silver); }
+.rank-top.rank-3 .rk-bar-fill { background: var(--bronze); }
+.rank-top.rank-1 .rk-bar-pct  { color: var(--gold); }
+.rank-top.rank-2 .rk-bar-pct  { color: var(--silver); }
+.rank-top.rank-3 .rk-bar-pct  { color: var(--bronze); }
+/* kills bar always green (gold only if done) */
+.rank-kills .rk-bar-fill        { background: var(--green); }
+.rank-kills .rk-bar-fill.rk-bar-done { background: var(--gold); }
+.rank-kills .rk-bar-pct          { color: var(--text-3); }
+.rank-kills .rk-bar-pct.rk-bar-pct-done { color: var(--gold); }
+
+/* rc-score in mobile card */
+.rc-score { display: flex; flex-direction: column; gap: 3px; }
+.rc-stat-kills { display: flex; flex-direction: column; gap: 3px; width: 100%; }
+
 /* ── Modal de Regras ──────────────────────────────────────── */
 .rules-modal-box {
   max-width: 640px;
