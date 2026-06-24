@@ -264,6 +264,10 @@ function runMigrations(db: Database): void {
     db.exec('ALTER TABLE players ADD COLUMN deleted_at TEXT DEFAULT NULL');
     console.log('[SQLite] migração: coluna deleted_at adicionada');
   }
+  if (!entryCols.includes('updated_at')) {
+    db.exec("ALTER TABLE entries ADD COLUMN updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))");
+    console.log('[SQLite] migração: coluna updated_at adicionada');
+  }
 }
 
 export function createSQLiteClient() {
