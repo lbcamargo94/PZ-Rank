@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { apiGetPlayers, apiCreateEntry } from '../../lib/api';
 import { parsePzrCode } from '../../lib/decoder';
 import {
@@ -26,10 +27,9 @@ interface Props {
   token:     string;
   onClose:   () => void;
   onSuccess: () => void;
-  showToast: (msg: string, type?: string) => void;
 }
 
-export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props) {
+export function UpdateRankModal({ token, onClose, onSuccess }: Props) {
   const [players,      setPlayers]     = useState<Player[]>([]);
   const [playerId,     setPlayerId]    = useState<number | ''>('');
   const [code,         setCode]        = useState('');
@@ -43,18 +43,10 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
     : 0;
 
   useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', onKey);
-    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
-  }, [onClose]);
-
-  useEffect(() => {
     apiGetPlayers(token, 'approved')
       .then(data => setPlayers(data.filter(p => !p.blocked)))
-      .catch(err => showToast((err as Error).message, 'error'));
-  }, [token, showToast]);
+      .catch(err => toast.error((err as Error).message));
+  }, [token]);
 
   useEffect(() => {
     const d = parsePzrCode(code.trim());
@@ -100,11 +92,11 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
         code:       code.trim(),
         objectives,
       });
-      showToast('Rank atualizado com sucesso!', 'success');
+      toast.success('Rank atualizado com sucesso!');
       onSuccess();
       onClose();
     } catch (err) {
-      showToast((err as Error).message, 'error');
+      toast.error((err as Error).message);
     } finally {
       setLoading(false);
     }

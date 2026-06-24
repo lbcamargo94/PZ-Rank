@@ -1,9 +1,8 @@
 import { useState, useCallback, useMemo } from 'react';
+import { toast } from 'sonner';
 import { apiLogout, apiDeleteEntry, apiGetEntries, apiUpdateEntryStatus } from '../lib/api';
 import type { Entry, SortKey } from '../types';
 import type { ModSession } from '../types';
-import { useToast } from '../hooks/useToast';
-import { Toast } from '../components/Toast';
 import { PainelLogin }           from '../components/painel/PainelLogin';
 import { PendingPlayers }        from '../components/painel/PendingPlayers';
 import { UpdateRankModal }       from '../components/painel/UpdateRankModal';
@@ -58,21 +57,20 @@ function EntryStatusBadge({ entry }: { entry: Entry }) {
 }
 
 export function PainelPage({ session, onSession, onBack }: Props) {
-  const [tab,            setTab]            = useState<Tab>('players');
-  const [entryFilter,    setEntryFilter]    = useState<EntryFilter>('all');
+  const [tab,                  setTab]                  = useState<Tab>('players');
+  const [entryFilter,          setEntryFilter]          = useState<EntryFilter>('all');
   const [showUpdateRank,       setShowUpdateRank]       = useState(false);
   const [showCreateMod,        setShowCreateMod]        = useState(false);
   const [editObjEntry,         setEditObjEntry]         = useState<Entry | null>(null);
   const [confirmDeleteEntryId, setConfirmDeleteEntryId] = useState<number | null>(null);
-  const [entries,        setEntries]        = useState<Entry[]>([]);
-  const [sortKey]                           = useState<SortKey>('score');
-  const [updatingEntry,  setUpdatingEntry]  = useState<number | null>(null);
-  const { toast, showToast }               = useToast();
+  const [entries,              setEntries]              = useState<Entry[]>([]);
+  const [sortKey]                                       = useState<SortKey>('score');
+  const [updatingEntry,        setUpdatingEntry]        = useState<number | null>(null);
 
   const fetchEntries = useCallback(async () => {
     try { setEntries(await apiGetEntries(sortKey)); }
-    catch (err) { showToast((err as Error).message, 'error'); }
-  }, [sortKey, showToast]);
+    catch (err) { toast.error((err as Error).message); }
+  }, [sortKey]);
 
   const aliveEntries = useMemo(() => entries.filter(e => e.sandbox_ok !== false &&  e.is_alive), [entries]);
   const deadEntries  = useMemo(() => entries.filter(e => e.sandbox_ok !== false && !e.is_alive), [entries]);
@@ -99,10 +97,10 @@ export function PainelPage({ session, onSession, onBack }: Props) {
     setConfirmDeleteEntryId(null);
     try {
       await apiDeleteEntry(session.token, id);
-      showToast('Entrada removida.', 'success');
+      toast.success('Entrada removida.');
       fetchEntries();
     } catch (err) {
-      showToast((err as Error).message, 'error');
+      toast.error((err as Error).message);
     }
   }
 
@@ -115,10 +113,10 @@ export function PainelPage({ session, onSession, onBack }: Props) {
     setUpdatingEntry(id);
     try {
       await apiUpdateEntryStatus(session.token, id, patch);
-      showToast(`Personagem marcado como ${label}.`, 'success');
+      toast.success(`Personagem marcado como ${label}.`);
       fetchEntries();
     } catch (err) {
-      showToast((err as Error).message, 'error');
+      toast.error((err as Error).message);
     } finally {
       setUpdatingEntry(null);
     }
@@ -131,12 +129,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
   }
 
   if (!session) {
-    return (
-      <>
-        <PainelLogin onSuccess={onSession} onBack={onBack} showToast={showToast} />
-        <Toast {...toast} />
-      </>
-    );
+    return <PainelLogin onSuccess={onSession} onBack={onBack} />;
   }
 
   return (
@@ -187,14 +180,13 @@ export function PainelPage({ session, onSession, onBack }: Props) {
       {/* ── Conteúdo ── */}
       <main className="container painel-main">
         {tab === 'players' && (
-          <PendingPlayers token={session.token} showToast={showToast} />
+          <PendingPlayers token={session.token} />
         )}
 
         {tab === 'moderators' && (
           <ModeratorsList
             token={session.token}
             currentId={session.token}
-            showToast={showToast}
             onCreateClick={() => setShowCreateMod(true)}
           />
         )}
@@ -208,7 +200,6 @@ export function PainelPage({ session, onSession, onBack }: Props) {
               </button>
             </div>
 
-            {/* Filtros de status */}
             <div className="painel-section-filter">
               <div className="filter-bar">
                 {ENTRY_FILTER_CONFIG.map(({ key, label, icon }) => (
@@ -302,14 +293,11 @@ export function PainelPage({ session, onSession, onBack }: Props) {
         )}
       </main>
 
-      <Toast {...toast} />
-
       {showUpdateRank && (
         <UpdateRankModal
           token={session.token}
           onClose={() => setShowUpdateRank(false)}
           onSuccess={fetchEntries}
-          showToast={showToast}
         />
       )}
 
@@ -319,7 +307,6 @@ export function PainelPage({ session, onSession, onBack }: Props) {
           entry={editObjEntry}
           onClose={() => setEditObjEntry(null)}
           onSuccess={fetchEntries}
-          showToast={showToast}
         />
       )}
 
@@ -328,7 +315,6 @@ export function PainelPage({ session, onSession, onBack }: Props) {
           token={session.token}
           onClose={() => setShowCreateMod(false)}
           onSuccess={() => {}}
-          showToast={showToast}
         />
       )}
 

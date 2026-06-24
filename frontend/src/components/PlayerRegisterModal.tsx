@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { apiRegisterPlayer } from '../lib/api';
 import {
   IconX,
@@ -16,8 +17,7 @@ import {
 } from '@tabler/icons-react';
 
 interface Props {
-  onClose:   () => void;
-  showToast: (msg: string, type?: string) => void;
+  onClose: () => void;
 }
 
 type SocialIconName = 'ti-brand-twitch' | 'ti-brand-youtube' | 'ti-brand-kick' | 'ti-brand-tiktok';
@@ -38,21 +38,13 @@ const SOCIALS = [
 
 type SocialId = typeof SOCIALS[number]['id'];
 
-export function PlayerRegisterModal({ onClose, showToast }: Props) {
+export function PlayerRegisterModal({ onClose }: Props) {
   const [nick,    setNick]    = useState('');
   const [loading, setLoading] = useState(false);
   const [done,    setDone]    = useState(false);
   const [socials, setSocials] = useState<Record<SocialId, string>>({
     twitch: '', youtube: '', kick: '', tiktok: '',
   });
-
-  useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', onKey);
-    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
-  }, [onClose]);
 
   function setSocial(id: SocialId, value: string) {
     setSocials(prev => ({ ...prev, [id]: value }));
@@ -72,7 +64,7 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
       });
       setDone(true);
     } catch (err) {
-      showToast((err as Error).message, 'error');
+      toast.error((err as Error).message);
     } finally {
       setLoading(false);
     }

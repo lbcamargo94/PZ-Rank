@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { apiLogin } from '../../lib/api';
 import type { ModSession } from '../../types';
 import {
@@ -14,10 +15,9 @@ import {
 interface Props {
   onSuccess: (session: ModSession) => void;
   onBack:    () => void;
-  showToast: (msg: string, type?: string) => void;
 }
 
-export function PainelLogin({ onSuccess, onBack, showToast }: Props) {
+export function PainelLogin({ onSuccess, onBack }: Props) {
   const [login,    setLogin]    = useState('');
   const [password, setPassword] = useState('');
   const [loading,  setLoading]  = useState(false);
@@ -29,7 +29,7 @@ export function PainelLogin({ onSuccess, onBack, showToast }: Props) {
       const session = await apiLogin(login, password);
       onSuccess(session);
     } catch (err) {
-      showToast((err as Error).message, 'error');
+      toast.error((err as Error).message);
     } finally {
       setLoading(false);
     }

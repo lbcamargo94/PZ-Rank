@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
 import { apiGetModerators, apiDeleteModerator } from '../../lib/api';
 import type { Moderator } from '../../types';
 import { ConfirmModal } from './ConfirmModal';
@@ -7,13 +8,12 @@ import { IconPlus, IconTrash } from '@tabler/icons-react';
 interface Props {
   token:      string;
   currentId?: string;
-  showToast:  (msg: string, type?: string) => void;
   onCreateClick: () => void;
 }
 
 const ROLE_LABELS = { master: 'Master', moderator: 'Moderador' };
 
-export function ModeratorsList({ token, currentId, showToast, onCreateClick }: Props) {
+export function ModeratorsList({ token, currentId, onCreateClick }: Props) {
   const [mods,          setMods]          = useState<Moderator[]>([]);
   const [loading,       setLoading]       = useState(false);
   const [deleting,      setDeleting]      = useState<string | null>(null);
@@ -22,9 +22,9 @@ export function ModeratorsList({ token, currentId, showToast, onCreateClick }: P
   const fetchMods = useCallback(async () => {
     setLoading(true);
     try { setMods(await apiGetModerators(token)); }
-    catch (err) { showToast((err as Error).message, 'error'); }
+    catch (err) { toast.error((err as Error).message); }
     finally { setLoading(false); }
-  }, [token, showToast]);
+  }, [token]);
 
   useEffect(() => { fetchMods(); }, [fetchMods]);
 
@@ -33,10 +33,10 @@ export function ModeratorsList({ token, currentId, showToast, onCreateClick }: P
     setDeleting(id);
     try {
       await apiDeleteModerator(token, id);
-      showToast('Moderador removido.', 'success');
+      toast.success('Moderador removido.');
       fetchMods();
     } catch (err) {
-      showToast((err as Error).message, 'error');
+      toast.error((err as Error).message);
     } finally {
       setDeleting(null);
     }

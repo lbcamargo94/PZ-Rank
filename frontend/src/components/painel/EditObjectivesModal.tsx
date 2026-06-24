@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { apiUpdateEntryObjectives } from '../../lib/api';
 import {
   SPIFFOS_RESTAURANTS, BASE_ITEMS,
@@ -23,23 +24,14 @@ interface Props {
   entry:     Entry;
   onClose:   () => void;
   onSuccess: () => void;
-  showToast: (msg: string, type?: string) => void;
 }
 
-export function EditObjectivesModal({ token, entry, onClose, onSuccess, showToast }: Props) {
+export function EditObjectivesModal({ token, entry, onClose, onSuccess }: Props) {
   const [objectives,   setObjectives]  = useState<Objectives>(() => entry.objectives ?? initObjectives());
   const [expandedBase, setExpandedBase] = useState<string | null>(null);
   const [loading,      setLoading]     = useState(false);
 
   const previewScore = computeScore(entry.kills, objectives);
-
-  useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', onKey);
-    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
-  }, [onClose]);
 
   function toggleBase(id: string, checked: boolean) {
     setObjectives(prev => ({
@@ -66,11 +58,11 @@ export function EditObjectivesModal({ token, entry, onClose, onSuccess, showToas
     setLoading(true);
     try {
       await apiUpdateEntryObjectives(token, entry.id!, objectives);
-      showToast('Objetivos atualizados com sucesso!', 'success');
+      toast.success('Objetivos atualizados com sucesso!');
       onSuccess();
       onClose();
     } catch (err) {
-      showToast((err as Error).message, 'error');
+      toast.error((err as Error).message);
     } finally {
       setLoading(false);
     }

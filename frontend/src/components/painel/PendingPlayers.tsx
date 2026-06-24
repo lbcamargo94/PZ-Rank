@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
 import { apiGetPlayers, apiUpdatePlayerStatus, apiBlockPlayer, apiUnblockPlayer, apiDeletePlayer, apiRestorePlayer } from '../../lib/api';
 import type { Player, PlayerStatus, PlayerFilter } from '../../types';
 import { ConfirmModal } from './ConfirmModal';
@@ -22,8 +23,7 @@ import {
 } from '@tabler/icons-react';
 
 interface Props {
-  token:     string;
-  showToast: (msg: string, type?: string) => void;
+  token: string;
 }
 
 const STATUS_LABELS: Record<PlayerStatus, string> = {
@@ -41,7 +41,7 @@ const FILTER_LABELS: Record<PlayerFilter, string> = {
   all:      'Todos',
 };
 
-export function PendingPlayers({ token, showToast }: Props) {
+export function PendingPlayers({ token }: Props) {
   const [players,         setPlayers]         = useState<Player[]>([]);
   const [filter,          setFilter]          = useState<PlayerFilter>('pending');
   const [loading,         setLoading]         = useState(false);
@@ -54,11 +54,11 @@ export function PendingPlayers({ token, showToast }: Props) {
       const data = await apiGetPlayers(token, filter);
       setPlayers(data);
     } catch (err) {
-      showToast((err as Error).message, 'error');
+      toast.error((err as Error).message);
     } finally {
       setLoading(false);
     }
-  }, [token, filter, showToast]);
+  }, [token, filter]);
 
   useEffect(() => { fetchPlayers(); }, [fetchPlayers]);
 
@@ -66,10 +66,10 @@ export function PendingPlayers({ token, showToast }: Props) {
     setUpdating(id);
     try {
       await apiUpdatePlayerStatus(token, id, status);
-      showToast(status === 'approved' ? 'Jogador aprovado!' : 'Jogador rejeitado.', 'success');
+      toast.success(status === 'approved' ? 'Jogador aprovado!' : 'Jogador rejeitado.');
       fetchPlayers();
     } catch (err) {
-      showToast((err as Error).message, 'error');
+      toast.error((err as Error).message);
     } finally {
       setUpdating(null);
     }
@@ -79,10 +79,10 @@ export function PendingPlayers({ token, showToast }: Props) {
     setUpdating(id);
     try {
       await apiBlockPlayer(token, id);
-      showToast('Jogador bloqueado.', 'success');
+      toast.success('Jogador bloqueado.');
       fetchPlayers();
     } catch (err) {
-      showToast((err as Error).message, 'error');
+      toast.error((err as Error).message);
     } finally {
       setUpdating(null);
     }
@@ -92,17 +92,13 @@ export function PendingPlayers({ token, showToast }: Props) {
     setUpdating(id);
     try {
       await apiUnblockPlayer(token, id);
-      showToast('Jogador desbloqueado!', 'success');
+      toast.success('Jogador desbloqueado!');
       fetchPlayers();
     } catch (err) {
-      showToast((err as Error).message, 'error');
+      toast.error((err as Error).message);
     } finally {
       setUpdating(null);
     }
-  }
-
-  function handleDelete(id: number) {
-    setConfirmDeleteId(id);
   }
 
   async function doDelete(id: number) {
@@ -110,10 +106,10 @@ export function PendingPlayers({ token, showToast }: Props) {
     setUpdating(id);
     try {
       await apiDeletePlayer(token, id);
-      showToast('Jogador excluído do rank.', 'success');
+      toast.success('Jogador excluído do rank.');
       fetchPlayers();
     } catch (err) {
-      showToast((err as Error).message, 'error');
+      toast.error((err as Error).message);
     } finally {
       setUpdating(null);
     }
@@ -123,10 +119,10 @@ export function PendingPlayers({ token, showToast }: Props) {
     setUpdating(id);
     try {
       await apiRestorePlayer(token, id);
-      showToast('Jogador restaurado!', 'success');
+      toast.success('Jogador restaurado!');
       fetchPlayers();
     } catch (err) {
-      showToast((err as Error).message, 'error');
+      toast.error((err as Error).message);
     } finally {
       setUpdating(null);
     }
@@ -243,7 +239,7 @@ export function PendingPlayers({ token, showToast }: Props) {
                   )}
                   <button className="btn-ghost btn-sm btn-delete" disabled={updating === p.id}
                     title="Excluir jogador do rank"
-                    onClick={() => handleDelete(p.id)}>
+                    onClick={() => setConfirmDeleteId(p.id)}>
                     <IconTrash size={16} />
                   </button>
                 </>

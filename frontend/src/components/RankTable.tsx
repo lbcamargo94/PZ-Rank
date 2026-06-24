@@ -17,13 +17,18 @@ import {
 } from '@tabler/icons-react';
 
 interface RankTableProps {
-  entries:    Entry[];
-  sortKey:    SortKey;
-  loading:    boolean;
-  onSort:     (key: SortKey) => void;
-  onRegister: () => void;
-  onReload:   () => void;
-  tab:        RankTab;
+  entries:     Entry[];
+  sortKey:     SortKey;
+  loading:     boolean;
+  onSort:      (key: SortKey) => void;
+  onRegister:  () => void;
+  onReload:    () => void;
+  tab:         RankTab;
+  onTabChange: (tab: RankTab) => void;
+  aliveCount:  number;
+  deadCount:   number;
+  discCount:   number;
+  totalCount:  number;
 }
 
 const EMPTY_MESSAGES: Record<RankTab, { icon: React.ReactElement; text: string }> = {
@@ -107,10 +112,18 @@ function RankCard({ entry, rank, onPlayerClick, hideStatus }: {
   );
 }
 
-export function RankTable({ entries, sortKey, loading, onSort, onRegister, onReload, tab }: RankTableProps) {
+const TAB_CONFIG: { key: RankTab; label: string; countKey: 'aliveCount' | 'deadCount' | 'discCount' | 'totalCount' }[] = [
+  { key: 'rank',         label: 'Ranking',          countKey: 'aliveCount'  },
+  { key: 'records',      label: 'Recordes',         countKey: 'totalCount'  },
+  { key: 'dead',         label: 'Mortos',           countKey: 'deadCount'   },
+  { key: 'disqualified', label: 'Desclassificados', countKey: 'discCount'   },
+];
+
+export function RankTable({ entries, sortKey, loading, onSort, onRegister, onReload, tab, onTabChange, aliveCount, deadCount, discCount, totalCount }: RankTableProps) {
   const navigate = useNavigate();
   const hideStatus = tab === 'rank';
   const { icon: emptyIcon, text: emptyText } = EMPTY_MESSAGES[tab];
+  const counts = { aliveCount, deadCount, discCount, totalCount };
 
   function handlePlayerClick(playerId: number) {
     navigate(`/player/${playerId}`);
@@ -118,6 +131,17 @@ export function RankTable({ entries, sortKey, loading, onSort, onRegister, onRel
 
   return (
     <div className="container table-section">
+      <div className="rank-tabs-bar">
+        {TAB_CONFIG.map(({ key, label, countKey }) => (
+          <button key={key}
+            className={`rank-tab-btn${tab === key ? ' active' : ''}`}
+            onClick={() => onTabChange(key)}>
+            {label}
+            <span className="rank-tab-badge">{counts[countKey]}</span>
+          </button>
+        ))}
+      </div>
+
       <div className="sort-bar">
         <span className="sort-label">Ordenar por:</span>
         {SORT_LABELS.map(({ key, label }) => (
