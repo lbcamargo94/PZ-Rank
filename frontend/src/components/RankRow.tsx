@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import type { Entry } from '../types';
@@ -107,6 +107,16 @@ function SkillsCell({ skills, charName }: { skills: string | null; charName?: st
   );
 }
 
+function fmtDate(iso: string | null | undefined): string {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  const dd   = String(d.getDate()).padStart(2, '0');
+  const mm   = String(d.getMonth() + 1).padStart(2, '0');
+  const hh   = String(d.getHours()).padStart(2, '0');
+  const min  = String(d.getMinutes()).padStart(2, '0');
+  return dd + '/' + mm + '/' + d.getFullYear() + ' - ' + hh + ':' + min;
+}
+
 export function RankRow({ entry, rank, hideStatus }: RankRowProps) {
   return (
     <tr className={rank <= 3 ? `rank-top rank-${rank}` : ''}>
@@ -149,6 +159,7 @@ export function RankRow({ entry, rank, hideStatus }: RankRowProps) {
       <td className="rank-skills">
         <SkillsCell skills={entry.skills} charName={entry.character_name ?? undefined} />
       </td>
+      <td className="rank-updated">{fmtDate(entry.updated_at)}</td>
     </tr>
   );
 }

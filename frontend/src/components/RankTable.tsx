@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+﻿import { useNavigate } from 'react-router-dom';
 import type { Entry, SortKey, RankTab } from '../types';
 import { RankRow } from './RankRow';
 
@@ -79,6 +79,9 @@ function RankCard({ entry, rank, onPlayerClick, hideStatus }: {
         {entry.time_str && <span className="rc-stat"><i className="ti ti-clock" />{entry.time_str}</span>}
         {objCount > 0 && <span className="rc-stat rc-obj"><i className="ti ti-star" />{objCount} obj.</span>}
       </div>
+      {entry.updated_at && (
+        <div className="rc-updated"><i className="ti ti-clock-edit" />{(() => { const d = new Date(entry.updated_at); const dd = String(d.getDate()).padStart(2,'0'); const mm = String(d.getMonth()+1).padStart(2,'0'); const hh = String(d.getHours()).padStart(2,'0'); const min = String(d.getMinutes()).padStart(2,'0'); return `${dd}/${mm}/${d.getFullYear()} - ${hh}:${min}`; })()}</div>
+      )}
 
       {/* Player + actions */}
       <div className="rc-footer">
@@ -144,6 +147,7 @@ export function RankTable({ entries, sortKey, loading, onSort, onRegister, onRel
                   <th>Tempo</th>
                   <th>Zumbis</th>
                   <th>Habilidades</th>
+                  <th>Atualizado</th>
                 </tr>
               </thead>
               <tbody>

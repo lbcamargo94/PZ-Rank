@@ -1,4 +1,4 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 import type { Request, Response } from 'express';
 import { supabase } from '../supabase';
 import { parsePzrCode } from '../lib/decoder';
@@ -106,6 +106,7 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
     traits:         decoded.traits.join(',') || null,
     objectives:     safeObjectives,
     score:          decoded.sandboxOk ? computeScore(decoded.kills, safeObjectives) : 0,
+    updated_at:     new Date().toISOString(),
   };
 
   // Upsert: mesmo personagem → atualiza; personagem diferente → cria nova entrada
@@ -163,6 +164,7 @@ router.patch('/:id/status', requireModerator, async (req: ModRequest, res: Respo
     // Ao desclassificar manualmente: zera score. Ao reclassificar: recalcula.
     patch.score = sandbox_ok ? computeScore(row.kills, row.objectives) : 0;
   }
+  patch.updated_at = new Date().toISOString();
 
   const { data, error } = await supabase
     .from(config.tableName)
@@ -198,7 +200,7 @@ router.patch('/:id/objectives', requireModerator, async (req: ModRequest, res: R
 
   const { data, error } = await supabase
     .from(config.tableName)
-    .update({ objectives, score: newScore })
+    .update({ objectives, score: newScore, updated_at: new Date().toISOString() })
     .eq('id', id)
     .select()
     .single();

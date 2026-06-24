@@ -1,4 +1,4 @@
-export interface Entry {
+﻿export interface Entry {
   id?:            number;
   player_id?:     number | null;
   moderator_id?:  string | null;
@@ -16,6 +16,7 @@ export interface Entry {
   traits?:        string | null;
   objectives?:    import('./lib/objectives').Objectives | null;
   score:          number;
+  updated_at?:    string | null;
 }
 
 export type SortKey = 'days' | 'kills' | 'time' | 'score';
