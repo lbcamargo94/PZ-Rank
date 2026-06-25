@@ -12,7 +12,7 @@ import { ModeratorsList }        from '../components/painel/ModeratorsList';
 import { CreateModeratorModal }  from '../components/painel/CreateModeratorModal';
 import { ConfirmModal }          from '../components/painel/ConfirmModal';
 import { CodeDecoder }           from '../components/painel/CodeDecoder';
-import { SandboxViewer }        from '../components/painel/SandboxViewer';
+import { SandboxPage }          from '../components/painel/SandboxPage';
 
 type Tab         = 'players' | 'entries' | 'moderators' | 'decoder';
 type EntryFilter = 'all' | 'alive' | 'dead' | 'disqualified';
@@ -119,6 +119,10 @@ export function PainelPage({ session, onSession, onBack }: Props) {
         <Toast {...toast} />
       </>
     );
+  }
+
+  if (sandboxEntry) {
+    return <SandboxPage entry={sandboxEntry} onBack={() => setSandboxEntry(null)} />;
   }
 
   return (
@@ -318,10 +322,6 @@ export function PainelPage({ session, onSession, onBack }: Props) {
           onSuccess={fetchEntries}
           showToast={showToast}
         />
-      )}
-
-      {sandboxEntry && (
-        <SandboxViewer entry={sandboxEntry} onClose={() => setSandboxEntry(null)} />
       )}
 
       {showCreateMod && (
