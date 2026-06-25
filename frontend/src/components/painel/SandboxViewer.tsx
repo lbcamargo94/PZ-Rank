@@ -20,38 +20,114 @@ function fmtDate(iso: string | null | undefined): string {
 
 function fmtValue(v: unknown): string {
   if (v === null || v === undefined) return '—';
-  if (typeof v === 'boolean') return v ? 'true' : 'false';
+  if (typeof v === 'boolean') return v ? 'Sim' : 'Não';
   if (typeof v === 'number') {
     return Number.isInteger(v) ? String(v) : v.toFixed(4).replace(/\.?0+$/, '');
   }
   return String(v);
 }
 
-function ValidationSection({ sandboxData }: { sandboxData: Record<string, unknown> }) {
+type FilterMode = 'all' | 'fail' | 'ok';
+
+function ValidationSection({ sandboxData, sandboxOk }: {
+  sandboxData: Record<string, unknown>;
+  sandboxOk?: boolean | null;
+}) {
+  const [filter, setFilter] = useState<FilterMode>('all');
   const results = useMemo(() => validateSandbox(sandboxData), [sandboxData]);
+
   const passed  = results.filter(r => r.ok).length;
   const failed  = results.filter(r => !r.ok && !r.missing).length;
   const missing = results.filter(r => r.missing).length;
+  const allOk   = failed === 0 && missing === 0;
+
+  const sorted = useMemo(() => {
+    const fail = results.filter(r => !r.ok && !r.missing);
+    const miss = results.filter(r => r.missing);
+    const ok   = results.filter(r => r.ok);
+    return [...fail, ...miss, ...ok];
+  }, [results]);
+
+  const visible = useMemo(() => {
+    if (filter === 'fail') return sorted.filter(r => !r.ok);
+    if (filter === 'ok')   return sorted.filter(r => r.ok);
+    return sorted;
+  }, [sorted, filter]);
 
   return (
     <div className="sbx-validation">
-      <div className="sbx-val-header">
-        <span className="sbx-val-title"><i className="ti ti-shield-check" /> Validação do Desafio Brasileirão</span>
-        <div className="sbx-val-summary">
-          <span className="sbx-badge sbx-ok"><i className="ti ti-check" /> {passed} OK</span>
-          {failed  > 0 && <span className="sbx-badge sbx-fail"><i className="ti ti-x" /> {failed} inválido{failed > 1 ? 's' : ''}</span>}
-          {missing > 0 && <span className="sbx-badge sbx-miss"><i className="ti ti-question-mark" /> {missing} ausente{missing > 1 ? 's' : ''}</span>}
+      {/* Verdict banner */}
+      <div className={`sbx-verdict ${allOk ? 'sbx-verdict-ok' : 'sbx-verdict-fail'}`}>
+        <i className={`ti ${allOk ? 'ti-shield-check' : 'ti-shield-exclamation'}`} />
+        <div className="sbx-verdict-text">
+          <span className="sbx-verdict-title">
+            {allOk
+              ? 'Configuração válida'
+              : `${failed + missing} violaç${(failed + missing) === 1 ? 'ão' : 'ões'} encontrada${(failed + missing) === 1 ? '' : 's'}`}
+          </span>
+          <span className="sbx-verdict-sub">
+            {allOk
+              ? `Todas as ${passed} regras do Brasileirão estão corretas`
+              : `${failed} inválid${failed === 1 ? 'o' : 'os'} · ${missing} ausente${missing === 1 ? '' : 's'} · ${passed} ok`}
+          </span>
         </div>
+        {sandboxOk !== null && sandboxOk !== undefined && (
+          <span className={`sbx-badge ${sandboxOk ? 'sbx-ok' : 'sbx-fail'}`}>
+            {sandboxOk ? 'sandbox_ok ✓' : 'sandbox_ok ✗'}
+          </span>
+        )}
       </div>
+
+      {/* Filter pills */}
+      <div className="sbx-filter-row">
+        <button
+          className={`sbx-filter-pill${filter === 'all' ? ' active' : ''}`}
+          onClick={() => setFilter('all')}
+        >
+          Todos <span className="sbx-filter-count">{results.length}</span>
+        </button>
+        {failed + missing > 0 && (
+          <button
+            className={`sbx-filter-pill sbx-filter-fail${filter === 'fail' ? ' active' : ''}`}
+            onClick={() => setFilter(filter === 'fail' ? 'all' : 'fail')}
+          >
+            <i className="ti ti-x" /> Falhas <span className="sbx-filter-count">{failed + missing}</span>
+          </button>
+        )}
+        <button
+          className={`sbx-filter-pill sbx-filter-ok${filter === 'ok' ? ' active' : ''}`}
+          onClick={() => setFilter(filter === 'ok' ? 'all' : 'ok')}
+        >
+          <i className="ti ti-check" /> OK <span className="sbx-filter-count">{passed}</span>
+        </button>
+      </div>
+
+      {/* Rules grid */}
       <div className="sbx-rules-grid">
-        {results.map(r => (
-          <div key={r.rule.key} className={`sbx-rule${r.ok ? ' sbx-rule-ok' : r.missing ? ' sbx-rule-miss' : ' sbx-rule-fail'}`}>
-            <div className="sbx-rule-label">{r.rule.label}</div>
-            <div className="sbx-rule-vals">
-              <span className="sbx-rule-expected" title="Esperado">↦ {fmtValue(r.rule.expected)}</span>
-              <span className={`sbx-rule-actual${r.ok ? ' sbx-rule-ok-val' : ' sbx-rule-fail-val'}`} title="Atual">
-                {r.missing ? <em>ausente</em> : fmtValue(r.actual)}
-              </span>
+        {visible.map(r => (
+          <div
+            key={r.rule.key}
+            className={`sbx-rule${r.ok ? ' sbx-rule-ok' : r.missing ? ' sbx-rule-miss' : ' sbx-rule-fail'}`}
+          >
+            <div className="sbx-rule-status-icon">
+              {r.ok
+                ? <i className="ti ti-check" />
+                : r.missing
+                  ? <i className="ti ti-question-mark" />
+                  : <i className="ti ti-x" />}
+            </div>
+            <div className="sbx-rule-body">
+              <div className="sbx-rule-label">{r.rule.label}</div>
+              <div className="sbx-rule-vals">
+                {r.missing
+                  ? <span className="sbx-rule-actual" style={{ fontStyle: 'italic', opacity: 0.5 }}>ausente</span>
+                  : r.ok
+                    ? <span className="sbx-rule-actual sbx-rule-ok-val">{fmtValue(r.actual)}</span>
+                    : <span className="sbx-rule-actual sbx-rule-fail-val">{fmtValue(r.actual)}</span>}
+                {!r.ok && (
+                  <span className="sbx-rule-expected">esperado: {fmtValue(r.rule.expected)}</span>
+                )}
+              </div>
             </div>
           </div>
         ))}
@@ -64,12 +140,14 @@ function CategorySection({
   name,
   data,
   search,
+  defaultOpen,
 }: {
   name: string;
   data: Record<string, unknown>;
   search: string;
+  defaultOpen: boolean;
 }) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(defaultOpen);
 
   const entries = Object.entries(data).filter(([k, v]) => {
     if (typeof v === 'object' && v !== null) return false;
@@ -126,13 +204,17 @@ export function SandboxViewer({ entry, onClose }: Props) {
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { onClose(); return; }
+      if (e.key === 'ArrowRight' && tab === 'validate') setTab('all');
+      if (e.key === 'ArrowLeft'  && tab === 'all')      setTab('validate');
+    };
     window.addEventListener('keydown', onKey);
     return () => {
       document.body.style.overflow = prev;
       window.removeEventListener('keydown', onKey);
     };
-  }, [onClose]);
+  }, [onClose, tab]);
 
   const cfg = entry.sandbox_config;
   const sandboxData = (cfg && typeof cfg === 'object' && cfg.sandbox && typeof cfg.sandbox === 'object')
@@ -156,29 +238,38 @@ export function SandboxViewer({ entry, onClose }: Props) {
     return cats;
   }, [sandboxData]);
 
-  // Flat search across all keys
   const flatSearch = search.toLowerCase();
 
-  const validationRulesPassCount = useMemo(() => {
-    if (!sandboxData) return 0;
-    return SANDBOX_RULES.filter(r => {
+  const { failCount, passCount } = useMemo(() => {
+    if (!sandboxData) return { failCount: 0, passCount: 0 };
+    const outcomes = SANDBOX_RULES.map(r => {
       const actual = getNestedValue(sandboxData as Record<string, unknown>, r.key);
       if (actual === undefined || actual === null) return false;
       if (typeof r.expected === 'boolean') return actual === r.expected;
       if (typeof r.expected === 'number' && typeof actual === 'number')
         return Math.abs(actual - r.expected) <= (r.tol ?? 0.01);
       return actual === r.expected;
-    }).length;
+    });
+    return {
+      failCount: outcomes.filter(r => !r).length,
+      passCount: outcomes.filter(r => r).length,
+    };
   }, [sandboxData]);
+
+  const sandboxOk = entry.sandbox_ok ?? (cfg ? failCount === 0 : null);
 
   return createPortal(
     <div className="sbx-overlay" onClick={onClose}>
-      <div className="sbx-box" onClick={e => e.stopPropagation()}>
-
+      <div
+        className={`sbx-box${sandboxData && failCount === 0 ? ' sbx-box-ok' : sandboxData && failCount > 0 ? ' sbx-box-fail' : ''}`}
+        onClick={e => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="sbx-header">
           <div className="sbx-header-info">
-            <span className="sbx-title"><i className="ti ti-adjustments" /> Configurações de Sandbox</span>
+            <span className="sbx-title">
+              <i className="ti ti-adjustments" /> Configurações de Sandbox
+            </span>
             <span className="sbx-subtitle">
               {entry.character_name && <><i className="ti ti-user" /> {entry.character_name} &middot; </>}
               {entry.name}
@@ -191,7 +282,9 @@ export function SandboxViewer({ entry, onClose }: Props) {
               </span>
             )}
             {!cfg && (
-              <span className="sbx-meta-ts sbx-meta-missing">Sandbox não enviado</span>
+              <span className="sbx-meta-ts sbx-meta-missing">
+                <i className="ti ti-clock-off" /> Sandbox não enviado
+              </span>
             )}
           </div>
           <button className="sm-close" onClick={onClose} aria-label="Fechar">
@@ -217,7 +310,9 @@ export function SandboxViewer({ entry, onClose }: Props) {
                 onClick={() => setTab('validate')}
               >
                 <i className="ti ti-shield-check" /> Validação
-                <span className="sbx-tab-badge sbx-ok">{validationRulesPassCount}/{SANDBOX_RULES.length}</span>
+                {failCount > 0
+                  ? <span className="sbx-tab-badge sbx-fail"><i className="ti ti-x" /> {failCount}</span>
+                  : <span className="sbx-tab-badge sbx-ok">{passCount}/{SANDBOX_RULES.length}</span>}
               </button>
               <button
                 className={`sbx-tab${tab === 'all' ? ' active' : ''}`}
@@ -225,6 +320,7 @@ export function SandboxViewer({ entry, onClose }: Props) {
               >
                 <i className="ti ti-list" /> Todas as Configurações
               </button>
+              <span className="sbx-tab-hint">← → para navegar</span>
             </div>
 
             {/* Search (only on "all" tab) */}
@@ -249,18 +345,24 @@ export function SandboxViewer({ entry, onClose }: Props) {
 
             {/* Validation view */}
             {tab === 'validate' && sandboxData && (
-              <ValidationSection sandboxData={sandboxData as Record<string, unknown>} />
+              <div className="sbx-validation-wrap">
+                <ValidationSection
+                  sandboxData={sandboxData as Record<string, unknown>}
+                  sandboxOk={sandboxOk}
+                />
+              </div>
             )}
 
             {/* All configs view */}
             {tab === 'all' && (
               <div className="sbx-body">
-                {categories.map(cat => (
+                {categories.map((cat, i) => (
                   <CategorySection
                     key={cat.name}
                     name={cat.name}
                     data={cat.data}
                     search={flatSearch}
+                    defaultOpen={i === 0}
                   />
                 ))}
               </div>
