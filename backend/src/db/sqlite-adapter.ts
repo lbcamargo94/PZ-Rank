@@ -27,7 +27,7 @@ const BOOL_COLS: Record<string, string[]> = {
 };
 
 const JSON_COLS: Record<string, string[]> = {
-  entries: ['objectives'],
+  entries: ['objectives', 'sandbox_config'],
 };
 
 // Colunas UUID geradas automaticamente na inserção quando ausentes
@@ -265,8 +265,17 @@ function runMigrations(db: Database): void {
     console.log('[SQLite] migração: coluna deleted_at adicionada');
   }
   if (!entryCols.includes('updated_at')) {
-    db.exec("ALTER TABLE entries ADD COLUMN updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))");
+    // SQLite não aceita default dinâmico em ALTER TABLE — usa string constante
+    db.exec("ALTER TABLE entries ADD COLUMN updated_at TEXT NOT NULL DEFAULT '1970-01-01T00:00:00Z'");
     console.log('[SQLite] migração: coluna updated_at adicionada');
+  }
+  if (!entryCols.includes('sandbox_config')) {
+    db.exec('ALTER TABLE entries ADD COLUMN sandbox_config TEXT');
+    console.log('[SQLite] migração: coluna sandbox_config adicionada');
+  }
+  if (!entryCols.includes('sandbox_config_updated_at')) {
+    db.exec('ALTER TABLE entries ADD COLUMN sandbox_config_updated_at TEXT');
+    console.log('[SQLite] migração: coluna sandbox_config_updated_at adicionada');
   }
 }
 

@@ -1,4 +1,4 @@
--- ============================================================
+﻿-- ============================================================
 --  PZ Community Rank — Database Setup v5
 --  Execute no SQL Editor do Supabase (painel → SQL Editor)
 --  ATENÇÃO: Auth própria com bcrypt+JWT — sem dependência de auth.users
@@ -60,6 +60,9 @@ ALTER TABLE entries    ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "public_read_entries" ON entries    FOR SELECT USING (true);
 CREATE POLICY "public_read_players" ON players    FOR SELECT USING (true);
 
+-- Migration v11 (2026-06-24): colunas de auditoria de sandbox
+-- ALTER TABLE entries ADD COLUMN IF NOT EXISTS sandbox_config JSONB;
+-- ALTER TABLE entries ADD COLUMN IF NOT EXISTS sandbox_config_updated_at TIMESTAMPTZ;
 -- ── Migration v10 (rodar se o banco já existe) ───────────────
 -- Adiciona campo de traços do personagem (comma-separated IDs em inglês).
 -- ALTER TABLE entries ADD COLUMN IF NOT EXISTS traits TEXT;

@@ -12,6 +12,7 @@ import { ModeratorsList }        from '../components/painel/ModeratorsList';
 import { CreateModeratorModal }  from '../components/painel/CreateModeratorModal';
 import { ConfirmModal }          from '../components/painel/ConfirmModal';
 import { CodeDecoder }           from '../components/painel/CodeDecoder';
+import { SandboxViewer }        from '../components/painel/SandboxViewer';
 
 type Tab         = 'players' | 'entries' | 'moderators' | 'decoder';
 type EntryFilter = 'all' | 'alive' | 'dead' | 'disqualified';
@@ -44,6 +45,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
   const [showCreateMod,        setShowCreateMod]        = useState(false);
   const [editObjEntry,         setEditObjEntry]         = useState<Entry | null>(null);
   const [confirmDeleteEntryId, setConfirmDeleteEntryId] = useState<number | null>(null);
+  const [sandboxEntry,         setSandboxEntry]         = useState<Entry | null>(null);
   const [entries,        setEntries]        = useState<Entry[]>([]);
   const [sortKey]                           = useState<SortKey>('score');
   const [updatingEntry,  setUpdatingEntry]  = useState<number | null>(null);
@@ -272,6 +274,15 @@ export function PainelPage({ session, onSession, onBack }: Props) {
                         <i className="ti ti-target" /> Obj.
                       </button>
                       <button
+                        className="btn-secondary btn-sm"
+                        disabled={busy}
+                        title="Ver configurações de Sandbox"
+                        onClick={() => setSandboxEntry(entry)}
+                      >
+                        <i className="ti ti-adjustments" />
+                        {entry.sandbox_config ? '' : <span className="sbx-btn-missing" title="Sandbox não enviado"> !</span>}
+                      </button>
+                      <button
                         className="btn-ghost btn-sm"
                         disabled={busy}
                         title="Remover entrada"
@@ -307,6 +318,10 @@ export function PainelPage({ session, onSession, onBack }: Props) {
           onSuccess={fetchEntries}
           showToast={showToast}
         />
+      )}
+
+      {sandboxEntry && (
+        <SandboxViewer entry={sandboxEntry} onClose={() => setSandboxEntry(null)} />
       )}
 
       {showCreateMod && (

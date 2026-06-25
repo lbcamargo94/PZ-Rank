@@ -42,9 +42,11 @@ CREATE TABLE IF NOT EXISTS entries (
   sandbox_ok     INTEGER  NOT NULL DEFAULT 1,
   traits         TEXT,
   objectives     TEXT,
-  score          INTEGER  NOT NULL DEFAULT 0,
-  created_at     TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
-  updated_at     TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+  score                      INTEGER  NOT NULL DEFAULT 0,
+  sandbox_config             TEXT,
+  sandbox_config_updated_at  TEXT,
+  created_at                 TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+  updated_at                 TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
 );
 
 -- Seed: moderador master (login=admin, senha=admin123)

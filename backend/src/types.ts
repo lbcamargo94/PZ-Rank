@@ -55,8 +55,10 @@ export interface Entry {
   is_alive:       boolean;
   sandbox_ok:     boolean;
   traits:         string | null;
-  objectives:     Objectives | null;
-  score:          number;
+  objectives:                Objectives | null;
+  score:                     number;
+  sandbox_config?:           Record<string, unknown> | null;
+  sandbox_config_updated_at?: string | null;
 }
 
 export interface DecodedCode {

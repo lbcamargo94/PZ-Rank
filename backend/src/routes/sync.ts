@@ -1,4 +1,4 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 import type { Request, Response } from 'express';
 import { supabase } from '../supabase';
 import { parsePzrCode } from '../lib/decoder';
@@ -179,6 +179,60 @@ router.post('/update', async (req: Request, res: Response): Promise<void> => {
     score:          (data as { score: number }).score,
     is_alive:       (data as { is_alive: boolean }).is_alive,
   });
+});
+
+
+// POST /sync/sandbox — público, autenticado por player_token
+// Recebe configuração completa de sandbox para auditoria.
+// Independente do rank — falhas não afetam sync do PZRX2.
+router.post('/sandbox', async (req: Request, res: Response): Promise<void> => {
+  const { player_token, sandbox_config } = req.body as {
+    player_token?:   string;
+    sandbox_config?: Record<string, unknown>;
+  };
+
+  if (!player_token || !sandbox_config || typeof sandbox_config !== 'object') {
+    res.status(400).json({ error: 'player_token e sandbox_config são obrigatórios.' });
+    return;
+  }
+
+  const { data: player, error: playerError } = await supabase
+    .from('players')
+    .select('id, nick, status, blocked')
+    .eq('player_token', player_token)
+    .maybeSingle();
+
+  if (playerError || !player) { res.status(401).json({ error: 'Token inválido.' }); return; }
+  if (player.status !== 'approved') { res.status(403).json({ error: 'Jogador aguardando aprovação.' }); return; }
+  if (player.blocked) { res.status(403).json({ error: 'Jogador bloqueado.' }); return; }
+
+  const characterName = typeof sandbox_config.character === 'string' ? sandbox_config.character : null;
+
+  // Busca a entrada do jogador — filtra por personagem se disponível
+  let baseQuery = supabase
+    .from(config.tableName)
+    .select('id')
+    .eq('player_id', player.id)
+    .order('score', { ascending: false });
+
+  if (characterName) baseQuery = (baseQuery as typeof baseQuery).eq('character_name', characterName);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: entry } = await (baseQuery as any).maybeSingle() as { data: { id: number } | null };
+
+  if (!entry) {
+    res.status(202).json({ success: true, note: 'Sem entrada para este personagem — sandbox recebido mas não salvo.' });
+    return;
+  }
+
+  const { error: updateError } = await supabase
+    .from(config.tableName)
+    .update({ sandbox_config, sandbox_config_updated_at: new Date().toISOString() })
+    .eq('id', entry.id);
+
+  if (updateError) { res.status(500).json({ error: dbError(updateError).message }); return; }
+
+  res.status(200).json({ success: true });
 });
 
 export default router;
