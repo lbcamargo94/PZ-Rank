@@ -34,6 +34,7 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
     !e.player_id || !deletedIds.has(e.player_id),
   );
 
+  res.setHeader('Cache-Control', 'no-store');
   res.json(visible);
 });
 
