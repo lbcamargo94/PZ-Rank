@@ -4595,7 +4595,16 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 }
 
 /* Category */
+/* All-configs hint */
+.sbx-body-hint {
+  font-size: 13px; color: var(--fg-muted); opacity: .7;
+  padding: 6px 2px 10px;
+  display: flex; align-items: center; gap: 6px;
+}
+
+/* Category */
 .sbx-cat { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.sbx-cat.sbx-cat-has-fail { border-color: rgba(239,68,68,.35); }
 .sbx-cat + .sbx-cat { margin-top: 6px; }
 .sbx-cat-header {
   width: 100%; display: flex; align-items: center; gap: 8px;
@@ -4606,6 +4615,12 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 }
 .sbx-cat-header:hover { background: rgba(255,255,255,.06); }
 .sbx-cat-name { flex: 1; }
+.sbx-cat-fail {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 11px; font-weight: 700; color: #f87171;
+  background: rgba(239,68,68,.15); border-radius: 8px;
+  padding: 1px 6px;
+}
 .sbx-cat-count {
   font-size: 12px; color: var(--fg-muted);
   background: rgba(255,255,255,.08); border-radius: 10px;

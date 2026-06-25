@@ -140,31 +140,50 @@ function CategorySection({
   name,
   data,
   search,
-  defaultOpen,
 }: {
   name: string;
   data: Record<string, unknown>;
   search: string;
-  defaultOpen: boolean;
 }) {
-  const [open, setOpen] = useState(defaultOpen);
+  const [manualOpen, setManualOpen] = useState<boolean | null>(null);
 
-  const entries = Object.entries(data).filter(([k, v]) => {
-    if (typeof v === 'object' && v !== null) return false;
+  const allEntries = Object.entries(data).filter(([, v]) => typeof v !== 'object' || v === null);
+
+  const entries = allEntries.filter(([k, v]) => {
     if (!search) return true;
     return k.toLowerCase().includes(search) || String(v).toLowerCase().includes(search);
   });
 
   if (entries.length === 0) return null;
 
+  // Auto-open when searching; collapse by default (except small named categories)
+  const autoOpen = search.length > 0 || (name !== 'Geral' && allEntries.length <= 30);
+  const isOpen = manualOpen !== null ? manualOpen : autoOpen;
+
+  // Count validation failures for this category
+  const failRows = entries.filter(([k, v]) => {
+    const ruleKey = name + '.' + k;
+    const rule = SANDBOX_RULES.find(r => r.key === ruleKey || r.key === k);
+    if (!rule) return false;
+    const expected = rule.expected;
+    const actual = v;
+    if (typeof expected === 'boolean') return actual !== expected;
+    if (typeof expected === 'number' && typeof actual === 'number')
+      return Math.abs(actual - expected) > (rule.tol ?? 0.01);
+    return actual !== expected;
+  }).length;
+
   return (
-    <div className="sbx-cat">
-      <button className="sbx-cat-header" onClick={() => setOpen(o => !o)}>
-        <i className={`ti ${open ? 'ti-chevron-down' : 'ti-chevron-right'}`} />
+    <div className={`sbx-cat${failRows > 0 ? ' sbx-cat-has-fail' : ''}`}>
+      <button className="sbx-cat-header" onClick={() => setManualOpen(!isOpen)}>
+        <i className={`ti ${isOpen ? 'ti-chevron-down' : 'ti-chevron-right'}`} />
         <span className="sbx-cat-name">{name}</span>
-        <span className="sbx-cat-count">{entries.length}</span>
+        <span className="sbx-cat-count">{allEntries.length}</span>
+        {failRows > 0 && (
+          <span className="sbx-cat-fail"><i className="ti ti-x" /> {failRows}</span>
+        )}
       </button>
-      {open && (
+      {isOpen && (
         <div className="sbx-cat-rows">
           {entries.map(([k, v]) => {
             const ruleKey = name + '.' + k;
@@ -356,13 +375,17 @@ export function SandboxViewer({ entry, onClose }: Props) {
             {/* All configs view */}
             {tab === 'all' && (
               <div className="sbx-body">
-                {categories.map((cat, i) => (
+                {!flatSearch && (
+                  <p className="sbx-body-hint">
+                    <i className="ti ti-info-circle" /> {categories.length} categorias · {categories.reduce((s, c) => s + Object.keys(c.data).length, 0)} configurações — use a busca ou clique em uma categoria para expandir
+                  </p>
+                )}
+                {categories.map(cat => (
                   <CategorySection
                     key={cat.name}
                     name={cat.name}
                     data={cat.data}
                     search={flatSearch}
-                    defaultOpen={i === 0}
                   />
                 ))}
               </div>
