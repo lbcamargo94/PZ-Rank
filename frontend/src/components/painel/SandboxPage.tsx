@@ -37,7 +37,14 @@ function ruleOk(rule: (typeof SANDBOX_RULES)[0], actual: unknown): boolean {
 
 // ── Agrupamento por categoria ──────────────────────────────────────────────
 
-const LOOT_KEYS  = ['FoodLootNew','WeaponLootNew','MedicalLootNew','AmmoLootNew','GeneratorSpawning'];
+const LOOT_KEYS  = [
+  'FoodLootNew','CannedFoodLootNew','WeaponLootNew','RangedWeaponLootNew',
+  'AmmoLootNew','MedicalLootNew','SurvivalGearsLootNew','ClothingLootNew',
+  'MechanicsLootNew','ToolLootNew','MaterialLootNew','CookwareLootNew',
+  'FarmingLootNew','SkillBookLoot','LiteratureLootNew','RecipeResourceLoot',
+  'MediaLootNew','MementoLootNew','ContainerLootNew','KeyLootNew','OtherLootNew',
+  'GeneratorSpawning',
+];
 const MUNDO_KEYS = ['WaterShut','ElecShut','Alarm'];
 const NAT_KEYS   = ['NightDarkness','Temperature','Rain','FishAbundance','NatureAbundance'];
 const VEI_KEYS   = ['ChanceHasGas','InitialGas','LockedCar','CarGeneralCondition'];
