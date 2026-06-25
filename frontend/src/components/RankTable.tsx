@@ -29,7 +29,7 @@ const SORT_LABELS: { key: SortKey; label: string }[] = [
 
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
-function fmtDate(iso: string | undefined): string {
+function fmtDate(iso: string | null | undefined): string {
   if (!iso) return '';
   const d = new Date(iso);
   const dd  = String(d.getDate()).padStart(2, '0');
@@ -110,8 +110,8 @@ function RankCard({ entry, rank, onPlayerClick, hideStatus }: {
         {entry.time_str && <span className="rc-stat"><i className="ti ti-clock" />{entry.time_str}</span>}
         {objCount > 0 && <span className="rc-stat rc-obj"><i className="ti ti-star" />{objCount} obj.</span>}
       </div>
-      {entry.updated_at && (
-        <div className="rc-updated"><i className="ti ti-clock-edit" />{fmtDate(entry.updated_at)}</div>
+      {(entry.updated_at ?? entry.created_at) && (
+        <div className="rc-updated"><i className="ti ti-clock-edit" />{fmtDate(entry.updated_at ?? entry.created_at)}</div>
       )}
 
       {/* Player + actions */}

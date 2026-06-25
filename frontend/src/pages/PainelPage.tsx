@@ -14,6 +14,18 @@ import { ConfirmModal }          from '../components/painel/ConfirmModal';
 import { CodeDecoder }           from '../components/painel/CodeDecoder';
 import { SandboxPage }          from '../components/painel/SandboxPage';
 
+function fmtEntryDate(iso: string | null | undefined): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return (
+    String(d.getDate()).padStart(2, '0') + '/' +
+    String(d.getMonth() + 1).padStart(2, '0') + '/' +
+    d.getFullYear() + ' ' +
+    String(d.getHours()).padStart(2, '0') + ':' +
+    String(d.getMinutes()).padStart(2, '0')
+  );
+}
+
 type Tab         = 'players' | 'entries' | 'moderators' | 'decoder';
 type EntryFilter = 'all' | 'alive' | 'dead' | 'disqualified';
 
@@ -242,6 +254,11 @@ export function PainelPage({ session, onSession, onBack }: Props) {
                       <span><i className="ti ti-calendar" /> {entry.days}d</span>
                       <span><i className="ti ti-sword" /> {entry.kills.toLocaleString('pt-BR')}</span>
                       <span><i className="ti ti-star" /> {entry.score.toLocaleString('pt-BR')} pts</span>
+                      {(entry.updated_at ?? entry.created_at) && (
+                        <span className="painel-entry-updated">
+                          <i className="ti ti-clock-edit" /> {fmtEntryDate(entry.updated_at ?? entry.created_at)}
+                        </span>
+                      )}
                       <EntryStatusBadge entry={entry} />
                     </div>
                     <div className="painel-entry-actions">

@@ -187,7 +187,7 @@ export function RankRow({ entry, rank, hideStatus }: RankRowProps) {
       <td className="rank-skills">
         <SkillsCell skills={entry.skills} charName={entry.character_name ?? undefined} />
       </td>
-      <td className="rank-updated">{fmtDate(entry.updated_at)}</td>
+      <td className="rank-updated">{fmtDate(entry.updated_at ?? entry.created_at)}</td>
     </tr>
   );
 }

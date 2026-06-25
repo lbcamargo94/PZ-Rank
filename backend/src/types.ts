@@ -57,6 +57,8 @@ export interface Entry {
   traits:         string | null;
   objectives:                Objectives | null;
   score:                     number;
+  created_at?:               string | null;
+  updated_at?:               string | null;
   sandbox_config?:           Record<string, unknown> | null;
   sandbox_config_updated_at?: string | null;
 }
