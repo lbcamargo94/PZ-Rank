@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+﻿import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
-import { apiGetEntries } from './lib/api';
+import { apiGetEntries, setOnUnauthorized } from './lib/api';
 import type { Entry, SortKey, RankTab, ModSession } from './types';
 import { useToast } from './hooks/useToast';
 import { Toast } from './components/Toast';
@@ -124,6 +124,10 @@ export default function App() {
       return raw ? (JSON.parse(raw) as ModSession) : null;
     } catch { return null; }
   });
+
+  useEffect(() => {
+    setOnUnauthorized(() => setModSession(null));
+  }, []);
 
   useEffect(() => {
     if (modSession) sessionStorage.setItem('mod_session', JSON.stringify(modSession));

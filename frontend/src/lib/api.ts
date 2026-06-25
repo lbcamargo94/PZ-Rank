@@ -2,6 +2,9 @@ import type { Player, Moderator, ModSession, ModeratorRole, Entry, PlayerFilter,
 
 const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:3000';
 
+let _onUnauthorized: (() => void) | null = null;
+export function setOnUnauthorized(cb: () => void) { _onUnauthorized = cb; }
+
 interface LoginResponse {
   session: { access_token: string };
   user:    { login: string };
@@ -17,6 +20,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   }
 
   if (res.status === 204) return undefined as T;
+
+  if (res.status === 401) {
+    _onUnauthorized?.();
+    throw new Error('Sessão expirada. Faça login novamente.');
+  }
 
   let body: Record<string, unknown>;
   try {

@@ -63,7 +63,6 @@ export const SANDBOX_RULES: SandboxRule[] = [
   { key: 'NatureAbundance',                        expected: 1,    label: 'Natureza (Muito Ruim=1)' },
   // Ambiente
   { key: 'MetaEvent',                              expected: 3,    label: 'Eventos Aleatórios (Freq.=3)' },
-  { key: 'Map.AllowMiniMap',                       expected: false, label: 'Mini-Mapa Desativado' },
   // Personagem
   { key: 'MultiplierConfig.Global',                expected: 0.8,  label: 'Mult. XP Global (0.8)',  tol: 0.05 },
   // Veículos
