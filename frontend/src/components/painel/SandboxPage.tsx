@@ -45,7 +45,7 @@ const LOOT_KEYS  = [
   'MediaLootNew','MementoLootNew','ContainerLootNew','KeyLootNew','OtherLootNew',
   'GeneratorSpawning',
 ];
-const MUNDO_KEYS = ['WaterShut','ElecShut','Alarm'];
+const MUNDO_KEYS = ['WaterShut','ElecShut','AlarmDecay','Alarm'];
 const NAT_KEYS   = ['NightDarkness','Temperature','Rain','FishAbundance','NatureAbundance'];
 const VEI_KEYS   = ['ChanceHasGas','InitialGas','LockedCar','CarGeneralCondition'];
 
