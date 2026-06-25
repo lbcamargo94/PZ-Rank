@@ -17,6 +17,8 @@ backend/dist
 backend/local.db
 backend/local.db-shm
 backend/local.db-wal
+backend/.pz-rank-local.db
+backend/*.db
 
 # PZ mod (pasta separada, não faz parte do repositório web)
 mod
