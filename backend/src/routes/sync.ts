@@ -150,6 +150,7 @@ router.post('/update', async (req: Request, res: Response): Promise<void> => {
     traits:         decoded.traits.length > 0 ? decoded.traits.join(',') : null,
     objectives:     existingObjectives,
     score,
+    updated_at:     new Date().toISOString(),
   };
 
   let data, error;
