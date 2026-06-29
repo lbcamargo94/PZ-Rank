@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS entries (
   score                      INTEGER  NOT NULL DEFAULT 0,
   sandbox_config             TEXT,
   sandbox_config_updated_at  TEXT,
+  disqualified_at            TEXT     DEFAULT NULL,
   created_at                 TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
   updated_at                 TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
 );

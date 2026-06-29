@@ -1,4 +1,4 @@
-﻿import { Router } from 'express';
+import { Router } from 'express';
 import type { Request, Response } from 'express';
 import { supabase } from '../supabase';
 import { parsePzrCode } from '../lib/decoder';
@@ -90,6 +90,26 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
   // para que o rank exiba o badge "Desclassificado". Não rejeita — o bloqueio de progresso
   // ocorre via score 0 e via exibição pública do status.
   const safeObjectives = decoded.sandboxOk ? (objectives ?? null) : null;
+
+  // Busca entrada existente para preservar disqualified_at original no upsert
+  const { data: existing } = await supabase
+    .from(config.tableName)
+    .select('id, disqualified_at')
+    .eq('player_id', player_id)
+    .eq('character_name', decoded.characterName)
+    .maybeSingle();
+
+  const existingRow = existing as { id: number; disqualified_at?: string | null } | null;
+
+  // Determina disqualified_at:
+  // - Se sandbox_ok: limpa (null)
+  // - Se !sandbox_ok e já havia data: preserva (contador não reinicia)
+  // - Se !sandbox_ok e sem data: registra agora
+  let disqualifiedAt: string | null = null;
+  if (!decoded.sandboxOk) {
+    disqualifiedAt = existingRow?.disqualified_at ?? new Date().toISOString();
+  }
+
   const entry = {
     player_id,
     moderator_id:   req.userId,
@@ -107,23 +127,16 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
     traits:         decoded.traits.join(',') || null,
     objectives:     safeObjectives,
     score:          decoded.sandboxOk ? computeScore(decoded.kills, safeObjectives) : 0,
+    disqualified_at: disqualifiedAt,
     updated_at:     new Date().toISOString(),
   };
 
-  // Upsert: mesmo personagem → atualiza; personagem diferente → cria nova entrada
-  const { data: existing } = await supabase
-    .from(config.tableName)
-    .select('id')
-    .eq('player_id', player_id)
-    .eq('character_name', decoded.characterName)
-    .maybeSingle();
-
   let data, error;
-  if (existing) {
+  if (existingRow) {
     ({ data, error } = await supabase
       .from(config.tableName)
       .update(entry)
-      .eq('id', (existing as { id: number }).id)
+      .eq('id', existingRow.id)
       .select()
       .single());
   } else {
@@ -135,7 +148,7 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
   }
 
   if (error) { res.status(500).json({ error: dbError(error).message }); return; }
-  res.status(existing ? 200 : 201).json(data);
+  res.status(existingRow ? 200 : 201).json(data);
 });
 
 // PATCH /entries/:id/status — moderador: altera is_alive e/ou sandbox_ok manualmente
@@ -151,17 +164,23 @@ router.patch('/:id/status', requireModerator, async (req: ModRequest, res: Respo
 
   const { data: existing, error: fetchError } = await supabase
     .from(config.tableName)
-    .select('id, score, kills, objectives')
+    .select('id, score, kills, objectives, disqualified_at')
     .eq('id', id)
     .single();
 
   if (fetchError || !existing) { res.status(404).json({ error: 'Entrada não encontrada.' }); return; }
 
-  const row = existing as { id: number; score: number; kills: number; objectives: Objectives | null };
+  const row = existing as { id: number; score: number; kills: number; objectives: Objectives | null; disqualified_at?: string | null };
   const patch: Record<string, unknown> = {};
   if (is_alive  !== undefined) patch.is_alive  = is_alive;
   if (sandbox_ok !== undefined) {
     patch.sandbox_ok = sandbox_ok;
+    // Ao desclassificar: registra data se ainda não havia. Ao reclassificar: limpa.
+    if (!sandbox_ok) {
+      patch.disqualified_at = row.disqualified_at ?? new Date().toISOString();
+    } else {
+      patch.disqualified_at = null;
+    }
     // Ao desclassificar manualmente: zera score. Ao reclassificar: recalcula.
     patch.score = sandbox_ok ? computeScore(row.kills, row.objectives) : 0;
   }

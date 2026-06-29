@@ -61,6 +61,8 @@ ALTER TABLE entries    ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "public_read_entries" ON entries    FOR SELECT USING (true);
 CREATE POLICY "public_read_players" ON players    FOR SELECT USING (true);
 
+-- Migration v13 (2026-06-28): coluna de data de desclassificação — base do contador da Dead-Zone (15 dias)
+-- ALTER TABLE entries ADD COLUMN IF NOT EXISTS disqualified_at TIMESTAMPTZ DEFAULT NULL;
 -- Migration v12 (2026-06-25): coluna de data de atualização — OBRIGATÓRIA para a coluna "Atualizado" do rank
 -- ALTER TABLE entries ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
 -- Migration v11 (2026-06-24): colunas de auditoria de sandbox
