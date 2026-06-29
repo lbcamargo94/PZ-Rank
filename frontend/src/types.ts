@@ -16,6 +16,7 @@
   traits?:        string | null;
   objectives?:                import('./lib/objectives').Objectives | null;
   score:                      number;
+  disqualified_at?:           string | null;
   created_at?:                string | null;
   updated_at?:                string | null;
   sandbox_config?:            Record<string, unknown> | null;

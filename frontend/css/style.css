@@ -1124,7 +1124,8 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   background: var(--bg-1);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .rank-table {
@@ -1855,6 +1856,103 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   font-family: var(--font-mono);
   font-size: 13px;
   color: var(--text-3);
+}
+
+/* ── Barra de pesquisa do painel ─────────────────────────── */
+.painel-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 0 2px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color 0.15s;
+}
+.painel-search-bar:focus-within {
+  border-color: var(--green);
+}
+.painel-search-bar i {
+  flex-shrink: 0;
+  padding: 0 0 0 10px;
+  color: var(--text-3);
+  font-size: 15px;
+}
+.painel-search-bar input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--text-1);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  padding: 8px 0;
+  outline: none;
+}
+.painel-search-bar input::placeholder {
+  color: var(--text-4);
+}
+.painel-search-clear {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  color: var(--text-3);
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 14px;
+  line-height: 1;
+  border-radius: var(--radius);
+  transition: color 0.15s;
+}
+.painel-search-clear:hover { color: var(--text-1); }
+
+/* ── Dead-Zone ────────────────────────────────────────────── */
+.dead-zone-section {
+  margin-top: 24px;
+  border-top: 1px solid rgba(200, 60, 60, 0.25);
+  padding-top: 16px;
+}
+.dead-zone-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 0 0 12px;
+}
+.dead-zone-header h3 {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: #c04040;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.dead-zone-count {
+  background: rgba(200, 60, 60, 0.15);
+  border: 1px solid rgba(200, 60, 60, 0.35);
+  color: #e06060;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 9px;
+}
+.dead-zone-desc {
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-3);
+  margin: 0;
+}
+.entry-dead-zone {
+  border-left-color: #c04040 !important;
+  background: rgba(180, 40, 40, 0.06) !important;
+  opacity: 0.8;
+}
+.alive-badge.dead-zone-badge {
+  background: rgba(180, 40, 40, 0.15);
+  border-color: rgba(200, 60, 60, 0.4);
+  color: #e06060;
 }
 
 /* ── Exclusão de jogador (soft-delete) ───────────────────── */

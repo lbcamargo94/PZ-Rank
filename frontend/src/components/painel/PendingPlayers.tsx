@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { apiGetPlayers, apiUpdatePlayerStatus, apiBlockPlayer, apiUnblockPlayer, apiDeletePlayer, apiRestorePlayer } from '../../lib/api';
 import type { Player, PlayerStatus, PlayerFilter } from '../../types';
 import { ConfirmModal } from './ConfirmModal';
@@ -26,6 +26,7 @@ const FILTER_LABELS: Record<PlayerFilter, string> = {
 export function PendingPlayers({ token, showToast }: Props) {
   const [players,         setPlayers]         = useState<Player[]>([]);
   const [filter,          setFilter]          = useState<PlayerFilter>('pending');
+  const [search,          setSearch]          = useState('');
   const [loading,         setLoading]         = useState(false);
   const [updating,        setUpdating]        = useState<number | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
@@ -43,6 +44,13 @@ export function PendingPlayers({ token, showToast }: Props) {
   }, [token, filter, showToast]);
 
   useEffect(() => { fetchPlayers(); }, [fetchPlayers]);
+  useEffect(() => { setSearch(''); }, [filter]);
+
+  const visiblePlayers = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return players;
+    return players.filter(p => p.nick.toLowerCase().includes(q));
+  }, [players, search]);
 
   async function handleStatus(id: number, status: 'approved' | 'rejected') {
     setUpdating(id);
@@ -145,6 +153,21 @@ export function PendingPlayers({ token, showToast }: Props) {
             </button>
           ))}
         </div>
+
+        <div className="painel-search-bar">
+          <i className="ti ti-search" />
+          <input
+            type="text"
+            placeholder={`Buscar em ${FILTER_LABELS[filter].toLowerCase()}...`}
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          {search && (
+            <button className="painel-search-clear" onClick={() => setSearch('')} title="Limpar busca">
+              <i className="ti ti-x" />
+            </button>
+          )}
+        </div>
       </div>
 
       {isDeleted && (
@@ -167,8 +190,15 @@ export function PendingPlayers({ token, showToast }: Props) {
         </div>
       )}
 
+      {!loading && players.length > 0 && visiblePlayers.length === 0 && (
+        <div className="painel-empty-state">
+          <i className="ti ti-search-off" />
+          <p>Nenhum resultado para "<strong>{search}</strong>".</p>
+        </div>
+      )}
+
       <div className="players-list">
-        {players.map(p => (
+        {visiblePlayers.map(p => (
           <div key={p.id} className={`player-card status-${p.status}${p.blocked ? ' player-blocked' : ''}${p.deleted_at ? ' player-deleted' : ''}`}>
             <div className="player-card-info">
               <span className="player-nick">{p.nick}</span>

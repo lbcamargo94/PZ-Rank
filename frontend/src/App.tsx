@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import { apiGetEntries, setOnUnauthorized } from './lib/api';
 import type { Entry, SortKey, RankTab, ModSession } from './types';
@@ -21,6 +21,14 @@ const TAB_CONFIG: { key: RankTab; label: string; icon: string }[] = [
   { key: 'disqualified',  label: 'Desclassificados', icon: 'ti-ban'       },
 ];
 
+const DEAD_ZONE_MS = 15 * 24 * 60 * 60 * 1000;
+
+function isInDeadZone(e: Entry): boolean {
+  if (e.sandbox_ok !== false) return false;
+  if (!e.disqualified_at) return false;
+  return Date.now() - new Date(e.disqualified_at).getTime() > DEAD_ZONE_MS;
+}
+
 function MainView() {
   const navigate = useNavigate();
   const [entries,       setEntries]      = useState<Entry[]>([]);
@@ -41,13 +49,16 @@ function MainView() {
 
   useEffect(() => { fetchEntries(); }, [fetchEntries]);
 
-  const aliveEntries = useMemo(() => entries.filter(e => e.sandbox_ok !== false && e.is_alive),  [entries]);
-  const deadEntries  = useMemo(() => entries.filter(e => e.sandbox_ok !== false && !e.is_alive), [entries]);
-  const discEntries  = useMemo(() => entries.filter(e => e.sandbox_ok === false),                 [entries]);
+  // Dead-zone entries are hidden from every public tab
+  const publicEntries = useMemo(() => entries.filter(e => !isInDeadZone(e)), [entries]);
+
+  const aliveEntries = useMemo(() => publicEntries.filter(e => e.sandbox_ok !== false && e.is_alive),  [publicEntries]);
+  const deadEntries  = useMemo(() => publicEntries.filter(e => e.sandbox_ok !== false && !e.is_alive), [publicEntries]);
+  const discEntries  = useMemo(() => publicEntries.filter(e => e.sandbox_ok === false),                [publicEntries]);
 
   const tabCounts: Record<RankTab, number> = {
     rank:         aliveEntries.length,
-    records:      entries.length,
+    records:      publicEntries.length,
     dead:         deadEntries.length,
     disqualified: discEntries.length,
   };
@@ -55,11 +66,11 @@ function MainView() {
   const filteredEntries = useMemo(() => {
     switch (activeTab) {
       case 'rank':         return aliveEntries;
-      case 'records':      return entries;
+      case 'records':      return publicEntries;
       case 'dead':         return deadEntries;
       case 'disqualified': return discEntries;
     }
-  }, [activeTab, entries, aliveEntries, deadEntries, discEntries]);
+  }, [activeTab, publicEntries, aliveEntries, deadEntries, discEntries]);
 
   return (
     <>

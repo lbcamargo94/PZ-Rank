@@ -1,4 +1,4 @@
-﻿import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { apiLogout, apiDeleteEntry, apiGetEntries, apiUpdateEntryStatus } from '../lib/api';
 import type { Entry, SortKey } from '../types';
 import type { ModSession } from '../types';
@@ -13,6 +13,16 @@ import { CreateModeratorModal }  from '../components/painel/CreateModeratorModal
 import { ConfirmModal }          from '../components/painel/ConfirmModal';
 import { CodeDecoder }           from '../components/painel/CodeDecoder';
 import { SandboxPage }          from '../components/painel/SandboxPage';
+
+const DEAD_ZONE_DAYS = 15;
+
+function isInDeadZone(entry: Entry): boolean {
+  if (entry.sandbox_ok !== false) return false;
+  if (!entry.disqualified_at) return false;
+  const ms = Date.now() - new Date(entry.disqualified_at).getTime();
+  return ms > DEAD_ZONE_DAYS * 24 * 60 * 60 * 1000;
+}
+
 
 function fmtEntryDate(iso: string | null | undefined): string {
   if (!iso) return '';
@@ -53,6 +63,7 @@ function EntryStatusBadge({ entry }: { entry: Entry }) {
 export function PainelPage({ session, onSession, onBack }: Props) {
   const [tab,            setTab]            = useState<Tab>('players');
   const [entryFilter,    setEntryFilter]    = useState<EntryFilter>('all');
+  const [entrySearch,    setEntrySearch]    = useState('');
   const [showUpdateRank,       setShowUpdateRank]       = useState(false);
   const [showCreateMod,        setShowCreateMod]        = useState(false);
   const [editObjEntry,         setEditObjEntry]         = useState<Entry | null>(null);
@@ -68,21 +79,33 @@ export function PainelPage({ session, onSession, onBack }: Props) {
     catch (err) { showToast((err as Error).message, 'error'); }
   }, [sortKey, showToast]);
 
-  const aliveEntries = useMemo(() => entries.filter(e => e.sandbox_ok !== false &&  e.is_alive), [entries]);
-  const deadEntries  = useMemo(() => entries.filter(e => e.sandbox_ok !== false && !e.is_alive), [entries]);
-  const discEntries  = useMemo(() => entries.filter(e => e.sandbox_ok === false),                [entries]);
+  useEffect(() => { setEntrySearch(''); }, [entryFilter]);
+
+  const aliveEntries   = useMemo(() => entries.filter(e => e.sandbox_ok !== false &&  e.is_alive),  [entries]);
+  const deadEntries    = useMemo(() => entries.filter(e => e.sandbox_ok !== false && !e.is_alive),  [entries]);
+  const discEntries    = useMemo(() => entries.filter(e => e.sandbox_ok === false && !isInDeadZone(e)), [entries]);
+  const deadZoneEntries = useMemo(() => entries.filter(e => isInDeadZone(e)), [entries]);
 
   const filteredEntries = useMemo(() => {
     switch (entryFilter) {
-      case 'all':          return entries;
+      case 'all':          return entries.filter(e => !isInDeadZone(e));
       case 'alive':        return aliveEntries;
       case 'dead':         return deadEntries;
       case 'disqualified': return discEntries;
     }
   }, [entryFilter, entries, aliveEntries, deadEntries, discEntries]);
 
+  const searchedEntries = useMemo(() => {
+    const q = entrySearch.trim().toLowerCase();
+    if (!q) return filteredEntries;
+    return filteredEntries.filter(e =>
+      (e.character_name ?? '').toLowerCase().includes(q) ||
+      e.name.toLowerCase().includes(q),
+    );
+  }, [filteredEntries, entrySearch]);
+
   const entryCounts: Record<EntryFilter, number> = {
-    all:          entries.length,
+    all:          entries.filter(e => !isInDeadZone(e)).length,
     alive:        aliveEntries.length,
     dead:         deadEntries.length,
     disqualified: discEntries.length,
@@ -135,6 +158,81 @@ export function PainelPage({ session, onSession, onBack }: Props) {
 
   if (sandboxEntry) {
     return <SandboxPage entry={sandboxEntry} onBack={() => setSandboxEntry(null)} />;
+  }
+
+  function EntryCard({ entry }: { entry: Entry }) {
+    const busy = updatingEntry === entry.id;
+    const dz = isInDeadZone(entry);
+    return (
+      <div className={`painel-entry-card${dz ? ' entry-dead-zone' : entry.sandbox_ok === false ? ' entry-disqualified' : entry.is_alive ? ' entry-alive' : ' entry-dead'}`}>
+        <div className="painel-entry-identity">
+          <span className="painel-entry-char">{entry.character_name || '—'}</span>
+          <span className="painel-entry-player"><i className="ti ti-user" /> {entry.name}</span>
+        </div>
+        <div className="painel-entry-stats">
+          <span><i className="ti ti-calendar" /> {entry.days}d</span>
+          <span><i className="ti ti-sword" /> {entry.kills.toLocaleString('pt-BR')}</span>
+          <span><i className="ti ti-star" /> {entry.score.toLocaleString('pt-BR')} pts</span>
+          {(entry.updated_at ?? entry.created_at) && (
+            <span className="painel-entry-updated">
+              <i className="ti ti-clock-edit" /> {fmtEntryDate(entry.updated_at ?? entry.created_at)}
+            </span>
+          )}
+          <EntryStatusBadge entry={entry} />
+        </div>
+        <div className="painel-entry-actions">
+          <button
+            className="btn-success btn-sm"
+            disabled={busy || (entry.is_alive && entry.sandbox_ok !== false)}
+            title="Marcar como Vivo"
+            onClick={() => handleEntryStatus(entry.id!, { is_alive: true, sandbox_ok: true }, 'Vivo')}
+          >
+            <i className="ti ti-heartbeat" /> Vivo
+          </button>
+          <button
+            className="btn-warning btn-sm"
+            disabled={busy || (!entry.is_alive && entry.sandbox_ok !== false)}
+            title="Marcar como Morto"
+            onClick={() => handleEntryStatus(entry.id!, { is_alive: false, sandbox_ok: true }, 'Morto')}
+          >
+            <i className="ti ti-skull" /> Morto
+          </button>
+          <button
+            className="btn-danger btn-sm"
+            disabled={busy || entry.sandbox_ok === false}
+            title="Desclassificar"
+            onClick={() => handleEntryStatus(entry.id!, { sandbox_ok: false }, 'Desclassificado')}
+          >
+            <i className="ti ti-ban" /> Desc.
+          </button>
+          <button
+            className="btn-secondary btn-sm"
+            disabled={busy}
+            title="Editar objetivos"
+            onClick={() => setEditObjEntry(entry)}
+          >
+            <i className="ti ti-target" /> Obj.
+          </button>
+          <button
+            className="btn-secondary btn-sm"
+            disabled={busy}
+            title="Ver configurações de Sandbox"
+            onClick={() => setSandboxEntry(entry)}
+          >
+            <i className="ti ti-adjustments" />
+            {entry.sandbox_config ? '' : <span className="sbx-btn-missing" title="Sandbox não enviado"> !</span>}
+          </button>
+          <button
+            className="btn-ghost btn-sm"
+            disabled={busy}
+            title="Remover entrada"
+            onClick={() => setConfirmDeleteEntryId(entry.id!)}
+          >
+            <i className="ti ti-trash" />
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -225,6 +323,21 @@ export function PainelPage({ session, onSession, onBack }: Props) {
                   </button>
                 ))}
               </div>
+
+              <div className="painel-search-bar">
+                <i className="ti ti-search" />
+                <input
+                  type="text"
+                  placeholder={`Buscar em ${ENTRY_FILTER_CONFIG.find(f => f.key === entryFilter)?.label.toLowerCase() ?? 'entradas'}...`}
+                  value={entrySearch}
+                  onChange={e => setEntrySearch(e.target.value)}
+                />
+                {entrySearch && (
+                  <button className="painel-search-clear" onClick={() => setEntrySearch('')} title="Limpar busca">
+                    <i className="ti ti-x" />
+                  </button>
+                )}
+              </div>
             </div>
 
             {entries.length === 0 && (
@@ -241,81 +354,83 @@ export function PainelPage({ session, onSession, onBack }: Props) {
               </div>
             )}
 
+            {searchedEntries.length === 0 && filteredEntries.length > 0 && (
+              <div className="painel-empty-state">
+                <i className="ti ti-search-off" />
+                <p>Nenhum resultado para "<strong>{entrySearch}</strong>".</p>
+              </div>
+            )}
+
             <div className="painel-entries-list">
-              {filteredEntries.map(entry => {
-                const busy = updatingEntry === entry.id;
-                return (
-                  <div key={entry.id} className={`painel-entry-card${entry.sandbox_ok === false ? ' entry-disqualified' : entry.is_alive ? ' entry-alive' : ' entry-dead'}`}>
-                    <div className="painel-entry-identity">
-                      <span className="painel-entry-char">{entry.character_name || '—'}</span>
-                      <span className="painel-entry-player"><i className="ti ti-user" /> {entry.name}</span>
-                    </div>
-                    <div className="painel-entry-stats">
-                      <span><i className="ti ti-calendar" /> {entry.days}d</span>
-                      <span><i className="ti ti-sword" /> {entry.kills.toLocaleString('pt-BR')}</span>
-                      <span><i className="ti ti-star" /> {entry.score.toLocaleString('pt-BR')} pts</span>
-                      {(entry.updated_at ?? entry.created_at) && (
-                        <span className="painel-entry-updated">
-                          <i className="ti ti-clock-edit" /> {fmtEntryDate(entry.updated_at ?? entry.created_at)}
-                        </span>
-                      )}
-                      <EntryStatusBadge entry={entry} />
-                    </div>
-                    <div className="painel-entry-actions">
-                      <button
-                        className="btn-success btn-sm"
-                        disabled={busy || (entry.is_alive && entry.sandbox_ok !== false)}
-                        title="Marcar como Vivo"
-                        onClick={() => handleEntryStatus(entry.id!, { is_alive: true, sandbox_ok: true }, 'Vivo')}
-                      >
-                        <i className="ti ti-heartbeat" /> Vivo
-                      </button>
-                      <button
-                        className="btn-warning btn-sm"
-                        disabled={busy || (!entry.is_alive && entry.sandbox_ok !== false)}
-                        title="Marcar como Morto"
-                        onClick={() => handleEntryStatus(entry.id!, { is_alive: false, sandbox_ok: true }, 'Morto')}
-                      >
-                        <i className="ti ti-skull" /> Morto
-                      </button>
-                      <button
-                        className="btn-danger btn-sm"
-                        disabled={busy || entry.sandbox_ok === false}
-                        title="Desclassificar"
-                        onClick={() => handleEntryStatus(entry.id!, { sandbox_ok: false }, 'Desclassificado')}
-                      >
-                        <i className="ti ti-ban" /> Desc.
-                      </button>
-                      <button
-                        className="btn-secondary btn-sm"
-                        disabled={busy}
-                        title="Editar objetivos"
-                        onClick={() => setEditObjEntry(entry)}
-                      >
-                        <i className="ti ti-target" /> Obj.
-                      </button>
-                      <button
-                        className="btn-secondary btn-sm"
-                        disabled={busy}
-                        title="Ver configurações de Sandbox"
-                        onClick={() => setSandboxEntry(entry)}
-                      >
-                        <i className="ti ti-adjustments" />
-                        {entry.sandbox_config ? '' : <span className="sbx-btn-missing" title="Sandbox não enviado"> !</span>}
-                      </button>
-                      <button
-                        className="btn-ghost btn-sm"
-                        disabled={busy}
-                        title="Remover entrada"
-                        onClick={() => setConfirmDeleteEntryId(entry.id!)}
-                      >
-                        <i className="ti ti-trash" />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
+              {searchedEntries.map(entry => (
+                <EntryCard key={entry.id} entry={entry} />
+              ))}
             </div>
+
+            {/* ── Dead-Zone ── */}
+            {deadZoneEntries.length > 0 && (
+              <div className="dead-zone-section">
+                <div className="dead-zone-header">
+                  <h3><i className="ti ti-biohazard" /> Dead-Zone</h3>
+                  <span className="dead-zone-count">{deadZoneEntries.length}</span>
+                  <p className="dead-zone-desc">
+                    Jogadores desclassificados há mais de {DEAD_ZONE_DAYS} dias sem atualização de status.
+                    Não aparecem mais no rank público.
+                  </p>
+                </div>
+                <div className="painel-entries-list">
+                  {deadZoneEntries.map(entry => {
+                    const busy = updatingEntry === entry.id;
+                    return (
+                      <div key={entry.id} className="painel-entry-card entry-dead-zone">
+                        <div className="painel-entry-identity">
+                          <span className="painel-entry-char">{entry.character_name || '—'}</span>
+                          <span className="painel-entry-player"><i className="ti ti-user" /> {entry.name}</span>
+                        </div>
+                        <div className="painel-entry-stats">
+                          <span><i className="ti ti-calendar" /> {entry.days}d</span>
+                          <span><i className="ti ti-sword" /> {entry.kills.toLocaleString('pt-BR')}</span>
+                          {entry.disqualified_at && (
+                            <span className="painel-entry-updated">
+                              <i className="ti ti-ban" /> Desc. em {fmtEntryDate(entry.disqualified_at)}
+                            </span>
+                          )}
+                          <span className="alive-badge dead-zone-badge">
+                            <i className="ti ti-biohazard" /> Dead-Zone
+                          </span>
+                        </div>
+                        <div className="painel-entry-actions">
+                          <button
+                            className="btn-success btn-sm"
+                            disabled={busy}
+                            title="Restaurar como Vivo"
+                            onClick={() => handleEntryStatus(entry.id!, { is_alive: true, sandbox_ok: true }, 'Vivo')}
+                          >
+                            <i className="ti ti-heartbeat" /> Vivo
+                          </button>
+                          <button
+                            className="btn-warning btn-sm"
+                            disabled={busy}
+                            title="Restaurar como Morto"
+                            onClick={() => handleEntryStatus(entry.id!, { is_alive: false, sandbox_ok: true }, 'Morto')}
+                          >
+                            <i className="ti ti-skull" /> Morto
+                          </button>
+                          <button
+                            className="btn-danger btn-sm"
+                            disabled={busy}
+                            title="Excluir permanentemente"
+                            onClick={() => setConfirmDeleteEntryId(entry.id!)}
+                          >
+                            <i className="ti ti-trash" /> Excluir
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </main>
