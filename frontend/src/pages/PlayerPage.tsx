@@ -162,7 +162,7 @@ function TraitsSection({ traitsRaw }: { traitsRaw: string | null | undefined }) 
               const def = resolveTrait(id);
               const img = getTraitImageUrl(def);
               return (
-                <span key={id} className="trait-badge trait-positive">
+                <span key={id} className="trait-badge trait-positive" title={def.description}>
                   {img && <img src={img} alt="" className="trait-img" />}
                   {def.name}
                 </span>
@@ -179,7 +179,7 @@ function TraitsSection({ traitsRaw }: { traitsRaw: string | null | undefined }) 
               const def = resolveTrait(id);
               const img = getTraitImageUrl(def);
               return (
-                <span key={id} className="trait-badge trait-negative">
+                <span key={id} className="trait-badge trait-negative" title={def.description}>
                   {img && <img src={img} alt="" className="trait-img" />}
                   {def.name}
                 </span>
