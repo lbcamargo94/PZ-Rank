@@ -222,38 +222,12 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
 
 
 // Allowlist de chaves válidas no sandbox_config (#8 — validação de schema)
-const SANDBOX_ALLOWED_KEYS = new Set([
-  'type','Zombies','Distribution','ZombieCount','ZombieLore','ZombieConfig',
-  'Population','Speed','Strength','Toughness','Transmission','Mortality',
-  'Reanimate','Cognition','Memory','Sight','Hearing','ThumpNoChasePlayer',
-  'ThumpOnConstruction','ActiveOnly','TriggerHouseAlarm','ZombieSpawnNoise',
-  'NewSneakMode','DamageMultiplier','ZombiesSpawnFromSky','NightLength',
-  'HoursForWorldItemRemoval','ItemRemovalListBlacklist','HoursForZombiesMove',
-  'HoursForZombiesMoveSinceAlarm','HoursForCorpseRemoval','HoursForTrashRemoval',
-  'MaxItemsForZombiesToEat','MaxItemsForZombiesToEatBuildings',
-  'SpeedModifier','MaxVehicles','VehicleEasyUse','CarSpawnRate',
-  'ChanceHasGas','InitialGas','FuelModifier','LockedCars','CarAlarm',
-  'PlayerDamageFromCrash','DamageFromCrash','AmbientVolume','SirenShutoff',
-  'AmbientSoundModifier','DayLength','StartYear','StartMonth','StartDay',
-  'StartTime','TimeSinceApo','LootRespawn','LootRespawnHours','MaxItemsForZombiesToLoot',
-  'ConstructionBlocksLootRespawn','LootAbundance','LootAbundance2',
-  'HouseAlarmAtNight','RelativeFreePositions','SprintStaminaMod','StaminaMod',
-  'FoodLootRespawn','WeaponLootRespawn','OtherLootRespawn','GlobalLootModifier',
-  'ElectricityShutModifier','GeneratorFuelConsumption','RefrigeratorDecay',
-  'FoodRotSpeed','CompostTimeThreshold','PlantFoodMod','CompostSpeed',
-  'VegetableRadiusModifier','FishingMult','PlantRegeneration','ForageRegeneration',
-  'TreeDensity','WildPlantSpawnMult','GrassGrowthRate','Season','SeasonalEffectsOnCrops',
-  'IceWaterPotable','TrappingMultiplier','HoursForWaterTaint','NightDarkness',
-  'RainfallMax','NightLength2','HumidityMax','WinterPercent','SummerPercent',
-  'SpringPercent','AutumnPercent','TrailerRespawnHours','SurvivorHouseChance',
-  'AnnotatedMapChance','EnableMapItem','BloodDecayingModifier',
-  'ImmunityMod','Immunization','TransmissionModifier','MotionBlur','NightStrength',
-  'MaxStormIntensity','MaxFogIntensity','VehicleWeight','SmashWindowChance',
-  'CrawlUnderVehicle','RCFuelType','VehicleSmashDoors','CarSpawnGroupSize',
-  'AllowExteriorGenerator','GeneratorRange','GeneratorRangeVertical',
-  'BatteryDecayModifier','MaxElectricityShutdownDuration','MinElectricityShutdownDuration',
-  'difficulty','character',
-]);
+// O Companion envia o JSON completo gerado pelo mod Lua, cujo envelope tem
+// exatamente 5 chaves de topo: type, version, character, timestamp, sandbox.
+// O objeto 'sandbox' contém as categorias do SandboxVars — é armazenado
+// como JSON em coluna TEXT/JSONB; não há risco de SQL injection nesse nível.
+const SANDBOX_ALLOWED_KEYS = new Set(['type', 'version', 'character', 'timestamp', 'sandbox']);
+const SANDBOX_MAX_BYTES    = 256 * 1024; // 256 KB — sanity check anti-bomb
 
 // POST /sync/sandbox — público, autenticado por player_token (rate limited: 30/15min por IP)
 // Recebe configuração completa de sandbox para auditoria.
@@ -269,10 +243,15 @@ router.post('/sandbox', syncLimiter, async (req: Request, res: Response): Promis
     return;
   }
 
-  // Valida que o objeto não contém chaves desconhecidas (#8)
+  // Valida envelope do sandbox (#8): apenas as 5 chaves emitidas pelo mod Lua
   const unknownKeys = Object.keys(sandbox_config).filter(k => !SANDBOX_ALLOWED_KEYS.has(k));
   if (unknownKeys.length > 0) {
     res.status(400).json({ error: `Chaves não permitidas em sandbox_config: ${unknownKeys.slice(0, 5).join(', ')}` });
+    return;
+  }
+  // Sanity-check de tamanho para evitar payloads abusivos
+  if (Buffer.byteLength(JSON.stringify(sandbox_config)) > SANDBOX_MAX_BYTES) {
+    res.status(413).json({ error: 'sandbox_config excede o tamanho máximo permitido.' });
     return;
   }
 
