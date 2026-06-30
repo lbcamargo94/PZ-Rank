@@ -109,6 +109,14 @@ export function apiRestorePlayer(token: string, id: number): Promise<Player> {
   return request(`/players/${id}/restore`, { method: 'PATCH', ...auth(token) });
 }
 
+export function apiUpdatePlayerLinks(
+  token: string,
+  id: number,
+  links: { twitch_url?: string | null; youtube_url?: string | null; kick_url?: string | null; tiktok_url?: string | null },
+): Promise<Player> {
+  return request(`/players/${id}/links`, { method: 'PATCH', ...json(token, links) });
+}
+
 // ── Entries ─────────────────────────────────────────────────
 
 export function apiGetEntries(sort = 'days'): Promise<Entry[]> {

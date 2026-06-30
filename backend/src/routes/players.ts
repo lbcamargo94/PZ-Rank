@@ -189,6 +189,45 @@ router.patch('/:id/unblock', requireModerator, async (req: ModRequest, res: Resp
   }
 });
 
+// PATCH /players/:id/links — moderador: atualiza links de canais do jogador
+router.patch('/:id/links', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
+  const id = parseInt(String(req.params.id), 10);
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
+
+  const { twitch_url, youtube_url, kick_url, tiktok_url } = req.body as {
+    twitch_url?:  string | null;
+    youtube_url?: string | null;
+    kick_url?:    string | null;
+    tiktok_url?:  string | null;
+  };
+
+  const sanitize = (url?: string | null): string | null => {
+    if (!url?.trim()) return null;
+    const trimmed = url.trim();
+    return /^https?:\/\/.+/.test(trimmed) ? trimmed : null;
+  };
+
+  try {
+    const { data, error } = await supabase
+      .from('players')
+      .update({
+        twitch_url:  sanitize(twitch_url),
+        youtube_url: sanitize(youtube_url),
+        kick_url:    sanitize(kick_url),
+        tiktok_url:  sanitize(tiktok_url),
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
+    res.json(data);
+  } catch (err) {
+    console.error('[PATCH /players/:id/links] Erro inesperado:', err);
+    res.status(500).json({ error: 'Erro interno ao atualizar links do jogador.' });
+  }
+});
+
 // PATCH /players/:id/delete — moderador: soft-delete
 router.patch('/:id/delete', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
   const id = parseInt(String(req.params.id), 10);

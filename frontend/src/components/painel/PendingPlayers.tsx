@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { apiGetPlayers, apiUpdatePlayerStatus, apiBlockPlayer, apiUnblockPlayer, apiDeletePlayer, apiRestorePlayer } from '../../lib/api';
 import type { Player, PlayerStatus, PlayerFilter } from '../../types';
 import { ConfirmModal } from './ConfirmModal';
+import { EditLinksModal } from './EditLinksModal';
 
 interface Props {
   token:     string;
@@ -30,6 +31,7 @@ export function PendingPlayers({ token, showToast }: Props) {
   const [loading,         setLoading]         = useState(false);
   const [updating,        setUpdating]        = useState<number | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+  const [editLinksPlayer, setEditLinksPlayer] = useState<Player | null>(null);
 
   const fetchPlayers = useCallback(async () => {
     setLoading(true);
@@ -253,6 +255,11 @@ export function PendingPlayers({ token, showToast }: Props) {
                       <i className="ti ti-lock-open" /> Desbloquear
                     </button>
                   )}
+                  <button className="btn-ghost btn-sm" disabled={updating === p.id}
+                    title="Editar links de canais"
+                    onClick={() => setEditLinksPlayer(p)}>
+                    <i className="ti ti-link" />
+                  </button>
                   <button className="btn-ghost btn-sm btn-delete" disabled={updating === p.id}
                     title="Excluir jogador do rank"
                     onClick={() => handleDelete(p.id)}>
@@ -273,6 +280,16 @@ export function PendingPlayers({ token, showToast }: Props) {
           danger
           onConfirm={() => doDelete(confirmDeleteId)}
           onCancel={() => setConfirmDeleteId(null)}
+        />
+      )}
+
+      {editLinksPlayer !== null && (
+        <EditLinksModal
+          player={editLinksPlayer}
+          token={token}
+          onClose={() => setEditLinksPlayer(null)}
+          onSuccess={updated => setPlayers(prev => prev.map(p => p.id === updated.id ? updated : p))}
+          showToast={showToast}
         />
       )}
     </div>
