@@ -1,5 +1,6 @@
 ﻿import { Router } from 'express';
 import type { Request, Response } from 'express';
+import rateLimit from 'express-rate-limit';
 import { supabase } from '../supabase';
 import { parsePzrCode } from '../lib/decoder';
 import { dbError } from '../lib/errors';
@@ -9,10 +10,37 @@ import type { Objectives } from '../types';
 
 const router = Router();
 
-// GET /sync/lookup?nick=<nick> — público
+// ── Rate limiters ──────────────────────────────────────────────────────────
+
+// Lookup é o endpoint mais sensível: expõe player_token por nick público.
+// 10 req/hora por IP reduz enumeração em massa sem bloquear uso legítimo do mod.
+const lookupLimiter = rateLimit({
+  windowMs:         60 * 60 * 1000,
+  max:              10,
+  standardHeaders:  true,
+  legacyHeaders:    false,
+  message:          { error: 'Muitas tentativas. Tente novamente em 1 hora.' },
+});
+
+// Sync e sandbox: o mod envia automaticamente a cada arquivo gerado.
+// 30 req/15min é mais que suficiente para uso normal; bloqueia abuso em loop.
+const syncLimiter = rateLimit({
+  windowMs:         15 * 60 * 1000,
+  max:              30,
+  standardHeaders:  true,
+  legacyHeaders:    false,
+  message:          { error: 'Muitas requisições de sync. Aguarde alguns minutos.' },
+});
+
+// ── Limites de progressão (anti-cheat básico) ──────────────────────────────
+// Detecta valores impossíveis antes de persistir no banco.
+const MAX_KILLS = 100_000;
+const MAX_DAYS  = 36_500; // ~100 anos em dias de jogo
+
+// GET /sync/lookup?nick=<nick> — público (rate limited: 10/hora por IP)
 // Retorna player_token se o jogador está aprovado e ativo.
 // Usado pelo mod para obter o token na primeira execução.
-router.get('/lookup', async (req: Request, res: Response): Promise<void> => {
+router.get('/lookup', lookupLimiter, async (req: Request, res: Response): Promise<void> => {
   const nick = typeof req.query.nick === 'string' ? req.query.nick.trim() : '';
   if (!nick) {
     res.status(400).json({ error: 'nick é obrigatório.' });
@@ -45,10 +73,10 @@ router.get('/lookup', async (req: Request, res: Response): Promise<void> => {
   res.json({ player_token: data.player_token });
 });
 
-// POST /sync/update — público, autenticado por player_token
+// POST /sync/update — público, autenticado por player_token (rate limited: 30/15min por IP)
 // Enviado pelo mod automaticamente (sem precisar de moderador).
 // Preserva objectives e live_url de entradas existentes.
-router.post('/update', async (req: Request, res: Response): Promise<void> => {
+router.post('/update', syncLimiter, async (req: Request, res: Response): Promise<void> => {
   const { player_token, code } = req.body as {
     player_token?: string;
     code?:         string;
@@ -83,6 +111,16 @@ router.post('/update', async (req: Request, res: Response): Promise<void> => {
   const decoded = parsePzrCode(code);
   if (!decoded) {
     res.status(400).json({ error: 'Código inválido ou corrompido.' });
+    return;
+  }
+
+  // Limites de progressão — rejeita valores impossíveis (anti-cheat básico)
+  if (decoded.kills > MAX_KILLS || decoded.kills < 0) {
+    res.status(400).json({ error: 'Valor de kills fora do intervalo permitido.' });
+    return;
+  }
+  if (decoded.days > MAX_DAYS || decoded.days < 0) {
+    res.status(400).json({ error: 'Valor de dias fora do intervalo permitido.' });
     return;
   }
 
@@ -183,17 +221,58 @@ router.post('/update', async (req: Request, res: Response): Promise<void> => {
 });
 
 
-// POST /sync/sandbox — público, autenticado por player_token
+// Allowlist de chaves válidas no sandbox_config (#8 — validação de schema)
+const SANDBOX_ALLOWED_KEYS = new Set([
+  'type','Zombies','Distribution','ZombieCount','ZombieLore','ZombieConfig',
+  'Population','Speed','Strength','Toughness','Transmission','Mortality',
+  'Reanimate','Cognition','Memory','Sight','Hearing','ThumpNoChasePlayer',
+  'ThumpOnConstruction','ActiveOnly','TriggerHouseAlarm','ZombieSpawnNoise',
+  'NewSneakMode','DamageMultiplier','ZombiesSpawnFromSky','NightLength',
+  'HoursForWorldItemRemoval','ItemRemovalListBlacklist','HoursForZombiesMove',
+  'HoursForZombiesMoveSinceAlarm','HoursForCorpseRemoval','HoursForTrashRemoval',
+  'MaxItemsForZombiesToEat','MaxItemsForZombiesToEatBuildings',
+  'SpeedModifier','MaxVehicles','VehicleEasyUse','CarSpawnRate',
+  'ChanceHasGas','InitialGas','FuelModifier','LockedCars','CarAlarm',
+  'PlayerDamageFromCrash','DamageFromCrash','AmbientVolume','SirenShutoff',
+  'AmbientSoundModifier','DayLength','StartYear','StartMonth','StartDay',
+  'StartTime','TimeSinceApo','LootRespawn','LootRespawnHours','MaxItemsForZombiesToLoot',
+  'ConstructionBlocksLootRespawn','LootAbundance','LootAbundance2',
+  'HouseAlarmAtNight','RelativeFreePositions','SprintStaminaMod','StaminaMod',
+  'FoodLootRespawn','WeaponLootRespawn','OtherLootRespawn','GlobalLootModifier',
+  'ElectricityShutModifier','GeneratorFuelConsumption','RefrigeratorDecay',
+  'FoodRotSpeed','CompostTimeThreshold','PlantFoodMod','CompostSpeed',
+  'VegetableRadiusModifier','FishingMult','PlantRegeneration','ForageRegeneration',
+  'TreeDensity','WildPlantSpawnMult','GrassGrowthRate','Season','SeasonalEffectsOnCrops',
+  'IceWaterPotable','TrappingMultiplier','HoursForWaterTaint','NightDarkness',
+  'RainfallMax','NightLength2','HumidityMax','WinterPercent','SummerPercent',
+  'SpringPercent','AutumnPercent','TrailerRespawnHours','SurvivorHouseChance',
+  'AnnotatedMapChance','EnableMapItem','BloodDecayingModifier',
+  'ImmunityMod','Immunization','TransmissionModifier','MotionBlur','NightStrength',
+  'MaxStormIntensity','MaxFogIntensity','VehicleWeight','SmashWindowChance',
+  'CrawlUnderVehicle','RCFuelType','VehicleSmashDoors','CarSpawnGroupSize',
+  'AllowExteriorGenerator','GeneratorRange','GeneratorRangeVertical',
+  'BatteryDecayModifier','MaxElectricityShutdownDuration','MinElectricityShutdownDuration',
+  'difficulty','character',
+]);
+
+// POST /sync/sandbox — público, autenticado por player_token (rate limited: 30/15min por IP)
 // Recebe configuração completa de sandbox para auditoria.
 // Independente do rank — falhas não afetam sync do PZRX2.
-router.post('/sandbox', async (req: Request, res: Response): Promise<void> => {
+router.post('/sandbox', syncLimiter, async (req: Request, res: Response): Promise<void> => {
   const { player_token, sandbox_config } = req.body as {
     player_token?:   string;
     sandbox_config?: Record<string, unknown>;
   };
 
-  if (!player_token || !sandbox_config || typeof sandbox_config !== 'object') {
+  if (!player_token || !sandbox_config || typeof sandbox_config !== 'object' || Array.isArray(sandbox_config)) {
     res.status(400).json({ error: 'player_token e sandbox_config são obrigatórios.' });
+    return;
+  }
+
+  // Valida que o objeto não contém chaves desconhecidas (#8)
+  const unknownKeys = Object.keys(sandbox_config).filter(k => !SANDBOX_ALLOWED_KEYS.has(k));
+  if (unknownKeys.length > 0) {
+    res.status(400).json({ error: `Chaves não permitidas em sandbox_config: ${unknownKeys.slice(0, 5).join(', ')}` });
     return;
   }
 

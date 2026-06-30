@@ -36,6 +36,25 @@ const UUID_DEFAULTS: Record<string, string[]> = {
   players:    ['player_token'],
 };
 
+// Allowlist de tabelas e colunas válidas para evitar SQL injection
+// via interpolação de nomes de tabela/coluna no adapter.
+const ALLOWED_TABLES = new Set(['players', 'moderators', 'entries']);
+
+const ALLOWED_COLS: Record<string, Set<string>> = {
+  players:    new Set(['id','nick','twitch_url','youtube_url','kick_url','tiktok_url','status','blocked','player_token','created_at','deleted_at']),
+  moderators: new Set(['id','login','role','password_hash','created_at']),
+  entries:    new Set(['id','player_id','moderator_id','name','character_name','profession','days','time_raw','time_str','kills','skills','live_url','is_alive','sandbox_ok','traits','objectives','score','created_at','updated_at','sandbox_config','sandbox_config_updated_at','disqualified_at']),
+};
+
+function assertTable(table: string): void {
+  if (!ALLOWED_TABLES.has(table)) throw new Error(`Tabela não permitida: ${table}`);
+}
+
+function assertCol(table: string, col: string): void {
+  const allowed = ALLOWED_COLS[table];
+  if (!allowed || !allowed.has(col)) throw new Error(`Coluna não permitida: ${table}.${col}`);
+}
+
 // ── Conversores ─────────────────────────────────────────────────────────────
 
 function fromDb(table: string, row: Record<string, unknown>): Record<string, unknown> {
@@ -88,6 +107,7 @@ class SqliteQueryBuilder {
   private updateData: Record<string, unknown>   = {};
 
   constructor(db: Database, table: string) {
+    assertTable(table);
     this.db    = db;
     this.table = table;
   }
@@ -157,6 +177,7 @@ class SqliteQueryBuilder {
     const parts:  string[]  = [];
     const params: unknown[] = [];
     for (const c of this.conditions) {
+      assertCol(this.table, c.col);
       if (c.op === 'IS NULL' || c.op === 'IS NOT NULL') {
         parts.push(`${c.col} ${c.op}`);
       } else if (c.op === 'ILIKE') {
@@ -186,6 +207,7 @@ class SqliteQueryBuilder {
         for (const raw of this.insertRows) {
           const row  = toDb(this.table, raw);
           const cols = Object.keys(row);
+          cols.forEach(c => assertCol(this.table, c));
           const ph   = cols.map(() => '?').join(', ');
           const vals = cols.map(c => row[c]);
           const sql  = `INSERT INTO ${this.table} (${cols.join(', ')}) VALUES (${ph}) RETURNING *`;
@@ -198,6 +220,7 @@ class SqliteQueryBuilder {
       if (this.mode === 'update') {
         const row  = toDb(this.table, this.updateData);
         const cols = Object.keys(row);
+        cols.forEach(c => assertCol(this.table, c));
         const set  = cols.map(c => `${c} = ?`).join(', ');
         const vals = [...cols.map(c => row[c]), ...wP];
         const ret  = this.hasReturn ? this.returnCols : '*';
