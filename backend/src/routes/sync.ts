@@ -22,19 +22,30 @@ const lookupLimiter = rateLimit({
   message:          { error: 'Muitas tentativas. Tente novamente em 1 hora.' },
 });
 
-// Sync e sandbox: o mod envia automaticamente a cada arquivo gerado.
-// 30 req/15min é mais que suficiente para uso normal; bloqueia abuso em loop.
+// Sync principal: limita gravações no banco de rank.
+// 60 req/15min = 4/min — comportamento típico: 1 sync a cada 5 kills + periódico a cada 5 min.
 const syncLimiter = rateLimit({
   windowMs:         15 * 60 * 1000,
-  max:              30,
+  max:              60,
   standardHeaders:  true,
   legacyHeaders:    false,
   message:          { error: 'Muitas requisições de sync. Aguarde alguns minutos.' },
 });
 
+// Sandbox é sempre chamado logo após um /sync/update bem-sucedido (par obrigatório).
+// Orçamento independente para não consumir o limite do rank. Best-effort: falhas são ignoradas.
+const sandboxLimiter = rateLimit({
+  windowMs:         15 * 60 * 1000,
+  max:              120,
+  standardHeaders:  true,
+  legacyHeaders:    false,
+  message:          { error: 'Muitas requisições de sandbox. Aguarde alguns minutos.' },
+});
+
 // ── Limites de progressão (anti-cheat básico) ──────────────────────────────
-// Detecta valores impossíveis antes de persistir no banco.
-const MAX_KILLS = 100_000;
+// Detecta valores claramente impossíveis antes de persistir no banco.
+// 500k kills: cobre jogadores com alta densidade de zumbis em runs muito longas.
+const MAX_KILLS = 500_000;
 const MAX_DAYS  = 36_500; // ~100 anos em dias de jogo
 
 // GET /sync/lookup?nick=<nick> — público (rate limited: 10/hora por IP)
@@ -232,7 +243,7 @@ const SANDBOX_MAX_BYTES    = 256 * 1024; // 256 KB — sanity check anti-bomb
 // POST /sync/sandbox — público, autenticado por player_token (rate limited: 30/15min por IP)
 // Recebe configuração completa de sandbox para auditoria.
 // Independente do rank — falhas não afetam sync do PZRX2.
-router.post('/sandbox', syncLimiter, async (req: Request, res: Response): Promise<void> => {
+router.post('/sandbox', sandboxLimiter, async (req: Request, res: Response): Promise<void> => {
   const { player_token, sandbox_config } = req.body as {
     player_token?:   string;
     sandbox_config?: Record<string, unknown>;
