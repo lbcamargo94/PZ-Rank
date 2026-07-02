@@ -81,7 +81,7 @@ router.get('/lookup', lookupLimiter, async (req: Request, res: Response): Promis
     return;
   }
 
-  res.json({ player_token: data.player_token });
+  res.json({ player_token: data.player_token, player_id: data.id });
 });
 
 // POST /sync/update — público, autenticado por player_token (rate limited: 30/15min por IP)
