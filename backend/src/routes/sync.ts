@@ -226,7 +226,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   const finalScore = (data as { score: number }).score;
 
   // Posição no ranking: contagem de entradas com score mais alto (best-effort)
-  const { count: rankCount } = await supabase
+  const { count: rankCount, error: rankError } = await supabase
     .from(config.tableName)
     .select('*', { count: 'exact', head: true })
     .gt('score', finalScore);
@@ -236,7 +236,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     character_name: (data as { character_name: string }).character_name,
     score:          finalScore,
     is_alive:       (data as { is_alive: boolean }).is_alive,
-    rank_position:  (rankCount ?? 0) + 1,
+    rank_position:  !rankError && rankCount !== null ? rankCount + 1 : null,
   });
 });
 
