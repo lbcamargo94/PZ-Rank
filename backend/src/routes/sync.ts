@@ -223,11 +223,20 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     return;
   }
 
+  const finalScore = (data as { score: number }).score;
+
+  // Posição no ranking: contagem de entradas com score mais alto (best-effort)
+  const { count: rankCount } = await supabase
+    .from(config.tableName)
+    .select('*', { count: 'exact', head: true })
+    .gt('score', finalScore);
+
   res.status(existing ? 200 : 201).json({
     success:        true,
     character_name: (data as { character_name: string }).character_name,
-    score:          (data as { score: number }).score,
+    score:          finalScore,
     is_alive:       (data as { is_alive: boolean }).is_alive,
+    rank_position:  (rankCount ?? 0) + 1,
   });
 });
 
