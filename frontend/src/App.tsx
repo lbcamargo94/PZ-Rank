@@ -13,6 +13,7 @@ import { ChallengeSettingsModal } from './components/ChallengeSettingsModal';
 import { PainelPage } from './pages/PainelPage';
 import { PlayerPage } from './pages/PlayerPage';
 import { OverlayPage } from './pages/OverlayPage';
+import { WikiPage } from './pages/WikiPage';
 
 const TAB_CONFIG: { key: RankTab; label: string; icon: string }[] = [
   { key: 'rank',          label: 'Rank',             icon: 'ti-heartbeat' },
@@ -150,6 +151,7 @@ export default function App() {
       <Route path="/" element={<MainView />} />
       <Route path="/player/:id" element={<PlayerPage />} />
       <Route path="/overlay/:id" element={<OverlayPage />} />
+      <Route path="/wiki" element={<WikiPage />} />
       <Route path="/painel" element={
         <PainelPage
           session={modSession}

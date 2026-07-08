@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface HeaderProps {
   onPainel:   () => void;
@@ -7,6 +7,7 @@ interface HeaderProps {
 }
 
 export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
+  const navigate = useNavigate();
   return (
     <header className="site-header">
       <div className="container header-inner">
@@ -18,6 +19,9 @@ export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
         <div className="header-actions">
           <button className="btn-primary btn-sm" onClick={onRules} aria-label="Regras do desafio">
             <i className="ti ti-book" aria-hidden="true" /> Regras
+          </button>
+          <button className="btn-primary btn-sm" onClick={() => navigate('/wiki')} aria-label="Wiki de receitas">
+            <i className="ti ti-book-2" aria-hidden="true" /> Wiki
           </button>
           <button className="btn-primary btn-sm" onClick={onSettings} aria-label="Configurações do desafio">
             <i className="ti ti-settings" aria-hidden="true" /> Configurações
