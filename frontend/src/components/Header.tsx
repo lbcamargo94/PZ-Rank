@@ -26,10 +26,7 @@ export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
           <button className="btn-primary btn-sm" onClick={() => navigate('/mods')} aria-label="Mods permitidos">
             <i className="ti ti-puzzle" aria-hidden="true" /> Mods
           </button>
-          <button className="btn-primary btn-sm" onClick={() => navigate('/dicas')} aria-label="Dicas de sobrevivência">
-            <i className="ti ti-bulb" aria-hidden="true" /> Dicas
-          </button>
-          <button className="btn-primary btn-sm" onClick={onSettings} aria-label="Configurações do desafio">
+<button className="btn-primary btn-sm" onClick={onSettings} aria-label="Configurações do desafio">
             <i className="ti ti-settings" aria-hidden="true" /> Configurações
           </button>
           <button className="btn-primary btn-sm" onClick={onPainel} aria-label="Painel de moderadores">
