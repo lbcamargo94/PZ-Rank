@@ -125,6 +125,17 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
   }
 
   try {
+    const { data: existing } = await supabase
+      .from('mods')
+      .select('id')
+      .eq('workshop_url', trimmedUrl)
+      .maybeSingle();
+
+    if (existing) {
+      res.status(400).json({ error: 'Este mod já está cadastrado (URL da oficina duplicada).' });
+      return;
+    }
+
     const image_url = await fetchSteamModImage(trimmedUrl);
 
     const { data, error } = await supabase
@@ -173,6 +184,17 @@ router.patch('/:id', requireModerator, async (req: ModRequest, res: Response): P
   }
 
   try {
+    const { data: existing } = await supabase
+      .from('mods')
+      .select('id')
+      .eq('workshop_url', trimmedUrl)
+      .maybeSingle();
+
+    if (existing && (existing as RawMod).id !== id) {
+      res.status(400).json({ error: 'Este link da oficina já está cadastrado em outro mod.' });
+      return;
+    }
+
     const image_url = await fetchSteamModImage(trimmedUrl);
 
     const { data, error } = await supabase

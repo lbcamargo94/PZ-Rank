@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS entries (
 CREATE TABLE IF NOT EXISTS mods (
   id           INTEGER  PRIMARY KEY AUTOINCREMENT,
   name         TEXT     NOT NULL,
-  workshop_url TEXT     NOT NULL,
+  workshop_url TEXT     NOT NULL UNIQUE,
   status       TEXT     NOT NULL DEFAULT 'active'
                CHECK (status IN ('active', 'blocked')),
   is_required  INTEGER  NOT NULL DEFAULT 0,

@@ -292,6 +292,12 @@ function runMigrations(db: Database): void {
     console.log('[SQLite] migração: coluna updated_at adicionada em mods');
   }
 
+  const hasUrlIndex = db.prepare("SELECT name FROM sqlite_master WHERE type='index' AND name='idx_mods_workshop_url'").get();
+  if (!hasUrlIndex) {
+    db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_mods_workshop_url ON mods(workshop_url)');
+    console.log('[SQLite] migração: índice único idx_mods_workshop_url criado em mods');
+  }
+
   const hasDepsTable = (db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='mod_dependencies'").get());
   if (!hasDepsTable) {
     db.exec(`CREATE TABLE IF NOT EXISTS mod_dependencies (
