@@ -5201,6 +5201,38 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   background: var(--bg-3);
 }
 
+.mod-card-painel-deps {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+}
+.mod-card-painel-deps .ti { font-size: 12px; }
+
+.mod-deps-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 160px;
+  overflow-y: auto;
+  padding: 10px;
+  background: var(--bg-0);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.mod-dep-check-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-2);
+  cursor: pointer;
+}
+.mod-dep-check-label:hover { color: var(--text-1); }
+
 .mod-card-painel-dates {
   display: flex;
   gap: 14px;

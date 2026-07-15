@@ -24,6 +24,7 @@ import fs from 'node:fs';
 const BOOL_COLS: Record<string, string[]> = {
   players: ['blocked'],
   entries: ['is_alive', 'sandbox_ok'],
+  mods:    ['is_required'],
 };
 
 const JSON_COLS: Record<string, string[]> = {
@@ -38,12 +39,14 @@ const UUID_DEFAULTS: Record<string, string[]> = {
 
 // Allowlist de tabelas e colunas válidas para evitar SQL injection
 // via interpolação de nomes de tabela/coluna no adapter.
-const ALLOWED_TABLES = new Set(['players', 'moderators', 'entries']);
+const ALLOWED_TABLES = new Set(['players', 'moderators', 'entries', 'mods', 'mod_dependencies']);
 
 const ALLOWED_COLS: Record<string, Set<string>> = {
-  players:    new Set(['id','nick','twitch_url','youtube_url','kick_url','tiktok_url','status','blocked','player_token','created_at','deleted_at']),
-  moderators: new Set(['id','login','role','password_hash','created_at']),
-  entries:    new Set(['id','player_id','moderator_id','name','character_name','profession','days','time_raw','time_str','kills','skills','live_url','is_alive','sandbox_ok','traits','objectives','score','created_at','updated_at','sandbox_config','sandbox_config_updated_at','disqualified_at']),
+  players:          new Set(['id','nick','twitch_url','youtube_url','kick_url','tiktok_url','status','blocked','player_token','created_at','deleted_at']),
+  moderators:       new Set(['id','login','role','password_hash','created_at']),
+  entries:          new Set(['id','player_id','moderator_id','name','character_name','profession','days','time_raw','time_str','kills','skills','live_url','is_alive','sandbox_ok','traits','objectives','score','created_at','updated_at','sandbox_config','sandbox_config_updated_at','disqualified_at']),
+  mods:             new Set(['id','name','workshop_url','status','is_required','image_url','created_at','updated_at']),
+  mod_dependencies: new Set(['mod_id','depends_on_id']),
 };
 
 function assertTable(table: string): void {
@@ -273,7 +276,31 @@ class SqliteQueryBuilder {
 
 function runMigrations(db: Database): void {
   const entryCols  = (db.prepare('PRAGMA table_info(entries)').all()  as { name: string }[]).map(c => c.name);
-  const playerCols = (db.prepare('PRAGMA table_info(players)').all() as { name: string }[]).map(c => c.name);
+  const playerCols = (db.prepare('PRAGMA table_info(players)').all()  as { name: string }[]).map(c => c.name);
+  const modsCols   = (db.prepare('PRAGMA table_info(mods)').all()     as { name: string }[]).map(c => c.name);
+
+  if (!modsCols.includes('image_url')) {
+    db.exec('ALTER TABLE mods ADD COLUMN image_url TEXT DEFAULT NULL');
+    console.log('[SQLite] migração: coluna image_url adicionada em mods');
+  }
+  if (!modsCols.includes('created_at')) {
+    db.exec("ALTER TABLE mods ADD COLUMN created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))");
+    console.log('[SQLite] migração: coluna created_at adicionada em mods');
+  }
+  if (!modsCols.includes('updated_at')) {
+    db.exec("ALTER TABLE mods ADD COLUMN updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))");
+    console.log('[SQLite] migração: coluna updated_at adicionada em mods');
+  }
+
+  const hasDepsTable = (db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='mod_dependencies'").get());
+  if (!hasDepsTable) {
+    db.exec(`CREATE TABLE IF NOT EXISTS mod_dependencies (
+      mod_id        INTEGER NOT NULL REFERENCES mods(id) ON DELETE CASCADE,
+      depends_on_id INTEGER NOT NULL REFERENCES mods(id) ON DELETE CASCADE,
+      PRIMARY KEY (mod_id, depends_on_id)
+    )`);
+    console.log('[SQLite] migração: tabela mod_dependencies criada');
+  }
 
   if (!entryCols.includes('sandbox_ok')) {
     db.exec('ALTER TABLE entries ADD COLUMN sandbox_ok INTEGER NOT NULL DEFAULT 1');

@@ -100,6 +100,11 @@ export function ModsPage() {
                         <i className="ti ti-alert-circle" /> Obrigatório
                       </span>
                     )}
+                    {mod.dependencies.length > 0 && (
+                      <span className="mod-card-deps">
+                        <i className="ti ti-link" /> Requer: {mod.dependencies.map(d => d.name).join(', ')}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <a

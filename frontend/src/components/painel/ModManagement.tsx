@@ -51,6 +51,12 @@ function ModRow({
               <i className="ti ti-external-link" />
             </a>
           </div>
+          {mod.dependencies.length > 0 && (
+            <div className="mod-card-painel-deps">
+              <i className="ti ti-link" />
+              {mod.dependencies.map(d => d.name).join(', ')}
+            </div>
+          )}
           <div className="mod-card-painel-dates">
             <span><i className="ti ti-calendar-plus" /> {fmtDate(mod.created_at)}</span>
             {wasUpdated && (
@@ -81,20 +87,28 @@ function ModRow({
 
 interface EditFormProps {
   mod:        Mod;
-  onSave:     (data: { name: string; workshop_url: string; is_required: boolean }) => Promise<void>;
+  allMods:    Mod[];
+  onSave:     (data: { name: string; workshop_url: string; is_required: boolean; dependency_ids: number[] }) => Promise<void>;
   onCancel:   () => void;
   submitting: boolean;
 }
 
-function EditModForm({ mod, onSave, onCancel, submitting }: EditFormProps) {
+function EditModForm({ mod, allMods, onSave, onCancel, submitting }: EditFormProps) {
   const [name,        setName]        = useState(mod.name);
   const [workshopUrl, setWorkshopUrl] = useState(mod.workshop_url);
   const [isRequired,  setIsRequired]  = useState(mod.is_required);
+  const [depIds,      setDepIds]      = useState<number[]>(mod.dependencies.map(d => d.id));
+
+  function toggleDep(id: number, checked: boolean) {
+    setDepIds(prev => checked ? [...prev, id] : prev.filter(d => d !== id));
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    onSave({ name: name.trim(), workshop_url: workshopUrl.trim(), is_required: isRequired });
+    onSave({ name: name.trim(), workshop_url: workshopUrl.trim(), is_required: isRequired, dependency_ids: depIds });
   }
+
+  const otherMods = allMods.filter(m => m.id !== mod.id && m.status === 'active');
 
   return (
     <form className="mod-add-form mod-edit-form" onSubmit={handleSubmit}>
@@ -122,6 +136,26 @@ function EditModForm({ mod, onSave, onCancel, submitting }: EditFormProps) {
             required
           />
         </div>
+        {otherMods.length > 0 && (
+          <div className="mod-field">
+            <label className="mod-field-label">
+              <i className="ti ti-link" /> Dependências (requer estes mods)
+            </label>
+            <div className="mod-deps-checklist">
+              {otherMods.map(m => (
+                <label key={m.id} className="mod-dep-check-label">
+                  <input
+                    type="checkbox"
+                    className="mod-check"
+                    checked={depIds.includes(m.id)}
+                    onChange={e => toggleDep(m.id, e.target.checked)}
+                  />
+                  <span>{m.name}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
       <div className="mod-form-footer">
         <label className="mod-check-label">
@@ -185,7 +219,7 @@ export function ModManagement({ token, showToast }: Props) {
     }
   }
 
-  async function handleUpdate(mod: Mod, data: { name: string; workshop_url: string; is_required: boolean }) {
+  async function handleUpdate(mod: Mod, data: { name: string; workshop_url: string; is_required: boolean; dependency_ids: number[] }) {
     setSubmitting(true);
     try {
       await apiUpdateMod(token, mod.id, data);
@@ -245,6 +279,7 @@ export function ModManagement({ token, showToast }: Props) {
         <EditModForm
           key={mod.id}
           mod={mod}
+          allMods={mods}
           submitting={submitting}
           onSave={data => handleUpdate(mod, data)}
           onCancel={() => setEditingId(null)}

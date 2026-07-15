@@ -183,7 +183,9 @@ export function apiAddMod(
 }
 
 export function apiUpdateMod(
-  token: string, id: number, data: { name: string; workshop_url: string; is_required: boolean }
+  token: string,
+  id: number,
+  data: { name: string; workshop_url: string; is_required: boolean; dependency_ids?: number[] }
 ): Promise<Mod> {
   return request(`/mods/${id}`, { method: 'PATCH', ...json(token, data) });
 }

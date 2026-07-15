@@ -71,6 +71,11 @@ export interface ModSession {
 
 export type ModStatus = 'active' | 'blocked';
 
+export interface ModDependency {
+  id:   number;
+  name: string;
+}
+
 export interface Mod {
   id:           number;
   name:         string;
@@ -80,6 +85,7 @@ export interface Mod {
   image_url:    string | null;
   created_at:   string;
   updated_at:   string;
+  dependencies: ModDependency[];
 }
 
 export interface PlayerProfile {

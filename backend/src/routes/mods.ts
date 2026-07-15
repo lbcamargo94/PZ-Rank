@@ -40,6 +40,40 @@ async function fetchSteamModImage(workshopUrl: string): Promise<string | null> {
   }
 }
 
+type RawMod = Record<string, unknown>;
+
+async function attachDeps(mods: RawMod[]): Promise<RawMod[]> {
+  const [{ data: allMods }, { data: deps }] = await Promise.all([
+    supabase.from('mods').select('id, name'),
+    supabase.from('mod_dependencies').select('mod_id, depends_on_id'),
+  ]);
+
+  if (!deps || deps.length === 0) return mods.map(m => ({ ...m, dependencies: [] }));
+
+  const nameMap = new Map<number, string>(
+    (allMods ?? []).map((m: RawMod) => [m.id as number, m.name as string])
+  );
+  const depsMap = new Map<number, Array<{ id: number; name: string }>>();
+  for (const dep of deps as Array<{ mod_id: number; depends_on_id: number }>) {
+    if (!depsMap.has(dep.mod_id)) depsMap.set(dep.mod_id, []);
+    depsMap.get(dep.mod_id)!.push({
+      id:   dep.depends_on_id,
+      name: nameMap.get(dep.depends_on_id) ?? `Mod #${dep.depends_on_id}`,
+    });
+  }
+
+  return mods.map(m => ({ ...m, dependencies: depsMap.get(m.id as number) ?? [] }));
+}
+
+async function setDependencies(modId: number, depIds: number[]): Promise<void> {
+  await supabase.from('mod_dependencies').delete().eq('mod_id', modId);
+  if (depIds.length > 0) {
+    await supabase
+      .from('mod_dependencies')
+      .insert(depIds.map(did => ({ mod_id: modId, depends_on_id: did })));
+  }
+}
+
 // GET /mods — public: returns only active mods
 router.get('/', async (_req, res: Response): Promise<void> => {
   try {
@@ -50,7 +84,7 @@ router.get('/', async (_req, res: Response): Promise<void> => {
       .order('name', { ascending: true });
 
     if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
-    res.json(data);
+    res.json(await attachDeps((data ?? []) as RawMod[]));
   } catch (err) {
     console.error('[GET /mods] Erro inesperado:', err);
     res.status(500).json({ error: 'Erro interno ao buscar mods.' });
@@ -66,7 +100,7 @@ router.get('/all', requireModerator, async (_req: ModRequest, res: Response): Pr
       .order('name', { ascending: true });
 
     if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
-    res.json(data);
+    res.json(await attachDeps((data ?? []) as RawMod[]));
   } catch (err) {
     console.error('[GET /mods/all] Erro inesperado:', err);
     res.status(500).json({ error: 'Erro interno ao buscar mods.' });
@@ -75,8 +109,8 @@ router.get('/all', requireModerator, async (_req: ModRequest, res: Response): Pr
 
 // POST /mods — moderator: add new mod
 router.post('/', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
-  const { name, workshop_url, is_required } = req.body as {
-    name?: string; workshop_url?: string; is_required?: boolean;
+  const { name, workshop_url, is_required, dependency_ids } = req.body as {
+    name?: string; workshop_url?: string; is_required?: boolean; dependency_ids?: number[];
   };
 
   if (!name?.trim() || !workshop_url?.trim()) {
@@ -107,18 +141,24 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
       return;
     }
 
-    res.status(201).json(data);
+    const mod = data as RawMod;
+    if (Array.isArray(dependency_ids) && dependency_ids.length > 0) {
+      await setDependencies(mod.id as number, dependency_ids);
+    }
+
+    const [withDeps] = await attachDeps([mod]);
+    res.status(201).json(withDeps);
   } catch (err) {
     console.error('[POST /mods] Erro inesperado:', err);
     res.status(500).json({ error: 'Erro interno ao adicionar mod.' });
   }
 });
 
-// PATCH /mods/:id — moderator: update name, url, is_required
+// PATCH /mods/:id — moderator: update name, url, is_required, dependencies
 router.patch('/:id', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
   const id = Number(req.params.id);
-  const { name, workshop_url, is_required } = req.body as {
-    name?: string; workshop_url?: string; is_required?: boolean;
+  const { name, workshop_url, is_required, dependency_ids } = req.body as {
+    name?: string; workshop_url?: string; is_required?: boolean; dependency_ids?: number[];
   };
 
   if (!name?.trim() || !workshop_url?.trim()) {
@@ -150,7 +190,13 @@ router.patch('/:id', requireModerator, async (req: ModRequest, res: Response): P
 
     if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
     if (!data) { res.status(404).json({ error: 'Mod não encontrado.' }); return; }
-    res.json(data);
+
+    if (Array.isArray(dependency_ids)) {
+      await setDependencies(id, dependency_ids);
+    }
+
+    const [withDeps] = await attachDeps([data as RawMod]);
+    res.json(withDeps);
   } catch (err) {
     console.error('[PATCH /mods/:id] Erro inesperado:', err);
     res.status(500).json({ error: 'Erro interno ao atualizar mod.' });
@@ -170,7 +216,8 @@ router.patch('/:id/block', requireModerator, async (req: ModRequest, res: Respon
 
     if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
     if (!data) { res.status(404).json({ error: 'Mod não encontrado.' }); return; }
-    res.json(data);
+    const [withDeps] = await attachDeps([data as RawMod]);
+    res.json(withDeps);
   } catch (err) {
     console.error('[PATCH /mods/:id/block] Erro inesperado:', err);
     res.status(500).json({ error: 'Erro interno ao bloquear mod.' });
@@ -190,7 +237,8 @@ router.patch('/:id/unblock', requireModerator, async (req: ModRequest, res: Resp
 
     if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
     if (!data) { res.status(404).json({ error: 'Mod não encontrado.' }); return; }
-    res.json(data);
+    const [withDeps] = await attachDeps([data as RawMod]);
+    res.json(withDeps);
   } catch (err) {
     console.error('[PATCH /mods/:id/unblock] Erro inesperado:', err);
     res.status(500).json({ error: 'Erro interno ao desbloquear mod.' });

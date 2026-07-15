@@ -62,6 +62,12 @@ CREATE TABLE IF NOT EXISTS mods (
   updated_at   TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
 );
 
+CREATE TABLE IF NOT EXISTS mod_dependencies (
+  mod_id        INTEGER NOT NULL REFERENCES mods(id) ON DELETE CASCADE,
+  depends_on_id INTEGER NOT NULL REFERENCES mods(id) ON DELETE CASCADE,
+  PRIMARY KEY (mod_id, depends_on_id)
+);
+
 -- Seed: moderador master (login=admin, senha=admin123)
 INSERT OR IGNORE INTO moderators (id, login, role, password_hash) VALUES (
   'aaaaaaaa-0000-4000-8000-000000000001',
