@@ -126,101 +126,113 @@ export function ModManagement({ token, showToast }: Props) {
 
   return (
     <div className="painel-section">
-      <div className="painel-section-header">
-        <h2><i className="ti ti-puzzle" /> Mods Permitidos</h2>
+
+      {/* ── Cabeçalho ── */}
+      <div className="mod-mgmt-header">
+        <div className="mod-mgmt-header-left">
+          <h2 className="mod-mgmt-title">
+            <i className="ti ti-puzzle" /> Mods Permitidos
+          </h2>
+          <p className="mod-mgmt-subtitle">Gerencie os mods aprovados para o desafio</p>
+        </div>
         <button className="btn-primary btn-sm" onClick={() => setShowForm(v => !v)}>
           <i className={`ti ${showForm ? 'ti-x' : 'ti-plus'}`} />
           {showForm ? 'Cancelar' : 'Adicionar Mod'}
         </button>
       </div>
 
-      {showForm && (
-        <form className="mod-add-form" onSubmit={handleAdd}>
-          <div className="mod-add-fields">
-            <div className="mod-field">
-              <label className="mod-field-label">Nome do mod</label>
-              <input
-                type="text"
-                className="mod-input"
-                placeholder="Ex: Braven's Firearms"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                required
-              />
+      {/* ── Corpo ── */}
+      <div className="mod-mgmt-body">
+
+        {showForm && (
+          <form className="mod-add-form" onSubmit={handleAdd}>
+            <div className="mod-add-fields">
+              <div className="mod-field">
+                <label className="mod-field-label">Nome do mod</label>
+                <input
+                  type="text"
+                  className="mod-input"
+                  placeholder="Ex: Braven's Firearms"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="mod-field">
+                <label className="mod-field-label">URL da Oficina Steam</label>
+                <input
+                  type="url"
+                  className="mod-input"
+                  placeholder="https://steamcommunity.com/sharedfiles/filedetails/?id=..."
+                  value={workshopUrl}
+                  onChange={e => setWorkshopUrl(e.target.value)}
+                  required
+                />
+              </div>
             </div>
-            <div className="mod-field">
-              <label className="mod-field-label">URL da Oficina Steam</label>
-              <input
-                type="url"
-                className="mod-input"
-                placeholder="https://steamcommunity.com/sharedfiles/filedetails/?id=..."
-                value={workshopUrl}
-                onChange={e => setWorkshopUrl(e.target.value)}
-                required
-              />
+            <div className="mod-form-footer">
+              <label className="mod-check-label">
+                <input
+                  type="checkbox"
+                  className="mod-check"
+                  checked={isRequired}
+                  onChange={e => setIsRequired(e.target.checked)}
+                />
+                <span>Mod obrigatório</span>
+              </label>
+              <button type="submit" className="btn-success btn-sm" disabled={submitting}>
+                <i className="ti ti-check" /> {submitting ? 'Salvando...' : 'Salvar'}
+              </button>
             </div>
+          </form>
+        )}
+
+        {loading && <p className="painel-loading">Carregando...</p>}
+
+        {!loading && mods.length === 0 && (
+          <div className="painel-empty-state">
+            <i className="ti ti-puzzle-off" />
+            <p>Nenhum mod cadastrado ainda.</p>
           </div>
-          <div className="mod-form-footer">
-            <label className="mod-check-label">
-              <input
-                type="checkbox"
-                className="mod-check"
-                checked={isRequired}
-                onChange={e => setIsRequired(e.target.checked)}
+        )}
+
+        {activeMods.length > 0 && (
+          <div className="mod-group">
+            <div className="mod-group-label">
+              <i className="ti ti-circle-check" /> Ativos
+              <span className="rank-tab-badge">{activeMods.length}</span>
+            </div>
+            {activeMods.map(mod => (
+              <ModRow
+                key={mod.id}
+                mod={mod}
+                busy={actionId === mod.id}
+                onToggleBlock={() => handleToggleBlock(mod)}
+                onDelete={() => setConfirmDelete(mod)}
               />
-              <span>Mod obrigatório</span>
-            </label>
-            <button type="submit" className="btn-success btn-sm" disabled={submitting}>
-              <i className="ti ti-check" /> {submitting ? 'Salvando...' : 'Salvar'}
-            </button>
+            ))}
           </div>
-        </form>
-      )}
+        )}
 
-      {loading && <p className="painel-loading">Carregando...</p>}
-
-      {!loading && mods.length === 0 && (
-        <div className="painel-empty-state">
-          <i className="ti ti-puzzle-off" />
-          <p>Nenhum mod cadastrado ainda.</p>
-        </div>
-      )}
-
-      {activeMods.length > 0 && (
-        <div className="mod-group">
-          <div className="mod-group-label">
-            <i className="ti ti-circle-check" /> Ativos
-            <span className="rank-tab-badge">{activeMods.length}</span>
+        {blockedMods.length > 0 && (
+          <div className="mod-group">
+            <div className="mod-group-label mod-group-label-blocked">
+              <i className="ti ti-ban" /> Bloqueados
+              <span className="rank-tab-badge">{blockedMods.length}</span>
+            </div>
+            {blockedMods.map(mod => (
+              <ModRow
+                key={mod.id}
+                mod={mod}
+                busy={actionId === mod.id}
+                onToggleBlock={() => handleToggleBlock(mod)}
+                onDelete={() => setConfirmDelete(mod)}
+              />
+            ))}
           </div>
-          {activeMods.map(mod => (
-            <ModRow
-              key={mod.id}
-              mod={mod}
-              busy={actionId === mod.id}
-              onToggleBlock={() => handleToggleBlock(mod)}
-              onDelete={() => setConfirmDelete(mod)}
-            />
-          ))}
-        </div>
-      )}
+        )}
 
-      {blockedMods.length > 0 && (
-        <div className="mod-group">
-          <div className="mod-group-label mod-group-label-blocked">
-            <i className="ti ti-ban" /> Bloqueados
-            <span className="rank-tab-badge">{blockedMods.length}</span>
-          </div>
-          {blockedMods.map(mod => (
-            <ModRow
-              key={mod.id}
-              mod={mod}
-              busy={actionId === mod.id}
-              onToggleBlock={() => handleToggleBlock(mod)}
-              onDelete={() => setConfirmDelete(mod)}
-            />
-          ))}
-        </div>
-      )}
+      </div>
 
       {confirmDelete && (
         <ConfirmModal

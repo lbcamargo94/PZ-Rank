@@ -5085,7 +5085,7 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -5189,6 +5189,48 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .mod-badge-sm {
   font-size: 10px;
   padding: 2px 6px;
+}
+
+/* ── Mod management: cabeçalho e corpo ── */
+.mod-mgmt-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px;
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.mod-mgmt-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mod-mgmt-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mod-mgmt-title .ti { color: var(--green); font-size: 20px; }
+
+.mod-mgmt-subtitle {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.mod-mgmt-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .mod-form-footer {
