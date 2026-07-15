@@ -69,6 +69,16 @@ export interface ModSession {
   login: string;
 }
 
+export type ModStatus = 'active' | 'blocked';
+
+export interface Mod {
+  id:           number;
+  name:         string;
+  workshop_url: string;
+  status:       ModStatus;
+  created_at:   string;
+}
+
 export interface PlayerProfile {
   player: Pick<Player, 'id' | 'nick' | 'twitch_url' | 'youtube_url' | 'kick_url' | 'tiktok_url'>;
   entries: Entry[];

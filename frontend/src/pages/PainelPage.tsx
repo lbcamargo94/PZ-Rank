@@ -13,6 +13,7 @@ import { CreateModeratorModal }  from '../components/painel/CreateModeratorModal
 import { ConfirmModal }          from '../components/painel/ConfirmModal';
 import { CodeDecoder }           from '../components/painel/CodeDecoder';
 import { SandboxPage }          from '../components/painel/SandboxPage';
+import { ModManagement }        from '../components/painel/ModManagement';
 
 const DEAD_ZONE_DAYS = 15;
 
@@ -36,7 +37,7 @@ function fmtEntryDate(iso: string | null | undefined): string {
   );
 }
 
-type Tab         = 'players' | 'entries' | 'moderators' | 'decoder';
+type Tab         = 'players' | 'entries' | 'moderators' | 'mods' | 'decoder';
 type EntryFilter = 'all' | 'alive' | 'dead' | 'disqualified';
 
 const ENTRY_FILTER_CONFIG: { key: EntryFilter; label: string; icon: string }[] = [
@@ -274,6 +275,10 @@ export function PainelPage({ session, onSession, onBack }: Props) {
             onClick={() => setTab('moderators')}>
             <i className="ti ti-shield-star" /> Moderadores
           </button>
+          <button className={`painel-tab${tab === 'mods' ? ' active' : ''}`}
+            onClick={() => setTab('mods')}>
+            <i className="ti ti-puzzle" /> Mods
+          </button>
           <button className={`painel-tab${tab === 'decoder' ? ' active' : ''}`}
             onClick={() => setTab('decoder')}>
             <i className="ti ti-zoom-code" /> Decoder
@@ -288,6 +293,10 @@ export function PainelPage({ session, onSession, onBack }: Props) {
       <main className="container painel-main">
         {tab === 'players' && (
           <PendingPlayers token={session.token} showToast={showToast} />
+        )}
+
+        {tab === 'mods' && (
+          <ModManagement token={session.token} showToast={showToast} />
         )}
 
         {tab === 'decoder' && <CodeDecoder />}

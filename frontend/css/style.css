@@ -5001,6 +5001,100 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   border-bottom: 1px solid var(--border);
 }
 
+/* ── Mod management (painel) ─────────────────────────────────────── */
+.mod-add-form {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mod-add-fields {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.mod-input {
+  flex: 1 1 200px;
+  background: var(--bg-1);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  color: var(--text-1);
+  font-family: var(--font-body);
+  font-size: 16px;
+  padding: 9px 12px;
+  outline: none;
+  transition: border-color 0.15s;
+  min-width: 0;
+}
+.mod-input::placeholder { color: var(--text-3); }
+.mod-input:focus { border-color: var(--green); }
+
+.mod-group { margin-bottom: 20px; }
+
+.mod-group-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--green-light);
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+.mod-group-label-blocked { color: var(--text-3); }
+
+.mod-card-painel {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.mod-blocked {
+  opacity: 0.55;
+  border-style: dashed;
+}
+
+.mod-card-painel-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: var(--text-2);
+  font-size: 16px;
+}
+
+.mod-card-painel-name {
+  color: var(--text-1);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mod-card-painel-link {
+  color: var(--text-3);
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: color 0.15s;
+  display: inline-flex;
+  align-items: center;
+}
+.mod-card-painel-link:hover { color: var(--green-light); }
+
 /* ── Responsive ─────────────────────────────────────────────────── */
 @media (max-width: 860px) {
   .sbxp-rules-grid { grid-template-columns: 1fr 1fr; }

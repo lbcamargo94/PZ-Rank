@@ -50,6 +50,15 @@ CREATE TABLE IF NOT EXISTS entries (
   updated_at                 TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
 );
 
+CREATE TABLE IF NOT EXISTS mods (
+  id           INTEGER  PRIMARY KEY AUTOINCREMENT,
+  name         TEXT     NOT NULL,
+  workshop_url TEXT     NOT NULL,
+  status       TEXT     NOT NULL DEFAULT 'active'
+               CHECK (status IN ('active', 'blocked')),
+  created_at   TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+);
+
 -- Seed: moderador master (login=admin, senha=admin123)
 INSERT OR IGNORE INTO moderators (id, login, role, password_hash) VALUES (
   'aaaaaaaa-0000-4000-8000-000000000001',

@@ -1,0 +1,120 @@
+/* ===== MODS PAGE ===== */
+
+.mods-page {
+  min-height: 100vh;
+  background: var(--bg-0);
+}
+
+.mods-header {
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--border);
+  padding: 20px 0 16px;
+  position: relative;
+}
+
+.mods-header::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--green);
+}
+
+.mods-header-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex-direction: column;
+}
+
+.mods-title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-1);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mods-title .ti { color: var(--green); }
+
+.mods-subtitle {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 4px;
+}
+
+.mods-filters-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.mods-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 40px;
+}
+
+.mod-card {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  transition: border-color 0.15s;
+}
+.mod-card:hover { border-color: var(--green-border); }
+
+.mod-card-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.mod-card-icon {
+  color: var(--green);
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.mod-card-name {
+  font-size: 16px;
+  color: var(--text-1);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mods-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 48px 20px;
+  color: var(--text-3);
+}
+.mods-empty-state .ti { font-size: 36px; }
+.mods-empty-state p { font-size: 16px; }
+.mods-error { color: var(--red); }
+
+@media (max-width: 460px) {
+  .mods-filters-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .mod-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

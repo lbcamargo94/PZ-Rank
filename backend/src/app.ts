@@ -6,6 +6,7 @@ import authRouter       from './routes/auth';
 import entriesRouter    from './routes/entries';
 import playersRouter    from './routes/players';
 import moderatorsRouter from './routes/moderators';
+import modsRouter       from './routes/mods';
 import syncRouter       from './routes/sync';
 
 export function createApp() {
@@ -31,6 +32,7 @@ export function createApp() {
   app.use('/entries',    entriesRouter);
   app.use('/players',    playersRouter);
   app.use('/moderators', moderatorsRouter);
+  app.use('/mods',       modsRouter);
   app.use('/sync',       syncRouter);
 
   return app;

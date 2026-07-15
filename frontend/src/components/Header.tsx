@@ -23,6 +23,9 @@ export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
           <button className="btn-primary btn-sm" onClick={() => navigate('/wiki')} aria-label="Wiki de receitas">
             <i className="ti ti-book-2" aria-hidden="true" /> Wiki
           </button>
+          <button className="btn-primary btn-sm" onClick={() => navigate('/mods')} aria-label="Mods permitidos">
+            <i className="ti ti-puzzle" aria-hidden="true" /> Mods
+          </button>
           <button className="btn-primary btn-sm" onClick={onSettings} aria-label="Configurações do desafio">
             <i className="ti ti-settings" aria-hidden="true" /> Configurações
           </button>

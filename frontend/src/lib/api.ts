@@ -1,4 +1,4 @@
-import type { Player, Moderator, ModSession, ModeratorRole, Entry, PlayerFilter, PlayerProfile } from '../types';
+import type { Player, Moderator, ModSession, ModeratorRole, Entry, PlayerFilter, PlayerProfile, Mod } from '../types';
 
 const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:3000';
 
@@ -164,4 +164,32 @@ export function apiCreateModerator(
 
 export function apiDeleteModerator(token: string, id: string): Promise<void> {
   return request(`/moderators/${id}`, { method: 'DELETE', ...auth(token) });
+}
+
+// ── Mods ─────────────────────────────────────────────────────
+
+export function apiGetMods(): Promise<Mod[]> {
+  return request('/mods');
+}
+
+export function apiGetAllMods(token: string): Promise<Mod[]> {
+  return request('/mods/all', auth(token));
+}
+
+export function apiAddMod(
+  token: string, data: { name: string; workshop_url: string }
+): Promise<Mod> {
+  return request('/mods', { method: 'POST', ...json(token, data) });
+}
+
+export function apiBlockMod(token: string, id: number): Promise<Mod> {
+  return request(`/mods/${id}/block`, { method: 'PATCH', ...auth(token) });
+}
+
+export function apiUnblockMod(token: string, id: number): Promise<Mod> {
+  return request(`/mods/${id}/unblock`, { method: 'PATCH', ...auth(token) });
+}
+
+export function apiDeleteMod(token: string, id: number): Promise<void> {
+  return request(`/mods/${id}`, { method: 'DELETE', ...auth(token) });
 }
