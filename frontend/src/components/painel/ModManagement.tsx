@@ -29,7 +29,10 @@ function ModRow({
   return (
     <div className={`mod-card-painel${mod.status === 'blocked' ? ' mod-blocked' : ''}`}>
       <div className="mod-card-painel-info">
-        <i className="ti ti-puzzle" />
+        {mod.image_url
+          ? <img src={mod.image_url} alt="" className="mod-card-painel-thumb" loading="lazy" />
+          : <i className="ti ti-puzzle" />
+        }
         <div className="mod-card-painel-text">
           <div className="mod-card-painel-name-row">
             <span className="mod-card-painel-name">{mod.name}</span>

@@ -89,13 +89,18 @@ export function ModsPage() {
             {filtered.map(mod => (
               <div key={mod.id} className="mod-card">
                 <div className="mod-card-info">
-                  <i className="ti ti-puzzle mod-card-icon" />
-                  <span className="mod-card-name">{mod.name}</span>
-                  {mod.is_required && (
-                    <span className="mod-badge-required">
-                      <i className="ti ti-alert-circle" /> Obrigatório
-                    </span>
-                  )}
+                  {mod.image_url
+                    ? <img src={mod.image_url} alt="" className="mod-card-thumb" loading="lazy" />
+                    : <i className="ti ti-puzzle mod-card-icon" />
+                  }
+                  <div className="mod-card-text">
+                    <span className="mod-card-name">{mod.name}</span>
+                    {mod.is_required && (
+                      <span className="mod-badge-required">
+                        <i className="ti ti-alert-circle" /> Obrigatório
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <a
                   href={mod.workshop_url}

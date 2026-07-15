@@ -77,7 +77,25 @@
 .mod-card-info {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.mod-card-thumb {
+  width: 88px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: var(--radius);
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  background: var(--bg-3);
+}
+
+.mod-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
   min-width: 0;
 }
 

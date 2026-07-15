@@ -57,6 +57,7 @@ CREATE TABLE IF NOT EXISTS mods (
   status       TEXT     NOT NULL DEFAULT 'active'
                CHECK (status IN ('active', 'blocked')),
   is_required  INTEGER  NOT NULL DEFAULT 0,
+  image_url    TEXT     DEFAULT NULL,
   created_at   TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
   updated_at   TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
 );

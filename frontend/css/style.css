@@ -5191,6 +5191,16 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   white-space: nowrap;
 }
 
+.mod-card-painel-thumb {
+  width: 60px;
+  height: 34px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  background: var(--bg-3);
+}
+
 .mod-card-painel-dates {
   display: flex;
   gap: 14px;
