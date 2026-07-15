@@ -40,7 +40,7 @@ const TIP_GROUPS: TipGroup[] = [
       { text: 'Audição Alta: qualquer ruído atrai hordas. Armas de fogo em área urbana = suicídio. Prefira armas silenciosas.', type: 'critical' },
       { text: 'Cognição Avançada: zumbis abrem portas FECHADAS (mas não trancadas). Tranque TUDO sempre.', type: 'warning' },
       { text: 'Memória Longa: uma vez detectado, eles procuram por você por muito tempo. Some do radar antes de voltar.', type: 'warning' },
-      { text: 'Fake Dead Desativado (Total): zumbi no chão = morto de verdade. Não precisa conferir cada um.', type: 'info' },
+      { text: 'Fake Dead ATIVADO no nível Total: zumbis no chão podem estar fingindo! Sempre certifique-se de que estão realmente mortos antes de passar perto.', type: 'critical' },
       { text: 'Rastejadores Derrubam: rastejadores no chão podem te derrubar ao passar perto. Elimine-os antes de avançar.', type: 'warning' },
       { text: 'Sem Multi-Acerto: impossível atingir vários zumbis de uma vez. Trate-os um a um ou fuja.', type: 'info' },
       { text: 'Sem Escalada Fácil: subir janelas e cercas é mais lento e arriscado. Calcule o tempo de fuga.', type: 'warning' },

@@ -29,7 +29,7 @@ export const SANDBOX_RULES: SandboxRule[] = [
   { key: 'ZombieLore.Memory',                      expected: 1,    label: 'Memória (Longa=1)' },
   { key: 'ZombieLore.Cognition',                   expected: 1,    label: 'Percepção/Portas (Avançado=1)' },
   { key: 'ZombieConfig.FollowSoundDistance',        expected: 250,  label: 'Raio de Audição (250)' },
-  { key: 'ZombieLore.DisableFakeDead',             expected: 2,    label: 'Fake Dead Total (2)' },
+  { key: 'ZombieLore.DisableFakeDead',             expected: 2,    label: 'Fake Dead Ativado Total (2)' },
   { key: 'ZombieLore.ZombiesCrawlersDragDown',     expected: true, label: 'Rastejadores Derrubam' },
   { key: 'ZombieConfig.RallyGroupSize',            expected: 1,    label: 'Tamanho da Horda (1)' },
   // Loot — todas as 22 categorias do B42 (0.04 = Muito Baixo)
