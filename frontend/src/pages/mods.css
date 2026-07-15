@@ -108,6 +108,26 @@
 .mods-empty-state p { font-size: 16px; }
 .mods-error { color: var(--red); }
 
+/* ── Required badge ── */
+.mod-badge-required {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #1f1400;
+  border: 1px solid #5a3c00;
+  color: var(--gold);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: var(--radius);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.mod-badge-required .ti { font-size: 12px; }
+
 @media (max-width: 460px) {
   .mods-filters-bar {
     flex-direction: column;

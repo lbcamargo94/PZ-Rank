@@ -76,6 +76,7 @@ export interface Mod {
   name:         string;
   workshop_url: string;
   status:       ModStatus;
+  is_required:  boolean;
   created_at:   string;
 }
 

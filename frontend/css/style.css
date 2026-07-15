@@ -5173,6 +5173,38 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 }
 .mod-card-painel-link:hover { color: var(--green-light); }
 
+.mod-badge-sm {
+  font-size: 10px;
+  padding: 2px 6px;
+}
+
+.mod-form-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.mod-check-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  user-select: none;
+}
+
+.mod-check {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--green);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
 /* ── Responsive ─────────────────────────────────────────────────── */
 @media (max-width: 860px) {
   .sbxp-rules-grid { grid-template-columns: 1fr 1fr; }

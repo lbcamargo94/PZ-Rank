@@ -19,6 +19,11 @@ function ModRow({
       <div className="mod-card-painel-info">
         <i className="ti ti-puzzle" />
         <span className="mod-card-painel-name">{mod.name}</span>
+        {mod.is_required && (
+          <span className="mod-badge-required mod-badge-sm">
+            <i className="ti ti-alert-circle" /> Obrigatório
+          </span>
+        )}
         <a
           href={mod.workshop_url}
           target="_blank"
@@ -55,6 +60,7 @@ export function ModManagement({ token, showToast }: Props) {
   const [showForm,      setShowForm]      = useState(false);
   const [name,          setName]          = useState('');
   const [workshopUrl,   setWorkshopUrl]   = useState('');
+  const [isRequired,    setIsRequired]    = useState(false);
 
   const fetchMods = useCallback(async () => {
     setLoading(true);
@@ -69,10 +75,11 @@ export function ModManagement({ token, showToast }: Props) {
     e.preventDefault();
     setSubmitting(true);
     try {
-      await apiAddMod(token, { name: name.trim(), workshop_url: workshopUrl.trim() });
+      await apiAddMod(token, { name: name.trim(), workshop_url: workshopUrl.trim(), is_required: isRequired });
       showToast('Mod adicionado com sucesso.', 'success');
       setName('');
       setWorkshopUrl('');
+      setIsRequired(false);
       setShowForm(false);
       fetchMods();
     } catch (err) {
@@ -147,9 +154,20 @@ export function ModManagement({ token, showToast }: Props) {
               required
             />
           </div>
-          <button type="submit" className="btn-success btn-sm" disabled={submitting}>
-            <i className="ti ti-check" /> {submitting ? 'Salvando...' : 'Salvar'}
-          </button>
+          <div className="mod-form-footer">
+            <label className="mod-check-label">
+              <input
+                type="checkbox"
+                className="mod-check"
+                checked={isRequired}
+                onChange={e => setIsRequired(e.target.checked)}
+              />
+              <span>Mod obrigatório</span>
+            </label>
+            <button type="submit" className="btn-success btn-sm" disabled={submitting}>
+              <i className="ti ti-check" /> {submitting ? 'Salvando...' : 'Salvar'}
+            </button>
+          </div>
         </form>
       )}
 

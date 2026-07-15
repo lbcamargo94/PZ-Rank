@@ -19,7 +19,8 @@ export function ModsPage() {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return q ? mods.filter(m => m.name.toLowerCase().includes(q)) : mods;
+    const list = q ? mods.filter(m => m.name.toLowerCase().includes(q)) : mods;
+    return [...list].sort((a, b) => Number(b.is_required) - Number(a.is_required));
   }, [mods, search]);
 
   return (
@@ -90,6 +91,11 @@ export function ModsPage() {
                 <div className="mod-card-info">
                   <i className="ti ti-puzzle mod-card-icon" />
                   <span className="mod-card-name">{mod.name}</span>
+                  {mod.is_required && (
+                    <span className="mod-badge-required">
+                      <i className="ti ti-alert-circle" /> Obrigatório
+                    </span>
+                  )}
                 </div>
                 <a
                   href={mod.workshop_url}

@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS mods (
   workshop_url TEXT     NOT NULL,
   status       TEXT     NOT NULL DEFAULT 'active'
                CHECK (status IN ('active', 'blocked')),
+  is_required  INTEGER  NOT NULL DEFAULT 0,
   created_at   TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
 );
 

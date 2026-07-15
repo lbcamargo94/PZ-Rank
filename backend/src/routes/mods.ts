@@ -12,7 +12,7 @@ router.get('/', async (_req, res: Response): Promise<void> => {
   try {
     const { data, error } = await supabase
       .from('mods')
-      .select('id, name, workshop_url, created_at')
+      .select('id, name, workshop_url, is_required, created_at')
       .eq('status', 'active')
       .order('name', { ascending: true });
 
@@ -29,7 +29,7 @@ router.get('/all', requireModerator, async (_req: ModRequest, res: Response): Pr
   try {
     const { data, error } = await supabase
       .from('mods')
-      .select('id, name, workshop_url, status, created_at')
+      .select('id, name, workshop_url, is_required, status, created_at')
       .order('name', { ascending: true });
 
     if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
@@ -42,7 +42,7 @@ router.get('/all', requireModerator, async (_req: ModRequest, res: Response): Pr
 
 // POST /mods — moderator: add new mod
 router.post('/', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
-  const { name, workshop_url } = req.body as { name?: string; workshop_url?: string };
+  const { name, workshop_url, is_required } = req.body as { name?: string; workshop_url?: string; is_required?: boolean };
 
   if (!name?.trim() || !workshop_url?.trim()) {
     res.status(400).json({ error: 'Nome e URL da oficina são obrigatórios.' });
@@ -58,8 +58,8 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
   try {
     const { data, error } = await supabase
       .from('mods')
-      .insert([{ name: name.trim(), workshop_url: trimmedUrl }])
-      .select('id, name, workshop_url, status, created_at')
+      .insert([{ name: name.trim(), workshop_url: trimmedUrl, is_required: is_required ?? false }])
+      .select('id, name, workshop_url, is_required, status, created_at')
       .single();
 
     if (error) {
@@ -85,7 +85,7 @@ router.patch('/:id/block', requireModerator, async (req: ModRequest, res: Respon
       .from('mods')
       .update({ status: 'blocked' })
       .eq('id', id)
-      .select('id, name, workshop_url, status, created_at')
+      .select('id, name, workshop_url, is_required, status, created_at')
       .single();
 
     if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
@@ -105,7 +105,7 @@ router.patch('/:id/unblock', requireModerator, async (req: ModRequest, res: Resp
       .from('mods')
       .update({ status: 'active' })
       .eq('id', id)
-      .select('id, name, workshop_url, status, created_at')
+      .select('id, name, workshop_url, is_required, status, created_at')
       .single();
 
     if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
