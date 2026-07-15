@@ -1,4 +1,4 @@
-/* ===== MODS PAGE ===== */
+﻿/* ===== MODS PAGE ===== */
 
 .mods-page {
   min-height: 100vh;
@@ -40,7 +40,7 @@
 
 .mods-subtitle {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-3);
   margin-top: 4px;
 }
@@ -135,7 +135,7 @@
   border: 1px solid #5a3c00;
   color: var(--gold);
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.5px;
   text-transform: uppercase;
@@ -144,18 +144,18 @@
   white-space: nowrap;
   flex-shrink: 0;
 }
-.mod-badge-required .ti { font-size: 12px; }
+.mod-badge-required .ti { font-size: 14px; }
 
 /* ── Dependency tag (public page) ── */
 .mod-card-deps {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-3);
   font-family: var(--font-mono);
 }
-.mod-card-deps .ti { font-size: 12px; color: var(--text-3); }
+.mod-card-deps .ti { font-size: 14px; color: var(--text-3); }
 
 @media (max-width: 460px) {
   .mods-filters-bar {
