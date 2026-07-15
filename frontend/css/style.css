@@ -5084,31 +5084,44 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   background: var(--bg-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 16px;
-  margin-bottom: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 20px;
 }
 
 .mod-add-fields {
   display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.mod-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mod-field-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-3);
 }
 
 .mod-input {
-  flex: 1 1 200px;
+  width: 100%;
   background: var(--bg-1);
   border: 1px solid var(--border-mid);
   border-radius: var(--radius);
   color: var(--text-1);
   font-family: var(--font-body);
   font-size: 16px;
-  padding: 9px 12px;
+  padding: 10px 14px;
   outline: none;
   transition: border-color 0.15s;
-  min-width: 0;
 }
 .mod-input::placeholder { color: var(--text-3); }
 .mod-input:focus { border-color: var(--green); }
@@ -5184,6 +5197,8 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
 }
 
 .mod-check-label {

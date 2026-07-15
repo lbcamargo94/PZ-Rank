@@ -137,22 +137,28 @@ export function ModManagement({ token, showToast }: Props) {
       {showForm && (
         <form className="mod-add-form" onSubmit={handleAdd}>
           <div className="mod-add-fields">
-            <input
-              type="text"
-              className="mod-input"
-              placeholder="Nome do mod"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              required
-            />
-            <input
-              type="url"
-              className="mod-input"
-              placeholder="URL da Oficina Steam (https://steamcommunity.com/...)"
-              value={workshopUrl}
-              onChange={e => setWorkshopUrl(e.target.value)}
-              required
-            />
+            <div className="mod-field">
+              <label className="mod-field-label">Nome do mod</label>
+              <input
+                type="text"
+                className="mod-input"
+                placeholder="Ex: Braven's Firearms"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                required
+              />
+            </div>
+            <div className="mod-field">
+              <label className="mod-field-label">URL da Oficina Steam</label>
+              <input
+                type="url"
+                className="mod-input"
+                placeholder="https://steamcommunity.com/sharedfiles/filedetails/?id=..."
+                value={workshopUrl}
+                onChange={e => setWorkshopUrl(e.target.value)}
+                required
+              />
+            </div>
           </div>
           <div className="mod-form-footer">
             <label className="mod-check-label">
