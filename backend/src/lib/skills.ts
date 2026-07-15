@@ -44,7 +44,7 @@ export const SKILL_NAMES: Record<string, string> = {
   Pottery: "Cerâmica",
   Blacksmith: "Forja",
   Glassmaking: "Vidraria",
-  Husbandry: "Cuidado com Animais", // B41: AnimalCare
+  Husbandry: "Pecuária", // B41: AnimalCare
   Butchering: "Abate",
   Tracking: "Rastreamento",
 };

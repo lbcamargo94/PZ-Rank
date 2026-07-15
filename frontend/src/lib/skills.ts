@@ -76,6 +76,7 @@ const SKILL_FIX: Record<string, string> = {
   Agriculture:          'Agricultura',
   Knapping:             'Lascamento',
   AnimalCare:           'Pecuária',
+  'Cuidado com Animais':'Pecuária',  // backward compat: nome gravado pelo backend antes do fix
   // Nomes PT-BR antigos → PT-BR novo (backward compat: entradas decodificadas antes do fix)
   'Carpintaria':        'Marcenaria',
   'Sobrevivência':      'Coleta',               // nome antigo do skill PlantScavenging
