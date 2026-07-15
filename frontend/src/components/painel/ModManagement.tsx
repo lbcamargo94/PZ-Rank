@@ -3,6 +3,17 @@ import { apiGetAllMods, apiAddMod, apiUpdateMod, apiBlockMod, apiUnblockMod, api
 import type { Mod } from '../../types';
 import { ConfirmModal } from './ConfirmModal';
 
+function fmtDate(iso: string): string {
+  const d = new Date(iso);
+  return (
+    String(d.getDate()).padStart(2, '0') + '/' +
+    String(d.getMonth() + 1).padStart(2, '0') + '/' +
+    d.getFullYear() + ' ' +
+    String(d.getHours()).padStart(2, '0') + ':' +
+    String(d.getMinutes()).padStart(2, '0')
+  );
+}
+
 interface Props {
   token:     string;
   showToast: (msg: string, type?: string) => void;
@@ -14,25 +25,36 @@ function ModRow({
   mod: Mod; busy: boolean;
   onEdit: () => void; onToggleBlock: () => void; onDelete: () => void;
 }) {
+  const wasUpdated = mod.updated_at && mod.updated_at !== mod.created_at;
   return (
     <div className={`mod-card-painel${mod.status === 'blocked' ? ' mod-blocked' : ''}`}>
       <div className="mod-card-painel-info">
         <i className="ti ti-puzzle" />
-        <span className="mod-card-painel-name">{mod.name}</span>
-        {mod.is_required && (
-          <span className="mod-badge-required mod-badge-sm">
-            <i className="ti ti-alert-circle" /> Obrigatório
-          </span>
-        )}
-        <a
-          href={mod.workshop_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mod-card-painel-link"
-          title="Abrir na Oficina Steam"
-        >
-          <i className="ti ti-external-link" />
-        </a>
+        <div className="mod-card-painel-text">
+          <div className="mod-card-painel-name-row">
+            <span className="mod-card-painel-name">{mod.name}</span>
+            {mod.is_required && (
+              <span className="mod-badge-required mod-badge-sm">
+                <i className="ti ti-alert-circle" /> Obrigatório
+              </span>
+            )}
+            <a
+              href={mod.workshop_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mod-card-painel-link"
+              title="Abrir na Oficina Steam"
+            >
+              <i className="ti ti-external-link" />
+            </a>
+          </div>
+          <div className="mod-card-painel-dates">
+            <span><i className="ti ti-calendar-plus" /> {fmtDate(mod.created_at)}</span>
+            {wasUpdated && (
+              <span><i className="ti ti-calendar-edit" /> {fmtDate(mod.updated_at)}</span>
+            )}
+          </div>
+        </div>
       </div>
       <div className="painel-entry-actions">
         <button className="btn-secondary btn-sm" disabled={busy} title="Editar mod" onClick={onEdit}>

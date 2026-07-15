@@ -78,6 +78,7 @@ export interface Mod {
   status:       ModStatus;
   is_required:  boolean;
   created_at:   string;
+  updated_at:   string;
 }
 
 export interface PlayerProfile {

@@ -5162,10 +5162,25 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .mod-card-painel-info {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   min-width: 0;
   color: var(--text-2);
   font-size: 16px;
+  flex: 1;
+}
+
+.mod-card-painel-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.mod-card-painel-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .mod-card-painel-name {
@@ -5175,6 +5190,16 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.mod-card-painel-dates {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-3);
+}
+.mod-card-painel-dates .ti { font-size: 11px; }
 
 .mod-card-painel-link {
   color: var(--text-3);
