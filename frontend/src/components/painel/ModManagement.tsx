@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { apiGetAllMods, apiAddMod, apiUpdateMod, apiBlockMod, apiUnblockMod, apiDeleteMod } from '../../lib/api';
+import { apiGetAllMods, apiAddMod, apiUpdateMod, apiBlockMod, apiUnblockMod, apiDeleteMod, apiRefreshModImages } from '../../lib/api';
 import type { Mod } from '../../types';
 import { ConfirmModal } from './ConfirmModal';
 
@@ -188,6 +188,7 @@ export function ModManagement({ token, showToast }: Props) {
   const [confirmDelete, setConfirmDelete] = useState<Mod | null>(null);
   const [showForm,      setShowForm]      = useState(false);
   const [editingId,     setEditingId]     = useState<number | null>(null);
+  const [refreshing,    setRefreshing]    = useState(false);
   const [name,          setName]          = useState('');
   const [workshopUrl,   setWorkshopUrl]   = useState('');
   const [isRequired,    setIsRequired]    = useState(false);
@@ -265,6 +266,24 @@ export function ModManagement({ token, showToast }: Props) {
     }
   }
 
+  async function handleRefreshImages() {
+    setRefreshing(true);
+    try {
+      const { total, updated } = await apiRefreshModImages(token);
+      showToast(
+        total === 0
+          ? 'Todos os mods já possuem imagem.'
+          : `${updated} de ${total} mods sem imagem atualizados.`,
+        'success'
+      );
+      fetchMods();
+    } catch (err) {
+      showToast((err as Error).message, 'error');
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
   function startEdit(mod: Mod) {
     setShowForm(false);
     setEditingId(mod.id);
@@ -309,10 +328,16 @@ export function ModManagement({ token, showToast }: Props) {
           </h2>
           <p className="mod-mgmt-subtitle">Gerencie os mods aprovados para o desafio</p>
         </div>
-        <button className="btn-primary btn-sm" onClick={() => { setShowForm(v => !v); setEditingId(null); }}>
-          <i className={`ti ${showForm ? 'ti-x' : 'ti-plus'}`} />
-          {showForm ? 'Cancelar' : 'Adicionar Mod'}
-        </button>
+        <div className="mod-mgmt-header-actions">
+          <button className="btn-secondary btn-sm" onClick={handleRefreshImages} disabled={refreshing} title="Buscar imagens da Steam para mods sem imagem">
+            <i className={`ti ${refreshing ? 'ti-loader-2' : 'ti-photo-search'}`} />
+            {refreshing ? 'Buscando...' : 'Atualizar imagens'}
+          </button>
+          <button className="btn-primary btn-sm" onClick={() => { setShowForm(v => !v); setEditingId(null); }}>
+            <i className={`ti ${showForm ? 'ti-x' : 'ti-plus'}`} />
+            {showForm ? 'Cancelar' : 'Adicionar Mod'}
+          </button>
+        </div>
       </div>
 
       {/* ── Corpo ── */}

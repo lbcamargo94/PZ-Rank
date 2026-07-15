@@ -5270,6 +5270,13 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   flex-wrap: wrap;
 }
 
+.mod-mgmt-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .mod-mgmt-header-left {
   display: flex;
   flex-direction: column;

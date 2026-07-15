@@ -225,6 +225,33 @@ router.patch('/:id', requireModerator, async (req: ModRequest, res: Response): P
   }
 });
 
+// POST /mods/refresh-images — moderator: re-fetch Steam images for mods without image_url
+router.post('/refresh-images', requireModerator, async (_req: ModRequest, res: Response): Promise<void> => {
+  try {
+    const { data: mods, error } = await supabase
+      .from('mods')
+      .select('id, workshop_url, image_url')
+      .is('image_url', null);
+
+    if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
+
+    const targets = (mods ?? []) as Array<{ id: number; workshop_url: string; image_url: string | null }>;
+    let updated = 0;
+
+    await Promise.all(targets.map(async mod => {
+      const image_url = await fetchSteamModImage(mod.workshop_url);
+      if (!image_url) return;
+      await supabase.from('mods').update({ image_url }).eq('id', mod.id);
+      updated++;
+    }));
+
+    res.json({ total: targets.length, updated });
+  } catch (err) {
+    console.error('[POST /mods/refresh-images] Erro inesperado:', err);
+    res.status(500).json({ error: 'Erro interno ao atualizar imagens.' });
+  }
+});
+
 // PATCH /mods/:id/block — moderator
 router.patch('/:id/block', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
   const id = Number(req.params.id);

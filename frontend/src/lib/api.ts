@@ -201,3 +201,7 @@ export function apiUnblockMod(token: string, id: number): Promise<Mod> {
 export function apiDeleteMod(token: string, id: number): Promise<void> {
   return request(`/mods/${id}`, { method: 'DELETE', ...auth(token) });
 }
+
+export function apiRefreshModImages(token: string): Promise<{ total: number; updated: number }> {
+  return request('/mods/refresh-images', { method: 'POST', ...auth(token) });
+}
