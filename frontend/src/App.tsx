@@ -17,6 +17,7 @@ import { OverlayPage } from './pages/OverlayPage';
 import { WikiPage } from './pages/WikiPage';
 import { WikiHuntingPage } from './pages/WikiHuntingPage';
 import { ModsPage } from './pages/ModsPage';
+import { TipsPage } from './pages/TipsPage';
 
 const TAB_CONFIG: { key: RankTab; label: string; icon: string }[] = [
   { key: 'rank',          label: 'Rank',             icon: 'ti-heartbeat' },
@@ -158,6 +159,7 @@ export default function App() {
       <Route path="/wiki" element={<WikiPage />} />
       <Route path="/wiki/cacada" element={<WikiHuntingPage />} />
       <Route path="/mods" element={<ModsPage />} />
+      <Route path="/dicas" element={<TipsPage />} />
       <Route path="/painel" element={
         <PainelPage
           session={modSession}
