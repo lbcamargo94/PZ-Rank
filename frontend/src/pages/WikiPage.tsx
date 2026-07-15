@@ -141,8 +141,8 @@ export function WikiPage() {
             <Link to="/" className="wiki-back">
               <i className="ti ti-arrow-left" /> Voltar
             </Link>
-            <Link to="/wiki/cacada" className="wiki-back">
-              <i className="ti ti-fish" /> Caça &amp; Pesca
+            <Link to="/wiki/cacada" className="btn-primary btn-sm">
+              <i className="ti ti-fish" aria-hidden="true" /> Caça &amp; Pesca
             </Link>
           </div>
           <div>

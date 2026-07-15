@@ -120,8 +120,8 @@ export function WikiHuntingPage() {
             <Link to="/" className="wiki-back">
               <i className="ti ti-arrow-left" /> Voltar
             </Link>
-            <Link to="/wiki" className="wiki-back">
-              <i className="ti ti-book-2" /> Wiki de Receitas
+            <Link to="/wiki" className="btn-primary btn-sm">
+              <i className="ti ti-book-2" aria-hidden="true" /> Wiki de Receitas
             </Link>
           </div>
           <div>
