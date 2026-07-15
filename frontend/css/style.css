@@ -140,6 +140,7 @@ body {
 }
 
 .btn-primary:hover { background: #2a4d1a; }
+a.btn-primary { text-decoration: none; }
 .btn-primary:active { transform: scale(0.97); }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
