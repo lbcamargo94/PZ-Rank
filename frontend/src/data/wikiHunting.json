@@ -1,0 +1,455 @@
+[
+  {
+    "id": "trap_stick",
+    "name": "Armadilha de Varas",
+    "category": "Armadilhas",
+    "subtitle": "4× Varas + Barbante · Auto-aprende Caça 2",
+    "details": [
+      { "label": "Requisito", "text": "Auto-aprende em Caça Nível 2" },
+      { "label": "Ingredientes", "list": ["4× Varas Longas", "1× Barbante"], "listIcons": ["WoodenStick2", "Twine"] },
+      { "label": "Resultado", "list": ["1× Armadilha de Varas"], "listIcons": ["TrapStick"] },
+      { "label": "Animais capturáveis", "chips": ["Pássaros", "Ratos", "Camundongos"] },
+      { "label": "Melhores iscas", "chips": ["Insetos", "Sementes", "Cereais"] },
+      { "label": "Local ideal", "text": "Beiras de floresta, campos abertos e arredores de celeiros" }
+    ]
+  },
+  {
+    "id": "trap_snare",
+    "name": "Armadilha de Laço",
+    "category": "Armadilhas",
+    "subtitle": "Serra + Tábua + Barbante · Caça 1 obrigatório",
+    "details": [
+      { "label": "Nível obrigatório", "text": "Caça 1 (auto-aprende em Caça 6)" },
+      { "label": "Ingredientes", "list": ["1× Serra (manter)", "1× Tábua", "2× Barbante"], "listIcons": ["HandSaw", "Plank", "Twine"] },
+      { "label": "Resultado", "list": ["1× Armadilha de Laço"], "listIcons": ["TrapSnare"] },
+      { "label": "Animais capturáveis", "chips": ["Coelhos", "Esquilos", "Roedores pequenos"] },
+      { "label": "Melhores iscas", "chips": ["Cenouras", "Vegetais", "Frutas", "Insetos"] },
+      { "label": "Local ideal", "text": "Trilhas em florestas, arredores de vegetação densa e campos" }
+    ]
+  },
+  {
+    "id": "trap_crate",
+    "name": "Caixote de Madeira",
+    "category": "Armadilhas",
+    "subtitle": "Serra + Martelo + Tábuas · Auto-aprende Caça 4",
+    "details": [
+      { "label": "Requisito", "text": "Auto-aprende em Caça 4 (XP Marcenaria +5)" },
+      { "label": "Ingredientes", "list": ["1× Serra (manter)", "1× Martelo (manter)", "3× Tábuas", "5× Pregos"], "listIcons": ["HandSaw", "Hammer", "Plank", "Nails"] },
+      { "label": "Resultado", "list": ["1× Caixote-Armadilha"], "listIcons": ["TrapCrate"] },
+      { "label": "Animais capturáveis", "chips": ["Esquilos", "Pássaros", "Ratos"] },
+      { "label": "Melhores iscas", "chips": ["Sementes", "Grãos", "Insetos"] },
+      { "label": "Local ideal", "text": "Clareiras, beiras de floresta e próximo a árvores" }
+    ]
+  },
+  {
+    "id": "trap_box",
+    "name": "Caixa-Armadilha",
+    "category": "Armadilhas",
+    "subtitle": "Construção robusta · Marcenaria 1 + Caça 2",
+    "details": [
+      { "label": "Nível obrigatório", "text": "Marcenaria 1 + Caça 2 (auto-aprende em Caça 8, XP Marcenaria +5)" },
+      { "label": "Ingredientes", "list": ["1× Serra (manter)", "1× Martelo (manter)", "4× Tábuas", "7× Pregos"], "listIcons": ["HandSaw", "Hammer", "Plank", "Nails"] },
+      { "label": "Resultado", "list": ["1× Caixa-Armadilha"], "listIcons": ["TrapBox"] },
+      { "label": "Animais capturáveis", "chips": ["Coelhos", "Esquilos", "Roedores médios"] },
+      { "label": "Melhores iscas", "chips": ["Cenouras", "Vegetais", "Insetos"] },
+      { "label": "Local ideal", "text": "Florestas, campos e regiões rurais afastadas" }
+    ]
+  },
+  {
+    "id": "trap_cage",
+    "name": "Gaiola de Arame",
+    "category": "Armadilhas",
+    "subtitle": "5× Arame + Alicate · Caça 3 obrigatório",
+    "details": [
+      { "label": "Nível obrigatório", "text": "Caça 3 (auto-aprende em Caça 5)" },
+      { "label": "Ingredientes", "list": ["5× Arame", "1× Alicate (manter)"], "listIcons": ["Wire", "Pliers"] },
+      { "label": "Resultado", "list": ["1× Gaiola"], "listIcons": ["TrapCage"] },
+      { "label": "Animais capturáveis", "chips": ["Coelhos", "Pássaros", "Esquilos"] },
+      { "label": "Melhores iscas", "chips": ["Frutas", "Vegetais", "Insetos", "Cenouras"] },
+      { "label": "Local ideal", "text": "Florestas, jardins rurais e arredores de fazendas" }
+    ]
+  },
+  {
+    "id": "fishing_rod_crafted",
+    "name": "Vara de Pesca Artesanal",
+    "category": "Pesca",
+    "subtitle": "Equipamento principal · Auto-aprende Pesca 4 ou Entalhe 4",
+    "details": [
+      { "label": "Requisito", "text": "Auto-aprende em Pesca 4 ou Entalhe 4 (XP Entalhe +5)" },
+      { "label": "Ingredientes", "list": ["1× Faca Afiada (manter)", "1× Graveto Longo", "2× Linha de Pesca", "1× Anzol / Prego / Clipe de Papel"], "listIcons": [null, "WoodenStick", "FishingLine", "FishingHook"] },
+      { "label": "Resultado", "list": ["1× Vara de Pesca Artesanal"], "listIcons": ["CraftedFishingRod"] },
+      { "label": "Dica", "text": "Anzóis de osso (craftados com Entalhe 5) são duráveis e não são consumidos durante a pescaria" }
+    ]
+  },
+  {
+    "id": "fishing_rod_repair",
+    "name": "Consertar Vara de Pesca",
+    "category": "Pesca",
+    "subtitle": "Repara vara quebrada · Auto-aprende Pesca 4",
+    "details": [
+      { "label": "Requisito", "text": "Auto-aprende em Pesca 4" },
+      { "label": "Ingredientes", "list": ["1× Vara de Pesca Quebrada", "1× Linha de Pesca", "1× Anzol / Prego / Clipe de Papel"], "listIcons": ["FishingRodBreak", "FishingLine", "FishingHook"] },
+      { "label": "Resultado", "list": ["1× Vara de Pesca"], "listIcons": ["FishingRod"] }
+    ]
+  },
+  {
+    "id": "fishing_net",
+    "name": "Rede de Pesca",
+    "category": "Pesca",
+    "subtitle": "Pesca passiva · Auto-aprende Pesca 6",
+    "details": [
+      { "label": "Requisito", "text": "Auto-aprende em Pesca 6" },
+      { "label": "Ingredientes", "list": ["10× Barbante", "5× Arame"], "listIcons": ["Twine", "Wire"] },
+      { "label": "Resultado", "list": ["1× Rede de Pesca"], "listIcons": [null] },
+      { "label": "Funcionamento", "text": "Posicionada na beira da água — captura peixes passivamente ao longo do tempo" },
+      { "label": "Dica", "text": "Redes quebradas podem ser desmontadas (Pesca 7) para recuperar Arame" }
+    ]
+  },
+  {
+    "id": "fishing_chum",
+    "name": "Isca de Fundo (Chum)",
+    "category": "Pesca",
+    "subtitle": "Atrai peixes para a área · Auto-aprende Pesca 5",
+    "details": [
+      { "label": "Requisito", "text": "Auto-aprende em Pesca 5" },
+      { "label": "Ingredientes", "list": ["1× Saco de Areia"], "listIcons": ["Sandbag"] },
+      { "label": "Resultado", "list": ["1× Chum"], "listIcons": [null] },
+      { "label": "Uso", "text": "Jogado na água próximo ao pescador — cria uma área de atração para peixes" },
+      { "label": "Potência extra", "text": "Insetos, minhocas, peixinhos-isca e iscas diversas podem ser adicionadas ao Chum para aumentar o poder de atração (EvolvedRecipe: AddBaitToChum)" }
+    ]
+  },
+  {
+    "id": "fishing_bone_hook",
+    "name": "Anzol de Osso",
+    "category": "Pesca",
+    "subtitle": "Anzol durável artesanal · Entalhe 5",
+    "details": [
+      { "label": "Requisito", "text": "Entalhe 5 (auto-aprende em Entalhe 7, XP Entalhe +50)" },
+      { "label": "Ingredientes", "list": ["1× Pedra de Amolar ou Lima (manter)", "1× Faca Afiada (manter)", "1× Fragmento de Osso Afiado"], "listIcons": [null, null, null] },
+      { "label": "Resultado", "list": ["1× Anzol de Osso"], "listIcons": ["FishingHook_Bone"] },
+      { "label": "Vantagem", "text": "Não é consumido durante a pescaria — permanece na vara e não precisa ser reposto" }
+    ]
+  },
+  {
+    "id": "fishing_roe",
+    "name": "Ovas de Peixe (Roe)",
+    "category": "Pesca",
+    "subtitle": "Alimento e isca · Obtida de certos peixes",
+    "details": [
+      { "label": "Ingredientes", "list": ["1× Tigela (manter)", "0,3L Água", "1× Saco de Ovas (FishRoeSac)"], "listIcons": [null, null, null] },
+      { "label": "Resultado", "list": ["1× Ovas de Peixe"], "listIcons": [null] },
+      { "label": "XP", "text": "Pesca +10" },
+      { "label": "Usos", "chips": ["Alimento", "Ingrediente de sopas e ensopados", "Isca no Chum"] },
+      { "label": "Origem", "text": "O Saco de Ovas pode aparecer ao filetar certos peixes" }
+    ]
+  },
+  {
+    "id": "fish_bass",
+    "name": "Baixo / Bass",
+    "category": "Pesca",
+    "subtitle": "Largemouth, Smallmouth, Spotted, Striped, White Bass",
+    "details": [
+      { "label": "Espécies", "chips": ["Achigã-bocarra", "Achigã-boca-pequena", "Achigã-pintado", "Achigã-listrado", "Perca Branca"] },
+      { "label": "Tamanho", "text": "Médio a grande — rende 1–2 filés" },
+      { "label": "Locais", "text": "Lagos, rios e represas. Achigã-boca-pequena prefere rios com correnteza" },
+      { "label": "Iscas recomendadas", "chips": ["Grilo", "Gafanhoto", "Minhoca", "Peixe-isca", "Lagarta"] }
+    ]
+  },
+  {
+    "id": "fish_sunfish",
+    "name": "Sunfish / Perequitos",
+    "category": "Pesca",
+    "subtitle": "Bluegill, Redear Sunfish, Green Sunfish",
+    "details": [
+      { "label": "Espécies", "chips": ["Bluegill", "Redear Sunfish", "Green Sunfish"] },
+      { "label": "Tamanho", "text": "Pequeno a médio — rende 1 filé" },
+      { "label": "Locais", "text": "Lagos rasos, margens vegetadas e remansos de rios" },
+      { "label": "Iscas recomendadas", "chips": ["Minhoca", "Grilo", "Caracol", "Tatuzinho"] }
+    ]
+  },
+  {
+    "id": "fish_crappie",
+    "name": "Crappie",
+    "category": "Pesca",
+    "subtitle": "Black Crappie, White Crappie",
+    "details": [
+      { "label": "Espécies", "chips": ["Black Crappie", "White Crappie"] },
+      { "label": "Tamanho", "text": "Pequeno — rende 1 filé" },
+      { "label": "Locais", "text": "Lagos com vegetação submersa, remansos protegidos" },
+      { "label": "Iscas recomendadas", "chips": ["Grilo", "Minhoca", "Peixe-isca pequeno"] }
+    ]
+  },
+  {
+    "id": "fish_catfish",
+    "name": "Bagre / Catfish",
+    "category": "Pesca",
+    "subtitle": "Blue, Channel, Flathead Catfish — peixes grandes",
+    "details": [
+      { "label": "Espécies", "chips": ["Bagre Azul", "Bagre Canal", "Bagre Cabeça-chata"] },
+      { "label": "Tamanho", "text": "Grande — rende 2+ filés" },
+      { "label": "Locais", "text": "Fundos de rios e lagos, áreas de correnteza moderada" },
+      { "label": "Iscas recomendadas", "chips": ["Peixe-isca", "Lesma", "Chum", "Larvas"] },
+      { "label": "Dica", "text": "Bagres são mais ativos à noite e no fundo da água — Chum reforçado ajuda a atraí-los" }
+    ]
+  },
+  {
+    "id": "fish_walleye",
+    "name": "Walleye & Sauger",
+    "category": "Pesca",
+    "subtitle": "Predadores de fundo — médios a grandes",
+    "details": [
+      { "label": "Espécies", "chips": ["Walleye (Sandre)", "Sauger"] },
+      { "label": "Tamanho", "text": "Médio a grande — rende 1–2 filés" },
+      { "label": "Locais", "text": "Águas frias e profundas de rios e lagos maiores" },
+      { "label": "Iscas recomendadas", "chips": ["Minhoca", "Peixe-isca", "Grilo"] }
+    ]
+  },
+  {
+    "id": "fish_rare",
+    "name": "Peixes Especiais",
+    "category": "Pesca",
+    "subtitle": "Muskellunge, Peixe-agulha-jacaré, Peixe-remo, Tambor, Perca Amarela",
+    "details": [
+      { "label": "Espécies", "chips": ["Muskellunge", "Alligator Gar", "Paddlefish", "Freshwater Drum", "Yellow Perch"] },
+      { "label": "Tamanho", "text": "Variado — Gar e Paddlefish são muito grandes" },
+      { "label": "Raridade", "text": "Menos comuns — requerem habilidade de Pesca mais alta e iscas específicas" },
+      { "label": "Iscas recomendadas", "chips": ["Peixe-isca grande", "Chum reforçado"] },
+      { "label": "Dica", "text": "Perca Amarela é relativamente pequena. Gar e Paddlefish são predadores de grande porte — difíceis de fisgar com varas simples" }
+    ]
+  },
+  {
+    "id": "hunt_deer",
+    "name": "Cervo",
+    "category": "Caça",
+    "subtitle": "Cervo Macho (Stag), Cerva (Doe), Cervinho (Fawn)",
+    "details": [
+      { "label": "Variantes", "chips": ["Cervo Macho (Stag)", "Cerva (Doe)", "Cervinho (Fawn)"] },
+      { "label": "Onde encontrar", "text": "Florestas e campos abertos. Rastros como fezes de cervo (Dung_Deer) indicam presença na área" },
+      { "label": "Ferramentas", "chips": ["Rifle", "Arco e Flecha", "Espingarda", "Lança"] },
+      { "label": "Itens obtidos", "chips": ["Carne de Cervo", "Couro de Cervo", "Ossos Grandes", "Crânio (troféu)", "Galhadas (Stag)"] },
+      { "label": "Couro", "text": "O couro de cervo pode ser curtido e usado para confeccionar roupas de sobrevivência (Costura + Entalhe)" },
+      { "label": "Rastreamento", "text": "Fique a favor do vento para não assustar o animal — cervo detecta odor. Mova-se devagar em áreas de floresta" }
+    ]
+  },
+  {
+    "id": "hunt_rabbit",
+    "name": "Coelho",
+    "category": "Caça",
+    "subtitle": "Appalachian, CottonTail, Swamp Rabbit",
+    "details": [
+      { "label": "Variantes", "chips": ["Coelho Appalachian", "Coelho CottonTail", "Coelho Swamp"] },
+      { "label": "Onde encontrar", "text": "Campos abertos, beiras de floresta, arredores de vegetação baixa e áreas rurais" },
+      { "label": "Ferramentas", "chips": ["Armadilhas de Laço", "Gaiola", "Funda", "Espingarda (chumbo)"] },
+      { "label": "Itens obtidos", "chips": ["Carne de Coelho", "Pele pequena", "Crânio de Coelho"] },
+      { "label": "Dica", "text": "Armadilhas são a forma mais eficiente — não gastam munição e capturam o coelho enquanto você faz outras atividades" }
+    ]
+  },
+  {
+    "id": "hunt_bird",
+    "name": "Pássaro Selvagem",
+    "category": "Caça",
+    "subtitle": "Aves diversas — pequenas",
+    "details": [
+      { "label": "Onde encontrar", "text": "Copas de árvores, campos abertos e arredores de corpos d'água" },
+      { "label": "Ferramentas", "chips": ["Armadilha de Varas", "Caixote de Madeira", "Funda", "Espingarda (chumbo)"] },
+      { "label": "Itens obtidos", "chips": ["Carne de Pássaro Pequena", "Crânio de Pássaro"] },
+      { "label": "Crânio", "text": "Crânio de pássaro pode ser usado para fazer colares e brincos (Costura 1)" },
+      { "label": "Iscas para armadilhas", "chips": ["Sementes", "Cereais", "Grãos", "Insetos"] }
+    ]
+  },
+  {
+    "id": "hunt_rodents",
+    "name": "Roedores",
+    "category": "Caça",
+    "subtitle": "Esquilo, Rato, Camundongo",
+    "details": [
+      { "label": "Espécies", "chips": ["Esquilo", "Rato", "Camundongo"] },
+      { "label": "Onde encontrar", "text": "Esquilos: em ou próximo a árvores. Ratos e camundongos: interiores de construções, celeiros e porões" },
+      { "label": "Ferramentas", "chips": ["Armadilha de Varas", "Caixote de Madeira", "Gaiola"] },
+      { "label": "Itens obtidos", "chips": ["Carne de Animal Pequeno", "Rato Esfolado", "Camundongo Esfolado"] },
+      { "label": "Dica", "text": "Ratos e camundongos surgem em construções — armadilhas instaladas dentro de casas também funcionam" }
+    ]
+  },
+  {
+    "id": "hunt_frog",
+    "name": "Sapo",
+    "category": "Caça",
+    "subtitle": "Anfíbio · Próximo a água",
+    "details": [
+      { "label": "Onde encontrar", "text": "Margens de lagos, rios, pântanos e áreas úmidas" },
+      { "label": "Como capturar", "text": "Interação direta — ou pequenas armadilhas posicionadas perto da água" },
+      { "label": "Itens obtidos", "chips": ["Carne de Sapo"] },
+      { "label": "Dica", "text": "Sapos são mais ativos à noite — mais fáceis de encontrar e capturar no escuro" }
+    ]
+  },
+  {
+    "id": "forage_worm",
+    "name": "Minhoca",
+    "category": "Forrageamento",
+    "subtitle": "Isca universal para pesca",
+    "details": [
+      { "label": "Onde encontrar", "text": "Solo úmido, jardins cultivados e terra revirada. Mais abundante após chuvas" },
+      { "label": "Uso como isca", "text": "Excelente para a maioria dos peixes de água doce — universal e eficaz" },
+      { "label": "Pode ser comida", "text": "Sim — pequena quantidade de proteínas" },
+      { "label": "Conservação", "text": "14 dias fresca, 21 dias até apodrecer totalmente" }
+    ]
+  },
+  {
+    "id": "forage_maggots",
+    "name": "Larvas (Maggots)",
+    "category": "Forrageamento",
+    "subtitle": "Aparecem em comida podre · Isca de pesca",
+    "details": [
+      { "label": "Onde encontrar", "text": "Em comida estragada deixada ao ar livre ou em carniça com o tempo" },
+      { "label": "Uso como isca", "text": "Boa isca de pesca (FishingLure). Ideal para Chum e bagres de fundo" },
+      { "label": "Peso", "text": "0,01 kg (muito leve — pode carregar muitas ao mesmo tempo)" },
+      { "label": "Conservação", "text": "14 dias frescas, 21 dias até apodrecer" }
+    ]
+  },
+  {
+    "id": "forage_cricket_grasshopper",
+    "name": "Grilo & Gafanhoto",
+    "category": "Forrageamento",
+    "subtitle": "Insetos de campo — boa isca para pesca",
+    "details": [
+      { "label": "Onde encontrar", "text": "Forrageando em campos abertos, beiras de floresta e vegetação baixa — especialmente em tempo quente" },
+      { "label": "Uso como isca", "text": "Excelentes para bass, sunfish e crappie. Eficazes em armadilhas de pássaros" },
+      { "label": "Pode ser comido", "text": "Sim — fornecem pequena quantidade de proteínas quando cozidos" },
+      { "label": "Conservação", "text": "14 dias frescos, 21 dias até apodrecer" }
+    ]
+  },
+  {
+    "id": "forage_caterpillar",
+    "name": "Lagartas",
+    "category": "Forrageamento",
+    "subtitle": "Múltiplas espécies — algumas venenosas cruas",
+    "details": [
+      { "label": "Espécies", "chips": ["Lagarta Americana", "Lagarta Peluda", "Lagarta Monarca", "Lagarta Serrilha", "Lagarta Seda", "Lagarta Borboleta"] },
+      { "label": "Onde encontrar", "text": "Forrageando em folhas de árvores e arbustos — florestas e jardins" },
+      { "label": "Uso como isca", "text": "Todas funcionam como FishingLure — boas para bass e peixes de superfície" },
+      { "label": "Aviso", "text": "Lagarta Monarca e Lagarta Borboleta têm efeito tóxico leve se consumidas cruas (PoisonPower 1) — cozinhe antes de comer" },
+      { "label": "Conservação", "text": "14 dias frescas, 21 dias até apodrecer" }
+    ]
+  },
+  {
+    "id": "forage_centipede_millipede",
+    "name": "Centopeia & Milípede",
+    "category": "Forrageamento",
+    "subtitle": "Sob troncos e pedras — milípede venenosa crua",
+    "details": [
+      { "label": "Onde encontrar", "text": "Sob troncos caídos, pedras grandes e entulho em áreas florestadas" },
+      { "label": "Uso como isca", "text": "Ambas funcionam como FishingLure para pesca" },
+      { "label": "Pode ser comida", "text": "Centopeia: perigosa crua (DangerousUncooked). Milípede: venenosa crua (PoisonPower 1) — cozinhe antes de consumir" },
+      { "label": "Conservação", "text": "14 dias frescas, 21 dias até apodrecer" }
+    ]
+  },
+  {
+    "id": "forage_slug_snail",
+    "name": "Lesma & Caracol",
+    "category": "Forrageamento",
+    "subtitle": "Áreas úmidas · Perigosos crus",
+    "details": [
+      { "label": "Onde encontrar", "text": "Jardins, vegetação após chuva e áreas úmidas — mais ativos de noite" },
+      { "label": "Uso como isca", "text": "Bons para bagres e peixes de fundo (FishingLure)" },
+      { "label": "Pode ser comido", "text": "Ambos são DangerousUncooked — cozinhe antes de consumir. Caracol pode ser usado em refogado (Stir fry)" },
+      { "label": "Conservação", "text": "Apenas 4 dias frescos, 8 dias até apodrecer — mais rápido que insetos" }
+    ]
+  },
+  {
+    "id": "forage_pillbug_cockroach",
+    "name": "Tatuzinho & Barata",
+    "category": "Forrageamento",
+    "subtitle": "Pequenos artrópodes — fáceis de encontrar",
+    "details": [
+      { "label": "Tatuzinho (Pillbug)", "text": "Encontrado sob pedras, madeira podre e folhagem acumulada — boa isca de pesca (FishingLure)" },
+      { "label": "Barata (Cockroach)", "text": "Encontrada em construções escuras, porões e cozinhas — isca de pesca e pode ser frita" },
+      { "label": "Peso", "text": "0,01 kg (muito leve)" },
+      { "label": "Conservação", "text": "14 dias frescos, 21 dias até apodrecer" }
+    ]
+  },
+  {
+    "id": "forage_baitfish",
+    "name": "Peixinho-isca (Bait Fish)",
+    "category": "Forrageamento",
+    "subtitle": "Isca ao vivo — mais eficaz para peixes grandes",
+    "details": [
+      { "label": "Como obter", "text": "Encontrado em corpos d'água ao pescar com vara — capturado aleatoriamente no lugar de peixes maiores" },
+      { "label": "Uso como isca", "text": "Isca ao vivo muito eficaz — especialmente para bagres, walleye e muskellunge. Pode ser adicionada ao Chum" },
+      { "label": "Pode ser comido", "text": "Sim — cozido ou cru (pequena fonte de alimento)" },
+      { "label": "Conservação", "text": "Varia — mantenha fresco para máxima eficácia como isca" }
+    ]
+  },
+  {
+    "id": "prep_butcher_small",
+    "name": "Abater Animal Pequeno",
+    "category": "Receitas de Preparo",
+    "subtitle": "Processa pássaros, roedores, coelhos e sapos",
+    "details": [
+      { "label": "XP", "text": "Açougue +10" },
+      { "label": "Ingredientes", "list": ["1× Faca Afiada (manter)", "1× Animal Morto"], "listIcons": [null, null] },
+      { "label": "Animais suportados", "chips": ["Pássaro Morto", "Camundongo Morto", "Esquilo Morto", "Rato Morto", "Sapo", "Coelho Morto"] },
+      { "label": "Resultado por animal", "list": ["Pássaro → Carne de Pássaro Pequena", "Coelho → Carne de Coelho", "Sapo → Carne de Sapo", "Rato/Camundongo → Esfolado (sem pele)"], "listIcons": [null, null, null, null] },
+      { "label": "Dica", "text": "Pode ser feito em qualquer superfície — não precisa de bancada nem fogão" }
+    ]
+  },
+  {
+    "id": "prep_fillet_fish",
+    "name": "Filetar Peixe",
+    "category": "Receitas de Preparo",
+    "subtitle": "Transforma peixe inteiro em filés",
+    "details": [
+      { "label": "XP", "text": "Açougue +10" },
+      { "label": "Ingredientes", "list": ["1× Faca Afiada (manter)", "1× Peixe Inteiro (tag: uncutfish)"], "listIcons": [null, null] },
+      { "label": "Resultado", "list": ["2× Filé de Peixe"], "listIcons": ["FishFillet"] },
+      { "label": "Dica", "text": "O filé herda o estado de frescor do peixe original. Pode conter um Saco de Ovas (FishRoeSac) dependendo do peixe" }
+    ]
+  },
+  {
+    "id": "prep_halve_fillet",
+    "name": "Dividir Filé",
+    "category": "Receitas de Preparo",
+    "subtitle": "Divide filé em porções menores",
+    "details": [
+      { "label": "Ingredientes", "list": ["1× Faca Afiada (manter)", "1× Filé de Peixe"], "listIcons": [null, "FishFillet"] },
+      { "label": "Resultado", "list": ["2× Metade de Filé"], "listIcons": ["FishFillet"] },
+      { "label": "Dica", "text": "Útil para dividir porções entre personagens no modo multiplayer" }
+    ]
+  },
+  {
+    "id": "prep_harvest_roe",
+    "name": "Extrair Ovas",
+    "category": "Receitas de Preparo",
+    "subtitle": "Processa Saco de Ovas em Ovas comestíveis",
+    "details": [
+      { "label": "XP", "text": "Pesca +10" },
+      { "label": "Ingredientes", "list": ["1× Tigela (manter)", "0,3L Água", "1× Saco de Ovas"], "listIcons": [null, null, null] },
+      { "label": "Resultado", "list": ["1× Ovas de Peixe"], "listIcons": [null] },
+      { "label": "Usos das ovas", "chips": ["Alimento direto", "Ingrediente de sopas e ensopados", "Adicionada ao Chum"] }
+    ]
+  },
+  {
+    "id": "prep_deer_butcher",
+    "name": "Abater Animal Grande (Cervo)",
+    "category": "Receitas de Preparo",
+    "subtitle": "Processamento de grandes animais no mundo",
+    "details": [
+      { "label": "Ferramenta", "text": "Faca Afiada ou Facão — interaja diretamente com a carcaça no mundo" },
+      { "label": "Processo", "text": "Não é receita de bancada — clique com botão direito na carcaça do animal abatido para abrir o menu de processamento" },
+      { "label": "Itens obtidos", "chips": ["Carne de Cervo", "Couro de Cervo", "Ossos Grandes", "Ossos Pequenos", "Crânio", "Mandíbula"] },
+      { "label": "Couro", "text": "O couro pode ser curtido (Ferramenta de Remoção + Salmoura) e usado para confeccionar roupas de sobrevivência" },
+      { "label": "Ossos", "text": "Ossos grandes podem ser afiados (Entalhe) para criar ferramentas, armas brancas e anzóis de osso" }
+    ]
+  },
+  {
+    "id": "prep_skin_tan",
+    "name": "Curtir Couro / Pelagem",
+    "category": "Receitas de Preparo",
+    "subtitle": "Transforma couro cru em material utilizável",
+    "details": [
+      { "label": "Processo", "text": "Couro cru de animais grandes (cervo, ovelha, vaca) precisa ser raspado com Ferramenta de Remoção de Carne e depois curtido em salmoura ou com tanino" },
+      { "label": "Ferramentas", "chips": ["Ferramenta de Remoção de Carne", "Arame", "Salmoura ou Tanino"] },
+      { "label": "Resultado", "chips": ["Couro de Cervo Curtido", "Couro de Ovelha Curtido", "Couro de Vaca Curtido"] },
+      { "label": "Usos", "text": "Couro curtido é ingrediente para roupas, armaduras artesanais, botas e acessórios de sobrevivência (habilidade Costura)" }
+    ]
+  }
+]

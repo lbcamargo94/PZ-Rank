@@ -418,6 +418,32 @@
   flex-shrink: 0;
 }
 
+/* ── Hunting / Chips ── */
+.wiki-back-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.wiki-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* chips are decorative tags — exempt from 16px min-size rule */
+.wiki-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: var(--radius);
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
 /* ── Single column (≤ 460px) ── */
 @media (max-width: 460px) {
   .wiki-filters-bar {

@@ -137,9 +137,14 @@ export function WikiPage() {
       {/* ── Header ── */}
       <div className="wiki-header">
         <div className="wiki-header-inner container">
-          <Link to="/" className="wiki-back">
-            <i className="ti ti-arrow-left" /> Voltar
-          </Link>
+          <div className="wiki-back-row">
+            <Link to="/" className="wiki-back">
+              <i className="ti ti-arrow-left" /> Voltar
+            </Link>
+            <Link to="/wiki/cacada" className="wiki-back">
+              <i className="ti ti-fish" /> Caça &amp; Pesca
+            </Link>
+          </div>
           <div>
             <h1 className="wiki-title"><i className="ti ti-book-2" /> Wiki de Receitas</h1>
             <p className="wiki-subtitle">Project Zomboid — Build 42 · {ALL_RECIPES.length} receitas</p>
