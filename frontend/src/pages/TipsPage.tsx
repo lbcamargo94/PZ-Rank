@@ -20,10 +20,10 @@ const TIP_GROUPS: TipGroup[] = [
   {
     title:    'Primeiros Minutos: Crise Imediata',
     icon:     'ti-alarm',
-    subtitle: 'Pop. zumbis 4× — 2× no Dia 1',
+    subtitle: 'Pop. zumbis 8× desde o Dia 1 (4× base × pico 2×)',
     tips: [
       { text: 'Água e eletricidade cortam INSTANTANEAMENTE. Não há torneira funcionando em nenhum momento do jogo.', type: 'critical' },
-      { text: 'A população já começa em 2× e atinge o pico máximo de 4× no próprio Dia 1. A cidade está tomada desde o início.', type: 'critical' },
+      { text: 'A população começa E já está no pico máximo de 8× no próprio Dia 1 (multiplicador 4× com fator de pico 2×). A cidade está completamente tomada desde o início.', type: 'critical' },
       { text: 'NÃO tente limpar áreas urbanas nas primeiras horas. Loote rápido, pegue o essencial e recue.', type: 'warning' },
       { text: 'Prioridade de loot inicial: mochila grande, comida para 3 dias, kit de primeiros socorros, faca ou machado.', type: 'info' },
       { text: 'Boa notícia: zumbis não reaparecem (RespawnHours = 0). Uma área limpa permanece limpa.', type: 'info' },
