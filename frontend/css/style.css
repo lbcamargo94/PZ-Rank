@@ -5233,6 +5233,28 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   gap: 4px;
 }
 
+.mod-edit-form {
+  border-color: var(--green-border);
+  background: #0d1f08;
+}
+
+.mod-edit-form-title {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--green-light);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: -4px;
+}
+
+.mod-edit-actions {
+  display: flex;
+  gap: 8px;
+}
+
 .mod-form-footer {
   display: flex;
   align-items: center;

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { apiGetAllMods, apiAddMod, apiBlockMod, apiUnblockMod, apiDeleteMod } from '../../lib/api';
+import { apiGetAllMods, apiAddMod, apiUpdateMod, apiBlockMod, apiUnblockMod, apiDeleteMod } from '../../lib/api';
 import type { Mod } from '../../types';
 import { ConfirmModal } from './ConfirmModal';
 
@@ -9,10 +9,10 @@ interface Props {
 }
 
 function ModRow({
-  mod, busy, onToggleBlock, onDelete,
+  mod, busy, onEdit, onToggleBlock, onDelete,
 }: {
   mod: Mod; busy: boolean;
-  onToggleBlock: () => void; onDelete: () => void;
+  onEdit: () => void; onToggleBlock: () => void; onDelete: () => void;
 }) {
   return (
     <div className={`mod-card-painel${mod.status === 'blocked' ? ' mod-blocked' : ''}`}>
@@ -35,6 +35,9 @@ function ModRow({
         </a>
       </div>
       <div className="painel-entry-actions">
+        <button className="btn-secondary btn-sm" disabled={busy} title="Editar mod" onClick={onEdit}>
+          <i className="ti ti-pencil" /> Editar
+        </button>
         <button
           className={`${mod.status === 'active' ? 'btn-warning' : 'btn-success'} btn-sm`}
           disabled={busy}
@@ -51,6 +54,73 @@ function ModRow({
   );
 }
 
+interface EditFormProps {
+  mod:        Mod;
+  onSave:     (data: { name: string; workshop_url: string; is_required: boolean }) => Promise<void>;
+  onCancel:   () => void;
+  submitting: boolean;
+}
+
+function EditModForm({ mod, onSave, onCancel, submitting }: EditFormProps) {
+  const [name,        setName]        = useState(mod.name);
+  const [workshopUrl, setWorkshopUrl] = useState(mod.workshop_url);
+  const [isRequired,  setIsRequired]  = useState(mod.is_required);
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    onSave({ name: name.trim(), workshop_url: workshopUrl.trim(), is_required: isRequired });
+  }
+
+  return (
+    <form className="mod-add-form mod-edit-form" onSubmit={handleSubmit}>
+      <div className="mod-edit-form-title">
+        <i className="ti ti-pencil" /> Editando mod
+      </div>
+      <div className="mod-add-fields">
+        <div className="mod-field">
+          <label className="mod-field-label">Nome do mod</label>
+          <input
+            type="text"
+            className="mod-input"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            required
+          />
+        </div>
+        <div className="mod-field">
+          <label className="mod-field-label">URL da Oficina Steam</label>
+          <input
+            type="url"
+            className="mod-input"
+            value={workshopUrl}
+            onChange={e => setWorkshopUrl(e.target.value)}
+            required
+          />
+        </div>
+      </div>
+      <div className="mod-form-footer">
+        <label className="mod-check-label">
+          <input
+            type="checkbox"
+            className="mod-check"
+            checked={isRequired}
+            onChange={e => setIsRequired(e.target.checked)}
+          />
+          <span>Mod obrigatório</span>
+        </label>
+        <div className="mod-edit-actions">
+          <button type="button" className="btn-secondary btn-sm" onClick={onCancel} disabled={submitting}>
+            Cancelar
+          </button>
+          <button type="submit" className="btn-success btn-sm" disabled={submitting}>
+            <i className="ti ti-check" /> {submitting ? 'Salvando...' : 'Salvar'}
+          </button>
+        </div>
+      </div>
+    </form>
+  );
+}
+
 export function ModManagement({ token, showToast }: Props) {
   const [mods,          setMods]          = useState<Mod[]>([]);
   const [loading,       setLoading]       = useState(false);
@@ -58,6 +128,7 @@ export function ModManagement({ token, showToast }: Props) {
   const [actionId,      setActionId]      = useState<number | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Mod | null>(null);
   const [showForm,      setShowForm]      = useState(false);
+  const [editingId,     setEditingId]     = useState<number | null>(null);
   const [name,          setName]          = useState('');
   const [workshopUrl,   setWorkshopUrl]   = useState('');
   const [isRequired,    setIsRequired]    = useState(false);
@@ -81,6 +152,20 @@ export function ModManagement({ token, showToast }: Props) {
       setWorkshopUrl('');
       setIsRequired(false);
       setShowForm(false);
+      fetchMods();
+    } catch (err) {
+      showToast((err as Error).message, 'error');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleUpdate(mod: Mod, data: { name: string; workshop_url: string; is_required: boolean }) {
+    setSubmitting(true);
+    try {
+      await apiUpdateMod(token, mod.id, data);
+      showToast('Mod atualizado com sucesso.', 'success');
+      setEditingId(null);
       fetchMods();
     } catch (err) {
       showToast((err as Error).message, 'error');
@@ -121,8 +206,37 @@ export function ModManagement({ token, showToast }: Props) {
     }
   }
 
+  function startEdit(mod: Mod) {
+    setShowForm(false);
+    setEditingId(mod.id);
+  }
+
   const activeMods  = mods.filter(m => m.status === 'active');
   const blockedMods = mods.filter(m => m.status === 'blocked');
+
+  function renderMod(mod: Mod) {
+    if (editingId === mod.id) {
+      return (
+        <EditModForm
+          key={mod.id}
+          mod={mod}
+          submitting={submitting}
+          onSave={data => handleUpdate(mod, data)}
+          onCancel={() => setEditingId(null)}
+        />
+      );
+    }
+    return (
+      <ModRow
+        key={mod.id}
+        mod={mod}
+        busy={actionId === mod.id}
+        onEdit={() => startEdit(mod)}
+        onToggleBlock={() => handleToggleBlock(mod)}
+        onDelete={() => setConfirmDelete(mod)}
+      />
+    );
+  }
 
   return (
     <div className="painel-section">
@@ -135,7 +249,7 @@ export function ModManagement({ token, showToast }: Props) {
           </h2>
           <p className="mod-mgmt-subtitle">Gerencie os mods aprovados para o desafio</p>
         </div>
-        <button className="btn-primary btn-sm" onClick={() => setShowForm(v => !v)}>
+        <button className="btn-primary btn-sm" onClick={() => { setShowForm(v => !v); setEditingId(null); }}>
           <i className={`ti ${showForm ? 'ti-x' : 'ti-plus'}`} />
           {showForm ? 'Cancelar' : 'Adicionar Mod'}
         </button>
@@ -202,15 +316,7 @@ export function ModManagement({ token, showToast }: Props) {
               <i className="ti ti-circle-check" /> Ativos
               <span className="rank-tab-badge">{activeMods.length}</span>
             </div>
-            {activeMods.map(mod => (
-              <ModRow
-                key={mod.id}
-                mod={mod}
-                busy={actionId === mod.id}
-                onToggleBlock={() => handleToggleBlock(mod)}
-                onDelete={() => setConfirmDelete(mod)}
-              />
-            ))}
+            {activeMods.map(renderMod)}
           </div>
         )}
 
@@ -220,15 +326,7 @@ export function ModManagement({ token, showToast }: Props) {
               <i className="ti ti-ban" /> Bloqueados
               <span className="rank-tab-badge">{blockedMods.length}</span>
             </div>
-            {blockedMods.map(mod => (
-              <ModRow
-                key={mod.id}
-                mod={mod}
-                busy={actionId === mod.id}
-                onToggleBlock={() => handleToggleBlock(mod)}
-                onDelete={() => setConfirmDelete(mod)}
-              />
-            ))}
+            {blockedMods.map(renderMod)}
           </div>
         )}
 

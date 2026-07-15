@@ -182,6 +182,12 @@ export function apiAddMod(
   return request('/mods', { method: 'POST', ...json(token, data) });
 }
 
+export function apiUpdateMod(
+  token: string, id: number, data: { name: string; workshop_url: string; is_required: boolean }
+): Promise<Mod> {
+  return request(`/mods/${id}`, { method: 'PATCH', ...json(token, data) });
+}
+
 export function apiBlockMod(token: string, id: number): Promise<Mod> {
   return request(`/mods/${id}/block`, { method: 'PATCH', ...auth(token) });
 }

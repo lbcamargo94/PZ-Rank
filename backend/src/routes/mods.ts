@@ -77,6 +77,41 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
   }
 });
 
+// PATCH /mods/:id — moderator: update name, url, is_required
+router.patch('/:id', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
+  const id = Number(req.params.id);
+  const { name, workshop_url, is_required } = req.body as {
+    name?: string; workshop_url?: string; is_required?: boolean;
+  };
+
+  if (!name?.trim() || !workshop_url?.trim()) {
+    res.status(400).json({ error: 'Nome e URL da oficina são obrigatórios.' });
+    return;
+  }
+
+  const trimmedUrl = workshop_url.trim();
+  if (!trimmedUrl.startsWith('https://steamcommunity.com/')) {
+    res.status(400).json({ error: 'A URL deve ser da Steam (steamcommunity.com).' });
+    return;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('mods')
+      .update({ name: name.trim(), workshop_url: trimmedUrl, is_required: is_required ?? false })
+      .eq('id', id)
+      .select('id, name, workshop_url, is_required, status, created_at')
+      .single();
+
+    if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
+    if (!data) { res.status(404).json({ error: 'Mod não encontrado.' }); return; }
+    res.json(data);
+  } catch (err) {
+    console.error('[PATCH /mods/:id] Erro inesperado:', err);
+    res.status(500).json({ error: 'Erro interno ao atualizar mod.' });
+  }
+});
+
 // PATCH /mods/:id/block — moderator
 router.patch('/:id/block', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
   const id = Number(req.params.id);
