@@ -18,9 +18,19 @@ function parseSkillRaw(raw: string): { id: string; ptName: string; level: number
   return { id, ptName: SKILL_NAME_BY_ID.get(id) ?? id, level: isNaN(level) ? 0 : level };
 }
 
+const DISQ_MESSAGES: Record<string, string> = {
+  sandbox: 'Configurações do sandbox divergem do desafio oficial',
+  debug:   'Modo debug ativado durante o desafio Brasileirão',
+  mods:    'Mods não permitidos detectados durante o desafio Brasileirão',
+  manual:  'Desclassificado manualmente pelo moderador',
+};
+
 function verdict(d: DecodedCode): { ok: boolean; reasons: string[] } {
   const reasons: string[] = [];
-  if (!d.sandboxOk) reasons.push('Configurações do sandbox divergem do desafio oficial');
+  if (!d.sandboxOk) {
+    const key = d.disqualificationReason ?? 'sandbox';
+    reasons.push(DISQ_MESSAGES[key] ?? DISQ_MESSAGES.sandbox);
+  }
   return { ok: reasons.length === 0, reasons };
 }
 
@@ -254,7 +264,9 @@ export function CodeDecoder() {
             <div className="dc-stat-divider" />
             <div className={`dc-stat-item dc-sandbox-item${result.sandboxOk ? ' dc-ok' : ' dc-fail'}`}>
               <i className={`ti ${result.sandboxOk ? 'ti-shield-check' : 'ti-shield-x'}`} />
-              <span className="dc-stat-val">{result.sandboxOk ? 'Válido' : 'Inválido'}</span>
+              <span className="dc-stat-val">
+                {result.sandboxOk ? 'Válido' : (result.disqualificationReason ?? 'inválido')}
+              </span>
               <span className="dc-stat-lbl">sandbox</span>
             </div>
           </div>

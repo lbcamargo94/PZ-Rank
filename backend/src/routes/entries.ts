@@ -127,7 +127,9 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
     traits:                  decoded.traits.join(',') || null,
     objectives:              safeObjectives,
     score:                   decoded.sandboxOk ? computeScore(decoded.kills, safeObjectives) : 0,
-    disqualification_reason: !decoded.sandboxOk ? 'sandbox' : null,
+    disqualification_reason: !decoded.sandboxOk
+      ? (decoded.disqualificationReason ?? 'sandbox')
+      : null,
     disqualified_at:         disqualifiedAt,
     updated_at:              new Date().toISOString(),
   };

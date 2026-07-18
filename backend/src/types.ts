@@ -64,14 +64,15 @@ export interface Entry {
 }
 
 export interface DecodedCode {
-  characterName: string;
-  profession:    string;
-  kills:         number;
-  timeRaw:       number;
-  days:          number;
-  timeStr:       string;
-  skills:        string[];
-  isAlive:       boolean;
-  sandboxOk:     boolean;
-  traits:        string[];
+  characterName:          string;
+  profession:             string;
+  kills:                  number;
+  timeRaw:                number;
+  days:                   number;
+  timeStr:                string;
+  skills:                 string[];
+  isAlive:                boolean;
+  sandboxOk:              boolean;
+  traits:                 string[];
+  disqualificationReason: string | null;
 }

@@ -95,9 +95,12 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   };
 
   const VALID_REASONS = new Set(['sandbox', 'debug', 'mods', 'manual']);
-  const validatedReason = (disqualification_reason && VALID_REASONS.has(disqualification_reason))
+  // Prioridade: motivo enviado pelo Companion (lido do .txt) > motivo no código PZRX2 > 'sandbox'
+  // A resolução final do decoded.disqualificationReason só está disponível depois do parsePzrCode,
+  // por isso construímos o validatedReason em duas etapas (veja uso abaixo).
+  const companionReason = (disqualification_reason && VALID_REASONS.has(disqualification_reason))
     ? disqualification_reason as 'sandbox' | 'debug' | 'mods' | 'manual'
-    : 'sandbox';
+    : null;
 
   if (!player_token || !code) {
     res.status(400).json({ error: 'player_token e code são obrigatórios.' });
@@ -167,6 +170,10 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // Só atualiza sandbox_ok, is_alive e zera o score — kills/dias/skills não são sobrescritos.
   if (!decoded.sandboxOk && existing) {
     const existingRow = existing as { id: number; disqualification_reason?: string | null };
+    const codeReason = (decoded.disqualificationReason && VALID_REASONS.has(decoded.disqualificationReason))
+      ? decoded.disqualificationReason as 'sandbox' | 'debug' | 'mods' | 'manual'
+      : null;
+    const validatedReason = companionReason ?? codeReason ?? 'sandbox';
     const reasonToStore = existingRow.disqualification_reason ?? validatedReason;
     const { data, error } = await supabase
       .from(config.tableName)
