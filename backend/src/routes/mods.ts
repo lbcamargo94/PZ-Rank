@@ -7,8 +7,8 @@ import type { ModRequest } from '../middleware/moderator';
 
 const router = Router();
 
-const SELECT_PUBLIC = 'id, name, workshop_url, is_required, image_url, created_at, updated_at';
-const SELECT_ALL    = 'id, name, workshop_url, is_required, image_url, status, created_at, updated_at';
+const SELECT_PUBLIC = 'id, name, mod_id, workshop_url, is_required, image_url, created_at, updated_at';
+const SELECT_ALL    = 'id, name, mod_id, workshop_url, is_required, image_url, status, created_at, updated_at';
 
 async function fetchSteamModImage(workshopUrl: string): Promise<string | null> {
   try {
@@ -109,8 +109,8 @@ router.get('/all', requireModerator, async (_req: ModRequest, res: Response): Pr
 
 // POST /mods — moderator: add new mod
 router.post('/', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
-  const { name, workshop_url, is_required, dependency_ids } = req.body as {
-    name?: string; workshop_url?: string; is_required?: boolean; dependency_ids?: number[];
+  const { name, mod_id, workshop_url, is_required, dependency_ids } = req.body as {
+    name?: string; mod_id?: string; workshop_url?: string; is_required?: boolean; dependency_ids?: number[];
   };
 
   if (!name?.trim() || !workshop_url?.trim()) {
@@ -118,7 +118,9 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
     return;
   }
 
-  const trimmedUrl = workshop_url.trim();
+  const trimmedUrl   = workshop_url.trim();
+  const trimmedModId = mod_id?.trim() || null;
+
   if (!trimmedUrl.startsWith('https://steamcommunity.com/')) {
     res.status(400).json({ error: 'A URL deve ser da Steam (steamcommunity.com).' });
     return;
@@ -140,7 +142,7 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
 
     const { data, error } = await supabase
       .from('mods')
-      .insert([{ name: name.trim(), workshop_url: trimmedUrl, is_required: is_required ?? false, image_url }])
+      .insert([{ name: name.trim(), mod_id: trimmedModId, workshop_url: trimmedUrl, is_required: is_required ?? false, image_url }])
       .select(SELECT_ALL)
       .single();
 
@@ -168,8 +170,8 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
 // PATCH /mods/:id — moderator: update name, url, is_required, dependencies
 router.patch('/:id', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
   const id = Number(req.params.id);
-  const { name, workshop_url, is_required, dependency_ids } = req.body as {
-    name?: string; workshop_url?: string; is_required?: boolean; dependency_ids?: number[];
+  const { name, mod_id, workshop_url, is_required, dependency_ids } = req.body as {
+    name?: string; mod_id?: string; workshop_url?: string; is_required?: boolean; dependency_ids?: number[];
   };
 
   if (!name?.trim() || !workshop_url?.trim()) {
@@ -177,7 +179,9 @@ router.patch('/:id', requireModerator, async (req: ModRequest, res: Response): P
     return;
   }
 
-  const trimmedUrl = workshop_url.trim();
+  const trimmedUrl   = workshop_url.trim();
+  const trimmedModId = mod_id?.trim() || null;
+
   if (!trimmedUrl.startsWith('https://steamcommunity.com/')) {
     res.status(400).json({ error: 'A URL deve ser da Steam (steamcommunity.com).' });
     return;
@@ -201,6 +205,7 @@ router.patch('/:id', requireModerator, async (req: ModRequest, res: Response): P
       .from('mods')
       .update({
         name: name.trim(),
+        mod_id: trimmedModId,
         workshop_url: trimmedUrl,
         is_required: is_required ?? false,
         image_url,

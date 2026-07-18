@@ -177,7 +177,7 @@ export function apiGetAllMods(token: string): Promise<Mod[]> {
 }
 
 export function apiAddMod(
-  token: string, data: { name: string; workshop_url: string; is_required: boolean }
+  token: string, data: { name: string; mod_id?: string | null; workshop_url: string; is_required: boolean }
 ): Promise<Mod> {
   return request('/mods', { method: 'POST', ...json(token, data) });
 }
@@ -185,7 +185,7 @@ export function apiAddMod(
 export function apiUpdateMod(
   token: string,
   id: number,
-  data: { name: string; workshop_url: string; is_required: boolean; dependency_ids?: number[] }
+  data: { name: string; mod_id?: string | null; workshop_url: string; is_required: boolean; dependency_ids?: number[] }
 ): Promise<Mod> {
   return request(`/mods/${id}`, { method: 'PATCH', ...json(token, data) });
 }

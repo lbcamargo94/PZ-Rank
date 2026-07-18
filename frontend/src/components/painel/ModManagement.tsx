@@ -51,6 +51,16 @@ function ModRow({
               <i className="ti ti-external-link" />
             </a>
           </div>
+          {mod.mod_id && (
+            <div className="mod-card-painel-modid">
+              <i className="ti ti-code" /> <code>{mod.mod_id}</code>
+            </div>
+          )}
+          {!mod.mod_id && (
+            <div className="mod-card-painel-modid mod-no-id">
+              <i className="ti ti-alert-triangle" /> ID do PZ não cadastrado
+            </div>
+          )}
           {mod.dependencies.length > 0 && (
             <div className="mod-card-painel-deps">
               <i className="ti ti-link" />
@@ -88,13 +98,14 @@ function ModRow({
 interface EditFormProps {
   mod:        Mod;
   allMods:    Mod[];
-  onSave:     (data: { name: string; workshop_url: string; is_required: boolean; dependency_ids: number[] }) => Promise<void>;
+  onSave:     (data: { name: string; mod_id: string | null; workshop_url: string; is_required: boolean; dependency_ids: number[] }) => Promise<void>;
   onCancel:   () => void;
   submitting: boolean;
 }
 
 function EditModForm({ mod, allMods, onSave, onCancel, submitting }: EditFormProps) {
   const [name,        setName]        = useState(mod.name);
+  const [modId,       setModId]       = useState(mod.mod_id ?? '');
   const [workshopUrl, setWorkshopUrl] = useState(mod.workshop_url);
   const [isRequired,  setIsRequired]  = useState(mod.is_required);
   const [depIds,      setDepIds]      = useState<number[]>(mod.dependencies.map(d => d.id));
@@ -105,7 +116,7 @@ function EditModForm({ mod, allMods, onSave, onCancel, submitting }: EditFormPro
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    onSave({ name: name.trim(), workshop_url: workshopUrl.trim(), is_required: isRequired, dependency_ids: depIds });
+    onSave({ name: name.trim(), mod_id: modId.trim() || null, workshop_url: workshopUrl.trim(), is_required: isRequired, dependency_ids: depIds });
   }
 
   const otherMods = allMods.filter(m => m.id !== mod.id && m.status === 'active');
@@ -124,6 +135,19 @@ function EditModForm({ mod, allMods, onSave, onCancel, submitting }: EditFormPro
             value={name}
             onChange={e => setName(e.target.value)}
             required
+          />
+        </div>
+        <div className="mod-field">
+          <label className="mod-field-label">
+            ID do mod no PZ
+            <span className="mod-field-hint"> — valor do campo <code>id=</code> em mod.info (ex: BraveFirearms)</span>
+          </label>
+          <input
+            type="text"
+            className="mod-input"
+            placeholder="Ex: PZCommunityRank"
+            value={modId}
+            onChange={e => setModId(e.target.value)}
           />
         </div>
         <div className="mod-field">
@@ -190,6 +214,7 @@ export function ModManagement({ token, showToast }: Props) {
   const [editingId,     setEditingId]     = useState<number | null>(null);
   const [refreshing,    setRefreshing]    = useState(false);
   const [name,          setName]          = useState('');
+  const [addModId,      setAddModId]      = useState('');
   const [workshopUrl,   setWorkshopUrl]   = useState('');
   const [isRequired,    setIsRequired]    = useState(false);
 
@@ -206,9 +231,10 @@ export function ModManagement({ token, showToast }: Props) {
     e.preventDefault();
     setSubmitting(true);
     try {
-      await apiAddMod(token, { name: name.trim(), workshop_url: workshopUrl.trim(), is_required: isRequired });
+      await apiAddMod(token, { name: name.trim(), mod_id: addModId.trim() || null, workshop_url: workshopUrl.trim(), is_required: isRequired });
       showToast('Mod adicionado com sucesso.', 'success');
       setName('');
+      setAddModId('');
       setWorkshopUrl('');
       setIsRequired(false);
       setShowForm(false);
@@ -355,6 +381,19 @@ export function ModManagement({ token, showToast }: Props) {
                   value={name}
                   onChange={e => setName(e.target.value)}
                   required
+                />
+              </div>
+              <div className="mod-field">
+                <label className="mod-field-label">
+                  ID do mod no PZ
+                  <span className="mod-field-hint"> — campo <code>id=</code> em mod.info</span>
+                </label>
+                <input
+                  type="text"
+                  className="mod-input"
+                  placeholder="Ex: PZCommunityRank"
+                  value={addModId}
+                  onChange={e => setAddModId(e.target.value)}
                 />
               </div>
               <div className="mod-field">

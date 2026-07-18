@@ -16,6 +16,13 @@ interface RankRowProps {
 
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
+const DISQ_TOOLTIPS: Record<string, string> = {
+  sandbox: 'Configurações do sandbox divergem do desafio oficial',
+  debug:   'Jogador utilizou modo debug durante o desafio Brasileirão',
+  mods:    'Jogador utilizou mods não permitidos no desafio Brasileirão',
+  manual:  'Desclassificado manualmente pelo moderador',
+};
+
 function SkillsModal({ skillMap, charName, onClose }: {
   skillMap: Map<string, number>;
   charName?: string;
@@ -160,7 +167,7 @@ export function RankRow({ entry, rank, hideStatus }: RankRowProps) {
         <td className="rank-alive">
           {entry.sandbox_ok === false
             ? (
-              <span className="alive-badge disqualified" title="Configurações do sandbox divergem do desafio oficial">
+              <span className="alive-badge disqualified" title={DISQ_TOOLTIPS[entry.disqualification_reason ?? 'sandbox'] ?? DISQ_TOOLTIPS.sandbox}>
                 <i className="ti ti-ban" /> Desclassificado
               </span>
             )

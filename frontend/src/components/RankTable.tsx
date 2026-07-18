@@ -29,6 +29,13 @@ const SORT_LABELS: { key: SortKey; label: string }[] = [
 
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
+const DISQ_TOOLTIPS: Record<string, string> = {
+  sandbox: 'Configurações do sandbox divergem do desafio oficial',
+  debug:   'Jogador utilizou modo debug durante o desafio Brasileirão',
+  mods:    'Jogador utilizou mods não permitidos no desafio Brasileirão',
+  manual:  'Desclassificado manualmente pelo moderador',
+};
+
 function fmtDate(iso: string | null | undefined): string {
   if (!iso) return '';
   const d = new Date(iso);
@@ -84,7 +91,7 @@ function RankCard({ entry, rank, onPlayerClick, hideStatus }: {
         {!hideStatus && (
           entry.sandbox_ok === false
             ? (
-              <span className="alive-badge disqualified rc-status" title="Configurações do sandbox divergem do desafio oficial">
+              <span className="alive-badge disqualified rc-status" title={DISQ_TOOLTIPS[entry.disqualification_reason ?? 'sandbox'] ?? DISQ_TOOLTIPS.sandbox}>
                 <i className="ti ti-ban" /> Desc.
               </span>
             )

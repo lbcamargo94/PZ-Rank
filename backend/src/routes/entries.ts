@@ -112,23 +112,24 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
 
   const entry = {
     player_id,
-    moderator_id:   req.userId,
-    name:           (player as Player).nick,
-    character_name: decoded.characterName,
-    profession:     decoded.profession,
-    days:           decoded.days,
-    time_raw:       decoded.timeRaw,
-    time_str:       decoded.timeStr,
-    kills:          decoded.kills,
-    skills:         decoded.skills.join(', ') || null,
-    live_url:       live_url?.trim() || null,
-    is_alive:       decoded.isAlive,
-    sandbox_ok:     decoded.sandboxOk,
-    traits:         decoded.traits.join(',') || null,
-    objectives:     safeObjectives,
-    score:          decoded.sandboxOk ? computeScore(decoded.kills, safeObjectives) : 0,
-    disqualified_at: disqualifiedAt,
-    updated_at:     new Date().toISOString(),
+    moderator_id:            req.userId,
+    name:                    (player as Player).nick,
+    character_name:          decoded.characterName,
+    profession:              decoded.profession,
+    days:                    decoded.days,
+    time_raw:                decoded.timeRaw,
+    time_str:                decoded.timeStr,
+    kills:                   decoded.kills,
+    skills:                  decoded.skills.join(', ') || null,
+    live_url:                live_url?.trim() || null,
+    is_alive:                decoded.isAlive,
+    sandbox_ok:              decoded.sandboxOk,
+    traits:                  decoded.traits.join(',') || null,
+    objectives:              safeObjectives,
+    score:                   decoded.sandboxOk ? computeScore(decoded.kills, safeObjectives) : 0,
+    disqualification_reason: !decoded.sandboxOk ? 'sandbox' : null,
+    disqualified_at:         disqualifiedAt,
+    updated_at:              new Date().toISOString(),
   };
 
   let data, error;
@@ -177,9 +178,11 @@ router.patch('/:id/status', requireModerator, async (req: ModRequest, res: Respo
     patch.sandbox_ok = sandbox_ok;
     // Ao desclassificar: registra data se ainda não havia. Ao reclassificar: limpa.
     if (!sandbox_ok) {
-      patch.disqualified_at = row.disqualified_at ?? new Date().toISOString();
+      patch.disqualified_at         = row.disqualified_at ?? new Date().toISOString();
+      patch.disqualification_reason = 'manual';
     } else {
-      patch.disqualified_at = null;
+      patch.disqualified_at         = null;
+      patch.disqualification_reason = null;
     }
     // Ao desclassificar manualmente: zera score. Ao reclassificar: recalcula.
     patch.score = sandbox_ok ? computeScore(row.kills, row.objectives) : 0;

@@ -88,10 +88,16 @@ router.get('/lookup', lookupLimiter, async (req: Request, res: Response): Promis
 // Enviado pelo mod automaticamente (sem precisar de moderador).
 // Preserva objectives e live_url de entradas existentes.
 router.post('/update', syncLimiter, async (req: Request, res: Response): Promise<void> => {
-  const { player_token, code } = req.body as {
-    player_token?: string;
-    code?:         string;
+  const { player_token, code, disqualification_reason } = req.body as {
+    player_token?:           string;
+    code?:                   string;
+    disqualification_reason?: string;
   };
+
+  const VALID_REASONS = new Set(['sandbox', 'debug', 'mods', 'manual']);
+  const validatedReason = (disqualification_reason && VALID_REASONS.has(disqualification_reason))
+    ? disqualification_reason as 'sandbox' | 'debug' | 'mods' | 'manual'
+    : 'sandbox';
 
   if (!player_token || !code) {
     res.status(400).json({ error: 'player_token e code são obrigatórios.' });
@@ -138,7 +144,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // Busca entrada existente para preservar objectives, live_url e estado de desclassificação
   const { data: existing } = await supabase
     .from(config.tableName)
-    .select('id, objectives, live_url, sandbox_ok')
+    .select('id, objectives, live_url, sandbox_ok, disqualification_reason')
     .eq('player_id', player.id)
     .eq('character_name', decoded.characterName)
     .maybeSingle();
@@ -160,10 +166,12 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // Desclassificação: preserva os dados legítimos do último estado classificado.
   // Só atualiza sandbox_ok, is_alive e zera o score — kills/dias/skills não são sobrescritos.
   if (!decoded.sandboxOk && existing) {
+    const existingRow = existing as { id: number; disqualification_reason?: string | null };
+    const reasonToStore = existingRow.disqualification_reason ?? validatedReason;
     const { data, error } = await supabase
       .from(config.tableName)
-      .update({ sandbox_ok: false, is_alive: decoded.isAlive, score: 0 })
-      .eq('id', (existing as { id: number }).id)
+      .update({ sandbox_ok: false, is_alive: decoded.isAlive, score: 0, disqualification_reason: reasonToStore })
+      .eq('id', existingRow.id)
       .select('id, character_name, score, is_alive')
       .single();
 
@@ -312,6 +320,24 @@ router.post('/sandbox', sandboxLimiter, async (req: Request, res: Response): Pro
   if (updateError) { res.status(500).json({ error: dbError(updateError).message }); return; }
 
   res.status(200).json({ success: true });
+});
+
+// GET /sync/allowed-mods — público, sem auth
+// Retorna a lista de mods permitidos (status='active') com mod_id e is_required.
+// Usado pelo Companion para gerar o arquivo de whitelist lido pelo mod Lua.
+router.get('/allowed-mods', async (_req: Request, res: Response): Promise<void> => {
+  const { data, error } = await supabase
+    .from('mods')
+    .select('mod_id, name, is_required')
+    .eq('status', 'active')
+    .not('mod_id', 'is', null);
+
+  if (error) {
+    res.status(500).json({ error: dbError(error).message });
+    return;
+  }
+
+  res.json({ mods: data ?? [] });
 });
 
 export default router;

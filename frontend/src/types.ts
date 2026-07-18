@@ -16,6 +16,7 @@
   traits?:        string | null;
   objectives?:                import('./lib/objectives').Objectives | null;
   score:                      number;
+  disqualification_reason?:   'sandbox' | 'debug' | 'mods' | 'manual' | null;
   disqualified_at?:           string | null;
   created_at?:                string | null;
   updated_at?:                string | null;
@@ -79,6 +80,7 @@ export interface ModDependency {
 export interface Mod {
   id:           number;
   name:         string;
+  mod_id:       string | null;
   workshop_url: string;
   status:       ModStatus;
   is_required:  boolean;

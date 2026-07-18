@@ -192,11 +192,19 @@ function TraitsSection({ traitsRaw }: { traitsRaw: string | null | undefined }) 
   );
 }
 
+const PP_DISQ_TOOLTIPS: Record<string, string> = {
+  sandbox: 'Configurações do sandbox divergem do desafio oficial',
+  debug:   'Jogador utilizou modo debug durante o desafio Brasileirão',
+  mods:    'Jogador utilizou mods não permitidos no desafio Brasileirão',
+  manual:  'Desclassificado manualmente pelo moderador',
+};
+
 function CharacterCard({ entry, rank }: { entry: Entry; rank: number | null }) {
   const [tab, setTab] = useState<'stats' | 'skills' | 'traits'>('stats');
+  const isDisqualified = entry.sandbox_ok === false;
 
   return (
-    <div className={`pp-char-card${entry.is_alive ? '' : ' pp-char-dead'}`}>
+    <div className={`pp-char-card${isDisqualified ? ' pp-char-dead' : entry.is_alive ? '' : ' pp-char-dead'}`}>
       {/* Card header */}
       <div className="pp-char-header">
         <div className="pp-char-identity">
@@ -211,10 +219,19 @@ function CharacterCard({ entry, rank }: { entry: Entry; rank: number | null }) {
           )}
         </div>
         <div className="pp-char-right">
-          {rank !== null && <span className="pp-char-rank">#{rank}</span>}
-          {entry.is_alive
-            ? <span className="alive-badge alive"><i className="ti ti-heartbeat" /> Vivo</span>
-            : <span className="alive-badge dead"><i className="ti ti-skull" /> Morto</span>}
+          {rank !== null && !isDisqualified && <span className="pp-char-rank">#{rank}</span>}
+          {isDisqualified
+            ? (
+              <span
+                className="alive-badge disqualified"
+                title={PP_DISQ_TOOLTIPS[entry.disqualification_reason ?? 'sandbox'] ?? PP_DISQ_TOOLTIPS.sandbox}
+              >
+                <i className="ti ti-ban" /> Desclassificado
+              </span>
+            )
+            : entry.is_alive
+              ? <span className="alive-badge alive"><i className="ti ti-heartbeat" /> Vivo</span>
+              : <span className="alive-badge dead"><i className="ti ti-skull" /> Morto</span>}
         </div>
       </div>
 

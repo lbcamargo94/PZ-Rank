@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS entries (
   score                      INTEGER  NOT NULL DEFAULT 0,
   sandbox_config             TEXT,
   sandbox_config_updated_at  TEXT,
+  disqualification_reason    TEXT     DEFAULT NULL,
   disqualified_at            TEXT     DEFAULT NULL,
   created_at                 TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
   updated_at                 TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
@@ -53,6 +54,7 @@ CREATE TABLE IF NOT EXISTS entries (
 CREATE TABLE IF NOT EXISTS mods (
   id           INTEGER  PRIMARY KEY AUTOINCREMENT,
   name         TEXT     NOT NULL,
+  mod_id       TEXT     UNIQUE DEFAULT NULL,
   workshop_url TEXT     NOT NULL UNIQUE,
   status       TEXT     NOT NULL DEFAULT 'active'
                CHECK (status IN ('active', 'blocked')),
