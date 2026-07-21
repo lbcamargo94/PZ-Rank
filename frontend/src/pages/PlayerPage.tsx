@@ -17,6 +17,10 @@ const SOCIALS = [
   { field: 'tiktok_url',  icon: 'ti-brand-tiktok',  label: 'TikTok',  cls: 'social-tiktok'  },
 ] as const;
 
+function normalizeUrl(url: string): string {
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+}
+
 function ObjectivesSection({ objectives, kills }: { objectives: Objectives | null | undefined; kills: number }) {
   const obj = objectives ?? initObjectives();
   const pending = !objectives;
@@ -364,7 +368,7 @@ export function PlayerPage() {
                 {SOCIALS.map(s => {
                   const url = profile.player[s.field as keyof typeof profile.player] as string | null;
                   return url ? (
-                    <a key={s.field} href={url} target="_blank" rel="noopener noreferrer"
+                    <a key={s.field} href={normalizeUrl(url)} target="_blank" rel="noopener noreferrer"
                       className={`pc-social-link ${s.cls}`} title={s.label}>
                       <i className={`ti ${s.icon}`} /> {s.label}
                     </a>

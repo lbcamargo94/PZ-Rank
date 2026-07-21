@@ -7,10 +7,10 @@ interface Props {
 }
 
 const SOCIALS = [
-  { id: 'twitch',  label: 'Twitch',  icon: 'ti-brand-twitch',  placeholder: 'twitch.tv/seunick',    color: '#9146ff' },
-  { id: 'youtube', label: 'YouTube', icon: 'ti-brand-youtube', placeholder: 'youtube.com/@seunick', color: '#ff0000' },
-  { id: 'kick',    label: 'Kick',    icon: 'ti-brand-kick',    placeholder: 'kick.com/seunick',      color: '#53fc18' },
-  { id: 'tiktok',  label: 'TikTok',  icon: 'ti-brand-tiktok',  placeholder: 'tiktok.com/@seunick',  color: '#ee1d52' },
+  { id: 'twitch',  label: 'Twitch',  icon: 'ti-brand-twitch',  placeholder: 'https://twitch.tv/seunick',    color: '#9146ff' },
+  { id: 'youtube', label: 'YouTube', icon: 'ti-brand-youtube', placeholder: 'https://youtube.com/@seunick', color: '#ff0000' },
+  { id: 'kick',    label: 'Kick',    icon: 'ti-brand-kick',    placeholder: 'https://kick.com/seunick',      color: '#53fc18' },
+  { id: 'tiktok',  label: 'TikTok',  icon: 'ti-brand-tiktok',  placeholder: 'https://tiktok.com/@seunick',  color: '#ee1d52' },
 ] as const;
 
 type SocialId = typeof SOCIALS[number]['id'];

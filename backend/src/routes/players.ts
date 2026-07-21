@@ -8,6 +8,14 @@ import type { PlayerStatus } from '../types';
 
 const router = Router();
 
+// Normaliza URLs de canal: adiciona https:// se o protocolo estiver ausente.
+// Retorna null para strings vazias ou inválidas.
+function normalizeUrl(url?: string | null): string | null {
+  if (!url?.trim()) return null;
+  const t = url.trim();
+  return /^https?:\/\//i.test(t) ? t : `https://${t}`;
+}
+
 // GET /players/:id — público: retorna dados do jogador + todas as entradas dele no rank
 router.get('/:id', async (req: Request, res: Response): Promise<void> => {
   const id = parseInt(String(req.params.id), 10);
@@ -54,10 +62,10 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
       .from('players')
       .insert([{
         nick:        nick.trim(),
-        twitch_url:  twitch_url?.trim()  || null,
-        youtube_url: youtube_url?.trim() || null,
-        kick_url:    kick_url?.trim()    || null,
-        tiktok_url:  tiktok_url?.trim()  || null,
+        twitch_url:  normalizeUrl(twitch_url),
+        youtube_url: normalizeUrl(youtube_url),
+        kick_url:    normalizeUrl(kick_url),
+        tiktok_url:  normalizeUrl(tiktok_url),
         status:      'pending',
         blocked:     false,
       }])
@@ -201,20 +209,14 @@ router.patch('/:id/links', requireModerator, async (req: ModRequest, res: Respon
     tiktok_url?:  string | null;
   };
 
-  const sanitize = (url?: string | null): string | null => {
-    if (!url?.trim()) return null;
-    const trimmed = url.trim();
-    return /^https?:\/\/.+/.test(trimmed) ? trimmed : null;
-  };
-
   try {
     const { data, error } = await supabase
       .from('players')
       .update({
-        twitch_url:  sanitize(twitch_url),
-        youtube_url: sanitize(youtube_url),
-        kick_url:    sanitize(kick_url),
-        tiktok_url:  sanitize(tiktok_url),
+        twitch_url:  normalizeUrl(twitch_url),
+        youtube_url: normalizeUrl(youtube_url),
+        kick_url:    normalizeUrl(kick_url),
+        tiktok_url:  normalizeUrl(tiktok_url),
       })
       .eq('id', id)
       .select()
