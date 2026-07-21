@@ -15,9 +15,11 @@ export const SANDBOX_RULES: SandboxRule[] = [
   { key: 'ZombieConfig.PopulationPeakMultiplier',  expected: 2.0,  label: 'Pop. Pico',                      tol: 0.05 },
   { key: 'ZombieConfig.PopulationPeakDay',         expected: 1,    label: 'Dia do Pico' },
   { key: 'ZombieConfig.RespawnHours',              expected: 0.0,  label: 'Respawn (Nenhum=0)',             tol: 0.01 },
-  { key: 'ZombieConfig.RedistributeHours',         expected: 48.0, label: 'Migração de Zumbis (48h)',       tol: 0.5  },
-  { key: 'ZombieConfig.RallyGroupSizeVariance',    expected: 20,   label: 'Variância Horda (20)' },
+  { key: 'ZombieConfig.RedistributeHours',         expected: 24.0, label: 'Migração de Zumbis (24h)',       tol: 0.5  },
+  { key: 'ZombieConfig.RallyGroupSizeVariance',    expected: 5,    label: 'Variância Horda (5)' },
   { key: 'ZombieConfig.RallyTravelDistance',       expected: 10,   label: 'Distância Rally (10)' },
+  { key: 'ZombieConfig.RallyGroupSeparation',      expected: 15,   label: 'Separação de Horda (15)' },
+  { key: 'ZombieConfig.RallyGroupRadius',          expected: 6,    label: 'Raio de Horda (6)' },
   // Zumbis — Comportamento
   { key: 'ZombieLore.Speed',                       expected: 2,    label: 'Velocidade (Normal=2)' },
   { key: 'ZombieLore.SprinterPercentage',          expected: 0,    label: '% Corredores (0)' },
