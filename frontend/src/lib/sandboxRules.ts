@@ -30,7 +30,7 @@ export const SANDBOX_RULES: SandboxRule[] = [
   { key: 'ZombieLore.Sight',                       expected: 1,    label: 'Visão (Águia=1)' },
   { key: 'ZombieLore.Memory',                      expected: 1,    label: 'Memória (Longa=1)' },
   { key: 'ZombieLore.Cognition',                   expected: 1,    label: 'Percepção/Portas (Avançado=1)' },
-  { key: 'ZombieConfig.FollowSoundDistance',        expected: 250,  label: 'Raio de Audição (250)' },
+  { key: 'ZombieConfig.FollowSoundDistance',        expected: 300,  label: 'Raio de Audição (300)' },
   { key: 'ZombieLore.DisableFakeDead',             expected: 2,    label: 'Fake Dead Ativado Total (2)' },
   { key: 'ZombieLore.ZombiesCrawlersDragDown',     expected: true, label: 'Rastejadores Derrubam' },
   { key: 'ZombieConfig.RallyGroupSize',            expected: 1,    label: 'Tamanho da Horda (1)' },
