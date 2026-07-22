@@ -70,7 +70,6 @@ export const SANDBOX_RULES: SandboxRule[] = [
   { key: 'FishAbundance',                           expected: 1,    label: 'Pesca (Muito Ruim=1)' },
   { key: 'NatureAbundance',                         expected: 1,    label: 'Natureza (Muito Ruim=1)' },
   // Ambiente
-  { key: 'Helicopter',                              expected: 1,    label: 'Helicóptero (Nunca=1)' },
   { key: 'MetaEvent',                               expected: 1,    label: 'Eventos Aleatórios (Nunca=1)' },
   // Personagem
   { key: 'MultiplierConfig.Global',                 expected: 0.8,  label: 'Mult. XP Global (0.8)',  tol: 0.05 },
