@@ -12,6 +12,10 @@ import syncRouter       from './routes/sync';
 export function createApp() {
   const app = express();
 
+  // Vercel senta atrás de um proxy — sem isso req.ip fica sendo o IP interno
+  // do proxy e todos os jogadores compartilham o mesmo contador de rate limit.
+  app.set('trust proxy', 1);
+
   app.use(helmet());
   const allowedOrigins = config.corsOrigin.split(',').map(o => o.trim());
   app.use(cors({
