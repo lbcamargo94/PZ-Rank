@@ -55,7 +55,7 @@ function getGroup(key: string): string {
   if (LOOT_KEYS.includes(key))            return 'Loot';
   if (MUNDO_KEYS.includes(key))           return 'Mundo';
   if (NAT_KEYS.includes(key))             return 'Natureza';
-  if (key === 'MetaEvent' || key.startsWith('Map.')) return 'Ambiente';
+  if (key === 'MetaEvent' || key === 'Helicopter' || key.startsWith('Map.')) return 'Ambiente';
   if (key.startsWith('MultiplierConfig.')) return 'Personagem';
   if (VEI_KEYS.includes(key))            return 'Veículos';
   if (key === 'AnimalRanchChance')        return 'Animais';
