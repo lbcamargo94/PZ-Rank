@@ -84,6 +84,8 @@ export function createApp() {
   app.use('/auth/player/claim',                   sensitiveActionLimiter);
   app.use('/account/me/password',                 authLimiter);
   app.use('/account/me/email',                    sensitiveActionLimiter);
+  app.use('/account/me/otp',                      sensitiveActionLimiter);
+  app.use('/auth/player/otp',                     authLimiter);
   app.use('/sync',                                syncLimiter);
 
   app.use('/auth',        authRouter);

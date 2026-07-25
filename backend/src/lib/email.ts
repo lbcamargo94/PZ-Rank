@@ -142,6 +142,42 @@ export async function sendActivationEmail(email: string, nick: string, token: st
   });
 }
 
+export async function sendOtpEmail(
+  email: string,
+  nick: string,
+  code: string,
+  action: 'verify_email' | 'change_email' | 'change_password',
+): Promise<void> {
+  const subjects: Record<typeof action, string> = {
+    verify_email:    'Código de verificação — PZ Community Rank',
+    change_email:    'Confirmar novo email — PZ Community Rank',
+    change_password: 'Confirmar troca de senha — PZ Community Rank',
+  };
+  const descs: Record<typeof action, string> = {
+    verify_email:    'Use o código abaixo para verificar seu email e ativar sua conta.',
+    change_email:    'Use o código abaixo para confirmar a troca de email da sua conta.',
+    change_password: 'Use o código abaixo para confirmar a troca de senha da sua conta.',
+  };
+  const html = baseTemplate(subjects[action], `
+    <h2 style="margin:0 0 16px;font-size:22px;color:#fff;">Olá, ${nick}!</h2>
+    <p style="margin:0 0 24px;color:#aaa;line-height:1.6;">${descs[action]}</p>
+    <div style="text-align:center;margin:0 0 24px;padding:28px 20px;background:#0a0a0a;border-radius:8px;border:1px solid #2a2a2a;">
+      <p style="margin:0 0 8px;font-size:12px;color:#666;letter-spacing:2px;text-transform:uppercase;">Seu código</p>
+      <span style="font-size:44px;font-weight:700;letter-spacing:14px;color:#4ade80;font-family:'Courier New',monospace;">${code}</span>
+    </div>
+    <p style="margin:0;font-size:12px;color:#555;">
+      Expira em <strong style="color:#aaa;">10 minutos</strong>. Se não foi você, ignore este email.
+    </p>
+  `);
+
+  await getResend().emails.send({
+    from:    config.fromEmail,
+    to:      email,
+    subject: `🔐 Código ${code} — PZ Community Rank`,
+    html,
+  });
+}
+
 export async function sendApprovalEmail(email: string, nick: string): Promise<void> {
   const link = config.frontendUrl;
   const html = baseTemplate('Conta aprovada — PZ Community Rank', `

@@ -5698,6 +5698,62 @@ a.btn-ghost { text-decoration: none; }
 }
 .account-run-stats .ti { margin-right: 4px; }
 
+/* OTP input */
+.otp-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.otp-hint {
+  font-size: 16px;
+  color: var(--text-2);
+}
+
+.otp-input {
+  font-size: 30px;
+  letter-spacing: 10px;
+  text-align: center;
+  background: var(--bg-3);
+  border: 2px solid var(--green);
+  border-radius: var(--radius);
+  color: var(--text-1);
+  padding: 14px 16px;
+  width: 240px;
+  font-family: var(--font-mono);
+  transition: border-color 0.15s;
+}
+.otp-input:focus {
+  outline: none;
+  border-color: var(--green-light);
+  box-shadow: 0 0 0 3px rgba(90,138,60,.2);
+}
+.otp-input::placeholder { color: var(--text-4); }
+.otp-input:disabled { opacity: 0.6; }
+
+.otp-meta {
+  font-size: 14px;
+  color: var(--text-3);
+}
+
+.otp-resend {
+  background: none;
+  border: none;
+  color: var(--green-light);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0;
+  text-decoration: underline;
+}
+.otp-resend:hover { color: var(--text-1); }
+.otp-resend:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.otp-resend-msg {
+  font-size: 14px;
+  color: var(--text-2);
+}
+
 /* Responsive */
 @media (max-width: 460px) {
   .account-login-card { padding: 28px 20px; }

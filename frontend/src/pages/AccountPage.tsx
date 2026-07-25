@@ -4,10 +4,11 @@ import {
   apiPlayerLogin,
   apiGetMyProfile,
   apiGetMyEntries,
-  apiChangePassword,
-  apiChangeEmail,
   apiUpdateMyLinks,
+  apiSendAccountOtp,
+  apiConfirmAccountOtp,
 } from '../lib/api';
+import { OtpInput } from '../components/OtpInput';
 import type { PlayerSession, PlayerAccount, Entry } from '../types';
 
 type AccountTab = 'conta' | 'links' | 'runs';
@@ -96,32 +97,107 @@ function LoginForm({ onLogin }: { onLogin: (s: PlayerSession) => void }) {
   );
 }
 
+type OtpFlowState = 'idle' | 'sent' | 'done';
+
+function OtpActionForm({
+  title, children, otpState, otpCode, otpMsg, otpOk, otpLoading,
+  onOtpChange, onOtpConfirm, onOtpResend, resendMsg,
+}: {
+  title: string;
+  children: React.ReactNode;
+  otpState: OtpFlowState;
+  otpCode: string;
+  otpMsg: string;
+  otpOk: boolean;
+  otpLoading: boolean;
+  onOtpChange: (v: string) => void;
+  onOtpConfirm: (e: React.FormEvent) => void;
+  onOtpResend?: () => void;
+  resendMsg?: string;
+}) {
+  return (
+    <section className="account-section">
+      <h2 className="account-section-title">{title}</h2>
+      {otpState === 'done' ? (
+        <StatusMsg msg={otpMsg} ok={true} />
+      ) : otpState === 'sent' ? (
+        <form onSubmit={onOtpConfirm} className="account-form">
+          <OtpInput
+            value={otpCode}
+            onChange={onOtpChange}
+            hint="Digite o código de 6 dígitos enviado por email"
+            loading={otpLoading}
+            onResend={onOtpResend}
+            resendMsg={resendMsg}
+          />
+          <StatusMsg msg={otpMsg} ok={otpOk} />
+          <button type="submit" className="btn-primary" disabled={otpLoading || otpCode.length !== 6}>
+            {otpLoading ? 'Confirmando…' : 'Confirmar código'}
+          </button>
+        </form>
+      ) : (
+        <>
+          {children}
+          {otpMsg && <StatusMsg msg={otpMsg} ok={otpOk} />}
+        </>
+      )}
+    </section>
+  );
+}
+
 // ── Aba: Conta (email + senha) ────────────────────────────────
 function TabConta({ session, profile, onProfileChange }: {
   session: PlayerSession;
   profile: PlayerAccount;
   onProfileChange: () => void;
 }) {
-  const [curPassEmail,  setCurPassEmail]  = useState('');
-  const [newEmail,      setNewEmail]      = useState('');
-  const [emailMsg,      setEmailMsg]      = useState('');
-  const [emailOk,       setEmailOk]       = useState(false);
-  const [emailLoading,  setEmailLoading]  = useState(false);
+  // Email state
+  const [curPassEmail,   setCurPassEmail]   = useState('');
+  const [newEmail,       setNewEmail]       = useState('');
+  const [emailMsg,       setEmailMsg]       = useState('');
+  const [emailOk,        setEmailOk]        = useState(false);
+  const [emailLoading,   setEmailLoading]   = useState(false);
+  const [emailOtpState,  setEmailOtpState]  = useState<OtpFlowState>('idle');
+  const [emailOtpCode,   setEmailOtpCode]   = useState('');
+  const [emailResendMsg, setEmailResendMsg] = useState('');
 
-  const [curPassPwd,    setCurPassPwd]    = useState('');
-  const [newPwd,        setNewPwd]        = useState('');
-  const [confirmPwd,    setConfirmPwd]    = useState('');
-  const [pwdMsg,        setPwdMsg]        = useState('');
-  const [pwdOk,         setPwdOk]         = useState(false);
-  const [pwdLoading,    setPwdLoading]    = useState(false);
+  // Senha state
+  const [curPassPwd,   setCurPassPwd]   = useState('');
+  const [newPwd,       setNewPwd]       = useState('');
+  const [confirmPwd,   setConfirmPwd]   = useState('');
+  const [pwdMsg,       setPwdMsg]       = useState('');
+  const [pwdOk,        setPwdOk]        = useState(false);
+  const [pwdLoading,   setPwdLoading]   = useState(false);
+  const [pwdOtpState,  setPwdOtpState]  = useState<OtpFlowState>('idle');
+  const [pwdOtpCode,   setPwdOtpCode]   = useState('');
+  const [pwdResendMsg, setPwdResendMsg] = useState('');
 
-  async function handleEmailChange(e: React.FormEvent) {
+  // Passo 1 email: envia OTP
+  async function handleEmailSendOtp(e: React.FormEvent) {
     e.preventDefault();
     setEmailMsg(''); setEmailLoading(true);
     try {
-      const res = await apiChangeEmail(session.player_token, curPassEmail, newEmail);
-      setEmailMsg(res.message); setEmailOk(true);
-      setCurPassEmail(''); setNewEmail('');
+      const res = await apiSendAccountOtp(session.player_token, 'change_email', {
+        current_password: curPassEmail, new_email: newEmail,
+      });
+      setEmailMsg(res.message); setEmailOk(true); setEmailOtpState('sent');
+    } catch (err) {
+      setEmailMsg((err as Error).message); setEmailOk(false);
+    } finally {
+      setEmailLoading(false);
+    }
+  }
+
+  // Passo 2 email: confirma OTP
+  async function handleEmailConfirmOtp(e: React.FormEvent) {
+    e.preventDefault();
+    setEmailMsg(''); setEmailLoading(true);
+    try {
+      const res = await apiConfirmAccountOtp(session.player_token, 'change_email', {
+        code: emailOtpCode, current_password: curPassEmail, new_email: newEmail,
+      });
+      setEmailMsg(res.message); setEmailOtpState('done');
+      setCurPassEmail(''); setNewEmail(''); setEmailOtpCode('');
       onProfileChange();
     } catch (err) {
       setEmailMsg((err as Error).message); setEmailOk(false);
@@ -130,15 +206,29 @@ function TabConta({ session, profile, onProfileChange }: {
     }
   }
 
-  async function handlePasswordChange(e: React.FormEvent) {
+  async function handleEmailResend() {
+    setEmailResendMsg('');
+    try {
+      const res = await apiSendAccountOtp(session.player_token, 'change_email', {
+        current_password: curPassEmail, new_email: newEmail,
+      });
+      setEmailResendMsg(res.message);
+    } catch (err) {
+      setEmailResendMsg((err as Error).message);
+    }
+  }
+
+  // Passo 1 senha: envia OTP
+  async function handlePwdSendOtp(e: React.FormEvent) {
     e.preventDefault();
     setPwdMsg('');
     if (newPwd !== confirmPwd) { setPwdMsg('As senhas não conferem.'); setPwdOk(false); return; }
     setPwdLoading(true);
     try {
-      const res = await apiChangePassword(session.player_token, curPassPwd, newPwd);
-      setPwdMsg(res.message); setPwdOk(true);
-      setCurPassPwd(''); setNewPwd(''); setConfirmPwd('');
+      const res = await apiSendAccountOtp(session.player_token, 'change_password', {
+        current_password: curPassPwd, new_password: newPwd,
+      });
+      setPwdMsg(res.message); setPwdOk(true); setPwdOtpState('sent');
     } catch (err) {
       setPwdMsg((err as Error).message); setPwdOk(false);
     } finally {
@@ -146,47 +236,93 @@ function TabConta({ session, profile, onProfileChange }: {
     }
   }
 
+  // Passo 2 senha: confirma OTP
+  async function handlePwdConfirmOtp(e: React.FormEvent) {
+    e.preventDefault();
+    setPwdMsg(''); setPwdLoading(true);
+    try {
+      const res = await apiConfirmAccountOtp(session.player_token, 'change_password', {
+        code: pwdOtpCode, current_password: curPassPwd, new_password: newPwd,
+      });
+      setPwdMsg(res.message); setPwdOtpState('done');
+      setCurPassPwd(''); setNewPwd(''); setConfirmPwd(''); setPwdOtpCode('');
+    } catch (err) {
+      setPwdMsg((err as Error).message); setPwdOk(false);
+    } finally {
+      setPwdLoading(false);
+    }
+  }
+
+  async function handlePwdResend() {
+    setPwdResendMsg('');
+    try {
+      const res = await apiSendAccountOtp(session.player_token, 'change_password', {
+        current_password: curPassPwd, new_password: newPwd,
+      });
+      setPwdResendMsg(res.message);
+    } catch (err) {
+      setPwdResendMsg((err as Error).message);
+    }
+  }
+
   return (
     <div className="account-tab-body">
-      {/* Email */}
-      <section className="account-section">
-        <h2 className="account-section-title">Email</h2>
+      <OtpActionForm
+        title="Email"
+        otpState={emailOtpState}
+        otpCode={emailOtpCode}
+        otpMsg={emailMsg}
+        otpOk={emailOk}
+        otpLoading={emailLoading}
+        onOtpChange={setEmailOtpCode}
+        onOtpConfirm={handleEmailConfirmOtp}
+        onOtpResend={handleEmailResend}
+        resendMsg={emailResendMsg}
+      >
         <p className="account-section-info">
           Email atual: <strong>{profile.email}</strong>
           {profile.email_verified_at
             ? <span className="account-badge account-badge--ok"> verificado</span>
             : <span className="account-badge account-badge--warn"> não verificado</span>}
         </p>
-        <form onSubmit={handleEmailChange} className="account-form">
+        <form onSubmit={handleEmailSendOtp} className="account-form">
           <FormField label="Senha atual" type="password" value={curPassEmail}
             onChange={setCurPassEmail} autoComplete="current-password" />
           <FormField label="Novo email" type="email" value={newEmail}
             onChange={setNewEmail} placeholder="novo@email.com" autoComplete="email" />
-          <StatusMsg msg={emailMsg} ok={emailOk} />
-          <button type="submit" className="btn-primary" disabled={emailLoading}>
-            {emailLoading ? 'Salvando…' : 'Trocar email'}
+          <button type="submit" className="btn-primary" disabled={emailLoading || !curPassEmail || !newEmail}>
+            {emailLoading ? 'Enviando código…' : 'Trocar email'}
           </button>
         </form>
-      </section>
+      </OtpActionForm>
 
       <div className="account-divider" />
 
-      {/* Senha */}
-      <section className="account-section">
-        <h2 className="account-section-title">Senha</h2>
-        <form onSubmit={handlePasswordChange} className="account-form">
+      <OtpActionForm
+        title="Senha"
+        otpState={pwdOtpState}
+        otpCode={pwdOtpCode}
+        otpMsg={pwdMsg}
+        otpOk={pwdOk}
+        otpLoading={pwdLoading}
+        onOtpChange={setPwdOtpCode}
+        onOtpConfirm={handlePwdConfirmOtp}
+        onOtpResend={handlePwdResend}
+        resendMsg={pwdResendMsg}
+      >
+        <form onSubmit={handlePwdSendOtp} className="account-form">
           <FormField label="Senha atual" type="password" value={curPassPwd}
             onChange={setCurPassPwd} autoComplete="current-password" />
           <FormField label="Nova senha" type="password" value={newPwd}
             onChange={setNewPwd} placeholder="Mínimo 8 caracteres" autoComplete="new-password" />
           <FormField label="Confirmar nova senha" type="password" value={confirmPwd}
             onChange={setConfirmPwd} autoComplete="new-password" />
-          <StatusMsg msg={pwdMsg} ok={pwdOk} />
-          <button type="submit" className="btn-primary" disabled={pwdLoading}>
-            {pwdLoading ? 'Salvando…' : 'Trocar senha'}
+          <button type="submit" className="btn-primary"
+            disabled={pwdLoading || !curPassPwd || newPwd.length < 8 || newPwd !== confirmPwd}>
+            {pwdLoading ? 'Enviando código…' : 'Trocar senha'}
           </button>
         </form>
-      </section>
+      </OtpActionForm>
     </div>
   );
 }

@@ -89,6 +89,40 @@ export function apiClaimAccount(nick: string, email: string): Promise<{ message:
   return request('/auth/player/claim', { method: 'POST', ...json(null, { nick, email }) });
 }
 
+// ── OTP — cadastro ──────────────────────────────────────────
+export function apiConfirmRegistrationOtp(email: string, code: string): Promise<{ message: string }> {
+  return request('/auth/player/otp/confirm-registration', { method: 'POST', ...json(null, { email, code }) });
+}
+
+export function apiResendRegistrationOtp(email: string): Promise<{ message: string }> {
+  return request('/auth/player/otp/resend-registration', { method: 'POST', ...json(null, { email }) });
+}
+
+// ── OTP — mudanças de conta ──────────────────────────────────
+export function apiSendAccountOtp(
+  playerToken: string,
+  action: 'change_email' | 'change_password',
+  data: { current_password: string; new_email?: string; new_password?: string },
+): Promise<{ message: string }> {
+  return request('/account/me/otp/send', {
+    method: 'POST',
+    body: JSON.stringify({ action, ...data }),
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${playerToken}` },
+  });
+}
+
+export function apiConfirmAccountOtp(
+  playerToken: string,
+  action: 'change_email' | 'change_password',
+  data: { code: string; current_password: string; new_email?: string; new_password?: string },
+): Promise<{ message: string }> {
+  return request('/account/me/otp/confirm', {
+    method: 'POST',
+    body: JSON.stringify({ action, ...data }),
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${playerToken}` },
+  });
+}
+
 export function apiResetPassword(token: string, password: string): Promise<{ message: string }> {
   return request('/auth/player/reset-password', { method: 'POST', ...json(null, { token, password }) });
 }

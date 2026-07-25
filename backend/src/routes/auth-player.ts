@@ -3,7 +3,7 @@ import type { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
 import { supabase } from '../supabase';
-import { sendPasswordResetEmail, sendVerificationEmail, sendActivationEmail } from '../lib/email';
+import { sendPasswordResetEmail, sendVerificationEmail, sendActivationEmail, sendOtpEmail } from '../lib/email';
 
 const router = Router();
 
@@ -267,6 +267,101 @@ router.post('/reset-password', async (req: Request, res: Response): Promise<void
   ]);
 
   res.json({ message: 'Senha redefinida com sucesso!' });
+});
+
+// POST /auth/player/otp/confirm-registration — verifica OTP de cadastro
+router.post('/otp/confirm-registration', async (req: Request, res: Response): Promise<void> => {
+  const { email, code } = req.body as { email?: string; code?: string };
+
+  if (!email?.trim() || !code?.trim() || !/^\d{6}$/.test(code.trim())) {
+    res.status(400).json({ error: 'Email e código de 6 dígitos são obrigatórios.' });
+    return;
+  }
+
+  const now = new Date().toISOString();
+
+  const { data: player } = await supabase
+    .from('players')
+    .select('id, nick, email_verified_at')
+    .eq('email', email.trim().toLowerCase())
+    .maybeSingle();
+
+  const playerRow = player as { id: number; nick: string; email_verified_at: string | null } | null;
+  if (!playerRow) {
+    res.status(400).json({ error: 'Código inválido ou expirado.' });
+    return;
+  }
+
+  if (playerRow.email_verified_at) {
+    res.json({ message: 'Email já verificado. Aguarde a aprovação de um moderador.' });
+    return;
+  }
+
+  const otpToken = `${playerRow.id}_otp_${code.trim()}`;
+
+  const { data: tokenRow } = await supabase
+    .from('player_tokens')
+    .select('id, expires_at, used_at')
+    .eq('token', otpToken)
+    .eq('type', 'otp')
+    .eq('player_id', playerRow.id)
+    .maybeSingle();
+
+  const otp = tokenRow as { id: number; expires_at: string; used_at: string | null } | null;
+
+  if (!otp || otp.used_at || now > otp.expires_at) {
+    res.status(400).json({ error: 'Código inválido ou expirado.' });
+    return;
+  }
+
+  await Promise.all([
+    supabase.from('player_tokens').update({ used_at: now }).eq('id', otp.id),
+    supabase.from('players').update({ email_verified_at: now }).eq('id', playerRow.id),
+  ]);
+
+  res.json({ message: 'Email verificado! Aguarde a aprovação de um moderador para acessar o ranking.' });
+});
+
+// POST /auth/player/otp/resend-registration — reenvia OTP de cadastro
+router.post('/otp/resend-registration', async (req: Request, res: Response): Promise<void> => {
+  const { email } = req.body as { email?: string };
+
+  const GENERIC = { message: 'Se o email existir sem verificação, um novo código foi enviado.' };
+
+  if (!email?.trim()) {
+    res.status(400).json({ error: 'Email é obrigatório.' });
+    return;
+  }
+
+  const { data: player } = await supabase
+    .from('players')
+    .select('id, nick, email_verified_at')
+    .eq('email', email.trim().toLowerCase())
+    .maybeSingle();
+
+  const playerRow = player as { id: number; nick: string; email_verified_at: string | null } | null;
+
+  if (!playerRow || playerRow.email_verified_at) {
+    res.json(GENERIC);
+    return;
+  }
+
+  const code = String(Math.floor(100000 + Math.random() * 900000));
+  const otpToken = `${playerRow.id}_otp_${code}`;
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+
+  await supabase.from('player_tokens').insert([{
+    player_id:  playerRow.id,
+    token:      otpToken,
+    type:       'otp',
+    expires_at: expiresAt,
+  }]);
+
+  sendOtpEmail(email.trim().toLowerCase(), playerRow.nick, code, 'verify_email').catch(err =>
+    console.error('[resend-registration-otp] Falha ao enviar:', err)
+  );
+
+  res.json(GENERIC);
 });
 
 // POST /auth/player/claim — jogador legado (sem email/senha) solicita ativação por nick

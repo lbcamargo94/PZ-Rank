@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS player_tokens (
   id          INTEGER  PRIMARY KEY AUTOINCREMENT,
   player_id   INTEGER  NOT NULL REFERENCES players(id) ON DELETE CASCADE,
   token       TEXT     NOT NULL UNIQUE,
-  type        TEXT     NOT NULL CHECK (type IN ('verify', 'reset', 'activate')),
+  type        TEXT     NOT NULL CHECK (type IN ('verify', 'reset', 'activate', 'otp')),
   expires_at  TEXT     NOT NULL,
   used_at     TEXT     DEFAULT NULL,
   created_at  TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))

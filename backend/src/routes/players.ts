@@ -7,7 +7,7 @@ import { dbError } from '../lib/errors';
 import { requireModerator } from '../middleware/moderator';
 import type { ModRequest } from '../middleware/moderator';
 import type { PlayerStatus } from '../types';
-import { sendVerificationEmail, sendApprovalEmail, sendActivationEmail } from '../lib/email';
+import { sendOtpEmail, sendApprovalEmail, sendActivationEmail } from '../lib/email';
 
 const router = Router();
 
@@ -103,23 +103,26 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
 
     const playerRow = player as { id: number; nick: string; email: string };
 
-    // Gera token de verificação de email (expira em 24h)
-    const token = crypto.randomBytes(32).toString('hex');
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    // Gera OTP de 6 dígitos para verificação de email (expira em 10 min)
+    const code = String(Math.floor(100000 + Math.random() * 900000));
+    const otpToken = `${playerRow.id}_otp_${code}`;
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
     await supabase.from('player_tokens').insert([{
       player_id:  playerRow.id,
-      token,
-      type:       'verify',
+      token:      otpToken,
+      type:       'otp',
       expires_at: expiresAt,
     }]);
 
-    // Envia email de verificação (não bloqueia a resposta se falhar)
-    sendVerificationEmail(playerRow.email, playerRow.nick, token).catch(err =>
-      console.error('[register] Falha ao enviar email de verificação:', err)
+    sendOtpEmail(playerRow.email, playerRow.nick, code, 'verify_email').catch(err =>
+      console.error('[register] Falha ao enviar OTP:', err)
     );
 
-    res.status(201).json({ message: 'Cadastro recebido. Verifique seu email para ativar a conta.' });
+    res.status(201).json({
+      message: 'Cadastro recebido. Um código de 6 dígitos foi enviado para o seu email.',
+      email: playerRow.email,
+    });
   } catch (err) {
     console.error('[POST /players/register] Erro inesperado:', err);
     res.status(500).json({ error: 'Erro interno ao salvar cadastro. Tente novamente.' });
