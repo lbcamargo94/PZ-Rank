@@ -467,7 +467,7 @@ export function AccountPage() {
   if (!session) return <LoginForm onLogin={setSession} />;
   if (!profile) return (
     <div className="account-login-wrap">
-      <p style={{ color: 'var(--text-muted)' }}>Carregando…</p>
+      <p style={{ color: 'var(--text-2)' }}>Carregando…</p>
     </div>
   );
 
