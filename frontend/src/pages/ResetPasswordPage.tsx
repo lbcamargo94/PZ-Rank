@@ -45,7 +45,7 @@ export function ResetPasswordPage() {
         <div style={{ textAlign: 'center' }}>
           <i className="ti ti-circle-x" style={{ fontSize: 56, color: 'var(--red)' }} />
           <h1 style={{ margin: '16px 0 8px' }}>Link inválido</h1>
-          <p style={{ color: 'var(--text-muted)', marginBottom: 24 }}>O link de redefinição de senha é inválido ou expirou.</p>
+          <p style={{ color: 'var(--text-2)', marginBottom: 24 }}>O link de redefinição de senha é inválido ou expirou.</p>
           <button className="btn-primary" onClick={() => navigate('/')}>Voltar ao ranking</button>
         </div>
       </div>
@@ -59,7 +59,7 @@ export function ResetPasswordPage() {
           <div style={{ textAlign: 'center' }}>
             <i className="ti ti-circle-check" style={{ fontSize: 56, color: 'var(--green)' }} />
             <h1 style={{ margin: '16px 0 8px' }}>Senha redefinida!</h1>
-            <p style={{ color: 'var(--text-muted)', marginBottom: 24 }}>Agora use a nova senha no Companion.</p>
+            <p style={{ color: 'var(--text-2)', marginBottom: 24 }}>Agora use a nova senha no Companion ou em <strong>Minha Conta</strong> no site.</p>
             <button className="btn-primary" onClick={() => navigate('/')}>Voltar ao ranking</button>
           </div>
         ) : (

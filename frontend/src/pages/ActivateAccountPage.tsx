@@ -38,7 +38,7 @@ export function ActivateAccountPage() {
         <div style={{ textAlign: 'center' }}>
           <i className="ti ti-circle-x" style={{ fontSize: 56, color: 'var(--red)' }} />
           <h1 style={{ margin: '16px 0 8px' }}>Link inválido</h1>
-          <p style={{ color: 'var(--text-muted)', marginBottom: 24 }}>O link de ativação é inválido ou expirou.</p>
+          <p style={{ color: 'var(--text-2)', marginBottom: 24 }}>O link de ativação é inválido ou expirou.</p>
           <button className="btn-primary" onClick={() => navigate('/')}>Voltar ao ranking</button>
         </div>
       </div>
@@ -52,7 +52,7 @@ export function ActivateAccountPage() {
           <div style={{ textAlign: 'center' }}>
             <i className="ti ti-circle-check" style={{ fontSize: 56, color: 'var(--green)' }} />
             <h1 style={{ margin: '16px 0 8px' }}>Conta ativada!</h1>
-            <p style={{ color: 'var(--text-muted)', marginBottom: 24 }}>
+            <p style={{ color: 'var(--text-2)', marginBottom: 24 }}>
               Agora faça login no Companion com seu email e senha para sincronizar suas runs.
             </p>
             <button className="btn-primary" onClick={() => navigate('/')}>Voltar ao ranking</button>
@@ -62,7 +62,7 @@ export function ActivateAccountPage() {
             <h1 style={{ fontSize: 22, marginBottom: 8 }}>
               <i className="ti ti-key" /> Ativar conta
             </h1>
-            <p style={{ color: 'var(--text-muted)', marginBottom: 24, fontSize: 15 }}>
+            <p style={{ color: 'var(--text-2)', marginBottom: 24, fontSize: 15 }}>
               Defina uma senha para ativar o login no Companion.
             </p>
             <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

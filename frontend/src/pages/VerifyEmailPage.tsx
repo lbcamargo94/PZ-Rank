@@ -42,15 +42,15 @@ export function VerifyEmailPage() {
         {status === 'loading' && (
           <>
             <i className="ti ti-loader-2" style={{ fontSize: 48, color: 'var(--green)', animation: 'spin 1s linear infinite' }} />
-            <p style={{ marginTop: 16, color: 'var(--text-muted)' }}>Verificando email...</p>
+            <p style={{ marginTop: 16, color: 'var(--text-2)' }}>Verificando email...</p>
           </>
         )}
 
         {status === 'success' && (
           <>
             <i className="ti ti-circle-check" style={{ fontSize: 56, color: 'var(--green)' }} />
-            <h1 style={{ fontSize: 24, margin: '16px 0 8px', color: 'var(--text)' }}>Email verificado!</h1>
-            <p style={{ color: 'var(--text-muted)', marginBottom: 24, lineHeight: 1.6 }}>{message}</p>
+            <h1 style={{ fontSize: 24, margin: '16px 0 8px', color: 'var(--text-1)' }}>Email verificado!</h1>
+            <p style={{ color: 'var(--text-2)', marginBottom: 24, lineHeight: 1.6 }}>{message}</p>
             <button className="btn-primary" onClick={() => navigate('/')}>
               <i className="ti ti-arrow-left" /> Voltar ao ranking
             </button>
@@ -60,8 +60,8 @@ export function VerifyEmailPage() {
         {status === 'error' && (
           <>
             <i className="ti ti-circle-x" style={{ fontSize: 56, color: 'var(--red)' }} />
-            <h1 style={{ fontSize: 24, margin: '16px 0 8px', color: 'var(--text)' }}>Falha na verificação</h1>
-            <p style={{ color: 'var(--text-muted)', marginBottom: 24, lineHeight: 1.6 }}>{message}</p>
+            <h1 style={{ fontSize: 24, margin: '16px 0 8px', color: 'var(--text-1)' }}>Falha na verificação</h1>
+            <p style={{ color: 'var(--text-2)', marginBottom: 24, lineHeight: 1.6 }}>{message}</p>
             <button className="btn-primary" onClick={() => navigate('/')}>
               <i className="ti ti-arrow-left" /> Voltar ao ranking
             </button>
