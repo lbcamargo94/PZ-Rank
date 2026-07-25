@@ -446,11 +446,29 @@ function TabRuns({ session }: { session: PlayerSession }) {
   );
 }
 
+const PLAYER_SESSION_KEY = 'player_session';
+
 // ── Página principal ──────────────────────────────────────────
 export function AccountPage() {
-  const [session,  setSession]  = useState<PlayerSession | null>(null);
+  const [session,  setSession]  = useState<PlayerSession | null>(() => {
+    try {
+      const raw = sessionStorage.getItem(PLAYER_SESSION_KEY);
+      return raw ? (JSON.parse(raw) as PlayerSession) : null;
+    } catch { return null; }
+  });
   const [profile,  setProfile]  = useState<PlayerAccount | null>(null);
   const [tab,      setTab]      = useState<AccountTab>('conta');
+
+  function handleLogin(s: PlayerSession) {
+    sessionStorage.setItem(PLAYER_SESSION_KEY, JSON.stringify(s));
+    setSession(s);
+  }
+
+  function handleLogout() {
+    sessionStorage.removeItem(PLAYER_SESSION_KEY);
+    setSession(null);
+    setProfile(null);
+  }
 
   const loadProfile = useCallback(async () => {
     if (!session) return;
@@ -462,7 +480,7 @@ export function AccountPage() {
 
   useEffect(() => { loadProfile(); }, [loadProfile]);
 
-  if (!session) return <LoginForm onLogin={setSession} />;
+  if (!session) return <LoginForm onLogin={handleLogin} />;
   if (!profile) return (
     <div className="account-login-wrap">
       <p style={{ color: 'var(--text-2)' }}>Carregando…</p>
@@ -486,7 +504,7 @@ export function AccountPage() {
           <Link to={`/player/${session.player_id}`} className="btn-ghost btn-sm">
             <i className="ti ti-external-link" /> Ver perfil público
           </Link>
-          <button className="btn-ghost btn-sm" onClick={() => setSession(null)}>
+          <button className="btn-ghost btn-sm" onClick={handleLogout}>
             <i className="ti ti-logout" /> Sair
           </button>
         </div>

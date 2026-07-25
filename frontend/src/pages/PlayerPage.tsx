@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import avatarDefault from '../../assets/avatar.png';
 import { apiGetPlayerProfile, apiGetEntries } from '../lib/api';
 import { parseSkillMap, SKILL_CATEGORIES, MAX_SKILL_LEVEL, TOTAL_SKILLS } from '../lib/skills';
@@ -278,6 +278,7 @@ type CharFilter = 'all' | 'alive' | 'dead' | 'disqualified';
 
 export function PlayerPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [profile, setProfile]       = useState<PlayerProfile | null>(null);
   const [allEntries, setAllEntries] = useState<Entry[]>([]);
   const [loading, setLoading]       = useState(true);
@@ -352,9 +353,9 @@ export function PlayerPage() {
     <div className="player-page">
       <div className="container">
         {/* Back link */}
-        <Link to="/" className="btn-primary btn-sm back-btn-rank">
-          <i className="ti ti-arrow-left" /> Voltar ao Ranking
-        </Link>
+        <button className="btn-primary btn-sm back-btn-rank" onClick={() => navigate(-1)}>
+          <i className="ti ti-arrow-left" /> Voltar
+        </button>
 
         {/* Player header */}
         <div className="pp-header">
