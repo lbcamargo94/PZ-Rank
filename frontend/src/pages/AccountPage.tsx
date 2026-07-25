@@ -501,8 +501,11 @@ export function AccountPage() {
           <p className="account-nick">{profile.nick}</p>
         </div>
         <div className="account-header-actions">
+          <Link to="/" className="btn-ghost btn-sm">
+            <i className="ti ti-trophy" /> Ver Ranking
+          </Link>
           <Link to={`/player/${session.player_id}`} className="btn-ghost btn-sm">
-            <i className="ti ti-external-link" /> Ver perfil público
+            <i className="ti ti-external-link" /> Perfil público
           </Link>
           <button className="btn-ghost btn-sm" onClick={handleLogout}>
             <i className="ti ti-logout" /> Sair
