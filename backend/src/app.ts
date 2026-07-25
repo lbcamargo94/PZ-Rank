@@ -81,6 +81,7 @@ export function createApp() {
   app.use('/auth/player/activate',                authLimiter);
   app.use('/auth/player/reset-password',          authLimiter);
   app.use('/players/register',                    sensitiveActionLimiter);
+  app.use('/auth/player/claim',                   sensitiveActionLimiter);
   app.use('/account/me/password',                 authLimiter);
   app.use('/account/me/email',                    sensitiveActionLimiter);
   app.use('/sync',                                syncLimiter);

@@ -3,7 +3,7 @@ import type { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
 import { supabase } from '../supabase';
-import { sendPasswordResetEmail, sendVerificationEmail } from '../lib/email';
+import { sendPasswordResetEmail, sendVerificationEmail, sendActivationEmail } from '../lib/email';
 
 const router = Router();
 
@@ -267,6 +267,75 @@ router.post('/reset-password', async (req: Request, res: Response): Promise<void
   ]);
 
   res.json({ message: 'Senha redefinida com sucesso!' });
+});
+
+// POST /auth/player/claim — jogador legado (sem email/senha) solicita ativação por nick
+router.post('/claim', async (req: Request, res: Response): Promise<void> => {
+  const { nick, email } = req.body as { nick?: string; email?: string };
+
+  const GENERIC = { message: 'Se o nick existir sem conta configurada, você receberá um email com o link de ativação.' };
+
+  if (!nick?.trim() || !email?.trim()) {
+    res.status(400).json({ error: 'Nick e email são obrigatórios.' });
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    res.status(400).json({ error: 'Email inválido.' });
+    return;
+  }
+
+  const newEmail = email.trim().toLowerCase();
+
+  // Busca player pelo nick sem email e sem senha (conta legada)
+  const { data: player } = await supabase
+    .from('players')
+    .select('id, nick, email, password_hash, deleted_at, blocked')
+    .eq('nick', nick.trim())
+    .maybeSingle();
+
+  const row = player as {
+    id: number; nick: string; email: string | null;
+    password_hash: string | null; deleted_at: string | null; blocked: boolean;
+  } | null;
+
+  // Resposta genérica em todos os casos negativos para não vazar informações
+  if (!row || row.deleted_at || row.blocked || row.email || row.password_hash) {
+    res.json(GENERIC);
+    return;
+  }
+
+  // Verifica se o email já pertence a outro player
+  const { data: emailOwner } = await supabase
+    .from('players')
+    .select('id')
+    .eq('email', newEmail)
+    .neq('id', row.id)
+    .maybeSingle();
+
+  if (emailOwner) {
+    res.json(GENERIC);
+    return;
+  }
+
+  // Define o email no player para que o link de ativação funcione
+  await supabase.from('players').update({ email: newEmail }).eq('id', row.id);
+
+  // Gera token de ativação (48h)
+  const token = crypto.randomBytes(32).toString('hex');
+  const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+
+  await supabase.from('player_tokens').insert([{
+    player_id:  row.id,
+    token,
+    type:       'activate',
+    expires_at: expiresAt,
+  }]);
+
+  sendActivationEmail(newEmail, row.nick, token).catch(err =>
+    console.error('[claim] Falha ao enviar email:', err)
+  );
+
+  res.json(GENERIC);
 });
 
 export default router;

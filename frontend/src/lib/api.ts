@@ -85,6 +85,10 @@ export function apiForgotPassword(email: string): Promise<{ message: string }> {
   return request('/auth/player/forgot-password', { method: 'POST', ...json(null, { email }) });
 }
 
+export function apiClaimAccount(nick: string, email: string): Promise<{ message: string }> {
+  return request('/auth/player/claim', { method: 'POST', ...json(null, { nick, email }) });
+}
+
 export function apiResetPassword(token: string, password: string): Promise<{ message: string }> {
   return request('/auth/player/reset-password', { method: 'POST', ...json(null, { token, password }) });
 }
