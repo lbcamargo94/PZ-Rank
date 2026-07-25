@@ -98,3 +98,22 @@ export interface PlayerProfile {
   player: Pick<Player, 'id' | 'nick' | 'twitch_url' | 'youtube_url' | 'kick_url' | 'tiktok_url'>;
   entries: Entry[];
 }
+
+export interface PlayerSession {
+  player_token: string;
+  player_id:    number;
+  nick:         string;
+}
+
+export interface PlayerAccount {
+  id:                 number;
+  nick:               string;
+  email:              string;
+  email_verified_at:  string | null;
+  twitch_url:         string | null;
+  youtube_url:        string | null;
+  kick_url:           string | null;
+  tiktok_url:         string | null;
+  status:             PlayerStatus;
+  created_at:         string;
+}

@@ -29,6 +29,9 @@ export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
 <button className="btn-primary btn-sm" onClick={onSettings} aria-label="Configurações do desafio">
             <i className="ti ti-settings" aria-hidden="true" /> Configurações
           </button>
+          <Link to="/minha-conta" className="btn-primary btn-sm" aria-label="Minha conta">
+            <i className="ti ti-user-circle" aria-hidden="true" /> Minha Conta
+          </Link>
           <button className="btn-primary btn-sm" onClick={onPainel} aria-label="Painel de moderadores">
             <i className="ti ti-shield-half" aria-hidden="true" /> Moderadores
           </button>

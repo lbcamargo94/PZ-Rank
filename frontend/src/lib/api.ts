@@ -229,3 +229,53 @@ export function apiDeleteMod(token: string, id: number): Promise<void> {
 export function apiRefreshModImages(token: string): Promise<{ total: number; updated: number }> {
   return request('/mods/refresh-images', { method: 'POST', ...auth(token) });
 }
+
+// ── Conta do jogador ─────────────────────────────────
+import type { PlayerAccount } from '../types';
+
+function playerAuth(playerToken: string): RequestInit {
+  return { headers: { Authorization: `Bearer ${playerToken}` } };
+}
+
+export function apiGetMyProfile(playerToken: string): Promise<PlayerAccount> {
+  return request('/account/me', playerAuth(playerToken));
+}
+
+export function apiGetMyEntries(playerToken: string): Promise<import('../types').Entry[]> {
+  return request('/account/me/entries', playerAuth(playerToken));
+}
+
+export function apiChangePassword(
+  playerToken: string,
+  current_password: string,
+  new_password: string,
+): Promise<{ message: string }> {
+  return request('/account/me/password', {
+    method: 'PATCH',
+    ...json(null, { current_password, new_password }),
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${playerToken}` },
+  });
+}
+
+export function apiChangeEmail(
+  playerToken: string,
+  current_password: string,
+  email: string,
+): Promise<{ message: string }> {
+  return request('/account/me/email', {
+    method: 'PATCH',
+    ...json(null, { current_password, email }),
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${playerToken}` },
+  });
+}
+
+export function apiUpdateMyLinks(
+  playerToken: string,
+  links: { twitch_url?: string | null; youtube_url?: string | null; kick_url?: string | null; tiktok_url?: string | null },
+): Promise<{ id: number; twitch_url: string | null; youtube_url: string | null; kick_url: string | null; tiktok_url: string | null }> {
+  return request('/account/me/links', {
+    method: 'PATCH',
+    ...json(null, links),
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${playerToken}` },
+  });
+}

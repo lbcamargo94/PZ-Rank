@@ -11,6 +11,7 @@ import playersRouter     from './routes/players';
 import moderatorsRouter  from './routes/moderators';
 import modsRouter        from './routes/mods';
 import syncRouter        from './routes/sync';
+import accountRouter     from './routes/account';
 
 // Rate limiters por contexto de uso
 const authLimiter = rateLimit({
@@ -80,6 +81,8 @@ export function createApp() {
   app.use('/auth/player/activate',                authLimiter);
   app.use('/auth/player/reset-password',          authLimiter);
   app.use('/players/register',                    sensitiveActionLimiter);
+  app.use('/account/me/password',                 authLimiter);
+  app.use('/account/me/email',                    sensitiveActionLimiter);
   app.use('/sync',                                syncLimiter);
 
   app.use('/auth',        authRouter);
@@ -89,6 +92,7 @@ export function createApp() {
   app.use('/moderators', moderatorsRouter);
   app.use('/mods',       modsRouter);
   app.use('/sync',       syncRouter);
+  app.use('/account',    accountRouter);
 
   return app;
 }

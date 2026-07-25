@@ -21,6 +21,7 @@ import { TipsPage } from './pages/TipsPage';
 import { VerifyEmailPage } from './pages/VerifyEmailPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { ActivateAccountPage } from './pages/ActivateAccountPage';
+import { AccountPage } from './pages/AccountPage';
 
 const TAB_CONFIG: { key: RankTab; label: string; icon: string }[] = [
   { key: 'rank',          label: 'Rank',             icon: 'ti-heartbeat' },
@@ -185,6 +186,7 @@ export default function App() {
       <Route path="/verificar-email"  element={<VerifyEmailPage />} />
       <Route path="/redefinir-senha"  element={<ResetPasswordPage />} />
       <Route path="/ativar-conta"     element={<ActivateAccountPage />} />
+      <Route path="/minha-conta"      element={<AccountPage />} />
       <Route path="/painel" element={
         <PainelPage
           session={modSession}
