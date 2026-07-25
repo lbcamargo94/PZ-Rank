@@ -18,12 +18,25 @@ const SORT_COLS: Record<string, string> = {
   score: 'score',
 };
 
-// GET /entries?sort=days|kills|time — público
+// GET /entries?sort=days|kills|time&all=true — público
+// ?all=true: inclui entries soft-deleted e de players excluídos (usado na aba Records)
 router.get('/', async (req: Request, res: Response): Promise<void> => {
-  const col = SORT_COLS[typeof req.query.sort === 'string' ? req.query.sort : ''] ?? 'score';
+  const col      = SORT_COLS[typeof req.query.sort === 'string' ? req.query.sort : ''] ?? 'score';
+  const allParam = req.query.all === 'true';
+
+  if (allParam) {
+    const { data, error } = await supabase
+      .from(config.tableName)
+      .select('*')
+      .order(col, { ascending: false });
+    if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
+    res.setHeader('Cache-Control', 'no-store');
+    res.json(data ?? []);
+    return;
+  }
 
   const [entriesRes, deletedRes] = await Promise.all([
-    supabase.from(config.tableName).select('*').order(col, { ascending: false }),
+    supabase.from(config.tableName).select('*').is('deleted_at', null).order(col, { ascending: false }),
     supabase.from('players').select('id').not('deleted_at', 'is', null),
   ]);
 
@@ -92,12 +105,19 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
   const safeObjectives = decoded.sandboxOk ? (objectives ?? null) : null;
 
   // Busca entrada existente para preservar disqualified_at original no upsert
-  const { data: existing } = await supabase
+  const { data: existing, error: existingError } = await supabase
     .from(config.tableName)
     .select('id, disqualified_at')
     .eq('player_id', player_id)
     .eq('character_name', decoded.characterName)
     .maybeSingle();
+
+  // Erro indica múltiplas linhas para o mesmo personagem (race condition anterior).
+  // Bloqueia novo INSERT para não agravar — moderador master deve limpar os duplicados.
+  if (existingError) {
+    res.status(409).json({ error: 'Entrada duplicada para este personagem. Remova os duplicados via painel antes de atualizar.' });
+    return;
+  }
 
   const existingRow = existing as { id: number; disqualified_at?: string | null } | null;
 
@@ -234,7 +254,7 @@ router.patch('/:id/objectives', requireModerator, async (req: ModRequest, res: R
   res.json(data);
 });
 
-// DELETE /entries/:id — moderador
+// DELETE /entries/:id — moderador (soft-delete: preserva o histórico na aba Records)
 router.delete('/:id', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
   const id = parseInt(String(req.params.id), 10);
   if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
@@ -247,7 +267,10 @@ router.delete('/:id', requireModerator, async (req: ModRequest, res: Response): 
 
   if (fetchError || !existing) { res.status(404).json({ error: 'Entrada não encontrada.' }); return; }
 
-  const { error } = await supabase.from(config.tableName).delete().eq('id', id);
+  const { error } = await supabase
+    .from(config.tableName)
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', id);
   if (error) { res.status(500).json({ error: dbError(error).message }); return; }
   res.status(204).send();
 });

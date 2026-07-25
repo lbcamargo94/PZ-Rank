@@ -17,4 +17,7 @@ export const config = {
   jwtSecret:          required('JWT_SECRET'),
   corsOrigin:         process.env.CORS_ORIGIN ?? 'http://localhost:5173',
   tableName:          process.env.TABLE_NAME  ?? 'entries',
+  resendApiKey:       process.env.RESEND_API_KEY ?? '',
+  fromEmail:          process.env.FROM_EMAIL ?? 'PZ Community Rank <noreply@pzrank.com.br>',
+  frontendUrl:        process.env.FRONTEND_URL ?? 'http://localhost:5173',
 };

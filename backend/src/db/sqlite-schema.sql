@@ -2,18 +2,31 @@
 -- Tipos adaptados: BOOLEAN→INTEGER(0/1), UUID→TEXT, JSONB→TEXT
 
 CREATE TABLE IF NOT EXISTS players (
-  id           INTEGER  PRIMARY KEY AUTOINCREMENT,
-  nick         TEXT     NOT NULL UNIQUE,
-  twitch_url   TEXT,
-  youtube_url  TEXT,
-  kick_url     TEXT,
-  tiktok_url   TEXT,
-  status       TEXT     NOT NULL DEFAULT 'pending'
-               CHECK (status IN ('pending', 'approved', 'rejected')),
-  blocked      INTEGER  NOT NULL DEFAULT 0,
-  deleted_at   TEXT     DEFAULT NULL,
-  player_token TEXT     NOT NULL DEFAULT (lower(hex(randomblob(16)))),
-  created_at   TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+  id                 INTEGER  PRIMARY KEY AUTOINCREMENT,
+  nick               TEXT     NOT NULL UNIQUE,
+  email              TEXT     UNIQUE,
+  password_hash      TEXT,
+  email_verified_at  TEXT     DEFAULT NULL,
+  twitch_url         TEXT,
+  youtube_url        TEXT,
+  kick_url           TEXT,
+  tiktok_url         TEXT,
+  status             TEXT     NOT NULL DEFAULT 'pending'
+                     CHECK (status IN ('pending', 'approved', 'rejected')),
+  blocked            INTEGER  NOT NULL DEFAULT 0,
+  deleted_at         TEXT     DEFAULT NULL,
+  player_token       TEXT     NOT NULL DEFAULT (lower(hex(randomblob(16)))),
+  created_at         TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+);
+
+CREATE TABLE IF NOT EXISTS player_tokens (
+  id          INTEGER  PRIMARY KEY AUTOINCREMENT,
+  player_id   INTEGER  NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+  token       TEXT     NOT NULL UNIQUE,
+  type        TEXT     NOT NULL CHECK (type IN ('verify', 'reset', 'activate')),
+  expires_at  TEXT     NOT NULL,
+  used_at     TEXT     DEFAULT NULL,
+  created_at  TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
 );
 
 CREATE TABLE IF NOT EXISTS moderators (
@@ -48,7 +61,9 @@ CREATE TABLE IF NOT EXISTS entries (
   disqualification_reason    TEXT     DEFAULT NULL,
   disqualified_at            TEXT     DEFAULT NULL,
   created_at                 TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
-  updated_at                 TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+  updated_at                 TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+  deleted_at                 TEXT     DEFAULT NULL,
+  UNIQUE (player_id, character_name)
 );
 
 CREATE TABLE IF NOT EXISTS mods (

@@ -61,6 +61,37 @@ ALTER TABLE entries    ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "public_read_entries" ON entries    FOR SELECT USING (true);
 CREATE POLICY "public_read_players" ON players    FOR SELECT USING (true);
 
+-- Migration v17 (2026-07-24): tipo 'activate' em player_tokens para ativação de contas legadas
+-- ALTER TABLE player_tokens DROP CONSTRAINT IF EXISTS player_tokens_type_check;
+-- ALTER TABLE player_tokens ADD CONSTRAINT player_tokens_type_check CHECK (type IN ('verify', 'reset', 'activate'));
+
+-- Migration v16 (2026-07-24): soft-delete em entries para preservar Records histórico
+-- ALTER TABLE entries ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ DEFAULT NULL;
+
+-- Migration v15 (2026-07-24): auth de jogadores (email + senha + verificação por email)
+-- Executar no SQL Editor do Supabase após remover duplicatas:
+-- ALTER TABLE players ADD COLUMN IF NOT EXISTS email TEXT UNIQUE;
+-- ALTER TABLE players ADD COLUMN IF NOT EXISTS password_hash TEXT;
+-- ALTER TABLE players ADD COLUMN IF NOT EXISTS email_verified_at TIMESTAMPTZ DEFAULT NULL;
+-- CREATE TABLE IF NOT EXISTS player_tokens (
+--   id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+--   player_id   INTEGER NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+--   token       TEXT NOT NULL UNIQUE,
+--   type        TEXT NOT NULL CHECK (type IN ('verify', 'reset')),
+--   expires_at  TIMESTAMPTZ NOT NULL,
+--   used_at     TIMESTAMPTZ DEFAULT NULL,
+--   created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+-- );
+-- ALTER TABLE player_tokens ENABLE ROW LEVEL SECURITY;
+
+-- Migration v14 (2026-07-24): unicidade de (player_id, character_name) — impede múltiplos registros
+-- do mesmo personagem causados por race condition entre /entries e /sync/update.
+-- ANTES de rodar: apague entradas duplicadas (keep the lowest id):
+--   DELETE FROM entries WHERE id NOT IN (
+--     SELECT MIN(id) FROM entries GROUP BY player_id, character_name
+--   );
+-- ALTER TABLE entries ADD CONSTRAINT entries_player_character_unique UNIQUE (player_id, character_name);
+
 -- Migration v13 (2026-06-28): coluna de data de desclassificação — base do contador da Dead-Zone (15 dias)
 -- ALTER TABLE entries ADD COLUMN IF NOT EXISTS disqualified_at TIMESTAMPTZ DEFAULT NULL;
 -- Migration v12 (2026-06-25): coluna de data de atualização — OBRIGATÓRIA para a coluna "Atualizado" do rank

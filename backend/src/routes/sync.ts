@@ -145,12 +145,20 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   }
 
   // Busca entrada existente para preservar objectives, live_url e estado de desclassificação
-  const { data: existing } = await supabase
+  const { data: existing, error: existingError } = await supabase
     .from(config.tableName)
     .select('id, objectives, live_url, sandbox_ok, disqualification_reason')
     .eq('player_id', player.id)
     .eq('character_name', decoded.characterName)
     .maybeSingle();
+
+  // Erro indica múltiplas linhas para o mesmo personagem (race condition anterior).
+  // Rejeita o sync para não adicionar mais um duplicado — o estado fica congelado
+  // até que um moderador master remova as entradas duplicadas.
+  if (existingError) {
+    res.status(409).json({ error: 'Entrada duplicada detectada. Sync pausado até limpeza pelo moderador.' });
+    return;
+  }
 
   // Se já está desclassificado, descarta qualquer atualização futura
   if (existing && existing.sandbox_ok === false) {
@@ -327,6 +335,71 @@ router.post('/sandbox', sandboxLimiter, async (req: Request, res: Response): Pro
   if (updateError) { res.status(500).json({ error: dbError(updateError).message }); return; }
 
   res.status(200).json({ success: true });
+});
+
+// POST /sync/heartbeat — público, autenticado por player_token
+// Enviado pelo Companion quando o PZ está rodando mas o mod não gera arquivos há 20min.
+// Se no_mod_detected=true, desclassifica a entrada ativa do personagem informado.
+router.post('/heartbeat', syncLimiter, async (req: Request, res: Response): Promise<void> => {
+  const { player_token, character_name, no_mod_detected } = req.body as {
+    player_token?:    string;
+    character_name?:  string;
+    no_mod_detected?: boolean;
+  };
+
+  if (!player_token) {
+    res.status(400).json({ error: 'player_token é obrigatório.' });
+    return;
+  }
+
+  const { data: player, error: playerError } = await supabase
+    .from('players')
+    .select('id, status, blocked')
+    .eq('player_token', player_token)
+    .maybeSingle();
+
+  if (playerError || !player) { res.status(401).json({ error: 'Token inválido.' }); return; }
+  if (player.status !== 'approved') { res.status(403).json({ error: 'Jogador aguardando aprovação.' }); return; }
+  if (player.blocked) { res.status(403).json({ error: 'Jogador bloqueado.' }); return; }
+
+  if (!no_mod_detected) {
+    res.status(200).json({ success: true });
+    return;
+  }
+
+  // Mod removido detectado: busca a entrada ativa do personagem e desclassifica
+  let query = supabase
+    .from(config.tableName)
+    .select('id, is_alive, sandbox_ok')
+    .eq('player_id', player.id)
+    .eq('is_alive', true)
+    .eq('sandbox_ok', true);
+
+  if (character_name) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    query = (query as any).eq('character_name', character_name);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: entry } = await (query as any).maybeSingle() as { data: { id: number } | null };
+
+  if (!entry) {
+    res.status(200).json({ success: true, note: 'Sem entrada ativa para desclassificar.' });
+    return;
+  }
+
+  await supabase
+    .from(config.tableName)
+    .update({
+      sandbox_ok:              false,
+      score:                   0,
+      disqualification_reason: 'mod_removed',
+      disqualified_at:         new Date().toISOString(),
+      updated_at:              new Date().toISOString(),
+    })
+    .eq('id', (entry as { id: number }).id);
+
+  res.status(200).json({ success: true, disqualified: true });
 });
 
 // GET /sync/allowed-mods — público, sem auth

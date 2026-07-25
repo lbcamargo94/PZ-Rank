@@ -39,14 +39,15 @@ const UUID_DEFAULTS: Record<string, string[]> = {
 
 // Allowlist de tabelas e colunas válidas para evitar SQL injection
 // via interpolação de nomes de tabela/coluna no adapter.
-const ALLOWED_TABLES = new Set(['players', 'moderators', 'entries', 'mods', 'mod_dependencies']);
+const ALLOWED_TABLES = new Set(['players', 'moderators', 'entries', 'mods', 'mod_dependencies', 'player_tokens']);
 
 const ALLOWED_COLS: Record<string, Set<string>> = {
-  players:          new Set(['id','nick','twitch_url','youtube_url','kick_url','tiktok_url','status','blocked','player_token','created_at','deleted_at']),
+  players:          new Set(['id','nick','email','password_hash','email_verified_at','twitch_url','youtube_url','kick_url','tiktok_url','status','blocked','player_token','created_at','deleted_at']),
   moderators:       new Set(['id','login','role','password_hash','created_at']),
-  entries:          new Set(['id','player_id','moderator_id','name','character_name','profession','days','time_raw','time_str','kills','skills','live_url','is_alive','sandbox_ok','traits','objectives','score','created_at','updated_at','sandbox_config','sandbox_config_updated_at','disqualified_at']),
-  mods:             new Set(['id','name','workshop_url','status','is_required','image_url','created_at','updated_at']),
+  entries:          new Set(['id','player_id','moderator_id','name','character_name','profession','days','time_raw','time_str','kills','skills','live_url','is_alive','sandbox_ok','traits','objectives','score','created_at','updated_at','sandbox_config','sandbox_config_updated_at','disqualified_at','disqualification_reason','deleted_at']),
+  mods:             new Set(['id','name','mod_id','workshop_url','status','is_required','image_url','created_at','updated_at']),
   mod_dependencies: new Set(['mod_id','depends_on_id']),
+  player_tokens:    new Set(['id','player_id','token','type','expires_at','used_at','created_at']),
 };
 
 function assertTable(table: string): void {
@@ -332,6 +333,68 @@ function runMigrations(db: Database): void {
   if (!entryCols.includes('sandbox_config_updated_at')) {
     db.exec('ALTER TABLE entries ADD COLUMN sandbox_config_updated_at TEXT');
     console.log('[SQLite] migração: coluna sandbox_config_updated_at adicionada');
+  }
+  if (!entryCols.includes('disqualified_at')) {
+    db.exec('ALTER TABLE entries ADD COLUMN disqualified_at TEXT DEFAULT NULL');
+    console.log('[SQLite] migração: coluna disqualified_at adicionada');
+  }
+  if (!entryCols.includes('disqualification_reason')) {
+    db.exec('ALTER TABLE entries ADD COLUMN disqualification_reason TEXT DEFAULT NULL');
+    console.log('[SQLite] migração: coluna disqualification_reason adicionada');
+  }
+  if (!entryCols.includes('deleted_at')) {
+    db.exec('ALTER TABLE entries ADD COLUMN deleted_at TEXT DEFAULT NULL');
+    console.log('[SQLite] migração: coluna deleted_at adicionada em entries');
+  }
+
+  if (!playerCols.includes('email')) {
+    db.exec('ALTER TABLE players ADD COLUMN email TEXT');
+    db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_players_email ON players(email) WHERE email IS NOT NULL');
+    console.log('[SQLite] migração: coluna email adicionada em players');
+  }
+  if (!playerCols.includes('password_hash')) {
+    db.exec('ALTER TABLE players ADD COLUMN password_hash TEXT');
+    console.log('[SQLite] migração: coluna password_hash adicionada em players');
+  }
+  if (!playerCols.includes('email_verified_at')) {
+    db.exec('ALTER TABLE players ADD COLUMN email_verified_at TEXT DEFAULT NULL');
+    console.log('[SQLite] migração: coluna email_verified_at adicionada em players');
+  }
+
+  if (!modsCols.includes('mod_id')) {
+    db.exec('ALTER TABLE mods ADD COLUMN mod_id TEXT DEFAULT NULL');
+    db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_mods_mod_id ON mods(mod_id) WHERE mod_id IS NOT NULL');
+    console.log('[SQLite] migração: coluna mod_id adicionada em mods');
+  }
+
+  // player_tokens — cria a tabela se não existir; recria se o tipo 'activate' não estiver no CHECK
+  const ptSql = (db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='player_tokens'").get() as { sql?: string } | undefined)?.sql ?? '';
+  if (!ptSql) {
+    db.exec(`CREATE TABLE player_tokens (
+      id          INTEGER  PRIMARY KEY AUTOINCREMENT,
+      player_id   INTEGER  NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+      token       TEXT     NOT NULL UNIQUE,
+      type        TEXT     NOT NULL CHECK (type IN ('verify', 'reset', 'activate')),
+      expires_at  TEXT     NOT NULL,
+      used_at     TEXT     DEFAULT NULL,
+      created_at  TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+    )`);
+    console.log('[SQLite] migração: tabela player_tokens criada');
+  } else if (!ptSql.includes("'activate'")) {
+    // Recria a tabela com o novo tipo (tokens são efêmeros, perda de dados aceitável)
+    db.exec(`
+      DROP TABLE player_tokens;
+      CREATE TABLE player_tokens (
+        id          INTEGER  PRIMARY KEY AUTOINCREMENT,
+        player_id   INTEGER  NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+        token       TEXT     NOT NULL UNIQUE,
+        type        TEXT     NOT NULL CHECK (type IN ('verify', 'reset', 'activate')),
+        expires_at  TEXT     NOT NULL,
+        used_at     TEXT     DEFAULT NULL,
+        created_at  TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+      );
+    `);
+    console.log('[SQLite] migração: player_tokens recriado com suporte ao tipo activate');
   }
 }
 

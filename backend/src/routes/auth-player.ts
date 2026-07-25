@@ -1,0 +1,272 @@
+import { Router } from 'express';
+import type { Request, Response } from 'express';
+import bcrypt from 'bcryptjs';
+import crypto from 'node:crypto';
+import { supabase } from '../supabase';
+import { sendPasswordResetEmail, sendVerificationEmail } from '../lib/email';
+
+const router = Router();
+
+// GET /auth/player/verify?token=XXX — verifica email do jogador
+router.get('/verify', async (req: Request, res: Response): Promise<void> => {
+  const token = typeof req.query.token === 'string' ? req.query.token.trim() : '';
+  if (!token) {
+    res.status(400).json({ error: 'Token inválido.' });
+    return;
+  }
+
+  const now = new Date().toISOString();
+
+  const { data: tokenRow, error: tokenError } = await supabase
+    .from('player_tokens')
+    .select('id, player_id, expires_at, used_at')
+    .eq('token', token)
+    .eq('type', 'verify')
+    .maybeSingle();
+
+  if (tokenError || !tokenRow) {
+    res.status(400).json({ error: 'Token inválido ou não encontrado.' });
+    return;
+  }
+
+  const row = tokenRow as { id: number; player_id: number; expires_at: string; used_at: string | null };
+
+  if (row.used_at) {
+    res.status(400).json({ error: 'Token já utilizado.' });
+    return;
+  }
+  if (now > row.expires_at) {
+    res.status(400).json({ error: 'Token expirado.' });
+    return;
+  }
+
+  // Marca token como usado e verifica o email do jogador
+  await Promise.all([
+    supabase.from('player_tokens').update({ used_at: now }).eq('id', row.id),
+    supabase.from('players').update({ email_verified_at: now }).eq('id', row.player_id),
+  ]);
+
+  res.json({ message: 'Email verificado com sucesso! Aguarde a aprovação de um moderador.' });
+});
+
+// POST /auth/player/resend-verification — reenvia email de verificação
+router.post('/resend-verification', async (req: Request, res: Response): Promise<void> => {
+  const { email } = req.body as { email?: string };
+  if (!email?.trim()) {
+    res.status(400).json({ error: 'Email é obrigatório.' });
+    return;
+  }
+
+  const { data: player } = await supabase
+    .from('players')
+    .select('id, nick, email, email_verified_at')
+    .eq('email', email.trim().toLowerCase())
+    .maybeSingle();
+
+  // Resposta genérica para não revelar se o email existe
+  if (!player || (player as { email_verified_at?: string | null }).email_verified_at) {
+    res.json({ message: 'Se o email existir e ainda não estiver verificado, um novo link foi enviado.' });
+    return;
+  }
+
+  const row = player as { id: number; nick: string; email: string };
+  const token = crypto.randomBytes(32).toString('hex');
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
+  await supabase.from('player_tokens').insert([{
+    player_id:  row.id,
+    token,
+    type:       'verify',
+    expires_at: expiresAt,
+  }]);
+
+  sendVerificationEmail(row.email, row.nick, token).catch(err =>
+    console.error('[resend-verification] Falha ao enviar email:', err)
+  );
+
+  res.json({ message: 'Se o email existir e ainda não estiver verificado, um novo link foi enviado.' });
+});
+
+// POST /auth/player/login — email + senha → player_token
+router.post('/login', async (req: Request, res: Response): Promise<void> => {
+  const { email, password } = req.body as { email?: string; password?: string };
+  if (!email?.trim() || !password) {
+    res.status(400).json({ error: 'Email e senha são obrigatórios.' });
+    return;
+  }
+
+  const { data: player, error } = await supabase
+    .from('players')
+    .select('id, nick, email, password_hash, email_verified_at, status, blocked, deleted_at, player_token')
+    .eq('email', email.trim().toLowerCase())
+    .maybeSingle();
+
+  if (error || !player) {
+    res.status(401).json({ error: 'Email ou senha incorretos.' });
+    return;
+  }
+
+  const row = player as {
+    id: number; nick: string; email: string; password_hash: string | null;
+    email_verified_at: string | null; status: string; blocked: boolean;
+    deleted_at: string | null; player_token: string;
+  };
+
+  if (!row.password_hash) {
+    res.status(401).json({ error: 'Esta conta não possui senha. Use o Companion com seu nick.' });
+    return;
+  }
+
+  const valid = await bcrypt.compare(password, row.password_hash);
+  if (!valid) {
+    res.status(401).json({ error: 'Email ou senha incorretos.' });
+    return;
+  }
+
+  if (!row.email_verified_at) {
+    res.status(403).json({ error: 'Email não verificado. Verifique sua caixa de entrada.' });
+    return;
+  }
+  if (row.deleted_at) {
+    res.status(403).json({ error: 'Conta removida do ranking.' });
+    return;
+  }
+  if (row.blocked) {
+    res.status(403).json({ error: 'Conta bloqueada. Contate um moderador.' });
+    return;
+  }
+  if (row.status !== 'approved') {
+    res.status(403).json({ error: 'Conta aguardando aprovação de um moderador.' });
+    return;
+  }
+
+  res.json({ player_token: row.player_token, player_id: row.id, nick: row.nick });
+});
+
+// POST /auth/player/forgot-password — solicita redefinição de senha
+router.post('/forgot-password', async (req: Request, res: Response): Promise<void> => {
+  const { email } = req.body as { email?: string };
+  if (!email?.trim()) {
+    res.status(400).json({ error: 'Email é obrigatório.' });
+    return;
+  }
+
+  const { data: player } = await supabase
+    .from('players')
+    .select('id, nick, email, password_hash')
+    .eq('email', email.trim().toLowerCase())
+    .maybeSingle();
+
+  // Resposta genérica para não revelar se o email existe
+  const GENERIC = { message: 'Se o email estiver cadastrado, você receberá as instruções em breve.' };
+
+  if (!player || !(player as { password_hash?: string | null }).password_hash) {
+    res.json(GENERIC);
+    return;
+  }
+
+  const row = player as { id: number; nick: string; email: string };
+  const token = crypto.randomBytes(32).toString('hex');
+  const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1h
+
+  await supabase.from('player_tokens').insert([{
+    player_id:  row.id,
+    token,
+    type:       'reset',
+    expires_at: expiresAt,
+  }]);
+
+  sendPasswordResetEmail(row.email, row.nick, token).catch(err =>
+    console.error('[forgot-password] Falha ao enviar email:', err)
+  );
+
+  res.json(GENERIC);
+});
+
+// POST /auth/player/activate — ativa conta legada (primeiro acesso, define senha via token do moderador)
+router.post('/activate', async (req: Request, res: Response): Promise<void> => {
+  const { token, password } = req.body as { token?: string; password?: string };
+  if (!token?.trim() || !password || password.length < 8) {
+    res.status(400).json({ error: 'Token e senha (mínimo 8 caracteres) são obrigatórios.' });
+    return;
+  }
+
+  const now = new Date().toISOString();
+
+  const { data: tokenRow, error: tokenError } = await supabase
+    .from('player_tokens')
+    .select('id, player_id, expires_at, used_at')
+    .eq('token', token.trim())
+    .eq('type', 'activate')
+    .maybeSingle();
+
+  if (tokenError || !tokenRow) {
+    res.status(400).json({ error: 'Link inválido ou não encontrado.' });
+    return;
+  }
+
+  const row = tokenRow as { id: number; player_id: number; expires_at: string; used_at: string | null };
+
+  if (row.used_at) {
+    res.status(400).json({ error: 'Este link já foi utilizado.' });
+    return;
+  }
+  if (now > row.expires_at) {
+    res.status(400).json({ error: 'Link expirado. Solicite um novo link de ativação a um moderador.' });
+    return;
+  }
+
+  const password_hash = await bcrypt.hash(password, 10);
+
+  await Promise.all([
+    supabase.from('player_tokens').update({ used_at: now }).eq('id', row.id),
+    supabase.from('players').update({ password_hash, email_verified_at: now }).eq('id', row.player_id),
+  ]);
+
+  res.json({ message: 'Conta ativada com sucesso! Agora faça login no Companion com seu email e senha.' });
+});
+
+// POST /auth/player/reset-password — redefine senha com token
+router.post('/reset-password', async (req: Request, res: Response): Promise<void> => {
+  const { token, password } = req.body as { token?: string; password?: string };
+  if (!token?.trim() || !password || password.length < 8) {
+    res.status(400).json({ error: 'Token e senha (mínimo 8 caracteres) são obrigatórios.' });
+    return;
+  }
+
+  const now = new Date().toISOString();
+
+  const { data: tokenRow, error: tokenError } = await supabase
+    .from('player_tokens')
+    .select('id, player_id, expires_at, used_at')
+    .eq('token', token.trim())
+    .eq('type', 'reset')
+    .maybeSingle();
+
+  if (tokenError || !tokenRow) {
+    res.status(400).json({ error: 'Token inválido ou não encontrado.' });
+    return;
+  }
+
+  const row = tokenRow as { id: number; player_id: number; expires_at: string; used_at: string | null };
+
+  if (row.used_at) {
+    res.status(400).json({ error: 'Token já utilizado.' });
+    return;
+  }
+  if (now > row.expires_at) {
+    res.status(400).json({ error: 'Token expirado. Solicite um novo link.' });
+    return;
+  }
+
+  const password_hash = await bcrypt.hash(password, 10);
+
+  await Promise.all([
+    supabase.from('player_tokens').update({ used_at: now }).eq('id', row.id),
+    supabase.from('players').update({ password_hash }).eq('id', row.player_id),
+  ]);
+
+  res.json({ message: 'Senha redefinida com sucesso!' });
+});
+
+export default router;

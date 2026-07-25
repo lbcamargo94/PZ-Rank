@@ -1,13 +1,41 @@
 import express from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import { config } from './config';
-import authRouter       from './routes/auth';
-import entriesRouter    from './routes/entries';
-import playersRouter    from './routes/players';
-import moderatorsRouter from './routes/moderators';
-import modsRouter       from './routes/mods';
-import syncRouter       from './routes/sync';
+import authRouter        from './routes/auth';
+import authPlayerRouter  from './routes/auth-player';
+import entriesRouter     from './routes/entries';
+import playersRouter     from './routes/players';
+import moderatorsRouter  from './routes/moderators';
+import modsRouter        from './routes/mods';
+import syncRouter        from './routes/sync';
+
+// Rate limiters por contexto de uso
+const authLimiter = rateLimit({
+  windowMs:        15 * 60 * 1000, // 15 minutos
+  max:             10,
+  standardHeaders: true,
+  legacyHeaders:   false,
+  message:         { error: 'Muitas tentativas. Aguarde 15 minutos e tente novamente.' },
+});
+
+const sensitiveActionLimiter = rateLimit({
+  windowMs:        15 * 60 * 1000,
+  max:             5,
+  standardHeaders: true,
+  legacyHeaders:   false,
+  message:         { error: 'Muitas solicitações. Aguarde 15 minutos.' },
+});
+
+const syncLimiter = rateLimit({
+  windowMs:        60 * 1000, // 1 minuto
+  max:             30,
+  standardHeaders: true,
+  legacyHeaders:   false,
+  message:         { error: 'Muitas sincronizações. Aguarde um momento.' },
+});
 
 export function createApp() {
   const app = express();
@@ -17,23 +45,46 @@ export function createApp() {
   app.set('trust proxy', 1);
 
   app.use(helmet());
+
   const allowedOrigins = config.corsOrigin.split(',').map(o => o.trim());
   app.use(cors({
     origin: (origin, cb) => {
       if (!origin || allowedOrigins.includes(origin) || /^http:\/\/localhost:\d+$/.test(origin)) {
         cb(null, true);
       } else {
-        cb(new Error(`CORS bloqueado para a origem: ${origin}`));
+        cb(null, false);
       }
     },
     credentials: true,
   }));
+
+  // Bloqueia requisições de origens não autorizadas antes de processar o body
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    const origin = req.headers.origin;
+    if (origin && !allowedOrigins.includes(origin) && !/^http:\/\/localhost:\d+$/.test(origin)) {
+      res.status(403).json({ error: 'Origem não autorizada.' });
+      return;
+    }
+    next();
+  });
+
   app.use(express.json({ limit: '1mb' }));
 
   app.get('/health', (_req, res) => res.json({ ok: true, ts: Date.now() }));
 
-  app.use('/auth',       authRouter);
-  app.use('/entries',    entriesRouter);
+  // Rate limiting em endpoints de autenticação
+  app.use('/auth/login',                          authLimiter);
+  app.use('/auth/player/login',                   authLimiter);
+  app.use('/auth/player/forgot-password',         sensitiveActionLimiter);
+  app.use('/auth/player/resend-verification',     sensitiveActionLimiter);
+  app.use('/auth/player/activate',                authLimiter);
+  app.use('/auth/player/reset-password',          authLimiter);
+  app.use('/players/register',                    sensitiveActionLimiter);
+  app.use('/sync',                                syncLimiter);
+
+  app.use('/auth',        authRouter);
+  app.use('/auth/player', authPlayerRouter);
+  app.use('/entries',     entriesRouter);
   app.use('/players',    playersRouter);
   app.use('/moderators', moderatorsRouter);
   app.use('/mods',       modsRouter);

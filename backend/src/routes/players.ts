@@ -1,10 +1,13 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
+import bcrypt from 'bcryptjs';
+import crypto from 'node:crypto';
 import { supabase } from '../supabase';
 import { dbError } from '../lib/errors';
 import { requireModerator } from '../middleware/moderator';
 import type { ModRequest } from '../middleware/moderator';
 import type { PlayerStatus } from '../types';
+import { sendVerificationEmail, sendApprovalEmail, sendActivationEmail } from '../lib/email';
 
 const router = Router();
 
@@ -44,8 +47,10 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
 
 // POST /players/register — público
 router.post('/register', async (req: Request, res: Response): Promise<void> => {
-  const { nick, twitch_url, youtube_url, kick_url, tiktok_url } = req.body as {
-    nick?: string;
+  const { nick, email, password, twitch_url, youtube_url, kick_url, tiktok_url } = req.body as {
+    nick?:        string;
+    email?:       string;
+    password?:    string;
     twitch_url?:  string;
     youtube_url?: string;
     kick_url?:    string;
@@ -56,30 +61,65 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
     res.status(400).json({ error: 'Nick do jogador é obrigatório.' });
     return;
   }
+  if (!email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    res.status(400).json({ error: 'Email inválido.' });
+    return;
+  }
+  if (!password || password.length < 8) {
+    res.status(400).json({ error: 'A senha deve ter no mínimo 8 caracteres.' });
+    return;
+  }
 
   try {
-    const { data, error } = await supabase
+    const password_hash = await bcrypt.hash(password, 10);
+
+    const { data: player, error } = await supabase
       .from('players')
       .insert([{
-        nick:        nick.trim(),
-        twitch_url:  normalizeUrl(twitch_url),
-        youtube_url: normalizeUrl(youtube_url),
-        kick_url:    normalizeUrl(kick_url),
-        tiktok_url:  normalizeUrl(tiktok_url),
-        status:      'pending',
-        blocked:     false,
+        nick:          nick.trim(),
+        email:         email.trim().toLowerCase(),
+        password_hash,
+        twitch_url:    normalizeUrl(twitch_url),
+        youtube_url:   normalizeUrl(youtube_url),
+        kick_url:      normalizeUrl(kick_url),
+        tiktok_url:    normalizeUrl(tiktok_url),
+        status:        'pending',
+        blocked:       false,
       }])
-      .select()
+      .select('id, nick, email')
       .single();
 
     if (error) {
       const { httpStatus, message } = dbError(error);
-      const msg = error.code === '23505' ? 'Este nick já está cadastrado.' : message;
+      let msg = message;
+      if (error.code === '23505') {
+        msg = (error.message ?? '').toLowerCase().includes('email')
+          ? 'Este email já está cadastrado.'
+          : 'Este nick já está cadastrado.';
+      }
       res.status(httpStatus).json({ error: msg });
       return;
     }
 
-    res.status(201).json(data);
+    const playerRow = player as { id: number; nick: string; email: string };
+
+    // Gera token de verificação de email (expira em 24h)
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
+    await supabase.from('player_tokens').insert([{
+      player_id:  playerRow.id,
+      token,
+      type:       'verify',
+      expires_at: expiresAt,
+    }]);
+
+    // Envia email de verificação (não bloqueia a resposta se falhar)
+    sendVerificationEmail(playerRow.email, playerRow.nick, token).catch(err =>
+      console.error('[register] Falha ao enviar email de verificação:', err)
+    );
+
+    res.status(201).json({ message: 'Cadastro recebido. Verifique seu email para ativar a conta.' });
   } catch (err) {
     console.error('[POST /players/register] Erro inesperado:', err);
     res.status(500).json({ error: 'Erro interno ao salvar cadastro. Tente novamente.' });
@@ -93,7 +133,7 @@ router.get('/', requireModerator, async (req: ModRequest, res: Response): Promis
   try {
     let query = supabase
       .from('players')
-      .select('*')
+      .select('id, nick, email, email_verified_at, twitch_url, youtube_url, kick_url, tiktok_url, status, blocked, deleted_at, created_at')
       .order('created_at', { ascending: false });
 
     if (statusParam === 'deleted') {
@@ -120,6 +160,55 @@ router.get('/', requireModerator, async (req: ModRequest, res: Response): Promis
   }
 });
 
+// PATCH /players/:id/email — moderador: define/atualiza o email de um jogador legado e envia convite de ativação
+router.patch('/:id/email', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
+  const id = parseInt(String(req.params.id), 10);
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
+
+  const { email } = req.body as { email?: string };
+  if (!email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    res.status(400).json({ error: 'Email inválido.' });
+    return;
+  }
+
+  try {
+    const { data: player, error } = await supabase
+      .from('players')
+      .update({ email: email.trim().toLowerCase(), email_verified_at: null })
+      .eq('id', id)
+      .select('id, nick, email')
+      .single();
+
+    if (error) {
+      const { httpStatus, message } = dbError(error);
+      const msg = error.code === '23505' ? 'Este email já está cadastrado para outro jogador.' : message;
+      res.status(httpStatus).json({ error: msg });
+      return;
+    }
+
+    const row = player as { id: number; nick: string; email: string };
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+
+    await supabase.from('player_tokens').insert([{
+      player_id:  row.id,
+      token,
+      type:       'activate',
+      expires_at: expiresAt,
+    }]);
+
+    sendActivationEmail(row.email, row.nick, token).catch(err =>
+      console.error('[PATCH /players/:id/email] Falha ao enviar email de ativação:', err)
+    );
+
+    res.json({ message: 'Email salvo e convite de ativação enviado.' });
+  } catch (err) {
+    console.error('[PATCH /players/:id/email] Erro inesperado:', err);
+    res.status(500).json({ error: 'Erro interno ao salvar email.' });
+  }
+});
+
 // PATCH /players/:id/status — moderador
 router.patch('/:id/status', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
   const id = parseInt(String(req.params.id), 10);
@@ -139,13 +228,21 @@ router.patch('/:id/status', requireModerator, async (req: ModRequest, res: Respo
       .from('players')
       .update({ status })
       .eq('id', id)
-      .select()
+      .select('id, nick, email, status')
       .single();
 
     if (error) {
       const { httpStatus, message } = dbError(error);
       res.status(httpStatus).json({ error: message });
       return;
+    }
+
+    // Notifica o jogador por email quando aprovado (se tiver email cadastrado)
+    const row = data as { id: number; nick: string; email?: string | null; status: string };
+    if (status === 'approved' && row.email) {
+      sendApprovalEmail(row.email, row.nick).catch(err =>
+        console.error('[PATCH /players/:id/status] Falha ao enviar email de aprovação:', err)
+      );
     }
 
     res.json(data);
