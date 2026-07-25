@@ -38,9 +38,7 @@ export function ClaimAccountPage() {
           <>
             <p className="account-status account-status--ok">{msg}</p>
             <div className="account-login-links" style={{ marginTop: 20 }}>
-              <Link to="/minha-conta" className="account-link">
-                <i className="ti ti-arrow-left" /> Ir para login
-              </Link>
+              <Link to="/minha-conta" className="btn-ghost btn-sm"><i className="ti ti-arrow-left" /> Ir para login</Link>
             </div>
           </>
         ) : (
@@ -77,9 +75,8 @@ export function ClaimAccountPage() {
               {loading ? 'Enviando…' : 'Enviar link de ativação'}
             </button>
             <div className="account-login-links">
-              <Link to="/minha-conta" className="account-link">Já tenho conta</Link>
-              <span className="account-login-sep">·</span>
-              <Link to="/" className="account-link">Ver o ranking</Link>
+              <Link to="/minha-conta" className="btn-ghost btn-sm"><i className="ti ti-login" /> Já tenho conta</Link>
+              <Link to="/"            className="btn-ghost btn-sm"><i className="ti ti-home" /> Ver o ranking</Link>
             </div>
           </form>
         )}

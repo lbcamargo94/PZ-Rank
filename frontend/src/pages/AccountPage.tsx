@@ -86,11 +86,9 @@ function LoginForm({ onLogin }: { onLogin: (s: PlayerSession) => void }) {
           </button>
         </form>
         <div className="account-login-links">
-          <Link to="/esqueci-senha"  className="account-link">Esqueci minha senha</Link>
-          <span className="account-login-sep">·</span>
-          <Link to="/vincular-conta" className="account-link">Sou jogador legado</Link>
-          <span className="account-login-sep">·</span>
-          <Link to="/"               className="account-link">Voltar ao Rank</Link>
+          <Link to="/esqueci-senha"  className="btn-ghost btn-sm"><i className="ti ti-key" /> Esqueci minha senha</Link>
+          <Link to="/vincular-conta" className="btn-ghost btn-sm"><i className="ti ti-user-question" /> Sou jogador legado</Link>
+          <Link to="/"               className="btn-ghost btn-sm"><i className="ti ti-arrow-left" /> Voltar ao Rank</Link>
         </div>
       </div>
     </div>

@@ -36,9 +36,7 @@ export function ForgotPasswordPage() {
           <>
             <p className="account-status account-status--ok">{msg}</p>
             <div className="account-login-links" style={{ marginTop: 20 }}>
-              <Link to="/minha-conta" className="account-link">
-                <i className="ti ti-arrow-left" /> Voltar ao login
-              </Link>
+              <Link to="/minha-conta" className="btn-ghost btn-sm"><i className="ti ti-arrow-left" /> Voltar ao login</Link>
             </div>
           </>
         ) : (
@@ -64,9 +62,8 @@ export function ForgotPasswordPage() {
               {loading ? 'Enviando…' : 'Enviar link de recuperação'}
             </button>
             <div className="account-login-links">
-              <Link to="/minha-conta" className="account-link">Voltar ao login</Link>
-              <span className="account-login-sep">·</span>
-              <Link to="/" className="account-link">Ir ao Rank</Link>
+              <Link to="/minha-conta" className="btn-ghost btn-sm"><i className="ti ti-arrow-left" /> Voltar ao login</Link>
+              <Link to="/"            className="btn-ghost btn-sm"><i className="ti ti-home" /> Ir ao Rank</Link>
             </div>
           </form>
         )}

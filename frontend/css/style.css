@@ -5479,8 +5479,8 @@ a.btn-ghost { text-decoration: none; }
   margin-top: 20px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 16px;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .account-login-sep { color: var(--text-3); }
