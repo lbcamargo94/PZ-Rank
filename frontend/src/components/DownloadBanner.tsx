@@ -1,5 +1,5 @@
 const DOWNLOAD_URL =
-  'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.5.3/PZ.Rank.Companion.Setup.1.5.3.exe';
+  'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.6.0/PZ.Rank.Companion.Setup.1.6.0.exe';
 
 export function DownloadBanner() {
   return (
@@ -15,7 +15,7 @@ export function DownloadBanner() {
           </div>
         </div>
         <a href={DOWNLOAD_URL} className="btn-download" download>
-          <i className="ti ti-download" aria-hidden="true" /> Baixar v1.5.3
+          <i className="ti ti-download" aria-hidden="true" /> Baixar v1.6.0
         </a>
       </div>
     </div>
