@@ -115,7 +115,7 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
       expires_at: expiresAt,
     }]);
 
-    sendOtpEmail(playerRow.email, playerRow.nick, code, 'verify_email').catch(err =>
+    await sendOtpEmail(playerRow.email, playerRow.nick, code, 'verify_email').catch(err =>
       console.error('[register] Falha ao enviar OTP:', err)
     );
 
@@ -201,7 +201,7 @@ router.patch('/:id/email', requireModerator, async (req: ModRequest, res: Respon
       expires_at: expiresAt,
     }]);
 
-    sendActivationEmail(row.email, row.nick, token).catch(err =>
+    await sendActivationEmail(row.email, row.nick, token).catch(err =>
       console.error('[PATCH /players/:id/email] Falha ao enviar email de ativação:', err)
     );
 
@@ -243,7 +243,7 @@ router.patch('/:id/status', requireModerator, async (req: ModRequest, res: Respo
     // Notifica o jogador por email quando aprovado (se tiver email cadastrado)
     const row = data as { id: number; nick: string; email?: string | null; status: string };
     if (status === 'approved' && row.email) {
-      sendApprovalEmail(row.email, row.nick).catch(err =>
+      await sendApprovalEmail(row.email, row.nick).catch(err =>
         console.error('[PATCH /players/:id/status] Falha ao enviar email de aprovação:', err)
       );
     }

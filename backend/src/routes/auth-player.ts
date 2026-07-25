@@ -80,7 +80,7 @@ router.post('/resend-verification', async (req: Request, res: Response): Promise
     expires_at: expiresAt,
   }]);
 
-  sendVerificationEmail(row.email, row.nick, token).catch(err =>
+  await sendVerificationEmail(row.email, row.nick, token).catch(err =>
     console.error('[resend-verification] Falha ao enviar email:', err)
   );
 
@@ -176,7 +176,7 @@ router.post('/forgot-password', async (req: Request, res: Response): Promise<voi
     expires_at: expiresAt,
   }]);
 
-  sendPasswordResetEmail(row.email, row.nick, token).catch(err =>
+  await sendPasswordResetEmail(row.email, row.nick, token).catch(err =>
     console.error('[forgot-password] Falha ao enviar email:', err)
   );
 
@@ -357,7 +357,7 @@ router.post('/otp/resend-registration', async (req: Request, res: Response): Pro
     expires_at: expiresAt,
   }]);
 
-  sendOtpEmail(email.trim().toLowerCase(), playerRow.nick, code, 'verify_email').catch(err =>
+  await sendOtpEmail(email.trim().toLowerCase(), playerRow.nick, code, 'verify_email').catch(err =>
     console.error('[resend-registration-otp] Falha ao enviar:', err)
   );
 
@@ -423,7 +423,7 @@ router.post('/claim', async (req: Request, res: Response): Promise<void> => {
     expires_at: expiresAt,
   }]);
 
-  sendOtpEmail(newEmail, row.nick, code, 'verify_email').catch(err =>
+  await sendOtpEmail(newEmail, row.nick, code, 'verify_email').catch(err =>
     console.error('[claim] Falha ao enviar OTP:', err)
   );
 
@@ -465,7 +465,7 @@ router.post('/otp/resend-claim', async (req: Request, res: Response): Promise<vo
     expires_at: expiresAt,
   }]);
 
-  sendOtpEmail(email.trim().toLowerCase(), row.nick, code, 'verify_email').catch(err =>
+  await sendOtpEmail(email.trim().toLowerCase(), row.nick, code, 'verify_email').catch(err =>
     console.error('[resend-claim-otp] Falha ao enviar:', err)
   );
 

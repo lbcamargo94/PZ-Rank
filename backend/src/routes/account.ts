@@ -137,7 +137,7 @@ router.patch('/me/email', requirePlayer, async (req: PlayerRequest, res: Respons
     player_id: req.playerId!, token, type: 'verify', expires_at: expiresAt,
   }]);
 
-  sendVerificationEmail(newEmail, row.nick, token).catch(err =>
+  await sendVerificationEmail(newEmail, row.nick, token).catch(err =>
     console.error('[PATCH /account/me/email] Falha ao enviar email:', err)
   );
 
@@ -253,7 +253,7 @@ router.post('/me/otp/send', requirePlayer, async (req: PlayerRequest, res: Respo
   }]);
 
   const emailAction = action === 'change_email' ? 'change_email' : 'change_password';
-  sendOtpEmail(targetEmail, row.nick, code, emailAction).catch(err =>
+  await sendOtpEmail(targetEmail, row.nick, code, emailAction).catch(err =>
     console.error(`[otp/send ${action}] Falha ao enviar OTP:`, err)
   );
 
