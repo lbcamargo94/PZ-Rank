@@ -16,8 +16,9 @@
   traits?:        string | null;
   objectives?:                import('./lib/objectives').Objectives | null;
   score:                      number;
-  disqualification_reason?:   'sandbox' | 'debug' | 'mods' | 'manual' | null;
+  disqualification_reason?:   'sandbox' | 'debug' | 'mods' | 'manual' | 'mod_removed' | null;
   disqualified_at?:           string | null;
+  deleted_at?:                string | null;
   created_at?:                string | null;
   updated_at?:                string | null;
   sandbox_config?:            Record<string, unknown> | null;
@@ -46,16 +47,18 @@ export type PlayerStatus   = 'pending' | 'approved' | 'rejected';
 export type PlayerFilter   = PlayerStatus | 'blocked' | 'deleted' | 'all';
 
 export interface Player {
-  id:          number;
-  nick:        string;
-  twitch_url:  string | null;
-  youtube_url: string | null;
-  kick_url:    string | null;
-  tiktok_url:  string | null;
-  status:      PlayerStatus;
-  blocked:     boolean;
-  deleted_at?: string | null;
-  created_at:  string;
+  id:                 number;
+  nick:               string;
+  email?:             string | null;
+  email_verified_at?: string | null;
+  twitch_url:         string | null;
+  youtube_url:        string | null;
+  kick_url:           string | null;
+  tiktok_url:         string | null;
+  status:             PlayerStatus;
+  blocked:            boolean;
+  deleted_at?:        string | null;
+  created_at:         string;
 }
 
 export interface Moderator {

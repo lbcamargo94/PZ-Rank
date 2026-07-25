@@ -71,10 +71,22 @@ export function apiLogout(token: string): Promise<void> {
 // ── Players ─────────────────────────────────────────────────
 
 export function apiRegisterPlayer(data: {
-  nick: string; twitch_url?: string; youtube_url?: string;
-  kick_url?: string; tiktok_url?: string;
-}): Promise<Player> {
+  nick: string; email: string; password: string;
+  twitch_url?: string; youtube_url?: string; kick_url?: string; tiktok_url?: string;
+}): Promise<{ message: string }> {
   return request('/players/register', { method: 'POST', ...json(null, data) });
+}
+
+export function apiPlayerLogin(email: string, password: string): Promise<{ player_token: string; player_id: number; nick: string }> {
+  return request('/auth/player/login', { method: 'POST', ...json(null, { email, password }) });
+}
+
+export function apiForgotPassword(email: string): Promise<{ message: string }> {
+  return request('/auth/player/forgot-password', { method: 'POST', ...json(null, { email }) });
+}
+
+export function apiResetPassword(token: string, password: string): Promise<{ message: string }> {
+  return request('/auth/player/reset-password', { method: 'POST', ...json(null, { token, password }) });
 }
 
 export function apiGetPlayerProfile(id: number): Promise<PlayerProfile> {
@@ -123,6 +135,10 @@ export function apiGetEntries(sort = 'days'): Promise<Entry[]> {
   return request(`/entries?sort=${sort}`);
 }
 
+export function apiGetAllEntries(sort = 'score'): Promise<Entry[]> {
+  return request(`/entries?sort=${sort}&all=true`);
+}
+
 export function apiCreateEntry(
   token: string, data: {
     player_id:   number;
@@ -148,6 +164,14 @@ export function apiUpdateEntryObjectives(
   token: string, id: number, objectives: import('../lib/objectives').Objectives
 ): Promise<Entry> {
   return request(`/entries/${id}/objectives`, { method: 'PATCH', ...json(token, { objectives }) });
+}
+
+export function apiSetPlayerEmail(token: string, id: number, email: string): Promise<{ message: string }> {
+  return request(`/players/${id}/email`, { method: 'PATCH', ...json(token, { email }) });
+}
+
+export function apiActivateAccount(token: string, password: string): Promise<{ message: string }> {
+  return request('/auth/player/activate', { method: 'POST', ...json(null, { token, password }) });
 }
 
 // ── Moderators ───────────────────────────────────────────────

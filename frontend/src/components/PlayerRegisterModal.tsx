@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { apiRegisterPlayer } from '../lib/api';
 
 interface Props {
@@ -16,9 +16,13 @@ const SOCIALS = [
 type SocialId = typeof SOCIALS[number]['id'];
 
 export function PlayerRegisterModal({ onClose, showToast }: Props) {
-  const [nick,    setNick]    = useState('');
-  const [loading, setLoading] = useState(false);
-  const [done,    setDone]    = useState(false);
+  const [nick,            setNick]            = useState('');
+  const [email,           setEmail]           = useState('');
+  const [password,        setPassword]        = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPass,        setShowPass]        = useState(false);
+  const [loading,         setLoading]         = useState(false);
+  const [done,            setDone]            = useState(false);
   const [socials, setSocials] = useState<Record<SocialId, string>>({
     twitch: '', youtube: '', kick: '', tiktok: '',
   });
@@ -37,11 +41,21 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!nick.trim()) return;
+    if (!nick.trim() || !email.trim() || !password) return;
+    if (password.length < 8) {
+      showToast('A senha deve ter no mínimo 8 caracteres.', 'error');
+      return;
+    }
+    if (password !== confirmPassword) {
+      showToast('As senhas não coincidem.', 'error');
+      return;
+    }
     setLoading(true);
     try {
       await apiRegisterPlayer({
         nick:        nick.trim(),
+        email:       email.trim(),
+        password,
         twitch_url:  socials.twitch.trim()  || undefined,
         youtube_url: socials.youtube.trim() || undefined,
         kick_url:    socials.kick.trim()    || undefined,
@@ -55,6 +69,8 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
     }
   }
 
+  const canSubmit = nick.trim() && email.trim() && password.length >= 8 && password === confirmPassword;
+
   return (
     <div className="modal-overlay active" role="dialog" aria-modal="true">
       <div className="modal-box reg-modal-box" onClick={e => e.stopPropagation()}>
@@ -63,12 +79,12 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
         </button>
 
         {done ? (
-          /* ── Estado de sucesso ── */
           <div className="reg-success">
-            <div className="reg-success-icon"><i className="ti ti-circle-check" /></div>
-            <h2 className="reg-success-title">Cadastro enviado!</h2>
+            <div className="reg-success-icon"><i className="ti ti-mail-check" /></div>
+            <h2 className="reg-success-title">Verifique seu email!</h2>
             <p className="reg-success-msg">
-              Seu pedido foi recebido. Um moderador vai revisar e aprovar sua inscrição em breve.
+              Enviamos um link de ativação para <strong>{email}</strong>.<br />
+              Após verificar o email, aguarde a aprovação de um moderador.
             </p>
             <button className="btn-primary btn-block" onClick={onClose}>
               <i className="ti ti-arrow-left" /> Voltar ao Ranking
@@ -76,18 +92,17 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
           </div>
         ) : (
           <>
-            {/* ── Cabeçalho ── */}
             <div className="reg-header">
               <div className="reg-header-icon"><i className="ti ti-trophy" /></div>
               <h2 className="reg-title">Entrar no Ranking</h2>
               <p className="reg-subtitle">
-                Preencha seus dados. Um moderador vai revisar e aprovar seu cadastro.
+                Crie sua conta. Um moderador vai revisar e aprovar seu cadastro.
               </p>
             </div>
 
             <form className="modal-form" onSubmit={handleSubmit} noValidate>
 
-              {/* ── Nick ── */}
+              {/* Nick */}
               <div className="reg-field">
                 <label className="form-label" htmlFor="reg-nick">
                   Nick do jogador <span className="required">*</span>
@@ -101,14 +116,85 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
                     placeholder="SeuNickAqui"
                     value={nick}
                     onChange={e => setNick(e.target.value)}
-                    autoComplete="off"
+                    autoComplete="username"
                     spellCheck={false}
                     required
                   />
                 </div>
               </div>
 
-              {/* ── Canais de streaming ── */}
+              {/* Email */}
+              <div className="reg-field">
+                <label className="form-label" htmlFor="reg-email">
+                  Email <span className="required">*</span>
+                </label>
+                <div className="reg-nick-input-wrap">
+                  <i className="ti ti-mail reg-nick-icon" />
+                  <input
+                    id="reg-email"
+                    className="form-input reg-nick-input"
+                    type="email"
+                    placeholder="seu@email.com"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    autoComplete="email"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Senha */}
+              <div className="reg-field">
+                <label className="form-label" htmlFor="reg-password">
+                  Senha <span className="required">*</span>
+                </label>
+                <div className="reg-nick-input-wrap">
+                  <i className="ti ti-lock reg-nick-icon" />
+                  <input
+                    id="reg-password"
+                    className="form-input reg-nick-input"
+                    type={showPass ? 'text' : 'password'}
+                    placeholder="Mínimo 8 caracteres"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    autoComplete="new-password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="reg-pass-toggle"
+                    onClick={() => setShowPass(p => !p)}
+                    aria-label={showPass ? 'Ocultar senha' : 'Mostrar senha'}
+                  >
+                    <i className={`ti ${showPass ? 'ti-eye-off' : 'ti-eye'}`} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Confirmar senha */}
+              <div className="reg-field">
+                <label className="form-label" htmlFor="reg-confirm-password">
+                  Confirmar senha <span className="required">*</span>
+                </label>
+                <div className="reg-nick-input-wrap">
+                  <i className="ti ti-lock-check reg-nick-icon" />
+                  <input
+                    id="reg-confirm-password"
+                    className="form-input reg-nick-input"
+                    type={showPass ? 'text' : 'password'}
+                    placeholder="Repita a senha"
+                    value={confirmPassword}
+                    onChange={e => setConfirmPassword(e.target.value)}
+                    autoComplete="new-password"
+                    required
+                  />
+                  {confirmPassword && (
+                    <i className={`ti reg-nick-icon ${password === confirmPassword ? 'ti-check reg-pass-match' : 'ti-x reg-pass-mismatch'}`} />
+                  )}
+                </div>
+              </div>
+
+              {/* Canais de streaming */}
               <div className="reg-socials-section">
                 <div className="reg-socials-header">
                   <span className="form-label">Canais de streaming</span>
@@ -117,7 +203,6 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
                 <p className="reg-socials-hint">
                   Adicione seus canais para aparecer como criador de conteúdo no ranking.
                 </p>
-
                 <div className="reg-socials-grid">
                   {SOCIALS.map(s => (
                     <div key={s.id} className="reg-social-item" style={{ '--social-color': s.color } as React.CSSProperties}>
@@ -138,22 +223,22 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
                 </div>
               </div>
 
-              {/* ── Info box ── */}
               <div className="reg-info-box">
-                <i className="ti ti-info-circle" />
+                <i className="ti ti-shield-lock" />
                 <span>
-                  Após o cadastro, um moderador precisa aprovar sua conta antes que você apareça no ranking.
+                  Seu email é usado apenas para verificar a conta e notificações do ranking.
+                  Após verificar o email, um moderador precisa aprovar sua conta.
                 </span>
               </div>
 
               <button
                 className="btn-primary btn-block"
                 type="submit"
-                disabled={loading || !nick.trim()}
+                disabled={loading || !canSubmit}
               >
                 {loading
                   ? <><i className="ti ti-loader-2" /> Enviando...</>
-                  : <><i className="ti ti-send" /> Enviar cadastro</>}
+                  : <><i className="ti ti-send" /> Criar conta</>}
               </button>
             </form>
           </>

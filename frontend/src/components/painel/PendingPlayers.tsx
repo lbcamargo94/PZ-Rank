@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { apiGetPlayers, apiUpdatePlayerStatus, apiBlockPlayer, apiUnblockPlayer, apiDeletePlayer, apiRestorePlayer } from '../../lib/api';
+import { apiGetPlayers, apiUpdatePlayerStatus, apiBlockPlayer, apiUnblockPlayer, apiDeletePlayer, apiRestorePlayer, apiSetPlayerEmail } from '../../lib/api';
 import type { Player, PlayerStatus, PlayerFilter } from '../../types';
 import { ConfirmModal } from './ConfirmModal';
 import { EditLinksModal } from './EditLinksModal';
@@ -32,6 +32,8 @@ export function PendingPlayers({ token, showToast }: Props) {
   const [updating,        setUpdating]        = useState<number | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [editLinksPlayer, setEditLinksPlayer] = useState<Player | null>(null);
+  const [emailInputs,     setEmailInputs]     = useState<Record<number, string>>({});
+  const [sendingEmail,    setSendingEmail]    = useState<number | null>(null);
 
   const fetchPlayers = useCallback(async () => {
     setLoading(true);
@@ -108,6 +110,34 @@ export function PendingPlayers({ token, showToast }: Props) {
       showToast((err as Error).message, 'error');
     } finally {
       setUpdating(null);
+    }
+  }
+
+  async function handleSendActivation(id: number) {
+    const email = (emailInputs[id] ?? '').trim();
+    if (!email) { showToast('Digite um email válido.', 'error'); return; }
+    setSendingEmail(id);
+    try {
+      await apiSetPlayerEmail(token, id, email);
+      showToast('Email de ativação enviado!', 'success');
+      setEmailInputs(prev => { const n = { ...prev }; delete n[id]; return n; });
+      fetchPlayers();
+    } catch (err) {
+      showToast((err as Error).message, 'error');
+    } finally {
+      setSendingEmail(null);
+    }
+  }
+
+  async function handleResendActivation(id: number, email: string) {
+    setSendingEmail(id);
+    try {
+      await apiSetPlayerEmail(token, id, email);
+      showToast('Email de ativação reenviado!', 'success');
+    } catch (err) {
+      showToast((err as Error).message, 'error');
+    } finally {
+      setSendingEmail(null);
     }
   }
 
@@ -214,6 +244,21 @@ export function PendingPlayers({ token, showToast }: Props) {
                 {isDeleted && (
                   <span className="player-status status-badge-deleted"><i className="ti ti-trash" /> Excluído</span>
                 )}
+                {p.email && p.email_verified_at && (
+                  <span className="player-status status-badge-email-ok" title={`Email verificado: ${p.email}`}>
+                    <i className="ti ti-mail-check" /> Email OK
+                  </span>
+                )}
+                {p.email && !p.email_verified_at && (
+                  <span className="player-status status-badge-email-pending" title={`Aguardando verificação: ${p.email}`}>
+                    <i className="ti ti-mail-off" /> Email pendente
+                  </span>
+                )}
+                {!p.email && (
+                  <span className="player-status status-badge-email-none" title="Cadastrado sem email (conta legada)">
+                    <i className="ti ti-mail-x" /> Sem email
+                  </span>
+                )}
               </div>
             </div>
 
@@ -268,6 +313,42 @@ export function PendingPlayers({ token, showToast }: Props) {
                 </>
               )}
             </div>
+
+            {!isDeleted && (
+              <div className="player-card-email-row">
+                {!p.email ? (
+                  <>
+                    <input
+                      type="email"
+                      className="player-email-input"
+                      placeholder="email@exemplo.com"
+                      value={emailInputs[p.id] ?? ''}
+                      onChange={e => setEmailInputs(prev => ({ ...prev, [p.id]: e.target.value }))}
+                      onKeyDown={e => { if (e.key === 'Enter') handleSendActivation(p.id); }}
+                    />
+                    <button
+                      className="btn-ghost btn-sm"
+                      disabled={sendingEmail === p.id || !emailInputs[p.id]?.trim()}
+                      onClick={() => handleSendActivation(p.id)}
+                      title="Enviar email de ativação"
+                    >
+                      <i className="ti ti-send" />
+                      {sendingEmail === p.id ? ' Enviando...' : ' Enviar ativação'}
+                    </button>
+                  </>
+                ) : !p.email_verified_at ? (
+                  <button
+                    className="btn-ghost btn-sm"
+                    disabled={sendingEmail === p.id}
+                    onClick={() => handleResendActivation(p.id, p.email!)}
+                    title={`Reenviar ativação para ${p.email}`}
+                  >
+                    <i className="ti ti-send" />
+                    {sendingEmail === p.id ? ' Enviando...' : ' Reenviar ativação'}
+                  </button>
+                ) : null}
+              </div>
+            )}
           </div>
         ))}
       </div>

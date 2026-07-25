@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
-import { apiGetEntries, setOnUnauthorized } from './lib/api';
+import { apiGetEntries, apiGetAllEntries, setOnUnauthorized } from './lib/api';
 import type { Entry, SortKey, RankTab, ModSession } from './types';
 import { useToast } from './hooks/useToast';
 import { Toast } from './components/Toast';
@@ -18,6 +18,9 @@ import { WikiPage } from './pages/WikiPage';
 import { WikiHuntingPage } from './pages/WikiHuntingPage';
 import { ModsPage } from './pages/ModsPage';
 import { TipsPage } from './pages/TipsPage';
+import { VerifyEmailPage } from './pages/VerifyEmailPage';
+import { ResetPasswordPage } from './pages/ResetPasswordPage';
+import { ActivateAccountPage } from './pages/ActivateAccountPage';
 
 const TAB_CONFIG: { key: RankTab; label: string; icon: string }[] = [
   { key: 'rank',          label: 'Rank',             icon: 'ti-heartbeat' },
@@ -37,6 +40,7 @@ function isInDeadZone(e: Entry): boolean {
 function MainView() {
   const navigate = useNavigate();
   const [entries,       setEntries]      = useState<Entry[]>([]);
+  const [allEntries,    setAllEntries]   = useState<Entry[]>([]);
   const [sortKey,       setSortKey]      = useState<SortKey>('score');
   const [loadingRank,   setLoadingRank]  = useState(false);
   const [activeTab,     setActiveTab]    = useState<RankTab>('rank');
@@ -47,23 +51,41 @@ function MainView() {
 
   const fetchEntries = useCallback(async () => {
     setLoadingRank(true);
-    try { setEntries(await apiGetEntries(sortKey)); }
+    try {
+      const [regular, all] = await Promise.all([
+        apiGetEntries(sortKey),
+        apiGetAllEntries('score'),
+      ]);
+      setEntries(regular);
+      setAllEntries(all);
+    }
     catch (err) { showToast((err as Error).message || 'Erro ao carregar ranking.', 'error'); }
     finally { setLoadingRank(false); }
   }, [sortKey, showToast]);
 
   useEffect(() => { fetchEntries(); }, [fetchEntries]);
 
-  // Dead-zone entries are hidden from every public tab
+  // Dead-zone entries are hidden from rank/dead/disc tabs but not from Records
   const publicEntries = useMemo(() => entries.filter(e => !isInDeadZone(e)), [entries]);
 
   const aliveEntries = useMemo(() => publicEntries.filter(e => e.sandbox_ok !== false && e.is_alive),  [publicEntries]);
   const deadEntries  = useMemo(() => publicEntries.filter(e => e.sandbox_ok !== false && !e.is_alive), [publicEntries]);
   const discEntries  = useMemo(() => publicEntries.filter(e => e.sandbox_ok === false),                [publicEntries]);
 
+  // Records: melhor score por jogador (inclui entries soft-deleted e de players excluídos)
+  const recordsEntries = useMemo(() => {
+    const best = new Map<string, Entry>();
+    for (const e of allEntries) {
+      const key = e.player_id != null ? String(e.player_id) : `n:${e.name}`;
+      const cur = best.get(key);
+      if (!cur || e.score > cur.score) best.set(key, e);
+    }
+    return Array.from(best.values()).sort((a, b) => b.score - a.score);
+  }, [allEntries]);
+
   const tabCounts: Record<RankTab, number> = {
     rank:         aliveEntries.length,
-    records:      publicEntries.length,
+    records:      recordsEntries.length,
     dead:         deadEntries.length,
     disqualified: discEntries.length,
   };
@@ -71,11 +93,11 @@ function MainView() {
   const filteredEntries = useMemo(() => {
     switch (activeTab) {
       case 'rank':         return aliveEntries;
-      case 'records':      return publicEntries;
+      case 'records':      return recordsEntries;
       case 'dead':         return deadEntries;
       case 'disqualified': return discEntries;
     }
-  }, [activeTab, publicEntries, aliveEntries, deadEntries, discEntries]);
+  }, [activeTab, recordsEntries, aliveEntries, deadEntries, discEntries]);
 
   return (
     <>
@@ -160,6 +182,9 @@ export default function App() {
       <Route path="/wiki/cacada" element={<WikiHuntingPage />} />
       <Route path="/mods" element={<ModsPage />} />
       <Route path="/dicas" element={<TipsPage />} />
+      <Route path="/verificar-email"  element={<VerifyEmailPage />} />
+      <Route path="/redefinir-senha"  element={<ResetPasswordPage />} />
+      <Route path="/ativar-conta"     element={<ActivateAccountPage />} />
       <Route path="/painel" element={
         <PainelPage
           session={modSession}
