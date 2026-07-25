@@ -25,17 +25,12 @@ export function OtpInput({ value, onChange, hint, loading, onResend, resendMsg }
         disabled={loading}
         aria-label="Código de verificação"
       />
-      <p className="otp-meta">
-        {value.length}/6 dígitos
-        {onResend && (
-          <>
-            {' · '}
-            <button type="button" className="otp-resend" onClick={onResend} disabled={loading}>
-              Reenviar código
-            </button>
-          </>
-        )}
-      </p>
+      <p className="otp-meta">{value.length}/6 dígitos</p>
+      {onResend && (
+        <button type="button" className="btn-ghost btn-sm" onClick={onResend} disabled={loading}>
+          <i className="ti ti-refresh" /> Reenviar código
+        </button>
+      )}
       {resendMsg && <p className="otp-resend-msg">{resendMsg}</p>}
     </div>
   );

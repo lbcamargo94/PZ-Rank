@@ -430,6 +430,48 @@ router.post('/claim', async (req: Request, res: Response): Promise<void> => {
   res.json(GENERIC);
 });
 
+// POST /auth/player/otp/resend-claim — reenvia OTP para jogador legado no fluxo de vinculação
+router.post('/otp/resend-claim', async (req: Request, res: Response): Promise<void> => {
+  const { email } = req.body as { email?: string };
+
+  const GENERIC = { message: 'Se o email tiver uma conta pendente de ativação, um novo código foi enviado.' };
+
+  if (!email?.trim()) {
+    res.status(400).json({ error: 'Email é obrigatório.' });
+    return;
+  }
+
+  const { data: player } = await supabase
+    .from('players')
+    .select('id, nick, password_hash')
+    .eq('email', email.trim().toLowerCase())
+    .maybeSingle();
+
+  const row = player as { id: number; nick: string; password_hash: string | null } | null;
+
+  if (!row || row.password_hash) {
+    res.json(GENERIC);
+    return;
+  }
+
+  const code = String(Math.floor(100000 + Math.random() * 900000));
+  const otpToken = `${row.id}_otp_${code}`;
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+
+  await supabase.from('player_tokens').insert([{
+    player_id:  row.id,
+    token:      otpToken,
+    type:       'otp',
+    expires_at: expiresAt,
+  }]);
+
+  sendOtpEmail(email.trim().toLowerCase(), row.nick, code, 'verify_email').catch(err =>
+    console.error('[resend-claim-otp] Falha ao enviar:', err)
+  );
+
+  res.json(GENERIC);
+});
+
 // POST /auth/player/otp/confirm-claim — verifica OTP do claim e retorna token de ativação
 router.post('/otp/confirm-claim', async (req: Request, res: Response): Promise<void> => {
   const { email, code } = req.body as { email?: string; code?: string };

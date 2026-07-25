@@ -93,6 +93,10 @@ export function apiConfirmClaimOtp(email: string, code: string): Promise<{ messa
   return request('/auth/player/otp/confirm-claim', { method: 'POST', ...json(null, { email, code }) });
 }
 
+export function apiResendClaimOtp(email: string): Promise<{ message: string }> {
+  return request('/auth/player/otp/resend-claim', { method: 'POST', ...json(null, { email }) });
+}
+
 // ── OTP — cadastro ──────────────────────────────────────────
 export function apiConfirmRegistrationOtp(email: string, code: string): Promise<{ message: string }> {
   return request('/auth/player/otp/confirm-registration', { method: 'POST', ...json(null, { email, code }) });

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { apiClaimAccount, apiConfirmClaimOtp } from '../lib/api';
+import { apiClaimAccount, apiConfirmClaimOtp, apiResendClaimOtp } from '../lib/api';
 import { OtpInput } from '../components/OtpInput';
 
 type Step = 'form' | 'otp';
@@ -49,7 +49,7 @@ export function ClaimAccountPage() {
   async function handleResend() {
     setResendMsg('');
     try {
-      await apiClaimAccount(nick.trim(), email.trim());
+      await apiResendClaimOtp(email.trim());
       setResendMsg('Novo código enviado.');
     } catch {
       setResendMsg('Não foi possível reenviar. Tente novamente.');
