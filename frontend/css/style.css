@@ -814,6 +814,29 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   gap: 10px;
 }
 
+/* Botão de conta quando o player está logado */
+.header-account-logged {
+  position: relative;
+  border-color: var(--green) !important;
+}
+.header-account-logged::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--green);
+  border: 2px solid var(--bg-1);
+}
+.header-account-nick {
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .user-email {
   font-family: var(--font-mono);
   font-size: 14px;

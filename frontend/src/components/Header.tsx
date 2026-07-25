@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 interface HeaderProps {
@@ -6,8 +7,16 @@ interface HeaderProps {
   onSettings: () => void;
 }
 
+function readPlayerSession(): { nick: string; player_id: number } | null {
+  try {
+    const raw = sessionStorage.getItem('player_session');
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
 export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
   const navigate = useNavigate();
+  const [playerSession] = useState(readPlayerSession);
   return (
     <header className="site-header">
       <div className="container header-inner">
@@ -29,8 +38,16 @@ export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
 <button className="btn-primary btn-sm" onClick={onSettings} aria-label="Configurações do desafio">
             <i className="ti ti-settings" aria-hidden="true" /> Configurações
           </button>
-          <Link to="/minha-conta" className="btn-primary btn-sm" aria-label="Minha conta">
-            <i className="ti ti-user-circle" aria-hidden="true" /> Minha Conta
+          <Link
+            to="/minha-conta"
+            className={`btn-primary btn-sm${playerSession ? ' header-account-logged' : ''}`}
+            aria-label="Minha conta"
+          >
+            <i className={`ti ${playerSession ? 'ti-user-filled' : 'ti-user-circle'}`} aria-hidden="true" />
+            {playerSession
+              ? <span className="header-account-nick">{playerSession.nick}</span>
+              : 'Minha Conta'
+            }
           </Link>
           <button className="btn-primary btn-sm" onClick={onPainel} aria-label="Painel de moderadores">
             <i className="ti ti-shield-half" aria-hidden="true" /> Moderadores
