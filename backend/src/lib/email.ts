@@ -1,7 +1,14 @@
 import { Resend } from 'resend';
 import { config } from '../config';
 
-const resend = new Resend(config.resendApiKey);
+let _resend: Resend | null = null;
+function getResend(): Resend {
+  if (!_resend) {
+    if (!config.resendApiKey) throw new Error('RESEND_API_KEY não configurada no ambiente.');
+    _resend = new Resend(config.resendApiKey);
+  }
+  return _resend;
+}
 
 function baseTemplate(title: string, body: string): string {
   return `<!DOCTYPE html>
@@ -65,7 +72,7 @@ export async function sendVerificationEmail(email: string, nick: string, token: 
     </p>
   `);
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from:    config.fromEmail,
     to:      email,
     subject: '✅ Verifique seu email — PZ Community Rank',
@@ -96,7 +103,7 @@ export async function sendPasswordResetEmail(email: string, nick: string, token:
     </p>
   `);
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from:    config.fromEmail,
     to:      email,
     subject: '🔑 Redefinir senha — PZ Community Rank',
@@ -127,7 +134,7 @@ export async function sendActivationEmail(email: string, nick: string, token: st
     </p>
   `);
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from:    config.fromEmail,
     to:      email,
     subject: '🔑 Ative sua conta — PZ Community Rank',
@@ -154,7 +161,7 @@ export async function sendApprovalEmail(email: string, nick: string): Promise<vo
     </table>
   `);
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from:    config.fromEmail,
     to:      email,
     subject: '🏆 Conta aprovada — PZ Community Rank',
