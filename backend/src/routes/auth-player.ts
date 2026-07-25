@@ -3,7 +3,7 @@ import type { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
 import { supabase } from '../supabase';
-import { sendPasswordResetEmail, sendVerificationEmail, sendActivationEmail, sendOtpEmail } from '../lib/email';
+import { sendPasswordResetEmail, sendVerificationEmail, sendOtpEmail } from '../lib/email';
 
 const router = Router();
 
@@ -364,11 +364,11 @@ router.post('/otp/resend-registration', async (req: Request, res: Response): Pro
   res.json(GENERIC);
 });
 
-// POST /auth/player/claim — jogador legado (sem email/senha) solicita ativação por nick
+// POST /auth/player/claim — jogador legado (sem email/senha) solicita vinculação por nick + OTP
 router.post('/claim', async (req: Request, res: Response): Promise<void> => {
   const { nick, email } = req.body as { nick?: string; email?: string };
 
-  const GENERIC = { message: 'Se o nick existir sem conta configurada, você receberá um email com o link de ativação.' };
+  const GENERIC = { message: 'Se o nick existir sem conta configurada, um código foi enviado para o email informado.' };
 
   if (!nick?.trim() || !email?.trim()) {
     res.status(400).json({ error: 'Nick e email são obrigatórios.' });
@@ -381,7 +381,6 @@ router.post('/claim', async (req: Request, res: Response): Promise<void> => {
 
   const newEmail = email.trim().toLowerCase();
 
-  // Busca player pelo nick sem email e sem senha (conta legada)
   const { data: player } = await supabase
     .from('players')
     .select('id, nick, email, password_hash, deleted_at, blocked')
@@ -393,13 +392,11 @@ router.post('/claim', async (req: Request, res: Response): Promise<void> => {
     password_hash: string | null; deleted_at: string | null; blocked: boolean;
   } | null;
 
-  // Resposta genérica em todos os casos negativos para não vazar informações
   if (!row || row.deleted_at || row.blocked || row.email || row.password_hash) {
     res.json(GENERIC);
     return;
   }
 
-  // Verifica se o email já pertence a outro player
   const { data: emailOwner } = await supabase
     .from('players')
     .select('id')
@@ -412,25 +409,82 @@ router.post('/claim', async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  // Define o email no player para que o link de ativação funcione
+  // Salva o email e envia OTP de 6 dígitos (10 min)
   await supabase.from('players').update({ email: newEmail }).eq('id', row.id);
 
-  // Gera token de ativação (48h)
-  const token = crypto.randomBytes(32).toString('hex');
-  const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+  const code = String(Math.floor(100000 + Math.random() * 900000));
+  const otpToken = `${row.id}_otp_${code}`;
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
   await supabase.from('player_tokens').insert([{
     player_id:  row.id,
-    token,
-    type:       'activate',
+    token:      otpToken,
+    type:       'otp',
     expires_at: expiresAt,
   }]);
 
-  sendActivationEmail(newEmail, row.nick, token).catch(err =>
-    console.error('[claim] Falha ao enviar email:', err)
+  sendOtpEmail(newEmail, row.nick, code, 'verify_email').catch(err =>
+    console.error('[claim] Falha ao enviar OTP:', err)
   );
 
   res.json(GENERIC);
+});
+
+// POST /auth/player/otp/confirm-claim — verifica OTP do claim e retorna token de ativação
+router.post('/otp/confirm-claim', async (req: Request, res: Response): Promise<void> => {
+  const { email, code } = req.body as { email?: string; code?: string };
+
+  if (!email?.trim() || !code?.trim() || !/^\d{6}$/.test(code.trim())) {
+    res.status(400).json({ error: 'Email e código de 6 dígitos são obrigatórios.' });
+    return;
+  }
+
+  const now = new Date().toISOString();
+
+  const { data: player } = await supabase
+    .from('players')
+    .select('id, nick, password_hash')
+    .eq('email', email.trim().toLowerCase())
+    .maybeSingle();
+
+  const playerRow = player as { id: number; nick: string; password_hash: string | null } | null;
+
+  if (!playerRow || playerRow.password_hash) {
+    res.status(400).json({ error: 'Código inválido ou expirado.' });
+    return;
+  }
+
+  const otpToken = `${playerRow.id}_otp_${code.trim()}`;
+
+  const { data: tokenRow } = await supabase
+    .from('player_tokens')
+    .select('id, expires_at, used_at')
+    .eq('token', otpToken)
+    .eq('type', 'otp')
+    .eq('player_id', playerRow.id)
+    .maybeSingle();
+
+  const otp = tokenRow as { id: number; expires_at: string; used_at: string | null } | null;
+
+  if (!otp || otp.used_at || now > otp.expires_at) {
+    res.status(400).json({ error: 'Código inválido ou expirado.' });
+    return;
+  }
+
+  await supabase.from('player_tokens').update({ used_at: now }).eq('id', otp.id);
+
+  // Gera token de ativação para definição de senha (30 min)
+  const activateToken = crypto.randomBytes(32).toString('hex');
+  const activateExpires = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+
+  await supabase.from('player_tokens').insert([{
+    player_id:  playerRow.id,
+    token:      activateToken,
+    type:       'activate',
+    expires_at: activateExpires,
+  }]);
+
+  res.json({ message: 'Código verificado!', activate_token: activateToken });
 });
 
 export default router;

@@ -89,6 +89,10 @@ export function apiClaimAccount(nick: string, email: string): Promise<{ message:
   return request('/auth/player/claim', { method: 'POST', ...json(null, { nick, email }) });
 }
 
+export function apiConfirmClaimOtp(email: string, code: string): Promise<{ message: string; activate_token: string }> {
+  return request('/auth/player/otp/confirm-claim', { method: 'POST', ...json(null, { email, code }) });
+}
+
 // ── OTP — cadastro ──────────────────────────────────────────
 export function apiConfirmRegistrationOtp(email: string, code: string): Promise<{ message: string }> {
   return request('/auth/player/otp/confirm-registration', { method: 'POST', ...json(null, { email, code }) });
