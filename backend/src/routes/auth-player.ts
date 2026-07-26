@@ -417,6 +417,7 @@ router.post('/claim', async (req: Request, res: Response): Promise<void> => {
     email:             newEmail,
     password_hash,
     email_verified_at: now,
+    status:            'pending',
   }).eq('id', row.id);
 
   res.json({ message: 'Conta vinculada! Um moderador vai revisar e aprovar sua conta em breve.' });
