@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { apiGetPlayers, apiUpdatePlayerStatus, apiBlockPlayer, apiUnblockPlayer, apiDeletePlayer, apiRestorePlayer, apiSetPlayerEmail } from '../../lib/api';
+import { apiGetPlayers, apiUpdatePlayerStatus, apiBlockPlayer, apiUnblockPlayer, apiDeletePlayer, apiRestorePlayer, apiSetPlayerEmail, apiVerifyPlayerEmail } from '../../lib/api';
 import type { Player, PlayerStatus, PlayerFilter } from '../../types';
 import { ConfirmModal } from './ConfirmModal';
 import { EditLinksModal } from './EditLinksModal';
@@ -34,6 +34,7 @@ export function PendingPlayers({ token, showToast }: Props) {
   const [editLinksPlayer, setEditLinksPlayer] = useState<Player | null>(null);
   const [emailInputs,     setEmailInputs]     = useState<Record<number, string>>({});
   const [sendingEmail,    setSendingEmail]    = useState<number | null>(null);
+  const [verifyingEmail,  setVerifyingEmail]  = useState<number | null>(null);
 
   const fetchPlayers = useCallback(async () => {
     setLoading(true);
@@ -138,6 +139,19 @@ export function PendingPlayers({ token, showToast }: Props) {
       showToast((err as Error).message, 'error');
     } finally {
       setSendingEmail(null);
+    }
+  }
+
+  async function handleVerifyEmail(id: number) {
+    setVerifyingEmail(id);
+    try {
+      await apiVerifyPlayerEmail(token, id);
+      showToast('Email verificado manualmente!', 'success');
+      fetchPlayers();
+    } catch (err) {
+      showToast((err as Error).message, 'error');
+    } finally {
+      setVerifyingEmail(null);
     }
   }
 
@@ -337,15 +351,26 @@ export function PendingPlayers({ token, showToast }: Props) {
                     </button>
                   </>
                 ) : !p.email_verified_at ? (
-                  <button
-                    className="btn-ghost btn-sm"
-                    disabled={sendingEmail === p.id}
-                    onClick={() => handleResendActivation(p.id, p.email!)}
-                    title={`Reenviar ativação para ${p.email}`}
-                  >
-                    <i className="ti ti-send" />
-                    {sendingEmail === p.id ? ' Enviando...' : ' Reenviar ativação'}
-                  </button>
+                  <>
+                    <button
+                      className="btn-success btn-sm"
+                      disabled={verifyingEmail === p.id}
+                      onClick={() => handleVerifyEmail(p.id)}
+                      title={`Verificar email manualmente: ${p.email}`}
+                    >
+                      <i className="ti ti-mail-check" />
+                      {verifyingEmail === p.id ? ' Verificando...' : ' Verificar email'}
+                    </button>
+                    <button
+                      className="btn-ghost btn-sm"
+                      disabled={sendingEmail === p.id}
+                      onClick={() => handleResendActivation(p.id, p.email!)}
+                      title={`Reenviar ativação para ${p.email}`}
+                    >
+                      <i className="ti ti-send" />
+                      {sendingEmail === p.id ? ' Enviando...' : ' Reenviar ativação'}
+                    </button>
+                  </>
                 ) : null}
               </div>
             )}

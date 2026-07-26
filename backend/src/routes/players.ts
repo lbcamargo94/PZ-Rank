@@ -7,7 +7,7 @@ import { dbError } from '../lib/errors';
 import { requireModerator } from '../middleware/moderator';
 import type { ModRequest } from '../middleware/moderator';
 import type { PlayerStatus } from '../types';
-import { sendOtpEmail, sendApprovalEmail, sendActivationEmail } from '../lib/email';
+import { sendApprovalEmail, sendActivationEmail } from '../lib/email';
 
 const router = Router();
 
@@ -73,21 +73,22 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
   try {
     const password_hash = await bcrypt.hash(password, 10);
 
-    const { data: player, error } = await supabase
+    const now = new Date().toISOString();
+
+    const { error } = await supabase
       .from('players')
       .insert([{
-        nick:          nick.trim(),
-        email:         email.trim().toLowerCase(),
+        nick:              nick.trim(),
+        email:             email.trim().toLowerCase(),
         password_hash,
-        twitch_url:    normalizeUrl(twitch_url),
-        youtube_url:   normalizeUrl(youtube_url),
-        kick_url:      normalizeUrl(kick_url),
-        tiktok_url:    normalizeUrl(tiktok_url),
-        status:        'pending',
-        blocked:       false,
-      }])
-      .select('id, nick, email')
-      .single();
+        email_verified_at: now,
+        twitch_url:        normalizeUrl(twitch_url),
+        youtube_url:       normalizeUrl(youtube_url),
+        kick_url:          normalizeUrl(kick_url),
+        tiktok_url:        normalizeUrl(tiktok_url),
+        status:            'pending',
+        blocked:           false,
+      }]);
 
     if (error) {
       const { httpStatus, message } = dbError(error);
@@ -101,27 +102,8 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const playerRow = player as { id: number; nick: string; email: string };
-
-    // Gera OTP de 6 dígitos para verificação de email (expira em 10 min)
-    const code = String(Math.floor(100000 + Math.random() * 900000));
-    const otpToken = `${playerRow.id}_otp_${code}`;
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-
-    await supabase.from('player_tokens').insert([{
-      player_id:  playerRow.id,
-      token:      otpToken,
-      type:       'otp',
-      expires_at: expiresAt,
-    }]);
-
-    await sendOtpEmail(playerRow.email, playerRow.nick, code, 'verify_email').catch(err =>
-      console.error('[register] Falha ao enviar OTP:', err)
-    );
-
     res.status(201).json({
-      message: 'Cadastro recebido. Um código de 6 dígitos foi enviado para o seu email.',
-      email: playerRow.email,
+      message: 'Cadastro recebido! Aguarde a aprovação de um moderador para entrar no ranking.',
     });
   } catch (err) {
     console.error('[POST /players/register] Erro inesperado:', err);
@@ -348,6 +330,27 @@ router.patch('/:id/delete', requireModerator, async (req: ModRequest, res: Respo
   } catch (err) {
     console.error('[PATCH /players/:id/delete] Erro inesperado:', err);
     res.status(500).json({ error: 'Erro interno ao excluir jogador.' });
+  }
+});
+
+// PATCH /players/:id/verify-email — moderador: marca email_verified_at manualmente
+router.patch('/:id/verify-email', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
+  const id = parseInt(String(req.params.id), 10);
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
+
+  try {
+    const { data, error } = await supabase
+      .from('players')
+      .update({ email_verified_at: new Date().toISOString() })
+      .eq('id', id)
+      .select('id, nick, email_verified_at')
+      .single();
+
+    if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
+    res.json(data);
+  } catch (err) {
+    console.error('[PATCH /players/:id/verify-email] Erro inesperado:', err);
+    res.status(500).json({ error: 'Erro interno ao verificar email.' });
   }
 });
 

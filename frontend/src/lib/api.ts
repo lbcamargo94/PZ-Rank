@@ -85,8 +85,8 @@ export function apiForgotPassword(email: string): Promise<{ message: string }> {
   return request('/auth/player/forgot-password', { method: 'POST', ...json(null, { email }) });
 }
 
-export function apiClaimAccount(nick: string, email: string): Promise<{ message: string }> {
-  return request('/auth/player/claim', { method: 'POST', ...json(null, { nick, email }) });
+export function apiClaimAccount(nick: string, email: string, password: string): Promise<{ message: string }> {
+  return request('/auth/player/claim', { method: 'POST', ...json(null, { nick, email, password }) });
 }
 
 export function apiConfirmClaimOtp(email: string, code: string): Promise<{ message: string; activate_token: string }> {
@@ -214,6 +214,10 @@ export function apiUpdateEntryObjectives(
 
 export function apiSetPlayerEmail(token: string, id: number, email: string): Promise<{ message: string }> {
   return request(`/players/${id}/email`, { method: 'PATCH', ...json(token, { email }) });
+}
+
+export function apiVerifyPlayerEmail(token: string, id: number): Promise<{ id: number; nick: string; email_verified_at: string }> {
+  return request(`/players/${id}/verify-email`, { method: 'PATCH', ...auth(token) });
 }
 
 export function apiActivateAccount(token: string, password: string): Promise<{ message: string }> {

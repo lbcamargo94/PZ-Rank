@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { apiRegisterPlayer, apiConfirmRegistrationOtp, apiResendRegistrationOtp } from '../lib/api';
-import { OtpInput } from './OtpInput';
+import { apiRegisterPlayer } from '../lib/api';
 
 interface Props {
   onClose:   () => void;
@@ -24,11 +23,6 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
   const [showPass,        setShowPass]        = useState(false);
   const [loading,         setLoading]         = useState(false);
   const [done,            setDone]            = useState(false);
-  const [otpStep,         setOtpStep]         = useState(false);
-  const [registeredEmail, setRegisteredEmail] = useState('');
-  const [otpCode,         setOtpCode]         = useState('');
-  const [otpError,        setOtpError]        = useState('');
-  const [resendMsg,       setResendMsg]       = useState('');
   const [socials, setSocials] = useState<Record<SocialId, string>>({
     twitch: '', youtube: '', kick: '', tiktok: '',
   });
@@ -67,37 +61,11 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
         kick_url:    socials.kick.trim()    || undefined,
         tiktok_url:  socials.tiktok.trim()  || undefined,
       });
-      setRegisteredEmail(email.trim());
-      setOtpStep(true);
+      setDone(true);
     } catch (err) {
       showToast((err as Error).message, 'error');
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function handleOtpConfirm(e: React.FormEvent) {
-    e.preventDefault();
-    if (otpCode.length !== 6) return;
-    setLoading(true);
-    setOtpError('');
-    try {
-      await apiConfirmRegistrationOtp(registeredEmail, otpCode);
-      setDone(true);
-    } catch (err) {
-      setOtpError((err as Error).message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleResend() {
-    setResendMsg('');
-    try {
-      const res = await apiResendRegistrationOtp(registeredEmail);
-      setResendMsg(res.message);
-    } catch (err) {
-      setResendMsg((err as Error).message);
     }
   }
 
@@ -113,43 +81,13 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
         {done ? (
           <div className="reg-success">
             <div className="reg-success-icon"><i className="ti ti-circle-check" /></div>
-            <h2 className="reg-success-title">Email verificado!</h2>
+            <h2 className="reg-success-title">Cadastro recebido!</h2>
             <p className="reg-success-msg">
-              Cadastro confirmado. Aguarde a aprovação de um moderador para acessar o ranking.
+              Seu cadastro foi enviado. Aguarde a aprovação de um moderador para entrar no ranking.
             </p>
             <button className="btn-primary btn-block" onClick={onClose}>
               <i className="ti ti-arrow-left" /> Voltar ao Ranking
             </button>
-          </div>
-        ) : otpStep ? (
-          <div className="reg-otp-step">
-            <div className="reg-header">
-              <div className="reg-header-icon"><i className="ti ti-shield-check" /></div>
-              <h2 className="reg-title">Confirme seu email</h2>
-              <p className="reg-subtitle">
-                Um código de 6 dígitos foi enviado para <strong>{registeredEmail}</strong>.
-              </p>
-            </div>
-            <form onSubmit={handleOtpConfirm} className="modal-form">
-              <OtpInput
-                value={otpCode}
-                onChange={setOtpCode}
-                hint="Digite o código recebido por email"
-                loading={loading}
-                onResend={handleResend}
-                resendMsg={resendMsg}
-              />
-              {otpError && <p className="account-status account-status--err">{otpError}</p>}
-              <button
-                className="btn-primary btn-block"
-                type="submit"
-                disabled={loading || otpCode.length !== 6}
-              >
-                {loading
-                  ? <><i className="ti ti-loader-2" /> Verificando...</>
-                  : <><i className="ti ti-check" /> Confirmar código</>}
-              </button>
-            </form>
           </div>
         ) : (
           <>
@@ -287,8 +225,8 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
               <div className="reg-info-box">
                 <i className="ti ti-shield-lock" />
                 <span>
-                  Seu email é usado apenas para verificar a conta e notificações do ranking.
-                  Após verificar o email, um moderador precisa aprovar sua conta.
+                  Seu email é usado para login no Companion e notificações do ranking.
+                  Após o cadastro, um moderador vai revisar e aprovar sua conta.
                 </span>
               </div>
 
