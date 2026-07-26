@@ -169,8 +169,22 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   };
   const prev = existing as ExistingRow | null;
 
-  // Se já está desclassificado, descarta qualquer atualização futura
+  // Se já está desclassificado, descarta qualquer atualização futura.
+  // Exceção: 'mod_removed' é um motivo fraco (Companion detectou ausência do mod).
+  // Se o sync traz um motivo mais específico do mod in-game, atualiza só o motivo.
   if (prev && prev.sandbox_ok === false) {
+    if (!decoded.sandboxOk && prev.disqualification_reason === 'mod_removed') {
+      const codeReason = (decoded.disqualificationReason && VALID_REASONS.has(decoded.disqualificationReason))
+        ? decoded.disqualificationReason as string
+        : null;
+      const betterReason = companionReason ?? codeReason;
+      if (betterReason && betterReason !== 'mod_removed') {
+        await supabase
+          .from(config.tableName)
+          .update({ disqualification_reason: betterReason })
+          .eq('id', prev.id);
+      }
+    }
     res.status(200).json({
       success:        true,
       character_name: decoded.characterName,
