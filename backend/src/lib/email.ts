@@ -10,6 +10,12 @@ function getResend(): Resend {
   return _resend;
 }
 
+// SDK v2+ retorna {data, error} em vez de lançar. Esse helper propaga o erro corretamente.
+async function sendEmail(params: Parameters<Resend['emails']['send']>[0]): Promise<void> {
+  const { error } = await getResend().emails.send(params);
+  if (error) throw new Error((error as { message?: string }).message ?? 'Resend: erro desconhecido.');
+}
+
 function baseTemplate(title: string, body: string): string {
   return `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -72,7 +78,7 @@ export async function sendVerificationEmail(email: string, nick: string, token: 
     </p>
   `);
 
-  await getResend().emails.send({
+  await sendEmail({
     from:    config.fromEmail,
     to:      email,
     subject: '✅ Verifique seu email — PZ Community Rank',
@@ -103,7 +109,7 @@ export async function sendPasswordResetEmail(email: string, nick: string, token:
     </p>
   `);
 
-  await getResend().emails.send({
+  await sendEmail({
     from:    config.fromEmail,
     to:      email,
     subject: '🔑 Redefinir senha — PZ Community Rank',
@@ -134,7 +140,7 @@ export async function sendActivationEmail(email: string, nick: string, token: st
     </p>
   `);
 
-  await getResend().emails.send({
+  await sendEmail({
     from:    config.fromEmail,
     to:      email,
     subject: '🔑 Ative sua conta — PZ Community Rank',
@@ -170,7 +176,7 @@ export async function sendOtpEmail(
     </p>
   `);
 
-  await getResend().emails.send({
+  await sendEmail({
     from:    config.fromEmail,
     to:      email,
     subject: `🔐 Código ${code} — PZ Community Rank`,
@@ -197,7 +203,7 @@ export async function sendApprovalEmail(email: string, nick: string): Promise<vo
     </table>
   `);
 
-  await getResend().emails.send({
+  await sendEmail({
     from:    config.fromEmail,
     to:      email,
     subject: '🏆 Conta aprovada — PZ Community Rank',
