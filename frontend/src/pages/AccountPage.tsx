@@ -479,7 +479,11 @@ export function AccountPage() {
     try {
       const data = await apiGetMyProfile(session.player_token);
       setProfile(data);
-    } catch {}
+    } catch {
+      sessionStorage.removeItem(PLAYER_SESSION_KEY);
+      setSession(null);
+      setProfile(null);
+    }
   }, [session]);
 
   useEffect(() => { loadProfile(); }, [loadProfile]);
