@@ -22,8 +22,14 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   if (res.status === 204) return undefined as T;
 
   if (res.status === 401) {
+    let errBody: Record<string, unknown> = {};
+    try { errBody = await res.json(); } catch { /* sem body */ }
     _onUnauthorized?.();
-    throw new Error('Sessão expirada. Faça login novamente.');
+    throw new Error(
+      typeof errBody.error === 'string' && errBody.error
+        ? errBody.error
+        : 'Sessão expirada. Faça login novamente.',
+    );
   }
 
   let body: Record<string, unknown>;
