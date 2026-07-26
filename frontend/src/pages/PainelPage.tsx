@@ -61,6 +61,58 @@ function EntryStatusBadge({ entry }: { entry: Entry }) {
   return <span className="alive-badge dead"><i className="ti ti-skull" /> Morto</span>;
 }
 
+const DISQ_INFO: Record<string, { icon: string; label: string; detail: string; color: string }> = {
+  sandbox:     { icon: 'ti-adjustments-off', label: 'Sandbox modificado',     detail: 'As configurações do sandbox divergem do preset oficial do desafio.',  color: '#f59e0b' },
+  debug:       { icon: 'ti-bug',             label: 'Modo debug ativo',       detail: 'O jogador ativou o modo debug durante o desafio Brasileirão.',         color: '#ef4444' },
+  mods:        { icon: 'ti-puzzle-off',      label: 'Mods não permitidos',    detail: 'Mod(s) fora da whitelist detectado(s) durante o desafio.',             color: '#ef4444' },
+  manual:      { icon: 'ti-user-x',          label: 'Desclassificação manual',detail: 'Desclassificado manualmente por um moderador.',                        color: '#6b7280' },
+  mod_removed: { icon: 'ti-plug-off',        label: 'Mod removido',           detail: 'O Companion detectou que o mod foi removido enquanto o jogo rodava.',  color: '#ef4444' },
+};
+
+const ANOMALY_INFO: Record<string, { label: string; detail: string }> = {
+  kills_regression: { label: 'Regressão de kills',              detail: 'O total de kills diminuiu entre dois syncs — impossível legitimamente.' },
+  days_regression:  { label: 'Regressão de dias sobrevividos',  detail: 'Os dias sobrevividos diminuíram entre dois syncs.' },
+  kills_spike:      { label: 'Ritmo de kills impossível',       detail: 'Mais de 2 kills/segundo registrados entre syncs — inatingível no PZ.' },
+};
+
+function DisqDetail({ entry }: { entry: Entry }) {
+  const hasDisq   = entry.sandbox_ok === false;
+  const hasAnomaly = !!entry.flagged_reason;
+  if (!hasDisq && !hasAnomaly) return null;
+
+  const disq    = DISQ_INFO[entry.disqualification_reason ?? 'sandbox'] ?? DISQ_INFO.sandbox;
+  const anomaly = entry.flagged_reason ? (ANOMALY_INFO[entry.flagged_reason] ?? { label: entry.flagged_reason, detail: '' }) : null;
+
+  return (
+    <div className="painel-disq-detail">
+      {hasDisq && (
+        <div className="painel-disq-row" style={{ '--dc': disq.color } as React.CSSProperties}>
+          <i className={`ti ${disq.icon} painel-disq-icon`} />
+          <div className="painel-disq-text">
+            <span className="painel-disq-label">{disq.label}</span>
+            <span className="painel-disq-desc">{disq.detail}</span>
+          </div>
+          {entry.disqualified_at && (
+            <span className="painel-disq-date"><i className="ti ti-clock" /> {fmtEntryDate(entry.disqualified_at)}</span>
+          )}
+        </div>
+      )}
+      {anomaly && (
+        <div className="painel-disq-row painel-disq-row--anomaly">
+          <i className="ti ti-alert-triangle painel-disq-icon" />
+          <div className="painel-disq-text">
+            <span className="painel-disq-label">Anomalia: {anomaly.label}</span>
+            {anomaly.detail && <span className="painel-disq-desc">{anomaly.detail}</span>}
+          </div>
+          {entry.flagged_at && (
+            <span className="painel-disq-date"><i className="ti ti-clock" /> {fmtEntryDate(entry.flagged_at)}</span>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function PainelPage({ session, onSession, onBack }: Props) {
   const [tab,            setTab]            = useState<Tab>('players');
   const [entryFilter,    setEntryFilter]    = useState<EntryFilter>('all');
@@ -169,11 +221,6 @@ export function PainelPage({ session, onSession, onBack }: Props) {
         <div className="painel-entry-identity">
           <span className="painel-entry-char">{entry.character_name || '—'}</span>
           <span className="painel-entry-player"><i className="ti ti-user" /> {entry.name}</span>
-          {entry.flagged_reason && (
-            <span className="painel-flag-badge" title={`Anomalia detectada: ${entry.flagged_reason}`}>
-              <i className="ti ti-flag-filled" /> {entry.flagged_reason.replace('_', ' ')}
-            </span>
-          )}
         </div>
         <div className="painel-entry-stats">
           <span><i className="ti ti-calendar" /> {entry.days}d</span>
@@ -186,6 +233,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
           )}
           <EntryStatusBadge entry={entry} />
         </div>
+        <DisqDetail entry={entry} />
         <div className="painel-entry-actions">
           <button
             className="btn-success btn-sm"
@@ -413,6 +461,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
                             <i className="ti ti-biohazard" /> Dead-Zone
                           </span>
                         </div>
+                        <DisqDetail entry={entry} />
                         <div className="painel-entry-actions">
                           <button
                             className="btn-success btn-sm"

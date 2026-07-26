@@ -30,10 +30,11 @@ const SORT_LABELS: { key: SortKey; label: string }[] = [
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
 const DISQ_TOOLTIPS: Record<string, string> = {
-  sandbox: 'Configurações do sandbox divergem do desafio oficial',
-  debug:   'Jogador utilizou modo debug durante o desafio Brasileirão',
-  mods:    'Jogador utilizou mods não permitidos no desafio Brasileirão',
-  manual:  'Desclassificado manualmente pelo moderador',
+  sandbox:     'Configurações do sandbox divergem do desafio oficial',
+  debug:       'Jogador utilizou modo debug durante o desafio Brasileirão',
+  mods:        'Jogador utilizou mods não permitidos no desafio Brasileirão',
+  manual:      'Desclassificado manualmente pelo moderador',
+  mod_removed: 'Companion detectou que o mod foi removido enquanto o jogo rodava',
 };
 
 function fmtDate(iso: string | null | undefined): string {
