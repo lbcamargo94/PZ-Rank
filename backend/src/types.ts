@@ -75,4 +75,5 @@ export interface DecodedCode {
   sandboxOk:              boolean;
   traits:                 string[];
   disqualificationReason: string | null;
+  codeTimestamp:          number | null;
 }

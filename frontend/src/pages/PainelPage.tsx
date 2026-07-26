@@ -73,6 +73,7 @@ const ANOMALY_INFO: Record<string, { label: string; detail: string }> = {
   kills_regression: { label: 'Regressão de kills',              detail: 'O total de kills diminuiu entre dois syncs — impossível legitimamente.' },
   days_regression:  { label: 'Regressão de dias sobrevividos',  detail: 'Os dias sobrevividos diminuíram entre dois syncs.' },
   kills_spike:      { label: 'Ritmo de kills impossível',       detail: 'Mais de 2 kills/segundo registrados entre syncs — inatingível no PZ.' },
+  code_replay:      { label: 'Replay de código antigo',         detail: 'O timestamp do código é anterior ao último sync gravado — possível reenvio de código desatualizado.' },
 };
 
 function DisqDetail({ entry }: { entry: Entry }) {

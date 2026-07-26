@@ -1,5 +1,6 @@
 ﻿import { Router } from 'express';
 import type { Request, Response } from 'express';
+import { createHmac } from 'crypto';
 import rateLimit from 'express-rate-limit';
 import { supabase } from '../supabase';
 import { parsePzrCode } from '../lib/decoder';
@@ -135,6 +136,42 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     return;
   }
 
+  // ── Verificação de assinatura HMAC ────────────────────────────────────────
+  // O Companion assina cada código com HMAC-SHA256(player_token:code, SYNC_HMAC_SECRET).
+  // Se o secret estiver configurado e a assinatura vier presente, ela deve conferir.
+  // Syncs sem assinatura (mod antigo ou Companion desatualizado) são aceitos mas logados.
+  if (config.syncHmacSecret) {
+    const sig = req.headers['x-code-sig'] as string | undefined;
+    if (sig) {
+      const expected = createHmac('sha256', config.syncHmacSecret)
+        .update(`${player_token}:${code}`)
+        .digest('hex');
+      if (sig !== expected) {
+        res.status(400).json({ error: 'Assinatura do código inválida.' });
+        return;
+      }
+    } else {
+      console.warn(`[sync] sync sem assinatura — player_token: ${player_token.slice(0, 8)}…`);
+    }
+  }
+
+  // ── Verificação de freshness do timestamp ──────────────────────────────────
+  // O campo codeTimestamp (campo 11 do payload) é gerado pelo mod no momento da
+  // criação do código. Rejeita códigos com mais de 26h (cobre 24h de retry queue)
+  // ou com timestamp futuro (mais de 5min de tolerância para skew de relógio).
+  if (decoded.codeTimestamp && decoded.codeTimestamp > 0) {
+    const nowSec  = Math.floor(Date.now() / 1000);
+    const ageSec  = nowSec - decoded.codeTimestamp;
+    if (ageSec > 26 * 3600) {
+      res.status(400).json({ error: 'Código expirado. Gere um novo sync no jogo.' });
+      return;
+    }
+    if (ageSec < -300) {
+      res.status(400).json({ error: 'Timestamp do código inválido (futuro).' });
+      return;
+    }
+  }
+
   // Limites de progressão — rejeita valores impossíveis (anti-cheat básico)
   if (decoded.kills > MAX_KILLS || decoded.kills < 0) {
     res.status(400).json({ error: 'Valor de kills fora do intervalo permitido.' });
@@ -148,7 +185,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // Busca entrada existente para preservar objectives, live_url e estado de desclassificação
   const { data: existing, error: existingError } = await supabase
     .from(config.tableName)
-    .select('id, objectives, live_url, sandbox_ok, disqualification_reason, kills, time_raw, days, flagged_reason, flagged_at')
+    .select('id, objectives, live_url, sandbox_ok, disqualification_reason, kills, time_raw, days, flagged_reason, flagged_at, updated_at')
     .eq('player_id', player.id)
     .eq('character_name', decoded.characterName)
     .maybeSingle();
@@ -166,6 +203,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     flagged_reason: string | null; flagged_at: string | null;
     sandbox_ok: boolean; disqualification_reason: string | null;
     objectives: Objectives | null; live_url: string | null;
+    updated_at: string | null;
   };
   const prev = existing as ExistingRow | null;
 
@@ -210,7 +248,18 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       flaggedReason = 'kills_regression';
     } else if (decoded.days < prev.days) {
       flaggedReason = 'days_regression';
-    } else {
+    } else if (
+      decoded.codeTimestamp &&
+      decoded.codeTimestamp > 0 &&
+      prev.updated_at
+    ) {
+      // Timestamp do código anterior ao último sync gravado → replay de código antigo
+      const prevUpdatedSec = Math.floor(new Date(prev.updated_at).getTime() / 1000);
+      if (decoded.codeTimestamp < prevUpdatedSec - 300) {
+        flaggedReason = 'code_replay';
+      }
+    }
+    if (!flaggedReason) {
       const timeDelta  = decoded.timeRaw - prev.time_raw;
       const killsDelta = decoded.kills   - prev.kills;
       if (timeDelta > 0 && killsDelta / timeDelta > MAX_KILLS_PER_SECOND) {

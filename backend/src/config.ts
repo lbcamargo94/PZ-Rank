@@ -20,4 +20,5 @@ export const config = {
   resendApiKey:       process.env.RESEND_API_KEY ?? '',
   fromEmail:          process.env.FROM_EMAIL ?? 'PZ Community Rank <noreply@pzrank.com.br>',
   frontendUrl:        process.env.FRONTEND_URL ?? 'http://localhost:5173',
+  syncHmacSecret:     process.env.SYNC_HMAC_SECRET ?? '',
 };
