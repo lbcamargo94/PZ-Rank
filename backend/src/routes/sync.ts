@@ -45,8 +45,9 @@ const sandboxLimiter = rateLimit({
 // ── Limites de progressão (anti-cheat básico) ──────────────────────────────
 // Detecta valores claramente impossíveis antes de persistir no banco.
 // 500k kills: cobre jogadores com alta densidade de zumbis em runs muito longas.
-const MAX_KILLS = 500_000;
-const MAX_DAYS  = 36_500; // ~100 anos em dias de jogo
+const MAX_KILLS            = 500_000;
+const MAX_DAYS             = 36_500; // ~100 anos em dias de jogo
+const MAX_KILLS_PER_SECOND = 2.0;    // acima disso é fisicamente impossível no PZ
 
 // GET /sync/lookup?nick=<nick> — público (rate limited: 10/hora por IP)
 // Retorna player_token se o jogador está aprovado e ativo.
@@ -147,7 +148,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // Busca entrada existente para preservar objectives, live_url e estado de desclassificação
   const { data: existing, error: existingError } = await supabase
     .from(config.tableName)
-    .select('id, objectives, live_url, sandbox_ok, disqualification_reason')
+    .select('id, objectives, live_url, sandbox_ok, disqualification_reason, kills, time_raw, days, flagged_reason, flagged_at')
     .eq('player_id', player.id)
     .eq('character_name', decoded.characterName)
     .maybeSingle();
@@ -160,8 +161,16 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     return;
   }
 
+  type ExistingRow = {
+    id: number; kills: number; time_raw: number; days: number;
+    flagged_reason: string | null; flagged_at: string | null;
+    sandbox_ok: boolean; disqualification_reason: string | null;
+    objectives: Objectives | null; live_url: string | null;
+  };
+  const prev = existing as ExistingRow | null;
+
   // Se já está desclassificado, descarta qualquer atualização futura
-  if (existing && existing.sandbox_ok === false) {
+  if (prev && prev.sandbox_ok === false) {
     res.status(200).json({
       success:        true,
       character_name: decoded.characterName,
@@ -174,10 +183,40 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
 
   const existingObjectives = (existing?.objectives as Objectives | null) ?? null;
 
+  // ── Detecção de anomalias estatísticas ─────────────────────────────────────
+  // Compara submissão atual com o último estado conhecido para detectar
+  // progressão impossível (regressão de kills/dias ou ritmo de kills absurdo).
+  // Flags ficam gravadas para revisão do moderador — não bloqueiam o sync.
+
+  let flaggedReason: string | null = null;
+  let flaggedAt:     string | null = null;
+
+  if (prev && decoded.sandboxOk) {
+    if (decoded.kills < prev.kills) {
+      flaggedReason = 'kills_regression';
+    } else if (decoded.days < prev.days) {
+      flaggedReason = 'days_regression';
+    } else {
+      const timeDelta  = decoded.timeRaw - prev.time_raw;
+      const killsDelta = decoded.kills   - prev.kills;
+      if (timeDelta > 0 && killsDelta / timeDelta > MAX_KILLS_PER_SECOND) {
+        flaggedReason = 'kills_spike';
+      }
+    }
+
+    if (flaggedReason) {
+      flaggedAt = new Date().toISOString();
+    } else if (prev.flagged_reason) {
+      // Mantém flag anterior até revisão manual do moderador
+      flaggedReason = prev.flagged_reason;
+      flaggedAt     = prev.flagged_at ?? null;
+    }
+  }
+
   // Desclassificação: preserva os dados legítimos do último estado classificado.
   // Só atualiza sandbox_ok, is_alive e zera o score — kills/dias/skills não são sobrescritos.
-  if (!decoded.sandboxOk && existing) {
-    const existingRow = existing as { id: number; disqualification_reason?: string | null };
+  if (!decoded.sandboxOk && prev) {
+    const existingRow = prev as { id: number; disqualification_reason?: string | null };
     const codeReason = (decoded.disqualificationReason && VALID_REASONS.has(decoded.disqualificationReason))
       ? decoded.disqualificationReason as 'sandbox' | 'debug' | 'mods' | 'manual'
       : null;
@@ -222,15 +261,17 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     traits:         decoded.traits.length > 0 ? decoded.traits.join(',') : null,
     objectives:     existingObjectives,
     score,
+    flagged_reason: flaggedReason,
+    flagged_at:     flaggedAt,
     updated_at:     new Date().toISOString(),
   };
 
   let data, error;
-  if (existing) {
+  if (prev) {
     ({ data, error } = await supabase
       .from(config.tableName)
       .update(entry)
-      .eq('id', (existing as { id: number }).id)
+      .eq('id', (prev as { id: number }).id)
       .select('id, character_name, score, is_alive')
       .single());
   } else {
@@ -254,7 +295,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     .select('*', { count: 'exact', head: true })
     .gt('score', finalScore);
 
-  res.status(existing ? 200 : 201).json({
+  res.status(prev ? 200 : 201).json({
     success:        true,
     character_name: (data as { character_name: string }).character_name,
     score:          finalScore,

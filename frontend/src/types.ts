@@ -18,6 +18,8 @@
   score:                      number;
   disqualification_reason?:   'sandbox' | 'debug' | 'mods' | 'manual' | 'mod_removed' | null;
   disqualified_at?:           string | null;
+  flagged_reason?:            string | null;
+  flagged_at?:                string | null;
   deleted_at?:                string | null;
   created_at?:                string | null;
   updated_at?:                string | null;

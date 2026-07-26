@@ -60,6 +60,8 @@ CREATE TABLE IF NOT EXISTS entries (
   sandbox_config_updated_at  TEXT,
   disqualification_reason    TEXT     DEFAULT NULL,
   disqualified_at            TEXT     DEFAULT NULL,
+  flagged_reason             TEXT     DEFAULT NULL,
+  flagged_at                 TEXT     DEFAULT NULL,
   created_at                 TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
   updated_at                 TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
   deleted_at                 TEXT     DEFAULT NULL,

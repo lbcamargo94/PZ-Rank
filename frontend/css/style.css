@@ -3603,6 +3603,20 @@ a.btn-ghost { text-decoration: none; }
   text-overflow: ellipsis;
 }
 
+.painel-flag-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: #dc2626;
+  border-radius: 4px;
+  padding: 2px 7px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 .painel-entry-stats {
   display: flex;
   align-items: center;

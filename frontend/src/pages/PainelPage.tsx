@@ -169,6 +169,11 @@ export function PainelPage({ session, onSession, onBack }: Props) {
         <div className="painel-entry-identity">
           <span className="painel-entry-char">{entry.character_name || '—'}</span>
           <span className="painel-entry-player"><i className="ti ti-user" /> {entry.name}</span>
+          {entry.flagged_reason && (
+            <span className="painel-flag-badge" title={`Anomalia detectada: ${entry.flagged_reason}`}>
+              <i className="ti ti-flag-filled" /> {entry.flagged_reason.replace('_', ' ')}
+            </span>
+          )}
         </div>
         <div className="painel-entry-stats">
           <span><i className="ti ti-calendar" /> {entry.days}d</span>
