@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
 import { supabase } from '../supabase';
 import { sendPasswordResetEmail, sendVerificationEmail, sendOtpEmail } from '../lib/email';
+import { validatePassword } from '../lib/password';
 
 const router = Router();
 
@@ -186,10 +187,9 @@ router.post('/forgot-password', async (req: Request, res: Response): Promise<voi
 // POST /auth/player/activate — ativa conta legada (primeiro acesso, define senha via token do moderador)
 router.post('/activate', async (req: Request, res: Response): Promise<void> => {
   const { token, password } = req.body as { token?: string; password?: string };
-  if (!token?.trim() || !password || password.length < 8) {
-    res.status(400).json({ error: 'Token e senha (mínimo 8 caracteres) são obrigatórios.' });
-    return;
-  }
+  if (!token?.trim()) { res.status(400).json({ error: 'Token é obrigatório.' }); return; }
+  const activateErr = validatePassword(password ?? '');
+  if (activateErr) { res.status(400).json({ error: activateErr }); return; }
 
   const now = new Date().toISOString();
 
@@ -216,7 +216,7 @@ router.post('/activate', async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  const password_hash = await bcrypt.hash(password, 10);
+  const password_hash = await bcrypt.hash(password!, 10);
 
   await Promise.all([
     supabase.from('player_tokens').update({ used_at: now }).eq('id', row.id),
@@ -229,10 +229,9 @@ router.post('/activate', async (req: Request, res: Response): Promise<void> => {
 // POST /auth/player/reset-password — redefine senha com token
 router.post('/reset-password', async (req: Request, res: Response): Promise<void> => {
   const { token, password } = req.body as { token?: string; password?: string };
-  if (!token?.trim() || !password || password.length < 8) {
-    res.status(400).json({ error: 'Token e senha (mínimo 8 caracteres) são obrigatórios.' });
-    return;
-  }
+  if (!token?.trim()) { res.status(400).json({ error: 'Token é obrigatório.' }); return; }
+  const resetErr = validatePassword(password ?? '');
+  if (resetErr) { res.status(400).json({ error: resetErr }); return; }
 
   const now = new Date().toISOString();
 
@@ -259,7 +258,7 @@ router.post('/reset-password', async (req: Request, res: Response): Promise<void
     return;
   }
 
-  const password_hash = await bcrypt.hash(password, 10);
+  const password_hash = await bcrypt.hash(password!, 10);
 
   await Promise.all([
     supabase.from('player_tokens').update({ used_at: now }).eq('id', row.id),
@@ -378,10 +377,8 @@ router.post('/claim', async (req: Request, res: Response): Promise<void> => {
     res.status(400).json({ error: 'Email inválido.' });
     return;
   }
-  if (password.length < 8) {
-    res.status(400).json({ error: 'A senha deve ter no mínimo 8 caracteres.' });
-    return;
-  }
+  const claimPwdErr = validatePassword(password);
+  if (claimPwdErr) { res.status(400).json({ error: claimPwdErr }); return; }
 
   const newEmail = email.trim().toLowerCase();
 

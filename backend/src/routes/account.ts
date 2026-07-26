@@ -7,6 +7,7 @@ import { dbError } from '../lib/errors';
 import { requirePlayer } from '../middleware/player';
 import type { PlayerRequest } from '../middleware/player';
 import { sendVerificationEmail, sendOtpEmail } from '../lib/email';
+import { validatePassword } from '../lib/password';
 
 const router = Router();
 
@@ -52,10 +53,8 @@ router.patch('/me/password', requirePlayer, async (req: PlayerRequest, res: Resp
     res.status(400).json({ error: 'Senha atual e nova senha são obrigatórias.' });
     return;
   }
-  if (new_password.length < 8) {
-    res.status(400).json({ error: 'A nova senha deve ter no mínimo 8 caracteres.' });
-    return;
-  }
+  const changePwdErr = validatePassword(new_password);
+  if (changePwdErr) { res.status(400).json({ error: changePwdErr }); return; }
   if (current_password === new_password) {
     res.status(400).json({ error: 'A nova senha deve ser diferente da atual.' });
     return;
@@ -230,10 +229,8 @@ router.post('/me/otp/send', requirePlayer, async (req: PlayerRequest, res: Respo
   }
 
   if (action === 'change_password') {
-    if (!new_password || new_password.length < 8) {
-      res.status(400).json({ error: 'Nova senha deve ter no mínimo 8 caracteres.' });
-      return;
-    }
+    const otpPwdErr = validatePassword(new_password ?? '');
+    if (otpPwdErr) { res.status(400).json({ error: otpPwdErr }); return; }
     if (current_password === new_password) {
       res.status(400).json({ error: 'A nova senha deve ser diferente da atual.' });
       return;

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { apiActivateAccount } from '../lib/api';
+import { checkPassword } from '../lib/password';
+import { PasswordHints } from '../components/PasswordHints';
 
 export function ActivateAccountPage() {
   const [searchParams] = useSearchParams();
@@ -17,7 +19,7 @@ export function ActivateAccountPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!token) { setError('Link inválido.'); return; }
-    if (password.length < 8) { setError('A senha deve ter no mínimo 8 caracteres.'); return; }
+    if (!checkPassword(password).ok) { setError('A senha não atende aos requisitos de segurança.'); return; }
     if (password !== confirmPassword) { setError('As senhas não coincidem.'); return; }
 
     setLoading(true);
@@ -84,6 +86,7 @@ export function ActivateAccountPage() {
                   </button>
                 </div>
               </div>
+              <PasswordHints password={password} />
               <div className="reg-field">
                 <label className="form-label" htmlFor="ac-confirm">Confirmar senha</label>
                 <div className="reg-nick-input-wrap">
@@ -106,7 +109,7 @@ export function ActivateAccountPage() {
               <button
                 className="btn-primary btn-block"
                 type="submit"
-                disabled={loading || password.length < 8 || password !== confirmPassword}
+                disabled={loading || !checkPassword(password).ok || password !== confirmPassword}
               >
                 {loading
                   ? <><i className="ti ti-loader-2" /> Ativando...</>

@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { apiRegisterPlayer } from '../lib/api';
+import { checkPassword } from '../lib/password';
+import { PasswordHints } from './PasswordHints';
 
 interface Props {
   onClose:   () => void;
@@ -42,8 +44,8 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!nick.trim() || !email.trim() || !password) return;
-    if (password.length < 8) {
-      showToast('A senha deve ter no mínimo 8 caracteres.', 'error');
+    if (!checkPassword(password).ok) {
+      showToast('A senha não atende aos requisitos de segurança.', 'error');
       return;
     }
     if (password !== confirmPassword) {
@@ -69,7 +71,7 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
     }
   }
 
-  const canSubmit = nick.trim() && email.trim() && password.length >= 8 && password === confirmPassword;
+  const canSubmit = nick.trim() && email.trim() && checkPassword(password).ok && password === confirmPassword;
 
   return (
     <div className="modal-overlay active" role="dialog" aria-modal="true">
@@ -169,6 +171,8 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
                   </button>
                 </div>
               </div>
+
+              <PasswordHints password={password} />
 
               {/* Confirmar senha */}
               <div className="reg-field">

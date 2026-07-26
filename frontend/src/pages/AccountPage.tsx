@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { checkPassword } from '../lib/password';
+import { PasswordHints } from '../components/PasswordHints';
 import {
   apiPlayerLogin,
   apiGetMyProfile,
@@ -220,6 +222,7 @@ function TabConta({ session, profile, onProfileChange }: {
   async function handlePwdSendOtp(e: React.FormEvent) {
     e.preventDefault();
     setPwdMsg('');
+    if (!checkPassword(newPwd).ok) { setPwdMsg('A senha não atende aos requisitos de segurança.'); setPwdOk(false); return; }
     if (newPwd !== confirmPwd) { setPwdMsg('As senhas não conferem.'); setPwdOk(false); return; }
     setPwdLoading(true);
     try {
@@ -312,11 +315,12 @@ function TabConta({ session, profile, onProfileChange }: {
           <FormField label="Senha atual" type="password" value={curPassPwd}
             onChange={setCurPassPwd} autoComplete="current-password" />
           <FormField label="Nova senha" type="password" value={newPwd}
-            onChange={setNewPwd} placeholder="Mínimo 8 caracteres" autoComplete="new-password" />
+            onChange={setNewPwd} placeholder="Mín. 8 car., maiúscula, número, especial" autoComplete="new-password" />
+          <PasswordHints password={newPwd} />
           <FormField label="Confirmar nova senha" type="password" value={confirmPwd}
             onChange={setConfirmPwd} autoComplete="new-password" />
           <button type="submit" className="btn-primary"
-            disabled={pwdLoading || !curPassPwd || newPwd.length < 8 || newPwd !== confirmPwd}>
+            disabled={pwdLoading || !curPassPwd || !checkPassword(newPwd).ok || newPwd !== confirmPwd}>
             {pwdLoading ? 'Enviando código…' : 'Trocar senha'}
           </button>
         </form>

@@ -8,6 +8,7 @@ import { requireModerator } from '../middleware/moderator';
 import type { ModRequest } from '../middleware/moderator';
 import type { PlayerStatus } from '../types';
 import { sendApprovalEmail, sendActivationEmail } from '../lib/email';
+import { validatePassword } from '../lib/password';
 
 const router = Router();
 
@@ -65,13 +66,11 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
     res.status(400).json({ error: 'Email inválido.' });
     return;
   }
-  if (!password || password.length < 8) {
-    res.status(400).json({ error: 'A senha deve ter no mínimo 8 caracteres.' });
-    return;
-  }
+  const pwdError = validatePassword(password ?? '');
+  if (pwdError) { res.status(400).json({ error: pwdError }); return; }
 
   try {
-    const password_hash = await bcrypt.hash(password, 10);
+    const password_hash = await bcrypt.hash(password!, 10);
 
     const now = new Date().toISOString();
 

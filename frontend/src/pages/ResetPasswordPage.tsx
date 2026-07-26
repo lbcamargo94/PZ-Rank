@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { checkPassword } from '../lib/password';
+import { PasswordHints } from '../components/PasswordHints';
 
 const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:3000';
 
@@ -18,7 +20,7 @@ export function ResetPasswordPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!token) { setError('Token inválido.'); return; }
-    if (password.length < 8) { setError('A senha deve ter no mínimo 8 caracteres.'); return; }
+    if (!checkPassword(password).ok) { setError('A senha não atende aos requisitos de segurança.'); return; }
     if (password !== confirmPassword) { setError('As senhas não coincidem.'); return; }
 
     setLoading(true);
@@ -86,6 +88,7 @@ export function ResetPasswordPage() {
                   </button>
                 </div>
               </div>
+              <PasswordHints password={password} />
               <div className="reg-field">
                 <label className="form-label" htmlFor="rp-confirm">Confirmar senha</label>
                 <div className="reg-nick-input-wrap">
@@ -108,7 +111,7 @@ export function ResetPasswordPage() {
               <button
                 className="btn-primary btn-block"
                 type="submit"
-                disabled={loading || password.length < 8 || password !== confirmPassword}
+                disabled={loading || !checkPassword(password).ok || password !== confirmPassword}
               >
                 {loading ? <><i className="ti ti-loader-2" /> Salvando...</> : <><i className="ti ti-check" /> Salvar nova senha</>}
               </button>

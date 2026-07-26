@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { apiClaimAccount } from '../lib/api';
+import { checkPassword } from '../lib/password';
+import { PasswordHints } from '../components/PasswordHints';
 
 export function ClaimAccountPage() {
   const [nick,            setNick]            = useState('');
@@ -15,8 +17,8 @@ export function ClaimAccountPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!nick.trim() || !email.trim() || !password) return;
-    if (password.length < 8) {
-      setMsg('A senha deve ter no mínimo 8 caracteres.');
+    if (!checkPassword(password).ok) {
+      setMsg('A senha não atende aos requisitos de segurança.');
       return;
     }
     if (password !== confirmPassword) {
@@ -35,7 +37,7 @@ export function ClaimAccountPage() {
     }
   }
 
-  const canSubmit = nick.trim() && email.trim() && password.length >= 8 && password === confirmPassword;
+  const canSubmit = nick.trim() && email.trim() && checkPassword(password).ok && password === confirmPassword;
 
   if (done) {
     return (
@@ -112,6 +114,7 @@ export function ClaimAccountPage() {
               </button>
             </div>
           </div>
+          <PasswordHints password={password} />
           <div className="account-field">
             <label className="account-label">Confirmar senha</label>
             <div className="reg-nick-input-wrap">
