@@ -346,7 +346,7 @@ router.post('/otp/resend-registration', async (req: Request, res: Response): Pro
     return;
   }
 
-  const code = String(Math.floor(100000 + Math.random() * 900000));
+  const code = String(100000 + crypto.randomInt(900000));
   const otpToken = `${playerRow.id}_otp_${code}`;
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
@@ -449,7 +449,7 @@ router.post('/otp/resend-claim', async (req: Request, res: Response): Promise<vo
     return;
   }
 
-  const code = String(Math.floor(100000 + Math.random() * 900000));
+  const code = String(100000 + crypto.randomInt(900000));
   const otpToken = `${row.id}_otp_${code}`;
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 

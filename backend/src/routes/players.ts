@@ -247,7 +247,7 @@ router.patch('/:id/block', requireModerator, async (req: ModRequest, res: Respon
       .from('players')
       .update({ blocked: true })
       .eq('id', id)
-      .select()
+      .select('id, nick, email, email_verified_at, twitch_url, youtube_url, kick_url, tiktok_url, status, blocked, deleted_at, created_at')
       .single();
 
     if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
@@ -268,7 +268,7 @@ router.patch('/:id/unblock', requireModerator, async (req: ModRequest, res: Resp
       .from('players')
       .update({ blocked: false })
       .eq('id', id)
-      .select()
+      .select('id, nick, email, email_verified_at, twitch_url, youtube_url, kick_url, tiktok_url, status, blocked, deleted_at, created_at')
       .single();
 
     if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
@@ -301,7 +301,7 @@ router.patch('/:id/links', requireModerator, async (req: ModRequest, res: Respon
         tiktok_url:  normalizeUrl(tiktok_url),
       })
       .eq('id', id)
-      .select()
+      .select('id, nick, email, email_verified_at, twitch_url, youtube_url, kick_url, tiktok_url, status, blocked, deleted_at, created_at')
       .single();
 
     if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
@@ -322,7 +322,7 @@ router.patch('/:id/delete', requireModerator, async (req: ModRequest, res: Respo
       .from('players')
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', id)
-      .select()
+      .select('id, nick, email, email_verified_at, twitch_url, youtube_url, kick_url, tiktok_url, status, blocked, deleted_at, created_at')
       .single();
 
     if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
@@ -364,7 +364,7 @@ router.patch('/:id/restore', requireModerator, async (req: ModRequest, res: Resp
       .from('players')
       .update({ deleted_at: null })
       .eq('id', id)
-      .select()
+      .select('id, nick, email, email_verified_at, twitch_url, youtube_url, kick_url, tiktok_url, status, blocked, deleted_at, created_at')
       .single();
 
     if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }

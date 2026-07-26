@@ -241,7 +241,7 @@ router.post('/me/otp/send', requirePlayer, async (req: PlayerRequest, res: Respo
   }
 
   // Gera OTP e armazena
-  const code = String(Math.floor(100000 + Math.random() * 900000));
+  const code = String(100000 + crypto.randomInt(900000));
   const otpToken = `${row.id}_otp_${code}`;
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
