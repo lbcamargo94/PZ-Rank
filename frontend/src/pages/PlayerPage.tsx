@@ -197,11 +197,30 @@ function TraitsSection({ traitsRaw }: { traitsRaw: string | null | undefined }) 
 }
 
 const PP_DISQ_TOOLTIPS: Record<string, string> = {
-  sandbox: 'Configurações do sandbox divergem do desafio oficial',
-  debug:   'Jogador utilizou modo debug durante o desafio Brasileirão',
-  mods:    'Jogador utilizou mods não permitidos no desafio Brasileirão',
-  manual:  'Desclassificado manualmente pelo moderador',
+  sandbox:     'Configurações do sandbox divergem do desafio oficial',
+  debug:       'Jogador utilizou modo debug durante o desafio Brasileirão',
+  mods:        'Jogador utilizou mods não permitidos no desafio Brasileirão',
+  manual:      'Desclassificado manualmente pelo moderador',
+  mod_removed: 'Mod do desafio foi removido durante a run',
 };
+
+function parseModViolations(reason: string | null | undefined): string[] {
+  if (!reason?.startsWith('mods:')) return [];
+  return reason.slice(5).split(',').map(v => {
+    if (v.startsWith('NAO_PERMITIDO:')) return v.slice(14);
+    if (v.startsWith('AUSENTE:'))       return `${v.slice(8)} (ausente)`;
+    return v;
+  }).filter(Boolean);
+}
+
+function ppDisqTooltip(reason: string | null | undefined): string {
+  if (!reason) return PP_DISQ_TOOLTIPS.sandbox;
+  if (reason.startsWith('mods:')) {
+    const ids = parseModViolations(reason);
+    return ids.length > 0 ? `Mods não permitidos: ${ids.join(', ')}` : PP_DISQ_TOOLTIPS.mods;
+  }
+  return PP_DISQ_TOOLTIPS[reason] ?? PP_DISQ_TOOLTIPS.mods;
+}
 
 function CharacterCard({ entry, rank }: { entry: Entry; rank: number | null }) {
   const [tab, setTab] = useState<'stats' | 'skills' | 'traits'>('stats');
@@ -226,12 +245,20 @@ function CharacterCard({ entry, rank }: { entry: Entry; rank: number | null }) {
           {rank !== null && !isDisqualified && <span className="pp-char-rank">#{rank}</span>}
           {isDisqualified
             ? (
-              <span
-                className="alive-badge disqualified"
-                title={PP_DISQ_TOOLTIPS[entry.disqualification_reason ?? 'sandbox'] ?? PP_DISQ_TOOLTIPS.sandbox}
-              >
-                <i className="ti ti-ban" /> Desclassificado
-              </span>
+              <div className="pp-disq-block">
+                <span
+                  className="alive-badge disqualified"
+                  title={ppDisqTooltip(entry.disqualification_reason)}
+                >
+                  <i className="ti ti-ban" /> Desclassificado
+                </span>
+                {parseModViolations(entry.disqualification_reason).length > 0 && (
+                  <span className="pp-disq-mods">
+                    <i className="ti ti-plug-x" />
+                    {parseModViolations(entry.disqualification_reason).join(', ')}
+                  </span>
+                )}
+              </div>
             )
             : entry.is_alive
               ? <span className="alive-badge alive"><i className="ti ti-heartbeat" /> Vivo</span>

@@ -17,11 +17,27 @@ interface RankRowProps {
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
 const DISQ_TOOLTIPS: Record<string, string> = {
-  sandbox: 'Configurações do sandbox divergem do desafio oficial',
-  debug:   'Jogador utilizou modo debug durante o desafio Brasileirão',
-  mods:    'Jogador utilizou mods não permitidos no desafio Brasileirão',
-  manual:  'Desclassificado manualmente pelo moderador',
+  sandbox:     'Configurações do sandbox divergem do desafio oficial',
+  debug:       'Jogador utilizou modo debug durante o desafio Brasileirão',
+  mods:        'Jogador utilizou mods não permitidos no desafio Brasileirão',
+  manual:      'Desclassificado manualmente pelo moderador',
+  mod_removed: 'Mod do desafio foi removido durante a run',
 };
+
+function disqTooltip(reason: string | null | undefined): string {
+  if (!reason) return DISQ_TOOLTIPS.sandbox;
+  if (reason.startsWith('mods:')) {
+    const ids = reason.slice(5).split(',').map(v => {
+      if (v.startsWith('NAO_PERMITIDO:')) return v.slice(14);
+      if (v.startsWith('AUSENTE:'))       return v.slice(8) + ' (ausente)';
+      return v;
+    }).filter(Boolean);
+    return ids.length > 0
+      ? `Mods não permitidos: ${ids.join(', ')}`
+      : DISQ_TOOLTIPS.mods;
+  }
+  return DISQ_TOOLTIPS[reason] ?? DISQ_TOOLTIPS.mods;
+}
 
 function SkillsModal({ skillMap, charName, onClose }: {
   skillMap: Map<string, number>;
@@ -167,7 +183,7 @@ export function RankRow({ entry, rank, hideStatus }: RankRowProps) {
         <td className="rank-alive">
           {entry.sandbox_ok === false
             ? (
-              <span className="alive-badge disqualified" title={DISQ_TOOLTIPS[entry.disqualification_reason ?? 'sandbox'] ?? DISQ_TOOLTIPS.sandbox}>
+              <span className="alive-badge disqualified" title={disqTooltip(entry.disqualification_reason)}>
                 <i className="ti ti-ban" /> Desclassificado
               </span>
             )

@@ -16,7 +16,7 @@
   traits?:        string | null;
   objectives?:                import('./lib/objectives').Objectives | null;
   score:                      number;
-  disqualification_reason?:   'sandbox' | 'debug' | 'mods' | 'manual' | 'mod_removed' | null;
+  disqualification_reason?:   string | null;
   disqualified_at?:           string | null;
   flagged_reason?:            string | null;
   flagged_at?:                string | null;

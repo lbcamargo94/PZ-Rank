@@ -3100,6 +3100,25 @@ a.btn-ghost { text-decoration: none; }
   align-items: center;
   gap: 10px;
 }
+.pp-disq-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+.pp-disq-mods {
+  font-size: 11px;
+  color: #c07020;
+  font-family: var(--font-mono);
+  max-width: 280px;
+  text-align: right;
+  word-break: break-all;
+  line-height: 1.4;
+}
+.pp-disq-mods .ti {
+  margin-right: 4px;
+  font-size: 11px;
+}
 .pp-char-rank {
   font-family: var(--font-mono);
   font-size: 22px;
