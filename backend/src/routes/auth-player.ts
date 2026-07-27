@@ -148,7 +148,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
     config.jwtSecret,
     { expiresIn: '7d' },
   );
-  res.json({ token, player_id: row.id, nick: row.nick });
+  res.json({ token, player_token: row.player_token, player_id: row.id, nick: row.nick });
 });
 
 // POST /auth/player/forgot-password — solicita redefinição de senha
