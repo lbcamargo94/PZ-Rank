@@ -237,9 +237,12 @@ router.post('/me/otp/send', requirePlayer, async (req: PlayerRequest, res: Respo
     }
   }
 
-  // Gera OTP e armazena
+  // Gera OTP e armazena. Para change_email inclui hash do email-alvo para vincular o código.
   const code = String(100000 + crypto.randomInt(900000));
-  const otpToken = `${row.id}_otp_${code}`;
+  const emailSuffix = action === 'change_email'
+    ? `_${crypto.createHash('sha256').update(targetEmail).digest('hex').slice(0, 16)}`
+    : '';
+  const otpToken = `${row.id}_otp_${code}${emailSuffix}`;
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
   await supabase.from('player_tokens').insert([{
@@ -306,8 +309,11 @@ router.post('/me/otp/confirm', requirePlayer, async (req: PlayerRequest, res: Re
     return;
   }
 
-  // Verifica OTP
-  const otpToken = `${row.id}_otp_${code.trim()}`;
+  // Verifica OTP (para change_email: reconstrói com hash do email-alvo para validar vínculo)
+  const confirmEmailSuffix = action === 'change_email' && new_email?.trim()
+    ? `_${crypto.createHash('sha256').update(new_email.trim().toLowerCase()).digest('hex').slice(0, 16)}`
+    : '';
+  const otpToken = `${row.id}_otp_${code.trim()}${confirmEmailSuffix}`;
   const { data: tokenRow } = await supabase
     .from('player_tokens')
     .select('id, expires_at, used_at')

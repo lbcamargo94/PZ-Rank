@@ -16,6 +16,10 @@ async function sendEmail(params: Parameters<Resend['emails']['send']>[0]): Promi
   if (error) throw new Error((error as { message?: string }).message ?? 'Resend: erro desconhecido.');
 }
 
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 function baseTemplate(title: string, body: string): string {
   return `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -58,10 +62,9 @@ function baseTemplate(title: string, body: string): string {
 export async function sendVerificationEmail(email: string, nick: string, token: string): Promise<void> {
   const link = `${config.frontendUrl}/verificar-email?token=${token}`;
   const html = baseTemplate('Verifique seu email — PZ Community Rank', `
-    <h2 style="margin:0 0 16px;font-size:22px;color:#fff;">Bem-vindo, ${nick}!</h2>
+    <h2 style="margin:0 0 16px;font-size:22px;color:#fff;">Bem-vindo, ${escapeHtml(nick)}!</h2>
     <p style="margin:0 0 24px;color:#aaa;line-height:1.6;">
       Seu cadastro foi recebido. Clique no botão abaixo para verificar seu email e ativar sua conta.
-      Depois disso, um moderador vai revisar e aprovar sua participação no ranking.
     </p>
     <table cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
       <tr>
@@ -91,7 +94,7 @@ export async function sendPasswordResetEmail(email: string, nick: string, token:
   const html = baseTemplate('Redefinir senha — PZ Community Rank', `
     <h2 style="margin:0 0 16px;font-size:22px;color:#fff;">Redefinir senha</h2>
     <p style="margin:0 0 24px;color:#aaa;line-height:1.6;">
-      Recebemos uma solicitação de redefinição de senha para a conta <strong>${nick}</strong>.
+      Recebemos uma solicitação de redefinição de senha para a conta <strong>${escapeHtml(nick)}</strong>.
       Clique no botão abaixo para criar uma nova senha.
     </p>
     <table cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
@@ -120,9 +123,9 @@ export async function sendPasswordResetEmail(email: string, nick: string, token:
 export async function sendActivationEmail(email: string, nick: string, token: string): Promise<void> {
   const link = `${config.frontendUrl}/ativar-conta?token=${token}`;
   const html = baseTemplate('Ativar conta — PZ Community Rank', `
-    <h2 style="margin:0 0 16px;font-size:22px;color:#fff;">Olá, ${nick}!</h2>
+    <h2 style="margin:0 0 16px;font-size:22px;color:#fff;">Olá, ${escapeHtml(nick)}!</h2>
     <p style="margin:0 0 24px;color:#aaa;line-height:1.6;">
-      Um moderador do <strong>PZ Community Rank</strong> configurou este email para a sua conta.
+      Seu email foi configurado no <strong>PZ Community Rank</strong>.
       Clique no botão abaixo para definir sua senha e ativar o login no Companion.
     </p>
     <table cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
@@ -165,11 +168,11 @@ export async function sendOtpEmail(
     change_password: 'Use o código abaixo para confirmar a troca de senha da sua conta.',
   };
   const html = baseTemplate(subjects[action], `
-    <h2 style="margin:0 0 16px;font-size:22px;color:#fff;">Olá, ${nick}!</h2>
+    <h2 style="margin:0 0 16px;font-size:22px;color:#fff;">Olá, ${escapeHtml(nick)}!</h2>
     <p style="margin:0 0 24px;color:#aaa;line-height:1.6;">${descs[action]}</p>
     <div style="text-align:center;margin:0 0 24px;padding:28px 20px;background:#0a0a0a;border-radius:8px;border:1px solid #2a2a2a;">
       <p style="margin:0 0 8px;font-size:12px;color:#666;letter-spacing:2px;text-transform:uppercase;">Seu código</p>
-      <span style="font-size:44px;font-weight:700;letter-spacing:14px;color:#4ade80;font-family:'Courier New',monospace;">${code}</span>
+      <span style="font-size:44px;font-weight:700;letter-spacing:14px;color:#4ade80;font-family:'Courier New',monospace;">${escapeHtml(code)}</span>
     </div>
     <p style="margin:0;font-size:12px;color:#555;">
       Expira em <strong style="color:#aaa;">10 minutos</strong>. Se não foi você, ignore este email.

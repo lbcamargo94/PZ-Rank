@@ -171,8 +171,8 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
         .update(`${player_token}:${code}`)
         .digest('hex');
       if (sig !== expected) {
-        // Temporariamente não-fatal: log detalhado para diagnosticar divergência.
-        console.warn(`[hmac] diverge — token_len: ${player_token.length} | code_len: ${code.length} | code_start: ${code.slice(0, 20)} | sig_recv: ${sig.slice(0, 16)} | sig_exp: ${expected.slice(0, 16)}`);
+        res.status(403).json({ error: 'Assinatura inválida. Atualize o Companion.' });
+        return;
       }
     } else {
       console.warn(`[sync] sync sem assinatura — player_token: ${player_token.slice(0, 8)}…`);

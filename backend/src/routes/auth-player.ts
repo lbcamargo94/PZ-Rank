@@ -408,10 +408,15 @@ router.post('/claim', async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  await supabase.from('players').update({
+  const { error: claimUpdateErr } = await supabase.from('players').update({
     email:  newEmail,
     status: 'pending',
   }).eq('id', row.id);
+
+  if (claimUpdateErr) {
+    res.status(500).json({ error: 'Erro ao salvar dados. Tente novamente.' });
+    return;
+  }
 
   const claimCode = String(100000 + crypto.randomInt(900000));
   await supabase.from('player_tokens').insert([{
