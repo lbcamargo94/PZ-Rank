@@ -365,20 +365,18 @@ router.post('/otp/resend-registration', async (req: Request, res: Response): Pro
 
 // POST /auth/player/claim — jogador legado (sem email/senha) vincula email + senha sem OTP
 router.post('/claim', async (req: Request, res: Response): Promise<void> => {
-  const { nick, email, password } = req.body as { nick?: string; email?: string; password?: string };
+  const { nick, email } = req.body as { nick?: string; email?: string };
 
   const GENERIC = { message: 'Se o nick existir sem conta configurada, seu cadastro foi recebido.' };
 
-  if (!nick?.trim() || !email?.trim() || !password) {
-    res.status(400).json({ error: 'Nick, email e senha são obrigatórios.' });
+  if (!nick?.trim() || !email?.trim()) {
+    res.status(400).json({ error: 'Nick e email são obrigatórios.' });
     return;
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
     res.status(400).json({ error: 'Email inválido.' });
     return;
   }
-  const claimPwdErr = validatePassword(password);
-  if (claimPwdErr) { res.status(400).json({ error: claimPwdErr }); return; }
 
   const newEmail = email.trim().toLowerCase();
 
@@ -410,17 +408,24 @@ router.post('/claim', async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  const password_hash = await bcrypt.hash(password, 10);
-  const now = new Date().toISOString();
-
   await supabase.from('players').update({
-    email:             newEmail,
-    password_hash,
-    email_verified_at: now,
-    status:            'pending',
+    email:  newEmail,
+    status: 'pending',
   }).eq('id', row.id);
 
-  res.json({ message: 'Conta vinculada! Um moderador vai revisar e aprovar sua conta em breve.' });
+  const claimCode = String(100000 + crypto.randomInt(900000));
+  await supabase.from('player_tokens').insert([{
+    player_id:  row.id,
+    token:      `${row.id}_otp_${claimCode}`,
+    type:       'otp',
+    expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+  }]);
+
+  await sendOtpEmail(newEmail, row.nick, claimCode, 'verify_email').catch(err =>
+    console.error('[claim] Falha ao enviar OTP:', err)
+  );
+
+  res.json({ otp_pending: true, email: newEmail, message: 'Verifique seu email para confirmar a vinculação.' });
 });
 
 // POST /auth/player/otp/resend-claim — reenvia OTP para jogador legado no fluxo de vinculação

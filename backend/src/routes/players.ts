@@ -7,7 +7,7 @@ import { dbError } from '../lib/errors';
 import { requireModerator } from '../middleware/moderator';
 import type { ModRequest } from '../middleware/moderator';
 import type { PlayerStatus } from '../types';
-import { sendApprovalEmail, sendActivationEmail } from '../lib/email';
+import { sendApprovalEmail, sendActivationEmail, sendOtpEmail } from '../lib/email';
 import { validatePassword } from '../lib/password';
 
 const router = Router();
@@ -72,22 +72,21 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
   try {
     const password_hash = await bcrypt.hash(password!, 10);
 
-    const now = new Date().toISOString();
-
-    const { error } = await supabase
+    const { data: inserted, error } = await supabase
       .from('players')
       .insert([{
         nick:              nick.trim(),
         email:             email.trim().toLowerCase(),
         password_hash,
-        email_verified_at: now,
         twitch_url:        normalizeUrl(twitch_url),
         youtube_url:       normalizeUrl(youtube_url),
         kick_url:          normalizeUrl(kick_url),
         tiktok_url:        normalizeUrl(tiktok_url),
         status:            'pending',
         blocked:           false,
-      }]);
+      }])
+      .select('id')
+      .single();
 
     if (error) {
       const { httpStatus, message } = dbError(error);
@@ -101,8 +100,21 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    const newPlayerId = (inserted as { id: number }).id;
+    const otpCode = String(100000 + crypto.randomInt(900000));
+    await supabase.from('player_tokens').insert([{
+      player_id:  newPlayerId,
+      token:      `${newPlayerId}_otp_${otpCode}`,
+      type:       'otp',
+      expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+    }]);
+
+    await sendOtpEmail(email.trim().toLowerCase(), nick.trim(), otpCode, 'verify_email').catch(err =>
+      console.error('[POST /players/register] Falha ao enviar OTP:', err)
+    );
+
     res.status(201).json({
-      message: 'Cadastro recebido! Aguarde a aprovação de um moderador para entrar no ranking.',
+      message: 'Cadastro recebido! Verifique seu email para confirmar a conta.',
     });
   } catch (err) {
     console.error('[POST /players/register] Erro inesperado:', err);

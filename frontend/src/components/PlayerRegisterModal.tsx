@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { apiRegisterPlayer } from '../lib/api';
+import { apiRegisterPlayer, apiConfirmRegistrationOtp, apiResendRegistrationOtp } from '../lib/api';
 import { checkPassword } from '../lib/password';
 import { PasswordHints } from './PasswordHints';
+import { OtpInput } from './OtpInput';
 
 interface Props {
   onClose:   () => void;
@@ -24,7 +25,10 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPass,        setShowPass]        = useState(false);
   const [loading,         setLoading]         = useState(false);
-  const [done,            setDone]            = useState(false);
+  const [step,            setStep]            = useState<'form' | 'otp' | 'done'>('form');
+  const [otpCode,         setOtpCode]         = useState('');
+  const [otpError,        setOtpError]        = useState('');
+  const [resendMsg,       setResendMsg]       = useState('');
   const [socials, setSocials] = useState<Record<SocialId, string>>({
     twitch: '', youtube: '', kick: '', tiktok: '',
   });
@@ -63,11 +67,36 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
         kick_url:    socials.kick.trim()    || undefined,
         tiktok_url:  socials.tiktok.trim()  || undefined,
       });
-      setDone(true);
+      setStep('otp');
     } catch (err) {
       showToast((err as Error).message, 'error');
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleOtpSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (otpCode.length !== 6) return;
+    setLoading(true);
+    setOtpError('');
+    try {
+      await apiConfirmRegistrationOtp(email.trim(), otpCode);
+      setStep('done');
+    } catch (err) {
+      setOtpError((err as Error).message || 'Código inválido ou expirado.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleResend() {
+    try {
+      await apiResendRegistrationOtp(email.trim());
+      setResendMsg('Novo código enviado!');
+      setTimeout(() => setResendMsg(''), 4000);
+    } catch {
+      setResendMsg('Erro ao reenviar. Tente novamente.');
     }
   }
 
@@ -80,16 +109,44 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
           <i className="ti ti-x" />
         </button>
 
-        {done ? (
+        {step === 'done' ? (
           <div className="reg-success">
             <div className="reg-success-icon"><i className="ti ti-circle-check" /></div>
-            <h2 className="reg-success-title">Cadastro recebido!</h2>
+            <h2 className="reg-success-title">Email confirmado!</h2>
             <p className="reg-success-msg">
-              Seu cadastro foi enviado. Aguarde a aprovação de um moderador para entrar no ranking.
+              Conta criada com sucesso. Aguarde a aprovação de um moderador para entrar no ranking.
             </p>
             <button className="btn-primary btn-block" onClick={onClose}>
               <i className="ti ti-arrow-left" /> Voltar ao Ranking
             </button>
+          </div>
+        ) : step === 'otp' ? (
+          <div>
+            <div className="reg-header">
+              <div className="reg-header-icon"><i className="ti ti-mail-check" /></div>
+              <h2 className="reg-title">Confirme seu email</h2>
+              <p className="reg-subtitle">
+                Enviamos um código de 6 dígitos para <strong>{email.trim()}</strong>.
+              </p>
+            </div>
+            <form onSubmit={handleOtpSubmit} noValidate style={{ marginTop: 16 }}>
+              <OtpInput
+                value={otpCode}
+                onChange={setOtpCode}
+                loading={loading}
+                onResend={handleResend}
+                resendMsg={resendMsg}
+              />
+              {otpError && <p style={{ color: 'var(--red)', fontSize: 14, marginTop: 8 }}>{otpError}</p>}
+              <button
+                className="btn-primary btn-block"
+                type="submit"
+                disabled={loading || otpCode.length !== 6}
+                style={{ marginTop: 16 }}
+              >
+                {loading ? <><i className="ti ti-loader-2" /> Verificando...</> : <><i className="ti ti-check" /> Confirmar</>}
+              </button>
+            </form>
           </div>
         ) : (
           <>

@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { apiVerifyEmail } from '../lib/api';
 
 type Status = 'loading' | 'success' | 'error';
-
-const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:3000';
 
 export function VerifyEmailPage() {
   const [searchParams] = useSearchParams();
@@ -19,20 +18,14 @@ export function VerifyEmailPage() {
       return;
     }
 
-    fetch(`${API_URL}/auth/player/verify?token=${encodeURIComponent(token)}`)
-      .then(async res => {
-        const body = await res.json() as { message?: string; error?: string };
-        if (res.ok) {
-          setStatus('success');
-          setMessage(body.message ?? 'Email verificado com sucesso!');
-        } else {
-          setStatus('error');
-          setMessage(body.error ?? 'Erro ao verificar email.');
-        }
+    apiVerifyEmail(token)
+      .then(body => {
+        setStatus('success');
+        setMessage(body.message ?? 'Email verificado com sucesso!');
       })
-      .catch(() => {
+      .catch((err: Error) => {
         setStatus('error');
-        setMessage('Não foi possível conectar ao servidor.');
+        setMessage(err.message || 'Erro ao verificar email.');
       });
   }, [searchParams]);
 

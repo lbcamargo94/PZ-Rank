@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { checkPassword } from '../lib/password';
 import { PasswordHints } from '../components/PasswordHints';
-
-const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:3000';
+import { apiResetPassword } from '../lib/api';
 
 export function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
@@ -26,16 +25,10 @@ export function ResetPasswordPage() {
     setLoading(true);
     setError('');
     try {
-      const res  = await fetch(`${API_URL}/auth/player/reset-password`, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ token, password }),
-      });
-      const body = await res.json() as { message?: string; error?: string };
-      if (res.ok) { setDone(true); }
-      else        { setError(body.error ?? 'Erro ao redefinir senha.'); }
-    } catch {
-      setError('Não foi possível conectar ao servidor.');
+      await apiResetPassword(token, password);
+      setDone(true);
+    } catch (err) {
+      setError((err as Error).message || 'Erro ao redefinir senha.');
     } finally {
       setLoading(false);
     }

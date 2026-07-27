@@ -91,8 +91,8 @@ export function apiForgotPassword(email: string): Promise<{ message: string }> {
   return request('/auth/player/forgot-password', { method: 'POST', ...json(null, { email }) });
 }
 
-export function apiClaimAccount(nick: string, email: string, password: string): Promise<{ message: string }> {
-  return request('/auth/player/claim', { method: 'POST', ...json(null, { nick, email, password }) });
+export function apiClaimAccount(nick: string, email: string): Promise<{ otp_pending: boolean; email: string; message: string }> {
+  return request('/auth/player/claim', { method: 'POST', ...json(null, { nick, email }) });
 }
 
 export function apiConfirmClaimOtp(email: string, code: string): Promise<{ message: string; activate_token: string }> {
@@ -110,6 +110,10 @@ export function apiConfirmRegistrationOtp(email: string, code: string): Promise<
 
 export function apiResendRegistrationOtp(email: string): Promise<{ message: string }> {
   return request('/auth/player/otp/resend-registration', { method: 'POST', ...json(null, { email }) });
+}
+
+export function apiVerifyEmail(token: string): Promise<{ message: string }> {
+  return request(`/auth/player/verify?token=${encodeURIComponent(token)}`);
 }
 
 // ── OTP — mudanças de conta ──────────────────────────────────
