@@ -449,8 +449,8 @@ export const TRAITS: Record<string, TraitDef> = {
     image: "Sobrevivencialista",
     description: "Acostumado a sobreviver na selva.",
   },
-  Tinkerer: { name: "Tinkerer", type: "positive" },
-  tinkerer: { name: "Tinkerer", type: "positive" },
+  Tinkerer: { name: "Engenhoso", type: "positive" },
+  tinkerer: { name: "Engenhoso", type: "positive" },
 
   // ── Negativos — Físico ────────────────────────────────────
   Weak: {
