@@ -112,9 +112,9 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
         {step === 'done' ? (
           <div className="reg-success">
             <div className="reg-success-icon"><i className="ti ti-circle-check" /></div>
-            <h2 className="reg-success-title">Email confirmado!</h2>
+            <h2 className="reg-success-title">Conta ativa!</h2>
             <p className="reg-success-msg">
-              Conta criada com sucesso. Aguarde a aprovação de um moderador para entrar no ranking.
+              Email confirmado! Sua conta já está ativa. Faça login no Companion com seu email e senha.
             </p>
             <button className="btn-primary btn-block" onClick={onClose}>
               <i className="ti ti-arrow-left" /> Voltar ao Ranking
@@ -154,7 +154,7 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
               <div className="reg-header-icon"><i className="ti ti-trophy" /></div>
               <h2 className="reg-title">Entrar no Ranking</h2>
               <p className="reg-subtitle">
-                Crie sua conta. Um moderador vai revisar e aprovar seu cadastro.
+                Crie sua conta e confirme seu email para entrar no ranking.
               </p>
             </div>
 
@@ -287,7 +287,7 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
                 <i className="ti ti-shield-lock" />
                 <span>
                   Seu email é usado para login no Companion e notificações do ranking.
-                  Após o cadastro, um moderador vai revisar e aprovar sua conta.
+                  Após confirmar o código enviado por email, sua conta estará ativa.
                 </span>
               </div>
 

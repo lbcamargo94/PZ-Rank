@@ -44,10 +44,10 @@ router.get('/verify', async (req: Request, res: Response): Promise<void> => {
   // Marca token como usado e verifica o email do jogador
   await Promise.all([
     supabase.from('player_tokens').update({ used_at: now }).eq('id', row.id),
-    supabase.from('players').update({ email_verified_at: now }).eq('id', row.player_id),
+    supabase.from('players').update({ email_verified_at: now, status: 'approved' }).eq('id', row.player_id),
   ]);
 
-  res.json({ message: 'Email verificado com sucesso! Aguarde a aprovação de um moderador.' });
+  res.json({ message: 'Email verificado com sucesso! Sua conta já está ativa.' });
 });
 
 // POST /auth/player/resend-verification — reenvia email de verificação
@@ -220,7 +220,7 @@ router.post('/activate', async (req: Request, res: Response): Promise<void> => {
 
   await Promise.all([
     supabase.from('player_tokens').update({ used_at: now }).eq('id', row.id),
-    supabase.from('players').update({ password_hash, email_verified_at: now }).eq('id', row.player_id),
+    supabase.from('players').update({ password_hash, email_verified_at: now, status: 'approved' }).eq('id', row.player_id),
   ]);
 
   res.json({ message: 'Conta ativada com sucesso! Agora faça login no Companion com seu email e senha.' });
@@ -292,7 +292,7 @@ router.post('/otp/confirm-registration', async (req: Request, res: Response): Pr
   }
 
   if (playerRow.email_verified_at) {
-    res.json({ message: 'Email já verificado. Aguarde a aprovação de um moderador.' });
+    res.json({ message: 'Email já verificado. Faça login para acessar o ranking.' });
     return;
   }
 
@@ -315,10 +315,10 @@ router.post('/otp/confirm-registration', async (req: Request, res: Response): Pr
 
   await Promise.all([
     supabase.from('player_tokens').update({ used_at: now }).eq('id', otp.id),
-    supabase.from('players').update({ email_verified_at: now }).eq('id', playerRow.id),
+    supabase.from('players').update({ email_verified_at: now, status: 'approved' }).eq('id', playerRow.id),
   ]);
 
-  res.json({ message: 'Email verificado! Aguarde a aprovação de um moderador para acessar o ranking.' });
+  res.json({ message: 'Email verificado! Sua conta já está ativa.' });
 });
 
 // POST /auth/player/otp/resend-registration — reenvia OTP de cadastro

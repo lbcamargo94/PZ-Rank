@@ -58,7 +58,7 @@ export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
         <span className="rule-tag"><i className="ti ti-skull" aria-hidden="true" /> Stats do mod</span>
         <span className="rule-tag"><i className="ti ti-calendar" aria-hidden="true" /> Tempo, dias, zumbis</span>
         <span className="rule-tag"><i className="ti ti-settings" aria-hidden="true" /> Sandbox validado</span>
-        <span className="rule-tag"><i className="ti ti-user-check" aria-hidden="true" /> Aprovado por moderador</span>
+        <span className="rule-tag"><i className="ti ti-mail-check" aria-hidden="true" /> Email verificado</span>
       </div>
     </header>
   );

@@ -14,7 +14,7 @@ interface RankTableProps {
 }
 
 const EMPTY_MESSAGES: Record<RankTab, { icon: string; text: string }> = {
-  rank:         { icon: 'ti-ghost',      text: 'Nenhum sobrevivente ativo no momento.\nCadastre-se e aguarde aprovação dos moderadores!' },
+  rank:         { icon: 'ti-ghost',      text: 'Nenhum sobrevivente ativo no momento.\nCadastre-se para entrar no ranking!' },
   records:      { icon: 'ti-trophy',     text: 'Nenhum registro encontrado ainda.'                                                       },
   dead:         { icon: 'ti-skull',      text: 'Nenhum sobrevivente foi eliminado ainda.'                                               },
   disqualified: { icon: 'ti-ban',        text: 'Nenhum participante desclassificado.'                                                   },
