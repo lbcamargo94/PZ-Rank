@@ -177,7 +177,7 @@ function TabConta({ session, profile, onProfileChange }: {
     e.preventDefault();
     setEmailMsg(''); setEmailLoading(true);
     try {
-      const res = await apiSendAccountOtp(session.player_token, 'change_email', {
+      const res = await apiSendAccountOtp(session.token, 'change_email', {
         current_password: curPassEmail, new_email: newEmail,
       });
       setEmailMsg(res.message); setEmailOk(true); setEmailOtpState('sent');
@@ -193,7 +193,7 @@ function TabConta({ session, profile, onProfileChange }: {
     e.preventDefault();
     setEmailMsg(''); setEmailLoading(true);
     try {
-      const res = await apiConfirmAccountOtp(session.player_token, 'change_email', {
+      const res = await apiConfirmAccountOtp(session.token, 'change_email', {
         code: emailOtpCode, current_password: curPassEmail, new_email: newEmail,
       });
       setEmailMsg(res.message); setEmailOtpState('done');
@@ -209,7 +209,7 @@ function TabConta({ session, profile, onProfileChange }: {
   async function handleEmailResend() {
     setEmailResendMsg('');
     try {
-      const res = await apiSendAccountOtp(session.player_token, 'change_email', {
+      const res = await apiSendAccountOtp(session.token, 'change_email', {
         current_password: curPassEmail, new_email: newEmail,
       });
       setEmailResendMsg(res.message);
@@ -226,7 +226,7 @@ function TabConta({ session, profile, onProfileChange }: {
     if (newPwd !== confirmPwd) { setPwdMsg('As senhas não conferem.'); setPwdOk(false); return; }
     setPwdLoading(true);
     try {
-      const res = await apiSendAccountOtp(session.player_token, 'change_password', {
+      const res = await apiSendAccountOtp(session.token, 'change_password', {
         current_password: curPassPwd, new_password: newPwd,
       });
       setPwdMsg(res.message); setPwdOk(true); setPwdOtpState('sent');
@@ -242,7 +242,7 @@ function TabConta({ session, profile, onProfileChange }: {
     e.preventDefault();
     setPwdMsg(''); setPwdLoading(true);
     try {
-      const res = await apiConfirmAccountOtp(session.player_token, 'change_password', {
+      const res = await apiConfirmAccountOtp(session.token, 'change_password', {
         code: pwdOtpCode, current_password: curPassPwd, new_password: newPwd,
       });
       setPwdMsg(res.message); setPwdOtpState('done');
@@ -257,7 +257,7 @@ function TabConta({ session, profile, onProfileChange }: {
   async function handlePwdResend() {
     setPwdResendMsg('');
     try {
-      const res = await apiSendAccountOtp(session.player_token, 'change_password', {
+      const res = await apiSendAccountOtp(session.token, 'change_password', {
         current_password: curPassPwd, new_password: newPwd,
       });
       setPwdResendMsg(res.message);
@@ -347,7 +347,7 @@ function TabLinks({ session, profile, onProfileChange }: {
     e.preventDefault();
     setMsg(''); setLoading(true);
     try {
-      await apiUpdateMyLinks(session.player_token, {
+      await apiUpdateMyLinks(session.token, {
         twitch_url:  twitch  || null,
         youtube_url: youtube || null,
         kick_url:    kick    || null,
@@ -407,11 +407,11 @@ function TabRuns({ session }: { session: PlayerSession }) {
   const [error,    setError]    = useState('');
 
   useEffect(() => {
-    apiGetMyEntries(session.player_token)
+    apiGetMyEntries(session.token)
       .then(setEntries)
       .catch(err => setError((err as Error).message))
       .finally(() => setLoading(false));
-  }, [session.player_token]);
+  }, [session.token]);
 
   if (loading) return <div className="account-tab-body"><p className="account-section-info">Carregando…</p></div>;
   if (error)   return <div className="account-tab-body"><StatusMsg msg={error} ok={false} /></div>;
@@ -477,7 +477,7 @@ export function AccountPage() {
   const loadProfile = useCallback(async () => {
     if (!session) return;
     try {
-      const data = await apiGetMyProfile(session.player_token);
+      const data = await apiGetMyProfile(session.token);
       setProfile(data);
     } catch {
       sessionStorage.removeItem(PLAYER_SESSION_KEY);

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
 import { supabase } from '../supabase';
 import { parsePzrCode } from '../lib/decoder';
 import { dbError } from '../lib/errors';
@@ -8,6 +9,22 @@ import { requireModerator } from '../middleware/moderator';
 import type { ModRequest } from '../middleware/moderator';
 import { config } from '../config';
 import type { Player, Objectives } from '../types';
+
+const PUBLIC_ENTRY_COLUMNS = [
+  'id', 'player_id', 'name', 'character_name', 'profession',
+  'days', 'time_raw', 'time_str', 'kills', 'skills', 'live_url',
+  'is_alive', 'sandbox_ok', 'traits', 'objectives', 'score',
+  'disqualification_reason', 'disqualified_at', 'deleted_at', 'updated_at',
+].join(', ');
+
+function isModRequest(req: Request): boolean {
+  const auth = req.headers.authorization;
+  if (!auth?.startsWith('Bearer ')) return false;
+  try {
+    const payload = jwt.verify(auth.slice(7), config.jwtSecret);
+    return typeof payload === 'object' && payload !== null && 'role' in payload;
+  } catch { return false; }
+}
 
 const router = Router();
 
@@ -20,14 +37,16 @@ const SORT_COLS: Record<string, string> = {
 
 // GET /entries?sort=days|kills|time&all=true — público
 // ?all=true: inclui entries soft-deleted e de players excluídos (usado na aba Records)
+// Moderadores autenticados recebem campos extras (flagged_reason, sandbox_config, etc.)
 router.get('/', async (req: Request, res: Response): Promise<void> => {
   const col      = SORT_COLS[typeof req.query.sort === 'string' ? req.query.sort : ''] ?? 'score';
   const allParam = req.query.all === 'true';
+  const cols     = isModRequest(req) ? '*' : PUBLIC_ENTRY_COLUMNS;
 
   if (allParam) {
     const { data, error } = await supabase
       .from(config.tableName)
-      .select('*')
+      .select(cols)
       .order(col, { ascending: false });
     if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
     res.setHeader('Cache-Control', 'no-store');
@@ -36,7 +55,7 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
   }
 
   const [entriesRes, deletedRes] = await Promise.all([
-    supabase.from(config.tableName).select('*').is('deleted_at', null).order(col, { ascending: false }),
+    supabase.from(config.tableName).select(cols).is('deleted_at', null).order(col, { ascending: false }),
     supabase.from('players').select('id').not('deleted_at', 'is', null),
   ]);
 

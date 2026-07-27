@@ -83,7 +83,7 @@ export function apiRegisterPlayer(data: {
   return request('/players/register', { method: 'POST', ...json(null, data) });
 }
 
-export function apiPlayerLogin(email: string, password: string): Promise<{ player_token: string; player_id: number; nick: string }> {
+export function apiPlayerLogin(email: string, password: string): Promise<{ token: string; player_id: number; nick: string }> {
   return request('/auth/player/login', { method: 'POST', ...json(null, { email, password }) });
 }
 
@@ -187,8 +187,8 @@ export function apiUpdatePlayerLinks(
 
 // ── Entries ─────────────────────────────────────────────────
 
-export function apiGetEntries(sort = 'days'): Promise<Entry[]> {
-  return request(`/entries?sort=${sort}`);
+export function apiGetEntries(sort = 'days', token?: string): Promise<Entry[]> {
+  return request(`/entries?sort=${sort}`, token ? auth(token) : undefined);
 }
 
 export function apiGetAllEntries(sort = 'score'): Promise<Entry[]> {

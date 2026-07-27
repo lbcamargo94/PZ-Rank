@@ -70,16 +70,33 @@ export const SANDBOX_RULES: SandboxRule[] = [
   { key: 'FishAbundance',                           expected: 2,    label: 'Pesca (Ruim=2)' },
   { key: 'NatureAbundance',                         expected: 2,    label: 'Natureza (Ruim=2)' },
   // Ambiente
-  { key: 'MetaEvent',                               expected: 1,    label: 'Eventos Aleatórios (Nunca=1)' },
+  { key: 'MetaEvent',    expected: 1,    label: 'Eventos Aleatórios (Nunca=1)' },
+  { key: 'FireSpread',   expected: true, label: 'Fogo se Espalha (Ativado)' },
+  // Eventos
+  { key: 'Helicopter',   expected: 2, label: 'Helicóptero (Algumas Vezes=2)' },
+  { key: 'LockedHouses', expected: 6, label: 'Casas Trancadas (Muito Freq.=6)' },
+  { key: 'CarAlarm',     expected: 6, label: 'Alarme Carros (Muito Freq.=6)' },
   // Personagem
-  { key: 'MultiplierConfig.Global',                 expected: 0.8,  label: 'Mult. XP Global (0.8)',  tol: 0.05 },
+  { key: 'MultiplierConfig.Global', expected: 0.8,   label: 'Mult. XP Global (0.8)',        tol: 0.05 },
+  { key: 'StarterKit',              expected: false,  label: 'Kit Inicial (Desabilitado)' },
+  { key: 'CharacterFreePoints',     expected: 0,      label: 'Pontos Livres (0)' },
+  { key: 'MultiHitZombies',         expected: false,  label: 'Multi-Hit Zumbis (Desabilitado)' },
+  { key: 'EasyClimbing',            expected: false,  label: 'Escalar Fácil (Desabilitado)' },
+  { key: 'BoneFracture',            expected: true,   label: 'Fraturas Ósseas (Ativado)' },
+  { key: 'AttackBlockMovements',    expected: true,   label: 'Bloqueio p/ Ataque (Ativado)' },
+  // Zumbis — comportamento (complemento)
+  { key: 'ZombieLore.Transmission', expected: 1, label: 'Transmissão (Sangue=1)' },
   // Veículos
-  { key: 'ChanceHasGas',                            expected: 1,    label: 'Gasolina (Baixo=1)' },
-  { key: 'InitialGas',                              expected: 1,    label: 'Gasolina Inicial (M.Baixo=1)' },
-  { key: 'LockedCar',                               expected: 6,    label: 'Veículos Trancados (M.Freq.=6)' },
-  { key: 'CarGeneralCondition',                     expected: 1,    label: 'Cond. Veículos (M.Baixo=1)' },
+  { key: 'ChanceHasGas',            expected: 1,     label: 'Gasolina (Baixo=1)' },
+  { key: 'InitialGas',              expected: 1,     label: 'Gasolina Inicial (M.Baixo=1)' },
+  { key: 'LockedCar',               expected: 6,     label: 'Veículos Trancados (M.Freq.=6)' },
+  { key: 'CarGeneralCondition',     expected: 1,     label: 'Cond. Veículos (M.Baixo=1)' },
+  { key: 'FuelStationGasInfinite',  expected: false, label: 'Gasolina Infinita (Desabilitado)' },
+  { key: 'VehicleEasyUse',          expected: false, label: 'Veículos Fáceis (Desabilitado)' },
+  // Mapa
+  { key: 'Map.MapAllKnown', expected: true, label: 'Mapa Aberto (Obrigatório)' },
   // Animais
-  { key: 'AnimalRanchChance',                       expected: 2,    label: 'Animais (Ext.Raro=2)' },
+  { key: 'AnimalRanchChance', expected: 2, label: 'Animais (Ext.Raro=2)' },
 ];
 
 export function getNestedValue(obj: Record<string, unknown>, dotPath: string): unknown {

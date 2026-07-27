@@ -2,9 +2,11 @@ import { Router } from 'express';
 import type { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
+import jwt from 'jsonwebtoken';
 import { supabase } from '../supabase';
 import { sendPasswordResetEmail, sendVerificationEmail, sendOtpEmail } from '../lib/email';
 import { validatePassword } from '../lib/password';
+import { config } from '../config';
 
 const router = Router();
 
@@ -141,7 +143,12 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  res.json({ player_token: row.player_token, player_id: row.id, nick: row.nick });
+  const token = jwt.sign(
+    { sub: String(row.id), type: 'player', nick: row.nick },
+    config.jwtSecret,
+    { expiresIn: '7d' },
+  );
+  res.json({ token, player_id: row.id, nick: row.nick });
 });
 
 // POST /auth/player/forgot-password — solicita redefinição de senha

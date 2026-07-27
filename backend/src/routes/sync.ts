@@ -166,16 +166,16 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // Syncs sem assinatura (mod antigo ou Companion desatualizado) são aceitos mas logados.
   if (config.syncHmacSecret) {
     const sig = req.headers['x-code-sig'] as string | undefined;
-    if (sig) {
-      const expected = createHmac('sha256', config.syncHmacSecret)
-        .update(`${player_token}:${code}`)
-        .digest('hex');
-      if (sig !== expected) {
-        res.status(403).json({ error: 'Assinatura inválida. Atualize o Companion.' });
-        return;
-      }
-    } else {
-      console.warn(`[sync] sync sem assinatura — player_token: ${player_token.slice(0, 8)}…`);
+    if (!sig) {
+      res.status(403).json({ error: 'Assinatura obrigatória. Atualize o Companion.' });
+      return;
+    }
+    const expected = createHmac('sha256', config.syncHmacSecret)
+      .update(`${player_token}:${code}`)
+      .digest('hex');
+    if (sig !== expected) {
+      res.status(403).json({ error: 'Assinatura inválida. Atualize o Companion.' });
+      return;
     }
   }
 

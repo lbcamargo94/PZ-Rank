@@ -102,9 +102,9 @@ export interface PlayerProfile {
 }
 
 export interface PlayerSession {
-  player_token: string;
-  player_id:    number;
-  nick:         string;
+  token:     string;
+  player_id: number;
+  nick:      string;
 }
 
 export interface PlayerAccount {

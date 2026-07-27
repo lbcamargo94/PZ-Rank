@@ -129,9 +129,9 @@ export function PainelPage({ session, onSession, onBack }: Props) {
   const { toast, showToast }               = useToast();
 
   const fetchEntries = useCallback(async () => {
-    try { setEntries(await apiGetEntries(sortKey)); }
+    try { setEntries(await apiGetEntries(sortKey, session?.token)); }
     catch (err) { showToast((err as Error).message, 'error'); }
-  }, [sortKey, showToast]);
+  }, [sortKey, showToast, session?.token]);
 
   useEffect(() => { setEntrySearch(''); }, [entryFilter]);
 
