@@ -76,4 +76,5 @@ export interface DecodedCode {
   traits:                 string[];
   disqualificationReason: string | null;
   codeTimestamp:          number | null;
+  modVersion:             string | null;
 }

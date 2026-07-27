@@ -2,6 +2,18 @@
 import type { Request, Response } from 'express';
 import { createHmac } from 'crypto';
 import rateLimit from 'express-rate-limit';
+
+function isVersionAtLeast(version: string | null, minimum: string): boolean {
+  if (!version) return false;
+  const parse = (v: string) => v.split('.').map(n => parseInt(n, 10) || 0);
+  const a = parse(version);
+  const b = parse(minimum);
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    const diff = (a[i] ?? 0) - (b[i] ?? 0);
+    if (diff !== 0) return diff > 0;
+  }
+  return true;
+}
 import { supabase } from '../supabase';
 import { parsePzrCode } from '../lib/decoder';
 import { dbError } from '../lib/errors';
@@ -133,6 +145,18 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   const decoded = parsePzrCode(code);
   if (!decoded) {
     res.status(400).json({ error: 'Código inválido ou corrompido.' });
+    return;
+  }
+
+  // ── Verificação de versão do mod ──────────────────────────────────────────
+  // Se MIN_MOD_VERSION estiver configurado, rejeita syncs de versões antigas.
+  // HTTP 426 (Upgrade Required) — sem escrita no banco, jogador não é desclassificado.
+  if (config.minModVersion && !isVersionAtLeast(decoded.modVersion, config.minModVersion)) {
+    res.status(426).json({
+      error: `Mod desatualizado (${decoded.modVersion ?? 'desconhecido'}). Atualize o mod PZ Community Rank na Oficina da Steam.`,
+      outdated_mod:     true,
+      required_version: config.minModVersion,
+    });
     return;
   }
 

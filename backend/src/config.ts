@@ -21,4 +21,5 @@ export const config = {
   fromEmail:          process.env.FROM_EMAIL ?? 'PZ Community Rank <noreply@pzrank.com.br>',
   frontendUrl:        process.env.FRONTEND_URL ?? 'http://localhost:5173',
   syncHmacSecret:     process.env.SYNC_HMAC_SECRET ?? '',
+  minModVersion:      process.env.MIN_MOD_VERSION  ?? '',
 };
