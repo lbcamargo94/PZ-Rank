@@ -174,6 +174,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       .update(`${player_token}:${code}`)
       .digest('hex');
     if (sig !== expected) {
+      console.error(`[hmac] mismatch secret_len=${config.syncHmacSecret.length} tok_len=${player_token.length} code_len=${code.length} sig_recv=${sig.slice(0,16)} sig_exp=${expected.slice(0,16)}`);
       res.status(400).json({ error: 'Assinatura inválida. Atualize o Companion.' });
       return;
     }
