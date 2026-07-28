@@ -17,6 +17,32 @@ const SOCIALS = [
 ] as const;
 
 type SocialId = typeof SOCIALS[number]['id'];
+type Step = 1 | 2 | 3 | 'done';
+
+const STEPS = [
+  { n: 1, label: 'Conta'     },
+  { n: 2, label: 'Streaming' },
+  { n: 3, label: 'Verificar' },
+] as const;
+
+function Stepper({ current }: { current: Step }) {
+  const cur = current === 'done' ? 4 : (current as number);
+  return (
+    <div className="reg-stepper">
+      {STEPS.map(({ n, label }, i) => (
+        <div key={n} className="reg-stepper-item">
+          {i > 0 && <div className={`reg-step-line${cur > n ? ' reg-step-line--done' : ''}`} />}
+          <div className={`reg-step${cur === n ? ' reg-step--active' : ''}${cur > n ? ' reg-step--done' : ''}`}>
+            <div className="reg-step-circle">
+              {cur > n ? <i className="ti ti-check" style={{ fontSize: 11 }} /> : n}
+            </div>
+            <span className="reg-step-label">{label}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export function PlayerRegisterModal({ onClose, showToast }: Props) {
   const [nick,            setNick]            = useState('');
@@ -24,16 +50,12 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
   const [password,        setPassword]        = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPass,        setShowPass]        = useState(false);
-  const [loading,         setLoading]         = useState(false);
-  const [step,            setStep]            = useState<'form' | 'resend' | 'otp' | 'done'>('form');
+  const [socials,         setSocials]         = useState<Record<SocialId, string>>({ twitch: '', youtube: '', kick: '', tiktok: '' });
   const [otpCode,         setOtpCode]         = useState('');
   const [otpError,        setOtpError]        = useState('');
   const [resendMsg,       setResendMsg]       = useState('');
-  const [resendEmail,     setResendEmail]     = useState('');
-  const [resendError,     setResendError]     = useState('');
-  const [socials, setSocials] = useState<Record<SocialId, string>>({
-    twitch: '', youtube: '', kick: '', tiktok: '',
-  });
+  const [step,            setStep]            = useState<Step>(1);
+  const [loading,         setLoading]         = useState(false);
 
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -43,33 +65,30 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
     return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
   }, [onClose]);
 
-  function setSocial(id: SocialId, value: string) {
-    setSocials(prev => ({ ...prev, [id]: value }));
+  const step1Valid = nick.trim() && email.trim() && checkPassword(password).ok && password === confirmPassword;
+
+  function handleStep1(e: React.FormEvent) {
+    e.preventDefault();
+    if (!checkPassword(password).ok) { showToast('A senha não atende aos requisitos de segurança.', 'error'); return; }
+    if (password !== confirmPassword) { showToast('As senhas não coincidem.', 'error'); return; }
+    setStep(2);
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!nick.trim() || !email.trim() || !password) return;
-    if (!checkPassword(password).ok) {
-      showToast('A senha não atende aos requisitos de segurança.', 'error');
-      return;
-    }
-    if (password !== confirmPassword) {
-      showToast('As senhas não coincidem.', 'error');
-      return;
-    }
+  async function submitRegistration(withSocials: boolean) {
     setLoading(true);
     try {
       await apiRegisterPlayer({
-        nick:        nick.trim(),
-        email:       email.trim(),
+        nick:    nick.trim(),
+        email:   email.trim(),
         password,
-        twitch_url:  socials.twitch.trim()  || undefined,
-        youtube_url: socials.youtube.trim() || undefined,
-        kick_url:    socials.kick.trim()    || undefined,
-        tiktok_url:  socials.tiktok.trim()  || undefined,
+        ...(withSocials && {
+          twitch_url:  socials.twitch.trim()  || undefined,
+          youtube_url: socials.youtube.trim() || undefined,
+          kick_url:    socials.kick.trim()    || undefined,
+          tiktok_url:  socials.tiktok.trim()  || undefined,
+        }),
       });
-      setStep('otp');
+      setStep(3);
     } catch (err) {
       showToast((err as Error).message, 'error');
     } finally {
@@ -102,24 +121,6 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
     }
   }
 
-  async function handleResendSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!resendEmail.trim()) return;
-    setLoading(true);
-    setResendError('');
-    try {
-      await apiResendRegistrationOtp(resendEmail.trim());
-      setEmail(resendEmail.trim());
-      setStep('otp');
-    } catch {
-      setResendError('Não foi possível enviar o código. Verifique o email e tente novamente.');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const canSubmit = nick.trim() && email.trim() && checkPassword(password).ok && password === confirmPassword;
-
   return (
     <div className="modal-overlay active" role="dialog" aria-modal="true">
       <div className="modal-box reg-modal-box" onClick={e => e.stopPropagation()}>
@@ -127,246 +128,130 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
           <i className="ti ti-x" />
         </button>
 
-        {step === 'resend' ? (
-          <div>
-            <div className="reg-header">
-              <div className="reg-header-icon"><i className="ti ti-mail-forward" /></div>
-              <h2 className="reg-title">Reenviar código</h2>
-              <p className="reg-subtitle">
-                Informe o email que você usou no cadastro e enviaremos um novo código de verificação.
-              </p>
-            </div>
-            <form onSubmit={handleResendSubmit} noValidate style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div className="reg-field">
-                <label className="form-label" htmlFor="resend-email">Email do cadastro</label>
-                <div className="reg-nick-input-wrap">
-                  <i className="ti ti-mail reg-nick-icon" />
-                  <input
-                    id="resend-email"
-                    className="form-input reg-nick-input"
-                    type="email"
-                    placeholder="seu@email.com"
-                    value={resendEmail}
-                    onChange={e => setResendEmail(e.target.value)}
-                    autoComplete="email"
-                    autoFocus
-                    required
-                  />
-                </div>
-              </div>
-              {resendError && <p style={{ color: 'var(--red)', fontSize: 14, margin: 0 }}>{resendError}</p>}
-              <button className="btn-primary btn-block" type="submit" disabled={loading || !resendEmail.trim()}>
-                {loading ? <><i className="ti ti-loader-2" /> Enviando...</> : <><i className="ti ti-send" /> Enviar código</>}
-              </button>
-              <button type="button" className="btn-ghost btn-block" onClick={() => setStep('form')}>
-                <i className="ti ti-arrow-left" /> Voltar ao cadastro
-              </button>
-            </form>
-          </div>
-        ) : step === 'done' ? (
-          <div className="reg-success">
-            <div className="reg-success-icon"><i className="ti ti-circle-check" /></div>
-            <h2 className="reg-success-title">Conta ativa!</h2>
-            <p className="reg-success-msg">
-              Email confirmado! Sua conta já está ativa. Faça login no Companion com seu email e senha.
-            </p>
-            <button className="btn-primary btn-block" onClick={onClose}>
-              <i className="ti ti-arrow-left" /> Voltar ao Ranking
-            </button>
-          </div>
-        ) : step === 'otp' ? (
-          <div>
-            <div className="reg-header">
-              <div className="reg-header-icon"><i className="ti ti-mail-check" /></div>
-              <h2 className="reg-title">Confirme seu email</h2>
-              <p className="reg-subtitle">
-                Enviamos um código de 6 dígitos para <strong>{email.trim()}</strong>.
-              </p>
-            </div>
-            <form onSubmit={handleOtpSubmit} noValidate style={{ marginTop: 16 }}>
-              <OtpInput
-                value={otpCode}
-                onChange={setOtpCode}
-                loading={loading}
-                onResend={handleResend}
-                resendMsg={resendMsg}
-              />
-              {otpError && <p style={{ color: 'var(--red)', fontSize: 14, marginTop: 8 }}>{otpError}</p>}
-              <button
-                className="btn-primary btn-block"
-                type="submit"
-                disabled={loading || otpCode.length !== 6}
-                style={{ marginTop: 16 }}
-              >
-                {loading ? <><i className="ti ti-loader-2" /> Verificando...</> : <><i className="ti ti-check" /> Confirmar</>}
-              </button>
-            </form>
-          </div>
-        ) : (
-          <>
-            <div className="reg-header">
-              <div className="reg-header-icon"><i className="ti ti-trophy" /></div>
-              <h2 className="reg-title">Entrar no Ranking</h2>
-              <p className="reg-subtitle">
-                Crie sua conta e confirme seu email para entrar no ranking.
-              </p>
-            </div>
+        {step !== 'done' && <Stepper current={step} />}
 
-            <form className="modal-form" onSubmit={handleSubmit} noValidate>
+        <div className="reg-modal-body">
 
-              {/* Nick */}
+          {/* ── Done ── */}
+          {step === 'done' && (
+            <div className="reg-success">
+              <div className="reg-success-icon"><i className="ti ti-circle-check" /></div>
+              <h2 className="reg-success-title">Conta ativa!</h2>
+              <p className="reg-success-msg">
+                Email confirmado! Sua conta já está ativa. Faça login no Companion com seu email e senha.
+              </p>
+              <button className="btn-primary btn-block" onClick={onClose}>
+                <i className="ti ti-arrow-left" /> Voltar ao Ranking
+              </button>
+            </div>
+          )}
+
+          {/* ── Step 1: Conta ── */}
+          {step === 1 && (
+            <form onSubmit={handleStep1} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div className="reg-field">
-                <label className="form-label" htmlFor="reg-nick">
-                  Nick do jogador <span className="required">*</span>
-                </label>
+                <label className="form-label" htmlFor="reg-nick">Nick do jogador <span className="required">*</span></label>
                 <div className="reg-nick-input-wrap">
                   <i className="ti ti-user reg-nick-icon" />
-                  <input
-                    id="reg-nick"
-                    className="form-input reg-nick-input"
-                    type="text"
-                    placeholder="SeuNickAqui"
-                    value={nick}
-                    onChange={e => setNick(e.target.value)}
-                    autoComplete="username"
-                    spellCheck={false}
-                    required
-                  />
+                  <input id="reg-nick" className="form-input reg-nick-input" type="text"
+                    placeholder="SeuNickAqui" value={nick} onChange={e => setNick(e.target.value)}
+                    autoComplete="username" spellCheck={false} required />
                 </div>
               </div>
-
-              {/* Email */}
               <div className="reg-field">
-                <label className="form-label" htmlFor="reg-email">
-                  Email <span className="required">*</span>
-                </label>
+                <label className="form-label" htmlFor="reg-email">Email <span className="required">*</span></label>
                 <div className="reg-nick-input-wrap">
                   <i className="ti ti-mail reg-nick-icon" />
-                  <input
-                    id="reg-email"
-                    className="form-input reg-nick-input"
-                    type="email"
-                    placeholder="seu@email.com"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    autoComplete="email"
-                    required
-                  />
+                  <input id="reg-email" className="form-input reg-nick-input" type="email"
+                    placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)}
+                    autoComplete="email" required />
                 </div>
               </div>
-
-              {/* Senha */}
               <div className="reg-field">
-                <label className="form-label" htmlFor="reg-password">
-                  Senha <span className="required">*</span>
-                </label>
+                <label className="form-label" htmlFor="reg-password">Senha <span className="required">*</span></label>
                 <div className="reg-nick-input-wrap">
                   <i className="ti ti-lock reg-nick-icon" />
-                  <input
-                    id="reg-password"
-                    className="form-input reg-nick-input"
-                    type={showPass ? 'text' : 'password'}
-                    placeholder="Mínimo 8 caracteres"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    autoComplete="new-password"
-                    required
-                  />
-                  <button
-                    type="button"
-                    className="reg-pass-toggle"
-                    onClick={() => setShowPass(p => !p)}
-                    aria-label={showPass ? 'Ocultar senha' : 'Mostrar senha'}
-                  >
+                  <input id="reg-password" className="form-input reg-nick-input"
+                    type={showPass ? 'text' : 'password'} placeholder="Mínimo 8 caracteres"
+                    value={password} onChange={e => setPassword(e.target.value)}
+                    autoComplete="new-password" required />
+                  <button type="button" className="reg-pass-toggle" onClick={() => setShowPass(p => !p)}
+                    aria-label={showPass ? 'Ocultar senha' : 'Mostrar senha'}>
                     <i className={`ti ${showPass ? 'ti-eye-off' : 'ti-eye'}`} />
                   </button>
                 </div>
               </div>
-
               <PasswordHints password={password} />
-
-              {/* Confirmar senha */}
               <div className="reg-field">
-                <label className="form-label" htmlFor="reg-confirm-password">
-                  Confirmar senha <span className="required">*</span>
-                </label>
+                <label className="form-label" htmlFor="reg-confirm">Confirmar senha <span className="required">*</span></label>
                 <div className="reg-nick-input-wrap">
                   <i className="ti ti-lock-check reg-nick-icon" />
-                  <input
-                    id="reg-confirm-password"
-                    className="form-input reg-nick-input"
-                    type={showPass ? 'text' : 'password'}
-                    placeholder="Repita a senha"
-                    value={confirmPassword}
-                    onChange={e => setConfirmPassword(e.target.value)}
-                    autoComplete="new-password"
-                    required
-                  />
+                  <input id="reg-confirm" className="form-input reg-nick-input"
+                    type={showPass ? 'text' : 'password'} placeholder="Repita a senha"
+                    value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
+                    autoComplete="new-password" required />
                   {confirmPassword && (
                     <i className={`ti reg-nick-icon ${password === confirmPassword ? 'ti-check reg-pass-match' : 'ti-x reg-pass-mismatch'}`} />
                   )}
                 </div>
               </div>
-
-              {/* Canais de streaming */}
-              <div className="reg-socials-section">
-                <div className="reg-socials-header">
-                  <span className="form-label">Canais de streaming</span>
-                  <span className="optional-chip">opcional</span>
-                </div>
-                <p className="reg-socials-hint">
-                  Adicione seus canais para aparecer como criador de conteúdo no ranking.
-                </p>
-                <div className="reg-socials-grid">
-                  {SOCIALS.map(s => (
-                    <div key={s.id} className="reg-social-item" style={{ '--social-color': s.color } as React.CSSProperties}>
-                      <label className="reg-social-label" htmlFor={`reg-${s.id}`}>
-                        <i className={`ti ${s.icon}`} />
-                        {s.label}
-                      </label>
-                      <input
-                        id={`reg-${s.id}`}
-                        className="form-input reg-social-input"
-                        type="url"
-                        placeholder={s.placeholder}
-                        value={socials[s.id]}
-                        onChange={e => setSocial(s.id, e.target.value)}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="reg-info-box">
-                <i className="ti ti-shield-lock" />
-                <span>
-                  Seu email é usado para login no Companion e notificações do ranking.
-                  Após confirmar o código enviado por email, sua conta estará ativa.
-                </span>
-              </div>
-
-              <button
-                className="btn-primary btn-block"
-                type="submit"
-                disabled={loading || !canSubmit}
-              >
-                {loading
-                  ? <><i className="ti ti-loader-2" /> Enviando...</>
-                  : <><i className="ti ti-send" /> Criar conta</>}
+              <button className="btn-primary btn-block" type="submit" disabled={!step1Valid} style={{ marginTop: 4 }}>
+                <i className="ti ti-arrow-right" /> Próximo
               </button>
             </form>
-            <p style={{ textAlign: 'center', marginTop: 16, fontSize: 14, color: 'var(--text-2)' }}>
-              Já se cadastrou mas não recebeu o código?{' '}
-              <button
-                type="button"
-                className="link-btn"
-                onClick={() => { setResendEmail(''); setResendError(''); setStep('resend'); }}
-              >
-                Reenviar código
+          )}
+
+          {/* ── Step 2: Streaming ── */}
+          {step === 2 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <p className="reg-socials-hint" style={{ margin: 0 }}>
+                Adicione seus canais para aparecer como criador de conteúdo. Você pode pular e adicionar depois em <strong>Minha Conta</strong>.
+              </p>
+              <div className="reg-socials-grid">
+                {SOCIALS.map(s => (
+                  <div key={s.id} className="reg-social-item" style={{ '--social-color': s.color } as React.CSSProperties}>
+                    <label className="reg-social-label" htmlFor={`reg-${s.id}`}>
+                      <i className={`ti ${s.icon}`} /> {s.label}
+                    </label>
+                    <input id={`reg-${s.id}`} className="form-input reg-social-input" type="url"
+                      placeholder={s.placeholder} value={socials[s.id]}
+                      onChange={e => setSocials(p => ({ ...p, [s.id]: e.target.value }))} />
+                  </div>
+                ))}
+              </div>
+              <div className="reg-step2-actions">
+                <button type="button" className="btn-ghost" onClick={() => setStep(1)} disabled={loading}>
+                  <i className="ti ti-arrow-left" /> Voltar
+                </button>
+                <button type="button" className="btn-primary" disabled={loading} onClick={() => submitRegistration(true)}>
+                  {loading ? <><i className="ti ti-loader-2" /> Criando...</> : <><i className="ti ti-send" /> Criar conta</>}
+                </button>
+              </div>
+              <button type="button" className="btn-ghost btn-block" disabled={loading} onClick={() => submitRegistration(false)}>
+                Pular — criar sem canais de streaming
               </button>
-            </p>
-          </>
-        )}
+            </div>
+          )}
+
+          {/* ── Step 3: OTP ── */}
+          {step === 3 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <p className="reg-otp-hint">
+                Enviamos um código de 6 dígitos para <strong>{email.trim()}</strong>.
+              </p>
+              <form onSubmit={handleOtpSubmit} noValidate style={{ marginTop: 12 }}>
+                <OtpInput value={otpCode} onChange={setOtpCode} loading={loading}
+                  onResend={handleResend} resendMsg={resendMsg} />
+                {otpError && <p style={{ color: 'var(--red)', fontSize: 14, marginTop: 8 }}>{otpError}</p>}
+                <button className="btn-primary btn-block" type="submit"
+                  disabled={loading || otpCode.length !== 6} style={{ marginTop: 16 }}>
+                  {loading ? <><i className="ti ti-loader-2" /> Verificando...</> : <><i className="ti ti-check" /> Confirmar</>}
+                </button>
+              </form>
+            </div>
+          )}
+
+        </div>
       </div>
     </div>
   );

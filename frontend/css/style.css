@@ -942,16 +942,6 @@ a.btn-ghost { text-decoration: none; }
   transition: color 0.15s, background 0.15s;
 }
 .btn-ghost:hover { color: var(--text-1); background: var(--bg-3); }
-.link-btn {
-  background: none;
-  border: none;
-  padding: 0;
-  color: var(--green);
-  font-size: inherit;
-  cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
 
 .btn-danger {
   background: transparent;
@@ -3915,7 +3905,89 @@ a.btn-ghost { text-decoration: none; }
 }
 
 /* ── Task 5: modal de Cadastro refatorado ─────────────────── */
+/* ── Registration stepper ─────────────────────────── */
 .reg-modal-box { max-width: 480px; }
+.reg-stepper {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 24px 24px 0;
+}
+.reg-stepper-item {
+  display: flex;
+  align-items: flex-start;
+  flex: 1;
+}
+.reg-stepper-item:first-child { flex: 0; }
+.reg-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.reg-step-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--bg-2);
+  color: var(--text-4);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+.reg-step--active .reg-step-circle { border-color: var(--green); background: var(--green-dim); color: var(--green); }
+.reg-step--done   .reg-step-circle { border-color: var(--green); background: var(--green); color: #000; }
+.reg-step-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-4);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.reg-step--active .reg-step-label { color: var(--green); }
+.reg-step--done   .reg-step-label { color: var(--text-3); }
+.reg-step-line {
+  flex: 1;
+  height: 2px;
+  background: var(--border);
+  margin-top: 13px;
+  transition: background 0.2s;
+}
+.reg-step-line--done { background: var(--green); }
+.reg-modal-body { padding: 20px 24px 24px; display: flex; flex-direction: column; gap: 0; }
+.reg-otp-hint {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-3);
+  margin: 0;
+  line-height: 1.6;
+  text-align: center;
+}
+.reg-step2-actions {
+  display: flex;
+  gap: 8px;
+}
+.reg-step2-actions .btn-ghost { flex-shrink: 0; }
+.reg-step2-actions .btn-primary { flex: 1; }
+/* ── Account resend form ─────────────────────────── */
+.account-resend-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 14px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+/* ────────────────────────────────────────────────── */
 .reg-header {
   display: flex;
   flex-direction: column;

@@ -9,6 +9,7 @@ import {
   apiUpdateMyLinks,
   apiSendAccountOtp,
   apiConfirmAccountOtp,
+  apiResendRegistrationOtp,
 } from '../lib/api';
 import { OtpInput } from '../components/OtpInput';
 import type { PlayerSession, PlayerAccount, Entry } from '../types';
@@ -43,11 +44,15 @@ function StatusMsg({ msg, ok }: { msg: string; ok: boolean }) {
 
 // ── Login form ────────────────────────────────────────────────
 function LoginForm({ onLogin }: { onLogin: (s: PlayerSession) => void }) {
-  const [email,    setEmail]    = useState('');
-  const [password, setPassword] = useState('');
-  const [error,    setError]    = useState('');
-  const [loading,  setLoading]  = useState(false);
-  const [showPass, setShowPass] = useState(false);
+  const [email,       setEmail]       = useState('');
+  const [password,    setPassword]    = useState('');
+  const [error,       setError]       = useState('');
+  const [loading,     setLoading]     = useState(false);
+  const [showPass,    setShowPass]    = useState(false);
+  const [showResend,  setShowResend]  = useState(false);
+  const [resendEmail, setResendEmail] = useState('');
+  const [resendMsg,   setResendMsg]   = useState('');
+  const [resendErr,   setResendErr]   = useState('');
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -90,8 +95,37 @@ function LoginForm({ onLogin }: { onLogin: (s: PlayerSession) => void }) {
         <div className="account-login-links">
           <Link to="/esqueci-senha"  className="btn-ghost btn-sm"><i className="ti ti-key" /> Esqueci minha senha</Link>
           <Link to="/vincular-conta" className="btn-ghost btn-sm"><i className="ti ti-user-question" /> Sou jogador legado</Link>
+          <button type="button" className="btn-ghost btn-sm" onClick={() => { setShowResend(v => !v); setResendMsg(''); setResendErr(''); }}>
+            <i className="ti ti-mail-forward" /> Reenviar código de verificação
+          </button>
           <Link to="/"               className="btn-ghost btn-sm"><i className="ti ti-arrow-left" /> Voltar ao Rank</Link>
         </div>
+        {showResend && (
+          <form className="account-resend-form" onSubmit={async e => {
+            e.preventDefault();
+            setResendMsg(''); setResendErr(''); setLoading(true);
+            try {
+              await apiResendRegistrationOtp(resendEmail.trim());
+              setResendMsg('Código enviado! Verifique seu email.');
+            } catch {
+              setResendErr('Não foi possível enviar. Verifique o email e tente novamente.');
+            } finally {
+              setLoading(false);
+            }
+          }}>
+            <div className="account-field">
+              <label className="account-label">Email do cadastro</label>
+              <input className="account-input" type="email" placeholder="seu@email.com"
+                value={resendEmail} onChange={e => setResendEmail(e.target.value)}
+                autoComplete="email" autoFocus required />
+            </div>
+            {resendMsg && <StatusMsg msg={resendMsg} ok={true} />}
+            {resendErr && <StatusMsg msg={resendErr} ok={false} />}
+            <button type="submit" className="btn-ghost btn-sm" disabled={loading || !resendEmail.trim()}>
+              {loading ? <><i className="ti ti-loader-2" /> Enviando...</> : <><i className="ti ti-send" /> Enviar código</>}
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );
