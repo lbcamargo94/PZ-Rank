@@ -353,8 +353,13 @@ router.post('/otp/resend-registration', async (req: Request, res: Response): Pro
 
   const playerRow = player as { id: number; nick: string; email_verified_at: string | null } | null;
 
-  if (!playerRow || playerRow.email_verified_at) {
+  if (!playerRow) {
     res.json(GENERIC);
+    return;
+  }
+
+  if (playerRow.email_verified_at) {
+    res.status(409).json({ error: 'already_verified', message: 'Este email já está verificado. Faça login normalmente.' });
     return;
   }
 

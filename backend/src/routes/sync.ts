@@ -110,7 +110,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
 
   const VALID_REASONS = new Set(['sandbox', 'debug', 'manual']);
   const isValidReason  = (r: string) => VALID_REASONS.has(r);
-  const isModsReason   = (r: string | null | undefined) => !!r && (r === 'mods' || r.startsWith('mods:'));
+  const isModsReason   = (r: string | null | undefined) => !!r && (r === 'mods' || r === 'mod_removed' || r.startsWith('mods:'));
   const companionReason = (disqualification_reason && isValidReason(disqualification_reason))
     ? disqualification_reason
     : null;

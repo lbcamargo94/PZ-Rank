@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { apiResendRegistrationOtp, apiConfirmRegistrationOtp } from '../lib/api';
 import { OtpInput } from '../components/OtpInput';
 
-type Step = 'email' | 'otp' | 'done';
+type Step = 'email' | 'otp' | 'done' | 'verified';
 
 export function ResendVerificationPage() {
   const [step,    setStep]    = useState<Step>('email');
@@ -21,7 +21,12 @@ export function ResendVerificationPage() {
       await apiResendRegistrationOtp(email.trim());
       setStep('otp');
     } catch (err) {
-      setError((err as Error).message || 'Não foi possível enviar. Verifique o email e tente novamente.');
+      const msg = (err as Error).message || '';
+      if (msg === 'already_verified') {
+        setStep('verified');
+      } else {
+        setError(msg || 'Não foi possível enviar. Verifique o email e tente novamente.');
+      }
     } finally {
       setLoading(false);
     }
@@ -56,7 +61,18 @@ export function ResendVerificationPage() {
     <div className="account-login-wrap">
       <div className="account-login-card">
 
-        {step === 'done' ? (
+        {step === 'verified' ? (
+        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+          <i className="ti ti-circle-check" style={{ fontSize: 48, color: 'var(--green)' }} />
+          <h1 className="account-login-title" style={{ margin: 0 }}>Conta já ativa!</h1>
+          <p className="account-login-sub" style={{ marginBottom: 8 }}>
+            O email <strong>{email}</strong> já está verificado. Faça login normalmente com seu email e senha.
+          </p>
+          <Link to="/minha-conta" className="btn-primary" style={{ textDecoration: 'none' }}>
+            <i className="ti ti-login" /> Ir para login
+          </Link>
+        </div>
+      ) : step === 'done' ? (
           <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
             <i className="ti ti-circle-check" style={{ fontSize: 48, color: 'var(--green)' }} />
             <h1 className="account-login-title" style={{ margin: 0 }}>Conta verificada!</h1>
