@@ -25,10 +25,12 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPass,        setShowPass]        = useState(false);
   const [loading,         setLoading]         = useState(false);
-  const [step,            setStep]            = useState<'form' | 'otp' | 'done'>('form');
+  const [step,            setStep]            = useState<'form' | 'resend' | 'otp' | 'done'>('form');
   const [otpCode,         setOtpCode]         = useState('');
   const [otpError,        setOtpError]        = useState('');
   const [resendMsg,       setResendMsg]       = useState('');
+  const [resendEmail,     setResendEmail]     = useState('');
+  const [resendError,     setResendError]     = useState('');
   const [socials, setSocials] = useState<Record<SocialId, string>>({
     twitch: '', youtube: '', kick: '', tiktok: '',
   });
@@ -100,6 +102,22 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
     }
   }
 
+  async function handleResendSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!resendEmail.trim()) return;
+    setLoading(true);
+    setResendError('');
+    try {
+      await apiResendRegistrationOtp(resendEmail.trim());
+      setEmail(resendEmail.trim());
+      setStep('otp');
+    } catch {
+      setResendError('Não foi possível enviar o código. Verifique o email e tente novamente.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const canSubmit = nick.trim() && email.trim() && checkPassword(password).ok && password === confirmPassword;
 
   return (
@@ -109,7 +127,43 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
           <i className="ti ti-x" />
         </button>
 
-        {step === 'done' ? (
+        {step === 'resend' ? (
+          <div>
+            <div className="reg-header">
+              <div className="reg-header-icon"><i className="ti ti-mail-forward" /></div>
+              <h2 className="reg-title">Reenviar código</h2>
+              <p className="reg-subtitle">
+                Informe o email que você usou no cadastro e enviaremos um novo código de verificação.
+              </p>
+            </div>
+            <form onSubmit={handleResendSubmit} noValidate style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div className="reg-field">
+                <label className="form-label" htmlFor="resend-email">Email do cadastro</label>
+                <div className="reg-nick-input-wrap">
+                  <i className="ti ti-mail reg-nick-icon" />
+                  <input
+                    id="resend-email"
+                    className="form-input reg-nick-input"
+                    type="email"
+                    placeholder="seu@email.com"
+                    value={resendEmail}
+                    onChange={e => setResendEmail(e.target.value)}
+                    autoComplete="email"
+                    autoFocus
+                    required
+                  />
+                </div>
+              </div>
+              {resendError && <p style={{ color: 'var(--red)', fontSize: 14, margin: 0 }}>{resendError}</p>}
+              <button className="btn-primary btn-block" type="submit" disabled={loading || !resendEmail.trim()}>
+                {loading ? <><i className="ti ti-loader-2" /> Enviando...</> : <><i className="ti ti-send" /> Enviar código</>}
+              </button>
+              <button type="button" className="btn-ghost btn-block" onClick={() => setStep('form')}>
+                <i className="ti ti-arrow-left" /> Voltar ao cadastro
+              </button>
+            </form>
+          </div>
+        ) : step === 'done' ? (
           <div className="reg-success">
             <div className="reg-success-icon"><i className="ti ti-circle-check" /></div>
             <h2 className="reg-success-title">Conta ativa!</h2>
@@ -301,6 +355,16 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
                   : <><i className="ti ti-send" /> Criar conta</>}
               </button>
             </form>
+            <p style={{ textAlign: 'center', marginTop: 16, fontSize: 14, color: 'var(--text-2)' }}>
+              Já se cadastrou mas não recebeu o código?{' '}
+              <button
+                type="button"
+                className="link-btn"
+                onClick={() => { setResendEmail(''); setResendError(''); setStep('resend'); }}
+              >
+                Reenviar código
+              </button>
+            </p>
           </>
         )}
       </div>
