@@ -439,9 +439,13 @@ router.post('/claim', async (req: Request, res: Response): Promise<void> => {
     expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
   }]);
 
-  await sendOtpEmail(newEmail, row.nick, claimCode, 'verify_email').catch(err =>
-    console.error('[claim] Falha ao enviar OTP:', err)
-  );
+  try {
+    await sendOtpEmail(newEmail, row.nick, claimCode, 'verify_email');
+  } catch (emailErr) {
+    console.error('[claim] Falha ao enviar OTP:', emailErr);
+    res.status(500).json({ error: 'Conta vinculada, mas falha ao enviar código de verificação. Tente "Reenviar código" em instantes.' });
+    return;
+  }
 
   res.json({ otp_pending: true, email: newEmail, message: 'Verifique seu email para confirmar a vinculação.' });
 });

@@ -109,9 +109,16 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
       expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
     }]);
 
-    await sendOtpEmail(email.trim().toLowerCase(), nick.trim(), otpCode, 'verify_email').catch(err =>
-      console.error('[POST /players/register] Falha ao enviar OTP:', err)
-    );
+    try {
+      await sendOtpEmail(email.trim().toLowerCase(), nick.trim(), otpCode, 'verify_email');
+    } catch (emailErr) {
+      console.error('[POST /players/register] Falha ao enviar OTP:', emailErr);
+      res.status(201).json({
+        message: 'Cadastro criado! Houve um problema ao enviar o email de verificação — use "Reenviar código" na tela de confirmação.',
+        email_failed: true,
+      });
+      return;
+    }
 
     res.status(201).json({
       message: 'Cadastro recebido! Verifique seu email para confirmar a conta.',
@@ -194,9 +201,13 @@ router.patch('/:id/email', requireModerator, async (req: ModRequest, res: Respon
       expires_at: expiresAt,
     }]);
 
-    await sendActivationEmail(row.email, row.nick, token).catch(err =>
-      console.error('[PATCH /players/:id/email] Falha ao enviar email de ativação:', err)
-    );
+    try {
+      await sendActivationEmail(row.email, row.nick, token);
+    } catch (emailErr) {
+      console.error('[PATCH /players/:id/email] Falha ao enviar email de ativação:', emailErr);
+      res.json({ message: 'Email salvo, mas falha ao enviar convite de ativação. Verifique o email e tente novamente.', email_failed: true });
+      return;
+    }
 
     res.json({ message: 'Email salvo e convite de ativação enviado.' });
   } catch (err) {

@@ -136,9 +136,13 @@ router.patch('/me/email', requirePlayer, async (req: PlayerRequest, res: Respons
     player_id: req.playerId!, token, type: 'verify', expires_at: expiresAt,
   }]);
 
-  await sendVerificationEmail(newEmail, row.nick, token).catch(err =>
-    console.error('[PATCH /account/me/email] Falha ao enviar email:', err)
-  );
+  try {
+    await sendVerificationEmail(newEmail, row.nick, token);
+  } catch (emailErr) {
+    console.error('[PATCH /account/me/email] Falha ao enviar email:', emailErr);
+    res.status(500).json({ error: 'Email atualizado, mas falha ao enviar link de verificação. Tente novamente em instantes.' });
+    return;
+  }
 
   res.json({ message: 'Email atualizado. Verifique sua caixa de entrada para confirmar o novo endereço.' });
 });
@@ -253,9 +257,13 @@ router.post('/me/otp/send', requirePlayer, async (req: PlayerRequest, res: Respo
   }]);
 
   const emailAction = action === 'change_email' ? 'change_email' : 'change_password';
-  await sendOtpEmail(targetEmail, row.nick, code, emailAction).catch(err =>
-    console.error(`[otp/send ${action}] Falha ao enviar OTP:`, err)
-  );
+  try {
+    await sendOtpEmail(targetEmail, row.nick, code, emailAction);
+  } catch (emailErr) {
+    console.error(`[otp/send ${action}] Falha ao enviar OTP:`, emailErr);
+    res.status(500).json({ error: 'Não foi possível enviar o código de verificação. Tente novamente em instantes.' });
+    return;
+  }
 
   // Mascara o email para exibição
   const [user, domain] = targetEmail.split('@');
