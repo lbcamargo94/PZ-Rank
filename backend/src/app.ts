@@ -47,13 +47,14 @@ export function createApp() {
 
   app.use(helmet());
 
-  // Impede que o CDN da Vercel cache respostas de preflight CORS.
-  // Sem isso, um preflight de https://pzrank.com.br pode ser servido
-  // para https://www.pzrank.com.br, causando bloqueio de CORS.
-  app.use((req: Request, res: Response, next: NextFunction) => {
-    if (req.method === 'OPTIONS') {
-      res.set('Cache-Control', 'no-store');
-    }
+  // O Helmet seta Cache-Control: public, max-age=0, must-revalidate por padrão.
+  // O "public" permite conditional caching (304) no CDN e no browser.
+  // Quando o domínio mudou de pzrank.com.br para www.pzrank.com.br, respostas
+  // cacheadas com Access-Control-Allow-Origin: https://pzrank.com.br continuaram
+  // sendo servidas (incluindo 304s) para requisições de https://www.pzrank.com.br.
+  // Uma API nunca deve ser cacheada — no-store impede qualquer cache.
+  app.use((_req: Request, res: Response, next: NextFunction) => {
+    res.set('Cache-Control', 'no-store');
     next();
   });
 
