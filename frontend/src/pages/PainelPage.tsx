@@ -126,7 +126,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
   const [entries,        setEntries]        = useState<Entry[]>([]);
   const [sortKey]                           = useState<SortKey>('score');
   const [updatingEntry,  setUpdatingEntry]  = useState<number | null>(null);
-  const { toast, showToast }               = useToast();
+  const { toast, showToast, clearToast }   = useToast();
 
   const fetchEntries = useCallback(async () => {
     try { setEntries(await apiGetEntries(sortKey, session?.token)); }
@@ -204,7 +204,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
   if (!session) {
     return (
       <>
-        <PainelLogin onSuccess={onSession} onBack={onBack} showToast={showToast} />
+        <PainelLogin onSuccess={(s) => { clearToast(); onSession(s); }} onBack={onBack} showToast={showToast} />
         <Toast {...toast} />
       </>
     );

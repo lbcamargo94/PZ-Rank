@@ -15,7 +15,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let res: Response;
   try {
     res = await fetch(`${API_URL}${path}`, init);
-  } catch {
+  } catch (e) {
+    console.error('[api] fetch error', path, e);
     throw new Error('Não foi possível conectar ao servidor. Verifique se o backend está rodando.');
   }
 

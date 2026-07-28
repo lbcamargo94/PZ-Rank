@@ -19,5 +19,10 @@ export function useToast() {
     );
   }, []);
 
-  return { toast, showToast };
+  const clearToast = useCallback(() => {
+    clearTimeout(timerRef.current);
+    setToast(t => ({ ...t, visible: false }));
+  }, []);
+
+  return { toast, showToast, clearToast };
 }
