@@ -108,11 +108,9 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     disqualification_reason?: string;
   };
 
-  const VALID_REASONS = new Set(['sandbox', 'debug', 'mods', 'manual']);
-  const isValidReason = (r: string) => VALID_REASONS.has(r) || r.startsWith('mods:');
-  // Prioridade: motivo enviado pelo Companion (lido do .txt) > motivo no código PZRX2 > 'sandbox'
-  // A resolução final do decoded.disqualificationReason só está disponível depois do parsePzrCode,
-  // por isso construímos o validatedReason em duas etapas (veja uso abaixo).
+  const VALID_REASONS = new Set(['sandbox', 'debug', 'manual']);
+  const isValidReason  = (r: string) => VALID_REASONS.has(r);
+  const isModsReason   = (r: string | null | undefined) => !!r && (r === 'mods' || r.startsWith('mods:'));
   const companionReason = (disqualification_reason && isValidReason(disqualification_reason))
     ? disqualification_reason
     : null;
@@ -232,30 +230,25 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   };
   const prev = existing as ExistingRow | null;
 
-  // Se já está desclassificado, descarta qualquer atualização futura.
-  // Exceção: 'mod_removed' é um motivo fraco (Companion detectou ausência do mod).
-  // Se o sync traz um motivo mais específico do mod in-game, atualiza só o motivo.
+  // Se já está desclassificado por mods, reabilita automaticamente (mods não desclassificam mais).
+  // Para outros motivos (sandbox, debug, manual), mantém a desclassificação.
   if (prev && prev.sandbox_ok === false) {
-    if (!decoded.sandboxOk && prev.disqualification_reason === 'mod_removed') {
-      const codeReason = (decoded.disqualificationReason && isValidReason(decoded.disqualificationReason))
-        ? decoded.disqualificationReason as string
-        : null;
-      const betterReason = companionReason ?? codeReason;
-      if (betterReason && betterReason !== 'mod_removed') {
-        await supabase
-          .from(config.tableName)
-          .update({ disqualification_reason: betterReason })
-          .eq('id', prev.id);
-      }
+    if (isModsReason(prev.disqualification_reason)) {
+      await supabase
+        .from(config.tableName)
+        .update({ sandbox_ok: true, disqualification_reason: null, disqualified_at: null })
+        .eq('id', prev.id);
+      // Continua o fluxo normal para atualizar o score/estado
+    } else {
+      res.status(200).json({
+        success:        true,
+        character_name: decoded.characterName,
+        score:          0,
+        is_alive:       (existing as { is_alive?: boolean }).is_alive ?? false,
+        disqualified:   true,
+      });
+      return;
     }
-    res.status(200).json({
-      success:        true,
-      character_name: decoded.characterName,
-      score:          0,
-      is_alive:       (existing as { is_alive?: boolean }).is_alive ?? false,
-      disqualified:   true,
-    });
-    return;
   }
 
   const existingObjectives = (existing?.objectives as Objectives | null) ?? null;
@@ -301,14 +294,12 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     }
   }
 
-  // Desclassificação: preserva os dados legítimos do último estado classificado.
-  // Só atualiza sandbox_ok, is_alive e zera o score — kills/dias/skills não são sobrescritos.
-  if (!decoded.sandboxOk && prev) {
+  // Desclassificação: apenas sandbox e debug causam desclassificação.
+  // Mods não desclassificam — se decoded.sandboxOk=false por mods (mod antigo), ignora e segue.
+  const codeReason = decoded.disqualificationReason;
+  if (!decoded.sandboxOk && !isModsReason(codeReason) && prev) {
     const existingRow = prev as { id: number; disqualification_reason?: string | null };
-    const codeReason = (decoded.disqualificationReason && isValidReason(decoded.disqualificationReason))
-      ? decoded.disqualificationReason as string
-      : null;
-    const validatedReason = companionReason ?? codeReason ?? 'sandbox';
+    const validatedReason = companionReason ?? (codeReason && isValidReason(codeReason) ? codeReason : null) ?? 'sandbox';
     const reasonToStore = existingRow.disqualification_reason ?? validatedReason;
     const { data, error } = await supabase
       .from(config.tableName)
