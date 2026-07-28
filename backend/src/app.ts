@@ -47,6 +47,16 @@ export function createApp() {
 
   app.use(helmet());
 
+  // Impede que o CDN da Vercel cache respostas de preflight CORS.
+  // Sem isso, um preflight de https://pzrank.com.br pode ser servido
+  // para https://www.pzrank.com.br, causando bloqueio de CORS.
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    if (req.method === 'OPTIONS') {
+      res.set('Cache-Control', 'no-store');
+    }
+    next();
+  });
+
   const allowedOrigins = config.corsOrigin.split(',').map(o => o.trim());
   app.use(cors({
     origin: (origin, cb) => {
