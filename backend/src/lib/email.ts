@@ -68,8 +68,8 @@ export async function sendVerificationEmail(email: string, nick: string, token: 
     </p>
     <table cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
       <tr>
-        <td style="background:#4ade80;border-radius:6px;padding:14px 28px;">
-          <a href="${link}" style="color:#000;font-weight:700;font-size:15px;text-decoration:none;">
+        <td style="background:#4ade80;border-radius:6px;">
+          <a href="${link}" style="display:block;padding:14px 28px;color:#000;font-weight:700;font-size:15px;text-decoration:none;">
             Verificar email
           </a>
         </td>
@@ -99,8 +99,8 @@ export async function sendPasswordResetEmail(email: string, nick: string, token:
     </p>
     <table cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
       <tr>
-        <td style="background:#facc15;border-radius:6px;padding:14px 28px;">
-          <a href="${link}" style="color:#000;font-weight:700;font-size:15px;text-decoration:none;">
+        <td style="background:#facc15;border-radius:6px;">
+          <a href="${link}" style="display:block;padding:14px 28px;color:#000;font-weight:700;font-size:15px;text-decoration:none;">
             Redefinir senha
           </a>
         </td>
@@ -130,8 +130,8 @@ export async function sendActivationEmail(email: string, nick: string, token: st
     </p>
     <table cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
       <tr>
-        <td style="background:#38bdf8;border-radius:6px;padding:14px 28px;">
-          <a href="${link}" style="color:#000;font-weight:700;font-size:15px;text-decoration:none;">
+        <td style="background:#38bdf8;border-radius:6px;">
+          <a href="${link}" style="display:block;padding:14px 28px;color:#000;font-weight:700;font-size:15px;text-decoration:none;">
             Ativar minha conta
           </a>
         </td>
@@ -197,8 +197,8 @@ export async function sendApprovalEmail(email: string, nick: string): Promise<vo
     </p>
     <table cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
       <tr>
-        <td style="background:#4ade80;border-radius:6px;padding:14px 28px;">
-          <a href="${link}" style="color:#000;font-weight:700;font-size:15px;text-decoration:none;">
+        <td style="background:#4ade80;border-radius:6px;">
+          <a href="${link}" style="display:block;padding:14px 28px;color:#000;font-weight:700;font-size:15px;text-decoration:none;">
             Ver meu ranking
           </a>
         </td>
