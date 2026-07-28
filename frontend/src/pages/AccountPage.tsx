@@ -9,8 +9,6 @@ import {
   apiUpdateMyLinks,
   apiSendAccountOtp,
   apiConfirmAccountOtp,
-  apiResendRegistrationOtp,
-  apiConfirmRegistrationOtp,
 } from '../lib/api';
 import { OtpInput } from '../components/OtpInput';
 import type { PlayerSession, PlayerAccount, Entry } from '../types';
@@ -50,10 +48,6 @@ function LoginForm({ onLogin }: { onLogin: (s: PlayerSession) => void }) {
   const [error,       setError]       = useState('');
   const [loading,     setLoading]     = useState(false);
   const [showPass,    setShowPass]    = useState(false);
-  const [resendStep,  setResendStep]  = useState<'hidden' | 'email' | 'otp' | 'done'>('hidden');
-  const [resendEmail, setResendEmail] = useState('');
-  const [resendCode,  setResendCode]  = useState('');
-  const [resendErr,   setResendErr]   = useState('');
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -96,74 +90,9 @@ function LoginForm({ onLogin }: { onLogin: (s: PlayerSession) => void }) {
         <div className="account-login-links">
           <Link to="/esqueci-senha"  className="btn-ghost btn-sm"><i className="ti ti-key" /> Esqueci minha senha</Link>
           <Link to="/vincular-conta" className="btn-ghost btn-sm"><i className="ti ti-user-question" /> Sou jogador legado</Link>
-          <button type="button" className="btn-ghost btn-sm"
-            onClick={() => { setResendStep(s => s === 'hidden' ? 'email' : 'hidden'); setResendErr(''); setResendCode(''); }}>
-            <i className="ti ti-mail-forward" /> Reenviar código de verificação
-          </button>
+          <Link to="/verificar-conta" className="btn-ghost btn-sm"><i className="ti ti-mail-forward" /> Reenviar código de verificação</Link>
           <Link to="/" className="btn-ghost btn-sm"><i className="ti ti-arrow-left" /> Voltar ao Rank</Link>
         </div>
-
-        {resendStep !== 'hidden' && (
-          <div className="account-resend-form">
-            {resendStep === 'done' ? (
-              <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <i className="ti ti-circle-check" style={{ fontSize: 32, color: 'var(--green)' }} />
-                <p style={{ margin: 0, color: 'var(--text-2)', fontSize: 14 }}>
-                  Email verificado! Faça login com seu email e senha.
-                </p>
-              </div>
-            ) : resendStep === 'otp' ? (
-              <>
-                <p style={{ margin: 0, fontSize: 14, color: 'var(--text-3)' }}>
-                  Código enviado para <strong>{resendEmail}</strong>. Digite-o abaixo:
-                </p>
-                <OtpInput value={resendCode} onChange={setResendCode} loading={loading}
-                  onResend={async () => {
-                    setResendErr('');
-                    try { await apiResendRegistrationOtp(resendEmail.trim()); }
-                    catch { setResendErr('Erro ao reenviar. Tente novamente.'); }
-                  }} />
-                {resendErr && <StatusMsg msg={resendErr} ok={false} />}
-                <button type="button" className="btn-ghost btn-sm"
-                  disabled={loading || resendCode.length !== 6}
-                  onClick={async () => {
-                    setResendErr(''); setLoading(true);
-                    try {
-                      await apiConfirmRegistrationOtp(resendEmail.trim(), resendCode);
-                      setResendStep('done');
-                    } catch (err) {
-                      setResendErr((err as Error).message || 'Código inválido ou expirado.');
-                    } finally { setLoading(false); }
-                  }}>
-                  {loading ? <><i className="ti ti-loader-2" /> Verificando...</> : <><i className="ti ti-check" /> Confirmar código</>}
-                </button>
-              </>
-            ) : (
-              <>
-                <div className="account-field">
-                  <label className="account-label">Email do cadastro</label>
-                  <input className="account-input" type="email" placeholder="seu@email.com"
-                    value={resendEmail} onChange={e => setResendEmail(e.target.value)}
-                    autoComplete="email" autoFocus />
-                </div>
-                {resendErr && <StatusMsg msg={resendErr} ok={false} />}
-                <button type="button" className="btn-ghost btn-sm"
-                  disabled={loading || !resendEmail.trim()}
-                  onClick={async () => {
-                    setResendErr(''); setLoading(true);
-                    try {
-                      await apiResendRegistrationOtp(resendEmail.trim());
-                      setResendCode(''); setResendStep('otp');
-                    } catch {
-                      setResendErr('Não foi possível enviar. Verifique o email e tente novamente.');
-                    } finally { setLoading(false); }
-                  }}>
-                  {loading ? <><i className="ti ti-loader-2" /> Enviando...</> : <><i className="ti ti-send" /> Enviar código</>}
-                </button>
-              </>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );

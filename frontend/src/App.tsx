@@ -24,6 +24,7 @@ import { ActivateAccountPage } from './pages/ActivateAccountPage';
 import { AccountPage } from './pages/AccountPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { ClaimAccountPage } from './pages/ClaimAccountPage';
+import { ResendVerificationPage } from './pages/ResendVerificationPage';
 
 const TAB_CONFIG: { key: RankTab; label: string; icon: string }[] = [
   { key: 'rank',          label: 'Rank',             icon: 'ti-heartbeat' },
@@ -190,6 +191,7 @@ export default function App() {
       <Route path="/ativar-conta"     element={<ActivateAccountPage />} />
       <Route path="/minha-conta"      element={<AccountPage />} />
       <Route path="/esqueci-senha"    element={<ForgotPasswordPage />} />
+      <Route path="/verificar-conta"  element={<ResendVerificationPage />} />
       <Route path="/vincular-conta"   element={<ClaimAccountPage />} />
       <Route path="/painel" element={
         <PainelPage
