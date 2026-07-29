@@ -50,16 +50,16 @@ export function FinancesManager({ token, showToast }: Props) {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [s, p] = await Promise.all([
-        apiGetActiveSeason(),
-        apiGetPlayers(token, 'supporter'),
-      ]);
+      const s = await apiGetActiveSeason();
       setSeason(s);
-      setPlayers(p);
+
       if (s) {
         const fe = await apiGetSeasonFinances(s.id);
         setEntries(fe);
       }
+
+      const p = await apiGetPlayers(token, 'supporter');
+      setPlayers(p);
     } catch (e) {
       showToast((e as Error).message, 'error');
     } finally {
