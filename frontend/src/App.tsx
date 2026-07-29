@@ -8,7 +8,6 @@ import { Header } from './components/Header';
 import { DownloadBanner } from './components/DownloadBanner';
 import { SeasonEndOverlay } from './components/SeasonEndOverlay';
 import { CommunityStats } from './components/CommunityStats';
-import { StatsBar } from './components/StatsBar';
 import { RankTable } from './components/RankTable';
 import { PlayerRegisterModal } from './components/PlayerRegisterModal';
 import { RulesModal } from './components/RulesModal';
@@ -116,11 +115,6 @@ function MainView() {
       <SeasonEndOverlay />
       <DownloadBanner />
       <main>
-        <StatsBar
-          alive={aliveEntries.length}
-          dead={deadEntries.length}
-          disqualified={discEntries.length}
-        />
         <CommunityStats />
 
         <div className="container rank-tabs-bar">
