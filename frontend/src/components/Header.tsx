@@ -30,6 +30,7 @@ export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
             <p className="site-sub">Desafio BRASILEIRÃO PZ</p>
             <span className="season-chip">Temporada 1</span>
           </div>
+          <p className="site-tagline">Sobreviva. Evolua. Supere.</p>
         </Link>
 
         <button
