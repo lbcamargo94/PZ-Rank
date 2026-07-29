@@ -24,8 +24,9 @@ function StatChips({ stats }: { stats: NewsStats }) {
     <div className="nm-stats">
       <span className="nm-stat nm-stat--alive"><i className="ti ti-heartbeat" /> {fmt(stats.alive_count)} vivos</span>
       <span className="nm-stat nm-stat--dead"><i className="ti ti-skull" /> {fmt(stats.dead_count)} mortos</span>
-      <span className="nm-stat nm-stat--kills"><i className="ti ti-sword" /> {fmt(stats.total_kills)} abatidos</span>
-      <span className="nm-stat"><i className="ti ti-refresh" /> {stats.new_syncs_today} syncs hoje</span>
+      <span className="nm-stat nm-stat--kills"><i className="ti ti-sword" /> {fmt(stats.total_kills)} total</span>
+      <span className="nm-stat nm-stat--kills"><i className="ti ti-sword" /> +{fmt(stats.kills_today)} hoje</span>
+      <span className="nm-stat"><i className="ti ti-users" /> {stats.syncs_today} ativos hoje</span>
       <span className="nm-stat"><i className="ti ti-skull" /> {stats.deaths_today} mortes hoje</span>
     </div>
   );

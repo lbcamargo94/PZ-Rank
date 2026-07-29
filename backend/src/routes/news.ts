@@ -25,20 +25,34 @@ async function buildSnapshot(today: string) {
     .neq('sandbox_ok', false);
 
   if (error || !data) {
-    return { alive_count: 0, dead_count: 0, total_kills: 0, player_count: 0, deaths_today: 0, new_syncs_today: 0 };
+    return { alive_count: 0, dead_count: 0, total_kills: 0, deaths_today: 0, syncs_today: 0, kills_today: 0 };
   }
 
   type Row = { is_alive: boolean; kills: number; updated_at: string | null };
   const rows = data as Row[];
 
-  const alive_count     = rows.filter(e =>  e.is_alive).length;
-  const dead_count      = rows.filter(e => !e.is_alive).length;
-  const total_kills     = rows.reduce((s, e) => s + (e.kills || 0), 0);
-  const player_count    = rows.length;
-  const deaths_today    = rows.filter(e => !e.is_alive && (e.updated_at ?? '').startsWith(today)).length;
-  const new_syncs_today = rows.filter(e =>                (e.updated_at ?? '').startsWith(today)).length;
+  const alive_count  = rows.filter(e =>  e.is_alive).length;
+  const dead_count   = rows.filter(e => !e.is_alive).length;
+  const total_kills  = rows.reduce((s, e) => s + (e.kills || 0), 0);
+  const deaths_today = rows.filter(e => !e.is_alive && (e.updated_at ?? '').startsWith(today)).length;
+  const syncs_today  = rows.filter(e =>                (e.updated_at ?? '').startsWith(today)).length;
 
-  return { alive_count, dead_count, total_kills, player_count, deaths_today, new_syncs_today };
+  // kills_today = delta em relação ao snapshot de ontem
+  const d = new Date(`${today}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() - 1);
+  const yStr = d.toISOString().slice(0, 10);
+
+  const { data: yd } = await supabase
+    .from('daily_news').select('stats').eq('date', yStr).maybeSingle();
+
+  const rawPrev   = (yd as Record<string, unknown> | null)?.stats;
+  const prevStats = typeof rawPrev === 'string'
+    ? JSON.parse(rawPrev) as Record<string, number>
+    : rawPrev as Record<string, number> | null;
+  const prevKills   = prevStats?.total_kills ?? null;
+  const kills_today = prevKills !== null ? Math.max(0, total_kills - prevKills) : 0;
+
+  return { alive_count, dead_count, total_kills, deaths_today, syncs_today, kills_today };
 }
 
 // GET /news/latest — público; cria o snapshot do dia na primeira chamada
@@ -47,10 +61,7 @@ router.get('/latest', async (_req, res) => {
     const today = todayUTC();
 
     const { data: existing, error: selErr } = await supabase
-      .from('daily_news')
-      .select('*')
-      .eq('date', today)
-      .maybeSingle();
+      .from('daily_news').select('*').eq('date', today).maybeSingle();
 
     if (selErr) {
       const e = dbError(selErr);
@@ -67,8 +78,7 @@ router.get('/latest', async (_req, res) => {
     const { data: inserted, error: insErr } = await supabase
       .from('daily_news')
       .insert([{ date: today, stats: JSON.stringify(stats) }])
-      .select()
-      .single();
+      .select().single();
 
     if (insErr || !inserted) {
       const e = dbError(insErr ?? { message: 'Erro ao criar snapshot.' });
@@ -82,14 +92,11 @@ router.get('/latest', async (_req, res) => {
   }
 });
 
-// GET /news/history — últimos 7 dias (somente moderadores)
+// GET /news/history — últimos 7 dias (moderadores)
 router.get('/history', requireModerator, async (_req, res) => {
   try {
     const { data, error } = await supabase
-      .from('daily_news')
-      .select('*')
-      .order('date', { ascending: false })
-      .limit(7);
+      .from('daily_news').select('*').order('date', { ascending: false }).limit(7);
 
     if (error) {
       const e = dbError(error);
@@ -118,11 +125,7 @@ router.patch('/:date/headline', requireModerator, async (req, res) => {
     const { headline } = req.body as { headline?: string | null };
 
     const { data: updated, error } = await supabase
-      .from('daily_news')
-      .update({ headline: headline ?? null })
-      .eq('date', date)
-      .select()
-      .single();
+      .from('daily_news').update({ headline: headline ?? null }).eq('date', date).select().single();
 
     if (error || !updated) {
       return res.status(404).json({ error: 'Nenhum registro encontrado para esta data.' });

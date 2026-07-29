@@ -123,12 +123,12 @@ export interface HallOfFameEntry {
 }
 
 export interface NewsStats {
-  alive_count:     number;
-  dead_count:      number;
-  total_kills:     number;
-  player_count:    number;
-  deaths_today:    number;
-  new_syncs_today: number;
+  alive_count:  number;
+  dead_count:   number;
+  total_kills:  number;
+  deaths_today: number;
+  syncs_today:  number;
+  kills_today:  number;
 }
 
 export interface DailyNews {
