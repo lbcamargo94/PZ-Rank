@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-const SESSION_KEY = 'season1_overlay_dismissed';
+const SESSION_KEY = 'season1_overlay_v2_dismissed';
 
 export function SeasonEndOverlay() {
   const [visible, setVisible] = useState(() => !sessionStorage.getItem(SESSION_KEY));
