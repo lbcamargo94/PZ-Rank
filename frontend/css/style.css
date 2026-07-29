@@ -255,6 +255,62 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   .download-banner-sub { display: none; }
 }
 
+/* ===== SEASON TEASER BANNER ===== */
+.season-teaser {
+  background: linear-gradient(90deg, #1a1200 0%, #1f1800 50%, #1a1200 100%);
+  border-bottom: 1px solid #4a3800;
+  padding: 10px 0;
+}
+
+.season-teaser-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.season-teaser-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.season-teaser-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.season-teaser-title {
+  font-family: var(--font-display);
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  color: var(--gold);
+}
+
+.season-teaser-sub {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: #8a7a50;
+}
+
+.season-teaser-close {
+  background: none;
+  border: none;
+  color: #5a4a20;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: var(--radius);
+  flex-shrink: 0;
+  font-size: 16px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.season-teaser-close:hover { color: var(--gold); }
+
+@media (max-width: 560px) {
+  .season-teaser-sub { display: none; }
+}
+
 /* ===== STATS BAR ===== */
 .stats-bar {
   display: grid;
