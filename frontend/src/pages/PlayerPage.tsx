@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import avatarDefault from '../../assets/avatar.png';
 import { apiGetPlayerProfile, apiGetEntries } from '../lib/api';
@@ -284,9 +284,12 @@ function CharacterCard({ entry, rank }: { entry: Entry; rank: number | null }) {
       {(() => {
         const arch = resolveArchetype(entry);
         return (
-          <div className="pp-archetype">
-            <span className="pp-arch-icon">{arch.icon}</span>
+          <div className="pp-archetype" style={{ '--arch-color': arch.color } as React.CSSProperties}>
+            <div className="pp-arch-badge">
+              <span className="pp-arch-icon">{arch.icon}</span>
+            </div>
             <div className="pp-arch-info">
+              <span className="pp-arch-eyebrow">Perfil Psicológico</span>
               <span className="pp-arch-name">{arch.name}</span>
               <span className="pp-arch-desc">{arch.desc}</span>
             </div>

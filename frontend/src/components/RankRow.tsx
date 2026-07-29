@@ -165,8 +165,11 @@ export function RankRow({ entry, rank, hideStatus }: RankRowProps) {
     <tr className={rank <= 3 ? `rank-top rank-${rank}` : ''}>
       <td className="rank-pos">
         {MEDALS[rank] ?? rank}
-        <span className="division-badge" style={{ color: division.cssVar }} title={`${division.label} · ${division.range}`}>
-          {division.icon}
+        <span
+          className={`division-badge division-badge--${division.division.toLowerCase()}`}
+          title={`${division.label} · ${division.range}`}
+        >
+          {division.label}
         </span>
       </td>
       <td className="rank-name">

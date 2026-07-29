@@ -2,21 +2,22 @@ import { parseSkillMap } from './skills';
 import type { Entry } from '../types';
 
 export interface Archetype {
-  id:   string;
-  name: string;
-  icon: string;
-  desc: string;
+  id:    string;
+  name:  string;
+  icon:  string;
+  desc:  string;
+  color: string;
 }
 
 const ARCHETYPES: Record<string, Archetype> = {
-  berserker: { id: 'berserker', name: 'Berserker',   icon: '🪓', desc: 'Combatente nato. Deixa um rastro de mortos por onde passa.'     },
-  hunter:    { id: 'hunter',    name: 'Caçador',      icon: '🏹', desc: 'Mestre das armadilhas e do rastreamento. A floresta é seu lar.' },
-  builder:   { id: 'builder',   name: 'Construtor',   icon: '🏰', desc: 'Ergue bases onde outros apenas sobrevivem.'                    },
-  explorer:  { id: 'explorer',  name: 'Explorador',   icon: '🚗', desc: 'Não para de se mover. Conhece cada rua do mapa.'               },
-  medic:     { id: 'medic',     name: 'Médico',       icon: '🩺', desc: 'Mantém o grupo de pé mesmo nas piores situações.'              },
-  farmer:    { id: 'farmer',    name: 'Fazendeiro',   icon: '🌾', desc: 'Encontrou sustento onde ninguém mais encontrou.'               },
-  ghost:     { id: 'ghost',     name: 'Fantasma',     icon: '🥷', desc: 'Passa despercebido. Os zumbis nem sabem que ele existe.'       },
-  survivor:  { id: 'survivor',  name: 'Sobrevivente', icon: '🛡️', desc: 'Equilibrado e resiliente. Ainda está de pé — isso já é muito.' },
+  berserker: { id: 'berserker', name: 'Berserker',   icon: '🪓', color: '#e04040', desc: 'Combatente nato. Deixa um rastro de mortos por onde passa.'     },
+  hunter:    { id: 'hunter',    name: 'Caçador',      icon: '🏹', color: '#c8a84b', desc: 'Mestre das armadilhas e do rastreamento. A floresta é seu lar.' },
+  builder:   { id: 'builder',   name: 'Construtor',   icon: '🏰', color: '#7ab8e0', desc: 'Ergue bases onde outros apenas sobrevivem.'                    },
+  explorer:  { id: 'explorer',  name: 'Explorador',   icon: '🚗', color: '#c87828', desc: 'Não para de se mover. Conhece cada rua do mapa.'               },
+  medic:     { id: 'medic',     name: 'Médico',       icon: '🩺', color: '#7ac050', desc: 'Mantém o grupo de pé mesmo nas piores situações.'              },
+  farmer:    { id: 'farmer',    name: 'Fazendeiro',   icon: '🌾', color: '#6ab840', desc: 'Encontrou sustento onde ninguém mais encontrou.'               },
+  ghost:     { id: 'ghost',     name: 'Fantasma',     icon: '🥷', color: '#9099a5', desc: 'Passa despercebido. Os zumbis nem sabem que ele existe.'       },
+  survivor:  { id: 'survivor',  name: 'Sobrevivente', icon: '🛡️', color: '#b0a890', desc: 'Equilibrado e resiliente. Ainda está de pé — isso já é muito.' },
 };
 
 export function resolveArchetype(entry: Pick<Entry, 'kills' | 'days' | 'skills'>): Archetype {
