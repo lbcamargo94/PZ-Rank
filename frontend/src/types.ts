@@ -194,6 +194,13 @@ export interface PlayerAchievement {
   entry_id:    number | null;
 }
 
+export interface HeatmapPoint {
+  event_type: 'kill' | 'death' | 'base';
+  grid_x:     number;
+  grid_y:     number;
+  count:      number;
+}
+
 export interface PlayerAccount {
   id:                 number;
   nick:               string;

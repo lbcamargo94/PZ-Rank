@@ -142,6 +142,16 @@ CREATE TABLE IF NOT EXISTS season_finances (
   updated_at  TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
 );
 
+CREATE TABLE IF NOT EXISTS heatmap_events (
+  id         INTEGER  PRIMARY KEY AUTOINCREMENT,
+  season_id  INTEGER  REFERENCES seasons(id) ON DELETE CASCADE,
+  event_type TEXT     NOT NULL CHECK (event_type IN ('kill', 'death', 'base')),
+  grid_x     INTEGER  NOT NULL,
+  grid_y     INTEGER  NOT NULL,
+  count      INTEGER  NOT NULL DEFAULT 0,
+  UNIQUE(season_id, event_type, grid_x, grid_y)
+);
+
 CREATE TABLE IF NOT EXISTS achievements (
   id          INTEGER  PRIMARY KEY AUTOINCREMENT,
   slug        TEXT     NOT NULL UNIQUE,

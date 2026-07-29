@@ -1,4 +1,4 @@
-import type { Player, Moderator, ModSession, ModeratorRole, Entry, PlayerFilter, PlayerProfile, Mod, DailyNews, FinanceEntry, Achievement, PlayerAchievement } from '../types';
+import type { Player, Moderator, ModSession, ModeratorRole, Entry, PlayerFilter, PlayerProfile, Mod, DailyNews, FinanceEntry, Achievement, PlayerAchievement, HeatmapPoint } from '../types';
 
 const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:3000';
 
@@ -453,4 +453,8 @@ export function apiGetAchievements(): Promise<{ achievements: Achievement[] }> {
 
 export function apiGetPlayerAchievements(playerId: number): Promise<{ achievements: PlayerAchievement[] }> {
   return request<{ achievements: PlayerAchievement[] }>(`/achievements/player/${playerId}`);
+}
+
+export function apiGetHeatmap(): Promise<{ points: HeatmapPoint[]; season: { id: number; name: string } | null }> {
+  return request<{ points: HeatmapPoint[]; season: { id: number; name: string } | null }>('/heatmap/current');
 }

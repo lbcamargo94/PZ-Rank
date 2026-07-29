@@ -19,6 +19,7 @@ import { parsePzrCode } from '../lib/decoder';
 import { dbError } from '../lib/errors';
 import { computeScore } from '../lib/scoring';
 import { evaluateAchievements, type ExtendedStats } from '../lib/achievements';
+import { processHeatmapDelta } from '../lib/heatmap';
 import { config } from '../config';
 import type { Objectives } from '../types';
 
@@ -103,10 +104,11 @@ router.get('/lookup', lookupLimiter, async (req: Request, res: Response): Promis
 // Enviado pelo mod automaticamente (sem precisar de moderador).
 // Preserva objectives e live_url de entradas existentes.
 router.post('/update', syncLimiter, async (req: Request, res: Response): Promise<void> => {
-  const { player_token, code, disqualification_reason } = req.body as {
+  const { player_token, code, disqualification_reason, heatmap_delta } = req.body as {
     player_token?:           string;
     code?:                   string;
     disqualification_reason?: string;
+    heatmap_delta?:           unknown[];
   };
 
   const VALID_REASONS = new Set(['sandbox', 'debug', 'manual']);
@@ -396,6 +398,18 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   };
   void evaluateAchievements(player.id, finalEntryId, extStats)
     .catch(e => console.error('[achievements]', e));
+
+  // Heatmap: aceita delta opcional do Companion; obtém season ativa para o UPSERT
+  if (heatmap_delta && Array.isArray(heatmap_delta) && heatmap_delta.length > 0) {
+    void (async () => {
+      const { data: season } = await supabase
+        .from('seasons').select('id').eq('is_active', true).maybeSingle();
+      if (season) {
+        void processHeatmapDelta((season as { id: number }).id, heatmap_delta)
+          .catch(e => console.error('[heatmap]', e));
+      }
+    })();
+  }
 
   // Posição no ranking: contagem de entradas com score mais alto (best-effort)
   const { count: rankCount, error: rankError } = await supabase

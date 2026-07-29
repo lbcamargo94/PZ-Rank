@@ -17,6 +17,7 @@ import seasonsRouter     from './routes/seasons';
 import newsRouter        from './routes/news';
 import financesRouter      from './routes/finances';
 import achievementsRouter  from './routes/achievements';
+import heatmapRouter       from './routes/heatmap';
 
 // Rate limiters por contexto de uso
 const authLimiter = rateLimit({
@@ -117,6 +118,7 @@ export function createApp() {
   app.use('/news',      newsRouter);
   app.use('/finances',      financesRouter);
   app.use('/achievements',  achievementsRouter);
+  app.use('/heatmap',       heatmapRouter);
 
   return app;
 }

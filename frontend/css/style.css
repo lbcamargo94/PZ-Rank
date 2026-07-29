@@ -7724,6 +7724,153 @@ a.btn-ghost { text-decoration: none; }
   font-family: var(--font-mono);
 }
 
+/* ── Mapa de calor ──────────────────────────────────────────────────────── */
+.map-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px 16px 40px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.map-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.map-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.map-title {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--green);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.map-season-badge {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-3);
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 2px 10px;
+}
+
+.map-subtitle {
+  font-size: 14px;
+  color: var(--text-3);
+  margin: 0;
+}
+
+.map-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.map-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  color: var(--text-3);
+  cursor: pointer;
+  transition: all 0.15s;
+  opacity: 0.55;
+}
+.map-filter-btn.active          { opacity: 1; color: var(--text-1); }
+.map-filter-btn.active.map-filter-kill  { border-color: rgba(255,60,0,0.6);  background: rgba(255,60,0,0.1);  }
+.map-filter-btn.active.map-filter-death { border-color: rgba(180,0,220,0.6); background: rgba(180,0,220,0.1); }
+.map-filter-btn.active.map-filter-base  { border-color: rgba(0,200,80,0.6);  background: rgba(0,200,80,0.1);  }
+
+.map-filter-count {
+  background: var(--bg-4);
+  color: var(--text-3);
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 99px;
+}
+
+.map-container {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #0e1a0e;
+  height: 520px;
+}
+
+.map-leaflet {
+  width: 100%;
+  height: 100%;
+}
+
+.map-loading,
+.map-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-3);
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.map-empty i   { font-size: 32px; }
+.map-empty p   { text-align: center; line-height: 1.6; }
+.map-loading i { font-size: 24px; animation: spin 1s linear infinite; }
+
+.map-legend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.map-legend-bar {
+  flex: 1;
+  max-width: 160px;
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(to right, rgba(255,60,0,0.1), rgba(255,60,0,0.9));
+  border: 1px solid var(--border);
+}
+
+.map-legend-note {
+  margin-left: auto;
+  font-size: 11px;
+}
+
+@media (max-width: 860px) {
+  .map-container { height: 380px; }
+  .map-legend-note { display: none; }
+}
+
 /* ── Stats estendidas PZRX3 ────────────────────────────────────────────── */
 .pp-ext-stats {
   display: flex;

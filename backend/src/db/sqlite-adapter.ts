@@ -41,7 +41,7 @@ const UUID_DEFAULTS: Record<string, string[]> = {
 
 // Allowlist de tabelas e colunas válidas para evitar SQL injection
 // via interpolação de nomes de tabela/coluna no adapter.
-const ALLOWED_TABLES = new Set(['players', 'moderators', 'entries', 'mods', 'mod_dependencies', 'player_tokens', 'seasons', 'hall_of_fame', 'daily_news', 'season_finances', 'achievements', 'player_achievements']);
+const ALLOWED_TABLES = new Set(['players', 'moderators', 'entries', 'mods', 'mod_dependencies', 'player_tokens', 'seasons', 'hall_of_fame', 'daily_news', 'season_finances', 'achievements', 'player_achievements', 'heatmap_events']);
 
 const ALLOWED_COLS: Record<string, Set<string>> = {
   players:          new Set(['id','nick','email','password_hash','email_verified_at','twitch_url','youtube_url','kick_url','tiktok_url','status','blocked','is_supporter','supporter_until','player_token','created_at','deleted_at']),
@@ -56,6 +56,7 @@ const ALLOWED_COLS: Record<string, Set<string>> = {
   season_finances:     new Set(['id','season_id','category','label','amount_brl','goal_brl','updated_at']),
   achievements:        new Set(['id','slug','name','description','icon','tier','stat','threshold']),
   player_achievements: new Set(['id','player_id','achievement_id','entry_id','unlocked_at']),
+  heatmap_events:      new Set(['id','season_id','event_type','grid_x','grid_y','count']),
 };
 
 function assertTable(table: string): void {
