@@ -8,6 +8,7 @@ import { getProfessionImageUrl } from '../lib/professions';
 import { SPIFFOS_RESTAURANTS, BASE_ITEMS, initObjectives } from '../lib/objectives';
 import { ProgressBar } from '../components/ProgressBar';
 import { resolveArchetype } from '../lib/archetype';
+import { AchievementsSection } from '../components/AchievementsSection';
 import type { PlayerProfile, Entry } from '../types';
 import type { Objectives } from '../lib/objectives';
 
@@ -498,6 +499,8 @@ export function PlayerPage() {
             ))}
           </div>
         </div>
+
+        <AchievementsSection playerId={profile.player.id} />
       </div>
     </div>
   );

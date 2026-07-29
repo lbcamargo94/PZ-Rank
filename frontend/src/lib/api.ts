@@ -1,4 +1,4 @@
-import type { Player, Moderator, ModSession, ModeratorRole, Entry, PlayerFilter, PlayerProfile, Mod, DailyNews, FinanceEntry } from '../types';
+import type { Player, Moderator, ModSession, ModeratorRole, Entry, PlayerFilter, PlayerProfile, Mod, DailyNews, FinanceEntry, Achievement, PlayerAchievement } from '../types';
 
 const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:3000';
 
@@ -445,4 +445,12 @@ export function apiSetSupporter(
   data: { is_supporter: boolean; supporter_until?: string | null },
 ): Promise<{ id: number; nick: string; is_supporter: boolean; supporter_until: string | null }> {
   return request(`/players/${playerId}/supporter`, { method: 'PATCH', ...json(token, data) });
+}
+
+export function apiGetAchievements(): Promise<{ achievements: Achievement[] }> {
+  return request<{ achievements: Achievement[] }>('/achievements');
+}
+
+export function apiGetPlayerAchievements(playerId: number): Promise<{ achievements: PlayerAchievement[] }> {
+  return request<{ achievements: PlayerAchievement[] }>(`/achievements/player/${playerId}`);
 }

@@ -159,6 +159,28 @@ export interface FinanceEntry {
   updated_at: string;
 }
 
+export interface Achievement {
+  id:          number;
+  slug:        string;
+  name:        string;
+  description: string;
+  icon:        string;
+  tier:        'bronze' | 'silver' | 'gold';
+  stat:        string;
+  threshold:   number;
+}
+
+export interface PlayerAchievement {
+  id:          number;
+  slug:        string;
+  name:        string;
+  description: string;
+  icon:        string;
+  tier:        'bronze' | 'silver' | 'gold';
+  unlocked_at: string;
+  entry_id:    number | null;
+}
+
 export interface PlayerAccount {
   id:                 number;
   nick:               string;

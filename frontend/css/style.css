@@ -7723,4 +7723,95 @@ a.btn-ghost { text-decoration: none; }
   color: var(--text-3);
   font-family: var(--font-mono);
 }
+
+/* ── Conquistas (achievements) ──────────────────────────────────────────── */
+.pp-ach-section {
+  margin-top: 32px;
+}
+
+.pp-ach-tier-group {
+  margin-bottom: 24px;
+}
+
+.pp-ach-tier-label {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  padding: 2px 10px;
+  border-radius: 99px;
+  margin-bottom: 10px;
+}
+.pp-ach-tier-gold   { background: rgba(255,215,0,0.15);   color: #FFD700; border: 1px solid rgba(255,215,0,0.35); }
+.pp-ach-tier-silver { background: rgba(192,192,192,0.15); color: #C0C0C0; border: 1px solid rgba(192,192,192,0.35); }
+.pp-ach-tier-bronze { background: rgba(205,127,50,0.15);  color: #CD7F32; border: 1px solid rgba(205,127,50,0.35); }
+
+.pp-ach-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.pp-ach-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 14px 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  text-align: center;
+  position: relative;
+  transition: border-color 0.15s;
+}
+
+.pp-ach-locked {
+  opacity: 0.42;
+  filter: grayscale(0.6);
+}
+
+.pp-ach-unlocked.pp-ach-gold   { border-color: rgba(255,215,0,0.5);   background: rgba(255,215,0,0.06); }
+.pp-ach-unlocked.pp-ach-silver { border-color: rgba(192,192,192,0.5); background: rgba(192,192,192,0.06); }
+.pp-ach-unlocked.pp-ach-bronze { border-color: rgba(205,127,50,0.5);  background: rgba(205,127,50,0.06); }
+
+.pp-ach-icon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.pp-ach-name {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-1);
+  line-height: 1.2;
+}
+
+.pp-ach-desc {
+  font-size: 12px;
+  color: var(--text-3);
+  line-height: 1.3;
+}
+
+.pp-ach-date {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 2px;
+}
+
+.pp-ach-lock {
+  font-size: 14px;
+  color: var(--text-3);
+  margin-top: 2px;
+}
+
+@media (max-width: 460px) {
+  .pp-ach-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  }
+}
 .nm-history-mini .ti { margin-right: 3px; }

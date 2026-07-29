@@ -18,6 +18,7 @@ import { supabase } from '../supabase';
 import { parsePzrCode } from '../lib/decoder';
 import { dbError } from '../lib/errors';
 import { computeScore } from '../lib/scoring';
+import { evaluateAchievements } from '../lib/achievements';
 import { config } from '../config';
 import type { Objectives } from '../types';
 
@@ -366,7 +367,12 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     return;
   }
 
-  const finalScore = (data as { score: number }).score;
+  const finalScore  = (data as { score: number }).score;
+  const finalEntryId = (data as { id: number }).id;
+
+  // Fire-and-forget — falha na avaliação não afeta a resposta do sync
+  void evaluateAchievements(player.id, finalEntryId, decoded.kills, decoded.days)
+    .catch(e => console.error('[achievements]', e));
 
   // Posição no ranking: contagem de entradas com score mais alto (best-effort)
   const { count: rankCount, error: rankError } = await supabase
