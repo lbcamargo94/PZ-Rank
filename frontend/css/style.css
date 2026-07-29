@@ -105,9 +105,10 @@ body::before {
 
 .site-sub-row {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 5px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 6px;
 }
 
 .site-sub {
@@ -119,17 +120,24 @@ body::before {
   opacity: 0.8;
 }
 
+@keyframes season-chip-glow {
+  0%, 100% { box-shadow: 0 0 6px rgba(200,168,75,0.5), 0 0 14px rgba(200,168,75,0.2); }
+  50%       { box-shadow: 0 0 12px rgba(200,168,75,0.9), 0 0 28px rgba(200,168,75,0.4); }
+}
+
 .season-chip {
   font-family: var(--font-mono);
   font-size: 11px;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  color: var(--text-3);
-  background: var(--bg-3);
-  border: 1px solid var(--border-mid);
+  color: #0a0800;
+  background: var(--gold);
+  border: none;
   border-radius: 100px;
-  padding: 2px 9px;
+  padding: 3px 12px;
   white-space: nowrap;
+  font-weight: 700;
+  animation: season-chip-glow 2.5s ease-in-out infinite;
 }
 
 .rules-bar {
