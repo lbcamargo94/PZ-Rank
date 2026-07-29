@@ -6930,72 +6930,135 @@ a.btn-ghost { text-decoration: none; }
   .legends-title { font-size: 26px; }
 }
 
-/* ── Jornal do Apocalipse — NewsCard (MainView) ────────────── */
-.news-card {
-  background: var(--bg-1);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--red);
-  border-radius: var(--radius);
-  padding: 10px 16px;
-  margin: 0 0 4px;
+/* ── Jornal do Apocalipse — botão trigger ──────────────────── */
+.news-trigger-row {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.news-trigger-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: none;
+  border: 1px solid var(--border-mid);
+  border-radius: 99px;
+  color: var(--text-3);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  padding: 5px 14px 5px 10px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.news-trigger-btn:hover {
+  color: var(--text-1);
+  border-color: var(--red);
+}
+.news-trigger-btn .ti-news { color: var(--red); }
+.news-trigger-arrow { font-size: 11px; margin-left: 2px; }
+
+/* ── Jornal do Apocalipse — modal ──────────────────────────── */
+.news-modal-box {
+  max-width: 480px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 16px;
 }
 
-.news-card-header {
+.news-modal-header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
 }
 
-.news-card-label {
+.news-modal-label {
   font-family: var(--font-mono);
   font-size: 11px;
-  letter-spacing: 2px;
+  letter-spacing: 2.5px;
   text-transform: uppercase;
   color: var(--red);
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
 }
 
-.news-card-date {
+.news-modal-date {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text-3);
   text-transform: capitalize;
 }
 
-.news-card-headline {
-  font-size: 16px;
-  color: var(--text-1);
-  line-height: 1.4;
-  font-style: italic;
-}
-
-.news-card-stats {
+.news-modal-loading {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-3);
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px 14px;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 0;
 }
 
-.news-stat {
+.news-modal-headline {
+  font-size: 18px;
+  color: var(--text-1);
+  line-height: 1.5;
+  font-style: italic;
+  border-left: 3px solid var(--red);
+  padding-left: 14px;
+}
+
+.news-modal-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.news-modal-stat {
+  background: var(--bg-2);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.news-modal-stat .ti { font-size: 18px; color: var(--text-4); }
+.news-modal-stat--alive .ti { color: var(--green); }
+.news-modal-stat--dead  .ti { color: var(--text-3); }
+.news-modal-stat--kills .ti { color: var(--red); }
+.news-modal-stat--sync  .ti { color: var(--blue-light); }
+
+.nm-stat-val {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-1);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.nm-stat-lbl {
+  font-size: 13px;
+  color: var(--text-3);
+  line-height: 1.2;
+}
+
+.news-modal-deaths {
   font-family: var(--font-mono);
   font-size: 13px;
   color: var(--text-3);
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
-
-.news-stat .ti { font-size: 13px; }
-.news-stat--alive .ti { color: var(--green); }
-.news-stat--dead  .ti { color: var(--text-3); }
-.news-stat--kills .ti { color: var(--red); }
-.news-stat--sync  .ti { color: var(--blue-light); }
+.news-modal-deaths .ti { color: var(--red); }
 
 /* ── NewsManager (Painel) ──────────────────────────────────── */
 .nm-today-card {

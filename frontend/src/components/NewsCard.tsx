@@ -6,7 +6,7 @@ function fmt(n: number): string {
   return n.toLocaleString('pt-BR');
 }
 
-function fmtDate(dateStr: string): string {
+function fmtDateLong(dateStr: string): string {
   return new Date(`${dateStr}T12:00:00`).toLocaleDateString('pt-BR', {
     weekday: 'long',
     day:     'numeric',
@@ -32,55 +32,121 @@ function autoHeadline(s: NewsStats): string {
   return parts.join(' · ') + '.';
 }
 
-export function NewsCard() {
-  const [news,    setNews]    = useState<DailyNews | null>(null);
-  const [loading, setLoading] = useState(true);
+interface ModalProps {
+  news:    DailyNews | null;
+  loading: boolean;
+  onClose: () => void;
+}
 
+function NewsModal({ news, loading, onClose }: ModalProps) {
   useEffect(() => {
-    apiGetLatestNews()
-      .then(setNews)
-      .catch(() => { /* silencioso — card some se falhar */ })
-      .finally(() => setLoading(false));
-  }, []);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
+  }, [onClose]);
 
-  if (loading || !news) return null;
-
-  const stats    = news.stats;
-  const headline = news.headline ?? (stats ? autoHeadline(stats) : null);
+  const stats    = news?.stats ?? null;
+  const headline = news?.headline ?? (stats ? autoHeadline(stats) : null);
 
   return (
-    <div className="container">
-      <div className="news-card">
-        <div className="news-card-header">
-          <span className="news-card-label">
+    <div className="modal-overlay active" onClick={onClose}>
+      <div className="modal-box news-modal-box" onClick={e => e.stopPropagation()}>
+        <button className="modal-close" aria-label="Fechar" onClick={onClose}>
+          <i className="ti ti-x" />
+        </button>
+
+        <div className="news-modal-header">
+          <span className="news-modal-label">
             <i className="ti ti-news" /> JORNAL DO APOCALIPSE
           </span>
-          <span className="news-card-date">{fmtDate(news.date)}</span>
+          {news && (
+            <span className="news-modal-date">{fmtDateLong(news.date)}</span>
+          )}
         </div>
 
-        {headline && (
-          <p className="news-card-headline">{headline}</p>
+        {loading && (
+          <div className="news-modal-loading">
+            <i className="ti ti-loader-2 spin" /> Carregando edição de hoje...
+          </div>
         )}
 
-        {stats && (
-          <div className="news-card-stats">
-            <span className="news-stat news-stat--alive">
-              <i className="ti ti-heartbeat" /> {fmt(stats.alive_count)} vivos
-            </span>
-            <span className="news-stat news-stat--dead">
-              <i className="ti ti-skull" /> {fmt(stats.dead_count)} mortos
-            </span>
-            <span className="news-stat news-stat--kills">
-              <i className="ti ti-sword" /> {fmt(stats.total_kills)} abatidos
-            </span>
-            {stats.new_syncs_today > 0 && (
-              <span className="news-stat news-stat--sync">
-                <i className="ti ti-refresh" /> {stats.new_syncs_today} hoje
-              </span>
-            )}
+        {!loading && !news && (
+          <div className="news-modal-loading">
+            <i className="ti ti-alert-circle" /> Não foi possível carregar o jornal.
           </div>
+        )}
+
+        {!loading && news && (
+          <>
+            {headline && (
+              <p className="news-modal-headline">&ldquo;{headline}&rdquo;</p>
+            )}
+
+            {stats && (
+              <div className="news-modal-stats">
+                <div className="news-modal-stat news-modal-stat--alive">
+                  <i className="ti ti-heartbeat" />
+                  <span className="nm-stat-val">{fmt(stats.alive_count)}</span>
+                  <span className="nm-stat-lbl">vivos</span>
+                </div>
+                <div className="news-modal-stat news-modal-stat--dead">
+                  <i className="ti ti-skull" />
+                  <span className="nm-stat-val">{fmt(stats.dead_count)}</span>
+                  <span className="nm-stat-lbl">mortos</span>
+                </div>
+                <div className="news-modal-stat news-modal-stat--kills">
+                  <i className="ti ti-sword" />
+                  <span className="nm-stat-val">{fmt(stats.total_kills)}</span>
+                  <span className="nm-stat-lbl">abatidos</span>
+                </div>
+                <div className="news-modal-stat news-modal-stat--sync">
+                  <i className="ti ti-refresh" />
+                  <span className="nm-stat-val">{stats.new_syncs_today}</span>
+                  <span className="nm-stat-lbl">syncs hoje</span>
+                </div>
+              </div>
+            )}
+
+            {stats && stats.deaths_today > 0 && (
+              <p className="news-modal-deaths">
+                <i className="ti ti-skull" /> {stats.deaths_today} morte{stats.deaths_today > 1 ? 's' : ''} registrada{stats.deaths_today > 1 ? 's' : ''} hoje.
+              </p>
+            )}
+          </>
         )}
       </div>
     </div>
+  );
+}
+
+export function NewsButton() {
+  const [open,    setOpen]    = useState(false);
+  const [news,    setNews]    = useState<DailyNews | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  function handleOpen() {
+    setOpen(true);
+    if (!news && !loading) {
+      setLoading(true);
+      apiGetLatestNews()
+        .then(setNews)
+        .catch(() => {})
+        .finally(() => setLoading(false));
+    }
+  }
+
+  return (
+    <>
+      <button className="news-trigger-btn" onClick={handleOpen}>
+        <i className="ti ti-news" />
+        Jornal do Apocalipse
+        <i className="ti ti-chevron-right news-trigger-arrow" />
+      </button>
+      {open && (
+        <NewsModal news={news} loading={loading} onClose={() => setOpen(false)} />
+      )}
+    </>
   );
 }
