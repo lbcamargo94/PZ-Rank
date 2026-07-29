@@ -42,6 +42,16 @@ body {
   min-height: 100vh;
 }
 
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 50vh;
+  background: radial-gradient(ellipse 80% 35% at 50% -10%, rgba(90,138,60,0.07) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
 .container {
   max-width: 1100px;
   margin: 0 auto;
@@ -53,15 +63,15 @@ body {
   background: var(--bg-1);
   border-bottom: 1px solid var(--border);
   position: relative;
-  padding: 24px 0 0;
+  padding: 28px 0 0;
 }
 
 .site-header::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 3px;
-  background: var(--green);
+  height: 4px;
+  background: linear-gradient(90deg, var(--green-dim), var(--green), var(--green-light), var(--green), var(--green-dim));
 }
 
 .header-inner {
@@ -75,52 +85,79 @@ body {
 
 .game-label {
   font-family: var(--font-mono);
-  font-size: 14px;
-  letter-spacing: 2px;
+  font-size: 12px;
+  letter-spacing: 3px;
   color: var(--green);
   text-transform: uppercase;
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  opacity: 0.85;
 }
 
 .site-title {
   font-family: var(--font-display);
-  font-size: 26px;
-  font-weight: 600;
+  font-size: 34px;
+  font-weight: 700;
   color: var(--text-1);
-  line-height: 1.1;
+  line-height: 1.05;
+  letter-spacing: 0.5px;
+}
+
+.site-sub-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
 }
 
 .site-sub {
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold);
+  opacity: 0.8;
+}
+
+.season-chip {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
   color: var(--text-3);
-  margin-top: 4px;
+  background: var(--bg-3);
+  border: 1px solid var(--border-mid);
+  border-radius: 100px;
+  padding: 2px 9px;
+  white-space: nowrap;
 }
 
 .rules-bar {
   display: flex;
-  gap: 8px;
+  gap: 16px;
   flex-wrap: wrap;
-  padding: 10px 20px;
+  padding: 10px 0;
   border-top: 1px solid var(--border);
 }
 
 .rule-tag {
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 13px;
+  letter-spacing: 0.3px;
   color: var(--text-3);
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--green);
-  padding: 4px 10px;
-  border-radius: 0 var(--radius) var(--radius) 0;
+  background: transparent;
+  border: none;
+  border-left: 2px solid var(--green-border);
+  padding: 3px 10px;
+  border-radius: 0;
   display: flex;
   align-items: center;
   gap: 5px;
+  transition: color 0.15s;
 }
 
-.rule-tag .ti { font-size: 14px; }
+.rule-tag:hover { color: var(--text-2); }
+.rule-tag .ti { font-size: 13px; color: var(--green); }
 
 /* ===== BUTTONS ===== */
 .btn-primary {
@@ -441,29 +478,49 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 }
 
 .stat-card {
-  background: var(--bg-2);
+  background: linear-gradient(135deg, var(--bg-2) 0%, var(--bg-1) 100%);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 14px 16px;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+  position: relative;
+  overflow: hidden;
 }
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px;
+  height: 100%;
+  background: var(--green);
+  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+}
+
+.stat-card:nth-child(2)::before { background: var(--red);    opacity: 0.7; }
+.stat-card:nth-child(3)::before { background: var(--gold);   opacity: 0.6; }
 
 .stat-label {
   font-family: var(--font-mono);
-  font-size: 14px;
-  letter-spacing: 1px;
+  font-size: 12px;
+  letter-spacing: 2px;
   color: var(--text-3);
   text-transform: uppercase;
 }
 
 .stat-value {
   font-family: var(--font-display);
-  font-size: 26px;
-  font-weight: 600;
-  color: var(--green-light);
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--text-1);
+  line-height: 1;
 }
+
+.stat-card:nth-child(1) .stat-value { color: var(--green-light); }
+.stat-card:nth-child(2) .stat-value { color: #e06060; }
+.stat-card:nth-child(3) .stat-value { color: var(--text-2); }
 
 /* ===== TABLE ===== */
 .table-wrap {
@@ -1429,33 +1486,44 @@ a.btn-ghost { text-decoration: none; }
 
 .rank-table tbody tr {
   border-bottom: 1px solid var(--border);
-  transition: background 0.1s;
+  transition: background 0.15s;
 }
 .rank-table tbody tr:last-child { border-bottom: none; }
-.rank-table tbody tr:hover { background: var(--bg-2); }
+.rank-table tbody tr:hover { background: #131310; }
 
-.rank-table tbody tr.rank-top.rank-1 { border-left: 3px solid var(--gold); }
-.rank-table tbody tr.rank-top.rank-2 { border-left: 3px solid var(--silver); }
-.rank-table tbody tr.rank-top.rank-3 { border-left: 3px solid var(--bronze); }
+.rank-table tbody tr.rank-top.rank-1 {
+  border-left: 3px solid var(--gold);
+  background: linear-gradient(90deg, rgba(200,168,75,0.04) 0%, transparent 60%);
+}
+.rank-table tbody tr.rank-top.rank-2 {
+  border-left: 3px solid var(--silver);
+  background: linear-gradient(90deg, rgba(144,153,165,0.04) 0%, transparent 60%);
+}
+.rank-table tbody tr.rank-top.rank-3 {
+  border-left: 3px solid var(--bronze);
+  background: linear-gradient(90deg, rgba(138,92,58,0.04) 0%, transparent 60%);
+}
 
-.rank-table td { padding: 10px 14px; vertical-align: middle; }
+.rank-table tbody tr.rank-top:hover { filter: brightness(1.12); }
+
+.rank-table td { padding: 12px 14px; vertical-align: middle; }
 
 .rank-pos {
-  font-family: var(--font-mono);
-  font-size: 14px;
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
   color: var(--text-4);
   width: 44px;
 }
-.rank-top.rank-1 .rank-pos { color: var(--gold); }
-.rank-top.rank-2 .rank-pos { color: var(--silver); }
-.rank-top.rank-3 .rank-pos { color: var(--bronze); }
+.rank-top.rank-1 .rank-pos { color: var(--gold);   font-size: 20px; }
+.rank-top.rank-2 .rank-pos { color: var(--silver); font-size: 18px; }
+.rank-top.rank-3 .rank-pos { color: var(--bronze); font-size: 17px; }
 
 .rank-name { min-width: 150px; }
 .char-name {
   display: block;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: 600;
   color: var(--text-1);
 }
 .profession-badge {

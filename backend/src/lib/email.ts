@@ -60,7 +60,7 @@ function baseTemplate(title: string, body: string): string {
 }
 
 export async function sendVerificationEmail(email: string, nick: string, token: string): Promise<void> {
-  const link = `${config.frontendUrl}/#/verificar-email?token=${token}`;
+  const link = `${config.frontendUrl}/verificar-email?token=${token}`;
   const html = baseTemplate('Verifique seu email — PZ Community Rank', `
     <h2 style="margin:0 0 16px;font-size:22px;color:#fff;">Bem-vindo, ${escapeHtml(nick)}!</h2>
     <p style="margin:0 0 24px;color:#aaa;line-height:1.6;">
@@ -90,7 +90,7 @@ export async function sendVerificationEmail(email: string, nick: string, token: 
 }
 
 export async function sendPasswordResetEmail(email: string, nick: string, token: string): Promise<void> {
-  const link = `${config.frontendUrl}/#/redefinir-senha?token=${token}`;
+  const link = `${config.frontendUrl}/redefinir-senha?token=${token}`;
   const html = baseTemplate('Redefinir senha — PZ Community Rank', `
     <h2 style="margin:0 0 16px;font-size:22px;color:#fff;">Redefinir senha</h2>
     <p style="margin:0 0 24px;color:#aaa;line-height:1.6;">
@@ -121,7 +121,7 @@ export async function sendPasswordResetEmail(email: string, nick: string, token:
 }
 
 export async function sendActivationEmail(email: string, nick: string, token: string): Promise<void> {
-  const link = `${config.frontendUrl}/#/ativar-conta?token=${token}`;
+  const link = `${config.frontendUrl}/ativar-conta?token=${token}`;
   const html = baseTemplate('Ativar conta — PZ Community Rank', `
     <h2 style="margin:0 0 16px;font-size:22px;color:#fff;">Olá, ${escapeHtml(nick)}!</h2>
     <p style="margin:0 0 24px;color:#aaa;line-height:1.6;">

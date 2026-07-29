@@ -23,7 +23,10 @@ export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
         <Link to="/" className="header-brand" aria-label="Página inicial">
           <span className="game-label">Project Zomboid</span>
           <h1 className="site-title">Ranking de Sobrevivência</h1>
-          <p className="site-sub">Desafio BRASILEIRÃO PZ</p>
+          <div className="site-sub-row">
+            <p className="site-sub">Desafio BRASILEIRÃO PZ</p>
+            <span className="season-chip">Temporada 1</span>
+          </div>
         </Link>
         <div className="header-actions">
           <button className="btn-primary btn-sm" onClick={onRules} aria-label="Regras do desafio">
