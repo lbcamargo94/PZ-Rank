@@ -95,6 +95,27 @@ INSERT OR IGNORE INTO moderators (id, login, role, password_hash) VALUES (
   '$2b$10$USBsx2GHapo/wz7X2mBUremnmMCdZ.p9Sc11EoFgVaAQMB4Efdjz2'
 );
 
+CREATE TABLE IF NOT EXISTS seasons (
+  id          INTEGER  PRIMARY KEY AUTOINCREMENT,
+  name        TEXT     NOT NULL,
+  theme_slug  TEXT     DEFAULT NULL,
+  started_at  TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+  ended_at    TEXT     DEFAULT NULL,
+  is_active   INTEGER  NOT NULL DEFAULT 1
+);
+
+CREATE TABLE IF NOT EXISTS hall_of_fame (
+  id             INTEGER  PRIMARY KEY AUTOINCREMENT,
+  season_id      INTEGER  NOT NULL REFERENCES seasons(id) ON DELETE CASCADE,
+  player_id      INTEGER  REFERENCES players(id) ON DELETE SET NULL,
+  entry_name     TEXT     NOT NULL,
+  character_name TEXT     DEFAULT NULL,
+  position       INTEGER  NOT NULL,
+  days           INTEGER  DEFAULT 0,
+  kills          INTEGER  DEFAULT 0,
+  score          INTEGER  DEFAULT 0
+);
+
 -- Seed: jogador aprovado para testar sync
 INSERT OR IGNORE INTO players (nick, status, twitch_url, player_token) VALUES (
   'TestPlayer',

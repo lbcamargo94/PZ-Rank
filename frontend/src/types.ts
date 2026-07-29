@@ -101,6 +101,27 @@ export interface PlayerProfile {
   entries: Entry[];
 }
 
+export interface Season {
+  id:         number;
+  name:       string;
+  theme_slug: string | null;
+  started_at: string;
+  ended_at:   string | null;
+  is_active:  boolean;
+}
+
+export interface HallOfFameEntry {
+  id:             number;
+  season_id:      number;
+  player_id:      number | null;
+  entry_name:     string;
+  character_name: string | null;
+  position:       number;
+  days:           number;
+  kills:          number;
+  score:          number;
+}
+
 export interface PlayerSession {
   token:     string;
   player_id: number;

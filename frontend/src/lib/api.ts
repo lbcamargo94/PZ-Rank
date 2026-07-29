@@ -266,6 +266,28 @@ export function apiGetGlobalStats(): Promise<GlobalStats> {
   return request('/stats/global');
 }
 
+// ── Seasons ─────────────────────────────────────────────────
+
+export function apiGetSeasons(): Promise<import('../types').Season[]> {
+  return request('/seasons');
+}
+
+export function apiGetActiveSeason(): Promise<import('../types').Season | null> {
+  return request('/seasons/active');
+}
+
+export function apiGetHallOfFame(): Promise<import('../types').HallOfFameEntry[]> {
+  return request('/seasons/hall-of-fame');
+}
+
+export function apiCreateSeason(token: string, data: { name: string; theme_slug?: string }): Promise<import('../types').Season> {
+  return request('/seasons', { method: 'POST', ...json(token, data) });
+}
+
+export function apiCloseSeason(token: string, id: number): Promise<{ ok: boolean; archived: number }> {
+  return request(`/seasons/${id}/close`, { method: 'PATCH', ...auth(token) });
+}
+
 export function apiGetMods(): Promise<Mod[]> {
   return request('/mods');
 }

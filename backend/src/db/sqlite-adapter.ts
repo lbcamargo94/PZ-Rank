@@ -22,9 +22,10 @@ import fs from 'node:fs';
 // ── Metadados por tabela ────────────────────────────────────────────────────
 
 const BOOL_COLS: Record<string, string[]> = {
-  players: ['blocked'],
-  entries: ['is_alive', 'sandbox_ok'],
-  mods:    ['is_required'],
+  players:      ['blocked'],
+  entries:      ['is_alive', 'sandbox_ok'],
+  mods:         ['is_required'],
+  seasons:      ['is_active'],
 };
 
 const JSON_COLS: Record<string, string[]> = {
@@ -39,15 +40,17 @@ const UUID_DEFAULTS: Record<string, string[]> = {
 
 // Allowlist de tabelas e colunas válidas para evitar SQL injection
 // via interpolação de nomes de tabela/coluna no adapter.
-const ALLOWED_TABLES = new Set(['players', 'moderators', 'entries', 'mods', 'mod_dependencies', 'player_tokens']);
+const ALLOWED_TABLES = new Set(['players', 'moderators', 'entries', 'mods', 'mod_dependencies', 'player_tokens', 'seasons', 'hall_of_fame']);
 
 const ALLOWED_COLS: Record<string, Set<string>> = {
   players:          new Set(['id','nick','email','password_hash','email_verified_at','twitch_url','youtube_url','kick_url','tiktok_url','status','blocked','player_token','created_at','deleted_at']),
   moderators:       new Set(['id','login','role','password_hash','created_at']),
-  entries:          new Set(['id','player_id','moderator_id','name','character_name','profession','days','time_raw','time_str','kills','skills','live_url','is_alive','sandbox_ok','traits','objectives','score','created_at','updated_at','sandbox_config','sandbox_config_updated_at','disqualified_at','disqualification_reason','deleted_at']),
+  entries:          new Set(['id','player_id','moderator_id','name','character_name','profession','days','time_raw','time_str','kills','skills','live_url','is_alive','sandbox_ok','traits','objectives','score','created_at','updated_at','sandbox_config','sandbox_config_updated_at','disqualified_at','disqualification_reason','flagged_reason','flagged_at','deleted_at','season_id']),
   mods:             new Set(['id','name','mod_id','workshop_url','status','is_required','image_url','created_at','updated_at']),
   mod_dependencies: new Set(['mod_id','depends_on_id']),
   player_tokens:    new Set(['id','player_id','token','type','expires_at','used_at','created_at']),
+  seasons:          new Set(['id','name','theme_slug','started_at','ended_at','is_active']),
+  hall_of_fame:     new Set(['id','season_id','player_id','entry_name','character_name','position','days','kills','score']),
 };
 
 function assertTable(table: string): void {
@@ -106,6 +109,7 @@ class SqliteQueryBuilder {
   private hasReturn  = false;
   private conditions: { col: string; op: string; val: unknown }[] = [];
   private orderBy:    { col: string; asc: boolean } | null = null;
+  private limitN:     number | null = null;
   private mode:       'select' | 'insert' | 'update' | 'delete' = 'select';
   private insertRows: Record<string, unknown>[] = [];
   private updateData: Record<string, unknown>   = {};
@@ -151,9 +155,20 @@ class SqliteQueryBuilder {
     return this;
   }
 
+  neq(col: string, val: unknown): this {
+    const v = typeof val === 'boolean' ? (val ? 1 : 0) : val;
+    this.conditions.push({ col, op: '!=', val: v });
+    return this;
+  }
+
   order(col: string, opts?: { ascending?: boolean }): this {
     const safe = /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(col) ? col : 'created_at';
     this.orderBy = { col: safe, asc: opts?.ascending !== false };
+    return this;
+  }
+
+  limit(n: number): this {
+    this.limitN = n;
     return this;
   }
 
@@ -202,6 +217,7 @@ class SqliteQueryBuilder {
       if (this.mode === 'select') {
         let sql = `SELECT ${this.selectCols} FROM ${this.table}${wSql}`;
         if (this.orderBy) sql += ` ORDER BY ${this.orderBy.col} ${this.orderBy.asc ? 'ASC' : 'DESC'}`;
+        if (this.limitN !== null) sql += ` LIMIT ${this.limitN}`;
         const rows = this.db.prepare(sql).all(...wP) as Record<string, unknown>[];
         return { data: rows.map(r => fromDb(this.table, r)), error: null };
       }
@@ -345,6 +361,49 @@ function runMigrations(db: Database): void {
   if (!entryCols.includes('deleted_at')) {
     db.exec('ALTER TABLE entries ADD COLUMN deleted_at TEXT DEFAULT NULL');
     console.log('[SQLite] migração: coluna deleted_at adicionada em entries');
+  }
+
+  if (!entryCols.includes('season_id')) {
+    db.exec('ALTER TABLE entries ADD COLUMN season_id INTEGER REFERENCES seasons(id) ON DELETE SET NULL');
+    console.log('[SQLite] migração: coluna season_id adicionada em entries');
+  }
+
+  if (!entryCols.includes('flagged_reason')) {
+    db.exec('ALTER TABLE entries ADD COLUMN flagged_reason TEXT DEFAULT NULL');
+    console.log('[SQLite] migração: coluna flagged_reason adicionada em entries');
+  }
+  if (!entryCols.includes('flagged_at')) {
+    db.exec('ALTER TABLE entries ADD COLUMN flagged_at TEXT DEFAULT NULL');
+    console.log('[SQLite] migração: coluna flagged_at adicionada em entries');
+  }
+
+  const hasSeasons = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='seasons'").get();
+  if (!hasSeasons) {
+    db.exec(`CREATE TABLE seasons (
+      id         INTEGER  PRIMARY KEY AUTOINCREMENT,
+      name       TEXT     NOT NULL,
+      theme_slug TEXT     DEFAULT NULL,
+      started_at TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+      ended_at   TEXT     DEFAULT NULL,
+      is_active  INTEGER  NOT NULL DEFAULT 1
+    )`);
+    console.log('[SQLite] migração: tabela seasons criada');
+  }
+
+  const hasHoF = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='hall_of_fame'").get();
+  if (!hasHoF) {
+    db.exec(`CREATE TABLE hall_of_fame (
+      id             INTEGER  PRIMARY KEY AUTOINCREMENT,
+      season_id      INTEGER  NOT NULL REFERENCES seasons(id) ON DELETE CASCADE,
+      player_id      INTEGER  REFERENCES players(id) ON DELETE SET NULL,
+      entry_name     TEXT     NOT NULL,
+      character_name TEXT     DEFAULT NULL,
+      position       INTEGER  NOT NULL,
+      days           INTEGER  DEFAULT 0,
+      kills          INTEGER  DEFAULT 0,
+      score          INTEGER  DEFAULT 0
+    )`);
+    console.log('[SQLite] migração: tabela hall_of_fame criada');
   }
 
   if (!playerCols.includes('email')) {
