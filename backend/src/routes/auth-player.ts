@@ -100,7 +100,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
 
   const { data: player, error } = await supabase
     .from('players')
-    .select('id, nick, email, password_hash, email_verified_at, status, blocked, deleted_at, player_token')
+    .select('id, nick, email, password_hash, email_verified_at, status, blocked, is_supporter, deleted_at, player_token')
     .eq('email', email.trim().toLowerCase())
     .maybeSingle();
 
@@ -112,7 +112,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
   const row = player as {
     id: number; nick: string; email: string; password_hash: string | null;
     email_verified_at: string | null; status: string; blocked: boolean;
-    deleted_at: string | null; player_token: string;
+    is_supporter: boolean; deleted_at: string | null; player_token: string;
   };
 
   if (!row.password_hash) {
@@ -154,7 +154,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
     config.jwtSecret,
     { expiresIn: '7d' },
   );
-  res.json({ token, player_token: playerToken, player_id: row.id, nick: row.nick });
+  res.json({ token, player_token: playerToken, player_id: row.id, nick: row.nick, is_supporter: row.is_supporter ?? false });
 });
 
 // POST /auth/player/forgot-password — solicita redefinição de senha

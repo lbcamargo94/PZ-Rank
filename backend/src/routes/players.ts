@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
 import { supabase } from '../supabase';
 import { dbError } from '../lib/errors';
-import { requireModerator } from '../middleware/moderator';
+import { requireModerator, requireMaster } from '../middleware/moderator';
 import type { ModRequest } from '../middleware/moderator';
 import type { PlayerStatus } from '../types';
 import { sendApprovalEmail, sendActivationEmail, sendOtpEmail } from '../lib/email';
@@ -136,13 +136,15 @@ router.get('/', requireModerator, async (req: ModRequest, res: Response): Promis
   try {
     let query = supabase
       .from('players')
-      .select('id, nick, email, email_verified_at, twitch_url, youtube_url, kick_url, tiktok_url, status, blocked, deleted_at, created_at')
+      .select('id, nick, email, email_verified_at, twitch_url, youtube_url, kick_url, tiktok_url, status, blocked, is_supporter, supporter_until, deleted_at, created_at')
       .order('created_at', { ascending: false });
 
     if (statusParam === 'deleted') {
       query = query.not('deleted_at', 'is', null);
     } else if (statusParam === 'blocked') {
       query = query.eq('blocked', true).is('deleted_at', null);
+    } else if (statusParam === 'supporter') {
+      query = query.eq('is_supporter', true).is('deleted_at', null);
     } else if (statusParam === 'all') {
       query = query.is('deleted_at', null);
     } else {
@@ -394,6 +396,32 @@ router.patch('/:id/restore', requireModerator, async (req: ModRequest, res: Resp
   } catch (err) {
     console.error('[PATCH /players/:id/restore] Erro inesperado:', err);
     res.status(500).json({ error: 'Erro interno ao restaurar jogador.' });
+  }
+});
+
+// PATCH /players/:id/supporter — master: marca/desmarca apoiador
+router.patch('/:id/supporter', requireMaster, async (req: ModRequest, res: Response): Promise<void> => {
+  const id = parseInt(String(req.params.id), 10);
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
+
+  const { is_supporter, supporter_until } = req.body as { is_supporter?: boolean; supporter_until?: string | null };
+
+  try {
+    const { data, error } = await supabase
+      .from('players')
+      .update({
+        is_supporter:   is_supporter ?? true,
+        supporter_until: supporter_until ?? null,
+      })
+      .eq('id', id)
+      .select('id, nick, is_supporter, supporter_until')
+      .single();
+
+    if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
+    res.json(data);
+  } catch (err) {
+    console.error('[PATCH /players/:id/supporter] Erro inesperado:', err);
+    res.status(500).json({ error: 'Erro interno ao atualizar apoiador.' });
   }
 });
 

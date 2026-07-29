@@ -7283,4 +7283,444 @@ a.btn-ghost { text-decoration: none; }
   font-size: 13px;
   color: var(--text-4);
 }
+
+/* ===== AD BANNER ===== */
+
+.ad-banner-container {
+  margin: 0 0 4px;
+}
+
+.ad-banner-wrap {
+  width: 100%;
+  overflow: hidden;
+}
+
+.ad-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border: 1px dashed var(--border-mid);
+  border-radius: var(--radius);
+  background: var(--bg-1);
+  color: var(--text-3);
+  font-size: 13px;
+  font-family: var(--font-mono);
+  text-align: center;
+}
+
+.ad-placeholder .ti { font-size: 16px; }
+
+.ad-placeholder-link {
+  color: var(--green-light);
+  text-decoration: none;
+  font-size: 13px;
+}
+.ad-placeholder-link:hover { text-decoration: underline; }
+
+/* ===== TRANSPARÊNCIA FINANCEIRA ===== */
+
+.transp-page {
+  min-height: 100vh;
+  background: var(--bg-0);
+}
+
+.transp-header {
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--border);
+  padding: 24px 20px 20px;
+  text-align: center;
+}
+
+.transp-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-3);
+  text-decoration: none;
+  font-size: 14px;
+  margin-bottom: 16px;
+  transition: color .15s;
+}
+.transp-back:hover { color: var(--text-1); }
+
+.transp-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  letter-spacing: 2px;
+  color: var(--text-1);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.transp-subtitle {
+  font-size: 14px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+}
+
+.transp-main {
+  padding: 32px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 640px;
+}
+
+.transp-loading,
+.transp-error,
+.transp-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 20px;
+  color: var(--text-3);
+  font-size: 16px;
+}
+.transp-error { color: var(--red); }
+.transp-empty .ti { font-size: 32px; opacity: .4; }
+
+.transp-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.transp-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-3);
+}
+
+.transp-card-header .ti { font-size: 18px; color: var(--text-3); }
+
+.transp-card-header h2 {
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+/* Prize card */
+.transp-card--prize .transp-card-header .ti { color: var(--gold); }
+.transp-card--prize .transp-card-header h2   { color: var(--gold); }
+
+.transp-prize-amounts {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 20px 20px 8px;
+}
+
+.transp-prize-current {
+  font-family: var(--font-display);
+  font-size: 36px;
+  color: var(--gold);
+  letter-spacing: 1px;
+}
+
+.transp-prize-goal {
+  font-size: 15px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+}
+
+.transp-prize-bar-wrap {
+  margin: 4px 20px 0;
+  height: 8px;
+  background: var(--bg-4);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.transp-prize-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--green-light));
+  border-radius: 4px;
+  transition: width .4s ease;
+  min-width: 4px;
+}
+
+.transp-prize-pct {
+  padding: 6px 20px 0;
+  font-size: 13px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+}
+
+.transp-prize-label {
+  padding: 8px 20px 16px;
+  font-size: 14px;
+  color: var(--text-3);
+}
+
+/* Entry rows */
+.transp-entries {
+  display: flex;
+  flex-direction: column;
+}
+
+.transp-entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.transp-entry:last-child { border-bottom: none; }
+
+.transp-entry-label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.transp-entry-cat {
+  font-size: 13px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+.transp-entry-detail {
+  font-size: 15px;
+  color: var(--text-2);
+}
+
+.transp-entry-value {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.transp-entry-value--income  { color: var(--green-light); }
+.transp-entry-value--expense { color: var(--red); }
+
+.transp-total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: var(--bg-3);
+  border-top: 1px solid var(--border);
+  font-size: 14px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+}
+
+.transp-total-value {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.transp-note {
+  display: flex;
+  gap: 14px;
+  padding: 16px 20px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  align-items: flex-start;
+}
+
+.transp-note .ti {
+  color: var(--red);
+  font-size: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.transp-note p {
+  font-size: 15px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+
+/* ===== PAINEL — FINANCES MANAGER ===== */
+
+.fm-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fm-form-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.fm-form-title {
+  font-family: var(--font-display);
+  font-size: 14px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 16px;
+}
+
+.fm-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 600px) {
+  .fm-form-grid { grid-template-columns: 1fr; }
+}
+
+.fm-form-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+.fm-form-hint {
+  font-size: 11px;
+  color: var(--text-4);
+}
+
+.fm-form-input,
+.fm-form-select {
+  background: var(--bg-3);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  color: var(--text-1);
+  font-size: 15px;
+  padding: 8px 12px;
+  width: 100%;
+}
+.fm-form-input:focus,
+.fm-form-select:focus {
+  outline: none;
+  border-color: var(--green);
+}
+
+.fm-form-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.fm-entries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fm-entry-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  border-left: 3px solid var(--border-mid);
+}
+
+.fm-entry-cat--prize      { border-left-color: var(--gold); }
+.fm-entry-cat--adsense    { border-left-color: var(--green-light); }
+.fm-entry-cat--supporters { border-left-color: var(--red); }
+.fm-entry-cat--sponsor    { border-left-color: var(--blue-light); }
+.fm-entry-cat--hosting    { border-left-color: var(--text-4); }
+.fm-entry-cat--domain     { border-left-color: var(--text-4); }
+.fm-entry-cat--other      { border-left-color: var(--text-4); }
+
+.fm-entry-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fm-entry-category {
+  font-size: 11px;
+  color: var(--text-4);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+.fm-entry-label {
+  font-size: 15px;
+  color: var(--text-1);
+}
+
+.fm-entry-goal {
+  font-size: 12px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+}
+
+.fm-entry-amount {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  color: var(--text-1);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.fm-entry-actions {
+  display: flex;
+  gap: 6px;
+}
+
+/* Supporters tab */
+.fm-supp-add-row {
+  display: flex;
+  gap: 10px;
+}
+
+.fm-supporters-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fm-supporter-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+}
+
+.fm-supporter-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fm-supporter-icon {
+  color: var(--red);
+  font-size: 16px;
+}
+
+.fm-supporter-nick {
+  font-size: 16px;
+  color: var(--text-1);
+}
+
+.fm-supporter-until {
+  font-size: 12px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+}
 .nm-history-mini .ti { margin-right: 3px; }

@@ -22,7 +22,7 @@ import fs from 'node:fs';
 // ── Metadados por tabela ────────────────────────────────────────────────────
 
 const BOOL_COLS: Record<string, string[]> = {
-  players:      ['blocked'],
+  players:      ['blocked', 'is_supporter'],
   entries:      ['is_alive', 'sandbox_ok'],
   mods:         ['is_required'],
   seasons:      ['is_active'],
@@ -41,10 +41,10 @@ const UUID_DEFAULTS: Record<string, string[]> = {
 
 // Allowlist de tabelas e colunas válidas para evitar SQL injection
 // via interpolação de nomes de tabela/coluna no adapter.
-const ALLOWED_TABLES = new Set(['players', 'moderators', 'entries', 'mods', 'mod_dependencies', 'player_tokens', 'seasons', 'hall_of_fame', 'daily_news']);
+const ALLOWED_TABLES = new Set(['players', 'moderators', 'entries', 'mods', 'mod_dependencies', 'player_tokens', 'seasons', 'hall_of_fame', 'daily_news', 'season_finances']);
 
 const ALLOWED_COLS: Record<string, Set<string>> = {
-  players:          new Set(['id','nick','email','password_hash','email_verified_at','twitch_url','youtube_url','kick_url','tiktok_url','status','blocked','player_token','created_at','deleted_at']),
+  players:          new Set(['id','nick','email','password_hash','email_verified_at','twitch_url','youtube_url','kick_url','tiktok_url','status','blocked','is_supporter','supporter_until','player_token','created_at','deleted_at']),
   moderators:       new Set(['id','login','role','password_hash','created_at']),
   entries:          new Set(['id','player_id','moderator_id','name','character_name','profession','days','time_raw','time_str','kills','skills','live_url','is_alive','sandbox_ok','traits','objectives','score','created_at','updated_at','sandbox_config','sandbox_config_updated_at','disqualified_at','disqualification_reason','flagged_reason','flagged_at','deleted_at','season_id']),
   mods:             new Set(['id','name','mod_id','workshop_url','status','is_required','image_url','created_at','updated_at']),
@@ -53,6 +53,7 @@ const ALLOWED_COLS: Record<string, Set<string>> = {
   seasons:          new Set(['id','name','theme_slug','started_at','ended_at','is_active']),
   hall_of_fame:     new Set(['id','season_id','player_id','entry_name','character_name','position','days','kills','score']),
   daily_news:       new Set(['id','date','headline','stats']),
+  season_finances:  new Set(['id','season_id','category','label','amount_brl','goal_brl','updated_at']),
 };
 
 function assertTable(table: string): void {
@@ -417,6 +418,29 @@ function runMigrations(db: Database): void {
       stats     TEXT     DEFAULT NULL
     )`);
     console.log('[SQLite] migração: tabela daily_news criada');
+  }
+
+  if (!playerCols.includes('is_supporter')) {
+    db.exec('ALTER TABLE players ADD COLUMN is_supporter INTEGER NOT NULL DEFAULT 0');
+    console.log('[SQLite] migração: coluna is_supporter adicionada em players');
+  }
+  if (!playerCols.includes('supporter_until')) {
+    db.exec('ALTER TABLE players ADD COLUMN supporter_until TEXT DEFAULT NULL');
+    console.log('[SQLite] migração: coluna supporter_until adicionada em players');
+  }
+
+  const hasFinances = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='season_finances'").get();
+  if (!hasFinances) {
+    db.exec(`CREATE TABLE season_finances (
+      id          INTEGER  PRIMARY KEY AUTOINCREMENT,
+      season_id   INTEGER  NOT NULL REFERENCES seasons(id) ON DELETE CASCADE,
+      category    TEXT     NOT NULL CHECK(category IN ('hosting','prize','domain','adsense','supporters','sponsor','other')),
+      label       TEXT     NOT NULL,
+      amount_brl  REAL     NOT NULL DEFAULT 0,
+      goal_brl    REAL     DEFAULT NULL,
+      updated_at  TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+    )`);
+    console.log('[SQLite] migração: tabela season_finances criada');
   }
 
   if (!playerCols.includes('email')) {

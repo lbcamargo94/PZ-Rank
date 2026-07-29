@@ -16,12 +16,13 @@ const STATUS_LABELS: Record<PlayerStatus, string> = {
 };
 
 const FILTER_LABELS: Record<PlayerFilter, string> = {
-  pending:  'Pendentes',
-  approved: 'Aprovados',
-  rejected: 'Rejeitados',
-  blocked:  'Bloqueados',
-  deleted:  'Excluídos',
-  all:      'Todos',
+  pending:   'Pendentes',
+  approved:  'Aprovados',
+  rejected:  'Rejeitados',
+  blocked:   'Bloqueados',
+  deleted:   'Excluídos',
+  supporter: 'Apoiadores',
+  all:       'Todos',
 };
 
 export function PendingPlayers({ token, showToast }: Props) {

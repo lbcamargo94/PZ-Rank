@@ -1,4 +1,4 @@
-import type { Player, Moderator, ModSession, ModeratorRole, Entry, PlayerFilter, PlayerProfile, Mod, DailyNews } from '../types';
+import type { Player, Moderator, ModSession, ModeratorRole, Entry, PlayerFilter, PlayerProfile, Mod, DailyNews, FinanceEntry } from '../types';
 
 const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:3000';
 
@@ -84,7 +84,7 @@ export function apiRegisterPlayer(data: {
   return request('/players/register', { method: 'POST', ...json(null, data) });
 }
 
-export function apiPlayerLogin(email: string, password: string): Promise<{ token: string; player_id: number; nick: string }> {
+export function apiPlayerLogin(email: string, password: string): Promise<{ token: string; player_id: number; nick: string; is_supporter: boolean }> {
   return request('/auth/player/login', { method: 'POST', ...json(null, { email, password }) });
 }
 
@@ -408,4 +408,41 @@ export function apiGetNewsHistory(token: string): Promise<DailyNews[]> {
 
 export function apiSetHeadline(token: string, date: string, headline: string | null): Promise<DailyNews> {
   return request<DailyNews>(`/news/${date}/headline`, { method: 'PATCH', ...json(token, { headline }) });
+}
+
+// ── Finanças ─────────────────────────────────────────
+
+export function apiGetCurrentFinances(): Promise<FinanceEntry[]> {
+  return request<FinanceEntry[]>('/finances/current');
+}
+
+export function apiGetSeasonFinances(seasonId: number): Promise<FinanceEntry[]> {
+  return request<FinanceEntry[]>(`/finances/season/${seasonId}`);
+}
+
+export function apiCreateFinanceEntry(
+  token: string,
+  data: { season_id: number; category: string; label: string; amount_brl: number; goal_brl?: number | null },
+): Promise<FinanceEntry> {
+  return request<FinanceEntry>('/finances', { method: 'POST', ...json(token, data) });
+}
+
+export function apiUpdateFinanceEntry(
+  token: string,
+  id: number,
+  data: { category?: string; label?: string; amount_brl?: number; goal_brl?: number | null },
+): Promise<FinanceEntry> {
+  return request<FinanceEntry>(`/finances/${id}`, { method: 'PATCH', ...json(token, data) });
+}
+
+export function apiDeleteFinanceEntry(token: string, id: number): Promise<void> {
+  return request<void>(`/finances/${id}`, { method: 'DELETE', ...auth(token) });
+}
+
+export function apiSetSupporter(
+  token: string,
+  playerId: number,
+  data: { is_supporter: boolean; supporter_until?: string | null },
+): Promise<{ id: number; nick: string; is_supporter: boolean; supporter_until: string | null }> {
+  return request(`/players/${playerId}/supporter`, { method: 'PATCH', ...json(token, data) });
 }

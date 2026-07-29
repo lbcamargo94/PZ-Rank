@@ -9,6 +9,7 @@ import { DownloadBanner } from './components/DownloadBanner';
 import { SeasonEndOverlay } from './components/SeasonEndOverlay';
 import { CommunityStats } from './components/CommunityStats';
 import { NewsButton }     from './components/NewsCard';
+import { AdBanner }      from './components/AdBanner';
 import { RankTable } from './components/RankTable';
 import { PlayerRegisterModal } from './components/PlayerRegisterModal';
 import { RulesModal } from './components/RulesModal';
@@ -28,6 +29,7 @@ import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { ClaimAccountPage } from './pages/ClaimAccountPage';
 import { ResendVerificationPage } from './pages/ResendVerificationPage';
 import { LegendsPage }            from './pages/LegendsPage';
+import { TransparenciaPage }      from './pages/TransparenciaPage';
 
 const TAB_CONFIG: { key: RankTab; label: string; icon: string }[] = [
   { key: 'rank',          label: 'Rank',             icon: 'ti-heartbeat' },
@@ -122,6 +124,10 @@ function MainView() {
           <NewsButton />
         </div>
 
+        <div className="container ad-banner-container">
+          <AdBanner />
+        </div>
+
         <div className="container rank-tabs-bar">
           <div className="rank-tabs">
             {TAB_CONFIG.map(({ key, label, icon }) => (
@@ -198,6 +204,7 @@ export default function App() {
       <Route path="/verificar-conta"  element={<ResendVerificationPage />} />
       <Route path="/vincular-conta"   element={<ClaimAccountPage />} />
       <Route path="/lendas"           element={<LegendsPage />} />
+      <Route path="/transparencia"    element={<TransparenciaPage />} />
       <Route path="/painel" element={
         <PainelPage
           session={modSession}

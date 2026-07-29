@@ -46,7 +46,7 @@ export interface DecodedCode {
 
 export type ModeratorRole  = 'moderator' | 'master';
 export type PlayerStatus   = 'pending' | 'approved' | 'rejected';
-export type PlayerFilter   = PlayerStatus | 'blocked' | 'deleted' | 'all';
+export type PlayerFilter   = PlayerStatus | 'blocked' | 'deleted' | 'supporter' | 'all';
 
 export interface Player {
   id:                 number;
@@ -59,6 +59,8 @@ export interface Player {
   tiktok_url:         string | null;
   status:             PlayerStatus;
   blocked:            boolean;
+  is_supporter:       boolean;
+  supporter_until:    string | null;
   deleted_at?:        string | null;
   created_at:         string;
 }
@@ -139,9 +141,22 @@ export interface DailyNews {
 }
 
 export interface PlayerSession {
-  token:     string;
-  player_id: number;
-  nick:      string;
+  token:        string;
+  player_id:    number;
+  nick:         string;
+  is_supporter: boolean;
+}
+
+export type FinanceCategory = 'hosting' | 'prize' | 'domain' | 'adsense' | 'supporters' | 'sponsor' | 'other';
+
+export interface FinanceEntry {
+  id:         number;
+  season_id:  number;
+  category:   FinanceCategory;
+  label:      string;
+  amount_brl: number;
+  goal_brl:   number | null;
+  updated_at: string;
 }
 
 export interface PlayerAccount {

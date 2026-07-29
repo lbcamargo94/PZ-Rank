@@ -16,6 +16,7 @@ import { SandboxPage }          from '../components/painel/SandboxPage';
 import { ModManagement }        from '../components/painel/ModManagement';
 import { SeasonManager }        from '../components/painel/SeasonManager';
 import { NewsManager }          from '../components/painel/NewsManager';
+import { FinancesManager }      from '../components/painel/FinancesManager';
 
 const DEAD_ZONE_DAYS = 15;
 
@@ -39,7 +40,7 @@ function fmtEntryDate(iso: string | null | undefined): string {
   );
 }
 
-type Tab         = 'players' | 'entries' | 'moderators' | 'mods' | 'decoder' | 'seasons' | 'jornal';
+type Tab         = 'players' | 'entries' | 'moderators' | 'mods' | 'decoder' | 'seasons' | 'jornal' | 'financas';
 type EntryFilter = 'all' | 'alive' | 'dead' | 'disqualified';
 
 const ENTRY_FILTER_CONFIG: { key: EntryFilter; label: string; icon: string }[] = [
@@ -349,6 +350,12 @@ export function PainelPage({ session, onSession, onBack }: Props) {
             onClick={() => setTab('jornal')}>
             <i className="ti ti-news" /> Jornal
           </button>
+          {session.role === 'master' && (
+            <button className={`painel-tab${tab === 'financas' ? ' active' : ''}`}
+              onClick={() => setTab('financas')}>
+              <i className="ti ti-cash" /> Finanças
+            </button>
+          )}
         </div>
         <button className="btn-primary" onClick={() => setShowUpdateRank(true)}>
           <i className="ti ti-trophy" /> Atualizar Rank
@@ -373,6 +380,10 @@ export function PainelPage({ session, onSession, onBack }: Props) {
 
         {tab === 'jornal' && (
           <NewsManager token={session.token} showToast={showToast} />
+        )}
+
+        {tab === 'financas' && session.role === 'master' && (
+          <FinancesManager token={session.token} showToast={showToast} />
         )}
 
         {tab === 'moderators' && (

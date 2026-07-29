@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS players (
   status             TEXT     NOT NULL DEFAULT 'pending'
                      CHECK (status IN ('pending', 'approved', 'rejected')),
   blocked            INTEGER  NOT NULL DEFAULT 0,
+  is_supporter       INTEGER  NOT NULL DEFAULT 0,
+  supporter_until    TEXT     DEFAULT NULL,
   deleted_at         TEXT     DEFAULT NULL,
   player_token       TEXT     NOT NULL DEFAULT (lower(hex(randomblob(16)))),
   created_at         TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
@@ -118,9 +120,19 @@ CREATE TABLE IF NOT EXISTS hall_of_fame (
 
 CREATE TABLE IF NOT EXISTS daily_news (
   id        INTEGER  PRIMARY KEY AUTOINCREMENT,
-  date      TEXT     NOT NULL UNIQUE,   -- 'YYYY-MM-DD'
-  headline  TEXT     DEFAULT NULL,      -- manchete manual (opcional)
-  stats     TEXT     DEFAULT NULL       -- JSON snapshot do dia
+  date      TEXT     NOT NULL UNIQUE,
+  headline  TEXT     DEFAULT NULL,
+  stats     TEXT     DEFAULT NULL
+);
+
+CREATE TABLE IF NOT EXISTS season_finances (
+  id          INTEGER  PRIMARY KEY AUTOINCREMENT,
+  season_id   INTEGER  NOT NULL REFERENCES seasons(id) ON DELETE CASCADE,
+  category    TEXT     NOT NULL CHECK(category IN ('hosting','prize','domain','adsense','supporters','sponsor','other')),
+  label       TEXT     NOT NULL,
+  amount_brl  REAL     NOT NULL DEFAULT 0,
+  goal_brl    REAL     DEFAULT NULL,
+  updated_at  TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
 );
 
 -- Seed: jogador aprovado para testar sync
