@@ -21,21 +21,22 @@ export function SeasonEndOverlay() {
 
         <p className="seo-eyebrow">Brasileirão PZ</p>
         <h1 className="seo-title">TEMPORADA 1</h1>
-        <p className="seo-status">ENCERRADA</p>
+        <p className="seo-status">EM BREVE</p>
 
         <div className="seo-divider" />
 
         <p className="seo-body">
-          A primeira temporada do Brasileirão PZ chegou ao fim.<br />
-          Os sobreviventes foram eternizados no rank.
+          O site está em reforma.<br />
+          Grandes mudanças estão chegando — reset do rank,<br />
+          novas funcionalidades e uma temporada oficial.
         </p>
 
         <p className="seo-coming">
-          ⚔️ <strong>Temporada 2 em preparação</strong> — fique atento aos canais da comunidade.
+          🔧 <strong>Fique de olho nos canais da comunidade</strong> para saber quando abriremos.
         </p>
 
         <button className="seo-btn" onClick={dismiss}>
-          Ver resultado final
+          Ir Para o Site
         </button>
       </div>
     </div>
