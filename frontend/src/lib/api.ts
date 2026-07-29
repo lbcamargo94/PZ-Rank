@@ -253,6 +253,19 @@ export function apiDeleteModerator(token: string, id: string): Promise<void> {
 
 // ── Mods ─────────────────────────────────────────────────────
 
+// ── Stats globais ────────────────────────────────────────────
+export interface GlobalStats {
+  total_kills:  number;
+  total_days:   number;
+  alive_count:  number;
+  dead_count:   number;
+  player_count: number;
+}
+
+export function apiGetGlobalStats(): Promise<GlobalStats> {
+  return request('/stats/global');
+}
+
 export function apiGetMods(): Promise<Mod[]> {
   return request('/mods');
 }

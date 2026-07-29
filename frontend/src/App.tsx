@@ -7,6 +7,7 @@ import { Toast } from './components/Toast';
 import { Header } from './components/Header';
 import { DownloadBanner } from './components/DownloadBanner';
 import { SeasonEndOverlay } from './components/SeasonEndOverlay';
+import { CommunityStats } from './components/CommunityStats';
 import { StatsBar } from './components/StatsBar';
 import { RankTable } from './components/RankTable';
 import { PlayerRegisterModal } from './components/PlayerRegisterModal';
@@ -119,6 +120,7 @@ function MainView() {
           dead={deadEntries.length}
           disqualified={discEntries.length}
         />
+        <CommunityStats />
 
         <div className="container rank-tabs-bar">
           <div className="rank-tabs">

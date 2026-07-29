@@ -12,6 +12,7 @@ import moderatorsRouter  from './routes/moderators';
 import modsRouter        from './routes/mods';
 import syncRouter        from './routes/sync';
 import accountRouter     from './routes/account';
+import statsRouter       from './routes/stats';
 
 // Rate limiters por contexto de uso
 const authLimiter = rateLimit({
@@ -107,6 +108,7 @@ export function createApp() {
   app.use('/mods',       modsRouter);
   app.use('/sync',       syncRouter);
   app.use('/account',    accountRouter);
+  app.use('/stats',      statsRouter);
 
   return app;
 }

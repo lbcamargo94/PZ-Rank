@@ -5,6 +5,7 @@ import type { Entry } from '../types';
 import { parseSkillMap, SKILL_CATEGORIES, TOTAL_SKILLS, MAX_SKILL_LEVEL } from '../lib/skills';
 import { getProfessionImageUrl } from '../lib/professions';
 import { MAX_POSSIBLE_SCORE } from '../lib/objectives';
+import { getDivision } from '../lib/divisions';
 
 export const KILLS_TARGET = 500_000;
 
@@ -158,10 +159,16 @@ function MiniBar({ value, max, done }: { value: number; max: number; done?: bool
 export function RankRow({ entry, rank, hideStatus }: RankRowProps) {
   const score     = entry.score ?? 0;
   const killsDone = entry.kills >= KILLS_TARGET;
+  const division  = getDivision(rank);
 
   return (
     <tr className={rank <= 3 ? `rank-top rank-${rank}` : ''}>
-      <td className="rank-pos">{MEDALS[rank] ?? rank}</td>
+      <td className="rank-pos">
+        {MEDALS[rank] ?? rank}
+        <span className="division-badge" style={{ color: division.cssVar }} title={`${division.label} · ${division.range}`}>
+          {division.icon}
+        </span>
+      </td>
       <td className="rank-name">
         <span className="char-name">{entry.character_name || entry.name}</span>
         {entry.profession && (

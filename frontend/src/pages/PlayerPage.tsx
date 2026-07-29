@@ -7,6 +7,7 @@ import { parseTraitList, resolveTrait, getTraitImageUrl } from '../lib/traits';
 import { getProfessionImageUrl } from '../lib/professions';
 import { SPIFFOS_RESTAURANTS, BASE_ITEMS, initObjectives } from '../lib/objectives';
 import { ProgressBar } from '../components/ProgressBar';
+import { resolveArchetype } from '../lib/archetype';
 import type { PlayerProfile, Entry } from '../types';
 import type { Objectives } from '../lib/objectives';
 
@@ -278,6 +279,20 @@ function CharacterCard({ entry, rank }: { entry: Entry; rank: number | null }) {
         <span className="pp-stat"><i className="ti ti-clock" />{entry.time_str ?? '—'}</span>
         <span className="pp-stat"><i className="ti ti-sword" />{entry.kills.toLocaleString('pt-BR')}</span>
       </div>
+
+      {/* Perfil Psicológico */}
+      {(() => {
+        const arch = resolveArchetype(entry);
+        return (
+          <div className="pp-archetype">
+            <span className="pp-arch-icon">{arch.icon}</span>
+            <div className="pp-arch-info">
+              <span className="pp-arch-name">{arch.name}</span>
+              <span className="pp-arch-desc">{arch.desc}</span>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Tabs */}
       <div className="pp-tabs">

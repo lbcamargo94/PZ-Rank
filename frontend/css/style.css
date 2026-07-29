@@ -450,6 +450,68 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   .seo-skull { font-size: 40px; }
 }
 
+/* ===== DIVISION BADGE ===== */
+.division-badge {
+  display: block;
+  font-size: 14px;
+  line-height: 1;
+  margin-top: 3px;
+  opacity: 0.75;
+}
+.rank-top .division-badge { opacity: 1; }
+
+/* ===== COMMUNITY STATS ===== */
+.community-stats {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px 20px;
+  margin-bottom: 20px;
+}
+
+.cs-header {
+  margin-bottom: 12px;
+}
+
+.cs-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.cs-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.cs-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cs-value {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-1);
+  line-height: 1;
+}
+
+.cs-desc {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-3);
+  letter-spacing: 0.3px;
+}
+
+@media (max-width: 560px) {
+  .cs-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
 /* ===== STATS BAR ===== */
 .stats-bar {
   display: grid;
@@ -3459,6 +3521,45 @@ a.btn-ghost { text-decoration: none; }
   transition: color 0.15s;
 }
 .pp-live-link:hover { color: #bf94ff; }
+
+/* Perfil Psicológico */
+.pp-archetype {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px 18px;
+  margin-bottom: 16px;
+}
+
+.pp-arch-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.pp-arch-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.pp-arch-name {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-1);
+  letter-spacing: 0.5px;
+}
+
+.pp-arch-desc {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-3);
+  line-height: 1.4;
+}
 
 /* Tabs */
 .pp-tabs {
