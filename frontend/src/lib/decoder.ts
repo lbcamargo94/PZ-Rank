@@ -1,11 +1,12 @@
 import type { DecodedCode } from '../types';
 
 const XOR_KEY = 'PZRank-Community-2026-Key!';
-// PZRX1 = formato antigo; PZRX2 = atual; PZRX3 = estendido (stats do mod v2.6+)
+// PZRX1 = formato antigo; PZRX2 = atual; PZRX3 = estendido (stats do mod v2.7+)
 const PZR_PREFIX_RE = /^PZRX[123]:([\s\S]+)$/;
-// Grupos 1-9: nome|prof|kills|tempo|skills|status|sandbox|traits|motivo (opcionais a partir do 6o)
-// Grupos 10-15 (PZRX3): animals_killed|fish_caught|crops_harvested|items_crafted|houses_looted|hours_without_sleep
-const PZR_PAYLOAD_RE = /^PZR\|([^|]*)\|([^|]*)\|(\d+)\|(\d+)\|([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)$/;
+// 17 grupos: nome|prof|kills|tempo|skills|status|sandbox|traits|motivo|ts|modVersion|
+//            animals_killed|fish_caught|crops_harvested|items_crafted|houses_looted|hours_without_sleep
+// grupos 10 (ts) e 11 (modVersion) são ignorados no frontend (DecodedCode não os usa)
+const PZR_PAYLOAD_RE = /^PZR\|([^|]*)\|([^|]*)\|(\d+)\|(\d+)\|([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?(\d*)\|?([^|]*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)$/;
 
 function xorBytes(bytes: Uint8Array, key: string): Uint8Array {
   const keyBytes = new TextEncoder().encode(key);
@@ -56,8 +57,9 @@ export function parsePzrCode(raw: string): DecodedCode | null {
   }
   const match = plain.match(PZR_PAYLOAD_RE);
   if (!match) return null;
+  // grupos 10 (ts) e 11 (modVersion) ignorados — DecodedCode não os usa
   const [, characterName, profession, kills, timeRaw, skillsRaw, statusRaw, sandboxRaw, traitsRaw, reasonRaw,
-    animalsKilledRaw, fishCaughtRaw, cropsHarvestedRaw, itemsCraftedRaw, housesLootedRaw, hoursWithoutSleepRaw] = match;
+    , , animalsKilledRaw, fishCaughtRaw, cropsHarvestedRaw, itemsCraftedRaw, housesLootedRaw, hoursWithoutSleepRaw] = match;
   const timeRawNum = parseInt(timeRaw, 10);
   const parseExt = (raw: string | undefined) => { const n = parseInt(raw ?? '', 10); return isNaN(n) ? 0 : n; };
   const skills = skillsRaw ? skillsRaw.split(',').map(s => s.trim()).filter(Boolean) : [];

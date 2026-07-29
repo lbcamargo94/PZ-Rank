@@ -466,34 +466,34 @@ function runMigrations(db: Database): void {
     console.log('[SQLite] migração: coluna mod_id adicionada em mods');
   }
 
-  // player_tokens — cria a tabela se não existir; recria se o tipo 'activate' não estiver no CHECK
+  // player_tokens — cria a tabela se não existir; recria se 'activate' ou 'otp' faltarem no CHECK
   const ptSql = (db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='player_tokens'").get() as { sql?: string } | undefined)?.sql ?? '';
   if (!ptSql) {
     db.exec(`CREATE TABLE player_tokens (
       id          INTEGER  PRIMARY KEY AUTOINCREMENT,
       player_id   INTEGER  NOT NULL REFERENCES players(id) ON DELETE CASCADE,
       token       TEXT     NOT NULL UNIQUE,
-      type        TEXT     NOT NULL CHECK (type IN ('verify', 'reset', 'activate')),
+      type        TEXT     NOT NULL CHECK (type IN ('verify', 'reset', 'activate', 'otp')),
       expires_at  TEXT     NOT NULL,
       used_at     TEXT     DEFAULT NULL,
       created_at  TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
     )`);
     console.log('[SQLite] migração: tabela player_tokens criada');
-  } else if (!ptSql.includes("'activate'")) {
-    // Recria a tabela com o novo tipo (tokens são efêmeros, perda de dados aceitável)
+  } else if (!ptSql.includes("'activate'") || !ptSql.includes("'otp'")) {
+    // Recria a tabela com todos os tipos (tokens são efêmeros, perda de dados aceitável)
     db.exec(`
       DROP TABLE player_tokens;
       CREATE TABLE player_tokens (
         id          INTEGER  PRIMARY KEY AUTOINCREMENT,
         player_id   INTEGER  NOT NULL REFERENCES players(id) ON DELETE CASCADE,
         token       TEXT     NOT NULL UNIQUE,
-        type        TEXT     NOT NULL CHECK (type IN ('verify', 'reset', 'activate')),
+        type        TEXT     NOT NULL CHECK (type IN ('verify', 'reset', 'activate', 'otp')),
         expires_at  TEXT     NOT NULL,
         used_at     TEXT     DEFAULT NULL,
         created_at  TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
       );
     `);
-    console.log('[SQLite] migração: player_tokens recriado com suporte ao tipo activate');
+    console.log('[SQLite] migração: player_tokens recriado com suporte aos tipos activate e otp');
   }
 }
 

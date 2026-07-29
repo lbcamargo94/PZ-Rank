@@ -149,7 +149,7 @@ export function CodeDecoder() {
             <div className="dc-guide-text">
               <p>Cole o código gerado pelo mod in-game para inspecionar os dados do jogador antes de submetê-lo ao ranking.</p>
               <p className="dc-format-note">
-                Formato esperado: <code>{'PZRX2:<payload>'}</code>
+                Formato esperado: <code>{'PZRX3:<payload>'}</code>
               </p>
             </div>
           </div>
@@ -159,7 +159,7 @@ export function CodeDecoder() {
           <textarea
             ref={textRef}
             className="form-input dc-textarea"
-            placeholder="Cole o código aqui...  PZRX2:..."
+            placeholder="Cole o código aqui...  PZRX3:..."
             value={code}
             rows={hasResult ? 2 : 4}
             spellCheck={false}

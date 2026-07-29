@@ -136,7 +136,7 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
             Código do mod <span className="required">*</span>
           </label>
           <textarea id="ur-code" className="form-input code-input"
-            placeholder="PZRX1:..." rows={3} spellCheck={false}
+            placeholder="PZRX3:..." rows={3} spellCheck={false}
             value={code} onChange={e => setCode(e.target.value)} />
 
           {decoded && (
