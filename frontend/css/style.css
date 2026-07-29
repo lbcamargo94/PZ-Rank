@@ -311,6 +311,126 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   .season-teaser-sub { display: none; }
 }
 
+/* ===== SEASON END OVERLAY ===== */
+@keyframes seo-in {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+.seo-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: rgba(0, 0, 0, 0.96);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  backdrop-filter: blur(4px);
+}
+
+.seo-card {
+  background: #0a0a0a;
+  border: 1px solid #4a3800;
+  border-radius: var(--radius-lg);
+  max-width: 460px;
+  width: 100%;
+  padding: 40px 36px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  animation: seo-in 0.35s ease both;
+}
+
+.seo-top-bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+.seo-skull {
+  font-size: 48px;
+  margin-bottom: 20px;
+  display: block;
+  filter: grayscale(0.3);
+}
+
+.seo-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 3px;
+  color: var(--text-3);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.seo-title {
+  font-family: var(--font-display);
+  font-size: 42px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: var(--gold);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.seo-status {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  letter-spacing: 6px;
+  color: var(--text-3);
+  text-transform: uppercase;
+  margin-bottom: 24px;
+}
+
+.seo-divider {
+  width: 60px;
+  height: 1px;
+  background: #4a3800;
+  margin: 0 auto 24px;
+}
+
+.seo-body {
+  font-size: 15px;
+  color: var(--text-2);
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+
+.seo-coming {
+  font-size: 14px;
+  color: #8a7a50;
+  line-height: 1.5;
+  margin-bottom: 32px;
+}
+
+.seo-coming strong { color: var(--gold); }
+
+.seo-btn {
+  background: transparent;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  font-family: var(--font-display);
+  font-size: 15px;
+  letter-spacing: 1px;
+  padding: 12px 32px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  text-transform: uppercase;
+}
+.seo-btn:hover {
+  background: var(--gold);
+  color: #000;
+}
+
+@media (max-width: 460px) {
+  .seo-card  { padding: 32px 20px; }
+  .seo-title { font-size: 32px; letter-spacing: 3px; }
+  .seo-skull { font-size: 40px; }
+}
+
 /* ===== STATS BAR ===== */
 .stats-bar {
   display: grid;

@@ -6,7 +6,7 @@ import { useToast } from './hooks/useToast';
 import { Toast } from './components/Toast';
 import { Header } from './components/Header';
 import { DownloadBanner } from './components/DownloadBanner';
-import { SeasonTeaserBanner } from './components/SeasonTeaserBanner';
+import { SeasonEndOverlay } from './components/SeasonEndOverlay';
 import { StatsBar } from './components/StatsBar';
 import { RankTable } from './components/RankTable';
 import { PlayerRegisterModal } from './components/PlayerRegisterModal';
@@ -111,8 +111,8 @@ function MainView() {
         onRules={() => setShowRules(true)}
         onSettings={() => setShowSettings(true)}
       />
+      <SeasonEndOverlay />
       <DownloadBanner />
-      <SeasonTeaserBanner />
       <main>
         <StatsBar
           alive={aliveEntries.length}
