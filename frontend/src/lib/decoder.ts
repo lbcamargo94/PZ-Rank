@@ -1,10 +1,11 @@
 import type { DecodedCode } from '../types';
 
 const XOR_KEY = 'PZRank-Community-2026-Key!';
-// PZRX1 = formato antigo (6 campos, sem status); PZRX2 = atual (7+ campos, com status)
-const PZR_PREFIX_RE = /^PZRX[12]:([\s\S]+)$/;
-// Grupos: nome|prof|kills|tempo|skills|status|sandbox|traits|motivo — opcionais a partir do 6o
-const PZR_PAYLOAD_RE = /^PZR\|([^|]*)\|([^|]*)\|(\d+)\|(\d+)\|([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)$/;
+// PZRX1 = formato antigo; PZRX2 = atual; PZRX3 = estendido (stats do mod v2.6+)
+const PZR_PREFIX_RE = /^PZRX[123]:([\s\S]+)$/;
+// Grupos 1-9: nome|prof|kills|tempo|skills|status|sandbox|traits|motivo (opcionais a partir do 6o)
+// Grupos 10-15 (PZRX3): animals_killed|fish_caught|crops_harvested|items_crafted|houses_looted|hours_without_sleep
+const PZR_PAYLOAD_RE = /^PZR\|([^|]*)\|([^|]*)\|(\d+)\|(\d+)\|([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)$/;
 
 function xorBytes(bytes: Uint8Array, key: string): Uint8Array {
   const keyBytes = new TextEncoder().encode(key);
@@ -55,8 +56,10 @@ export function parsePzrCode(raw: string): DecodedCode | null {
   }
   const match = plain.match(PZR_PAYLOAD_RE);
   if (!match) return null;
-  const [, characterName, profession, kills, timeRaw, skillsRaw, statusRaw, sandboxRaw, traitsRaw, reasonRaw] = match;
+  const [, characterName, profession, kills, timeRaw, skillsRaw, statusRaw, sandboxRaw, traitsRaw, reasonRaw,
+    animalsKilledRaw, fishCaughtRaw, cropsHarvestedRaw, itemsCraftedRaw, housesLootedRaw, hoursWithoutSleepRaw] = match;
   const timeRawNum = parseInt(timeRaw, 10);
+  const parseExt = (raw: string | undefined) => { const n = parseInt(raw ?? '', 10); return isNaN(n) ? 0 : n; };
   const skills = skillsRaw ? skillsRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
   return {
     characterName: characterName || 'Sobrevivente',
@@ -70,5 +73,11 @@ export function parsePzrCode(raw: string): DecodedCode | null {
     sandboxOk: sandboxRaw !== 'invalido',
     traits: traitsRaw ? traitsRaw.split(',').map(t => t.trim()).filter(Boolean) : [],
     disqualificationReason: (reasonRaw && reasonRaw.trim()) ? reasonRaw.trim() : null,
+    animalsKilled:     parseExt(animalsKilledRaw),
+    fishCaught:        parseExt(fishCaughtRaw),
+    cropsHarvested:    parseExt(cropsHarvestedRaw),
+    itemsCrafted:      parseExt(itemsCraftedRaw),
+    housesLooted:      parseExt(housesLootedRaw),
+    hoursWithoutSleep: parseExt(hoursWithoutSleepRaw),
   };
 }

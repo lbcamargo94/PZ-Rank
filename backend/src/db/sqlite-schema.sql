@@ -67,6 +67,13 @@ CREATE TABLE IF NOT EXISTS entries (
   created_at                 TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
   updated_at                 TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
   deleted_at                 TEXT     DEFAULT NULL,
+  -- PZRX3 extended stats (NULL = not yet reported by mod)
+  animals_killed      INTEGER  DEFAULT NULL,
+  fish_caught         INTEGER  DEFAULT NULL,
+  crops_harvested     INTEGER  DEFAULT NULL,
+  items_crafted       INTEGER  DEFAULT NULL,
+  houses_looted       INTEGER  DEFAULT NULL,
+  hours_without_sleep INTEGER  DEFAULT NULL,
   UNIQUE (player_id, character_name)
 );
 
@@ -157,13 +164,28 @@ CREATE TABLE IF NOT EXISTS player_achievements (
 );
 
 INSERT OR IGNORE INTO achievements (slug, name, description, icon, tier, stat, threshold) VALUES
-  ('first-blood',   'Primeiro Sangue',  '100 zumbis mortos',      '🩸', 'bronze', 'kills', 100),
-  ('zombie-slayer', 'Exterminador',     '1.000 zumbis mortos',    '⚔️', 'silver', 'kills', 1000),
-  ('zombie-god',    'Deus da Morte',    '10.000 zumbis mortos',   '💀', 'gold',   'kills', 10000),
-  ('marathon',      'Maratonista',      '30 dias sobrevividos',   '🏃', 'bronze', 'days',  30),
-  ('veteran',       'Veterano',         '60 dias sobrevividos',   '🎖️', 'silver', 'days',  60),
-  ('legend',        'Lenda',            '100 dias sobrevividos',  '👑', 'gold',   'days',  100),
-  ('immortal',      'Imortal',          '365 dias sobrevividos',  '🌟', 'gold',   'days',  365);
+  -- kills
+  ('first-blood',   'Primeiro Sangue',  '100 zumbis mortos',       '🩸', 'bronze', 'kills',              100),
+  ('zombie-slayer', 'Exterminador',     '1.000 zumbis mortos',     '⚔️', 'silver', 'kills',             1000),
+  ('zombie-god',    'Deus da Morte',    '10.000 zumbis mortos',    '💀', 'gold',   'kills',            10000),
+  -- days
+  ('marathon',      'Maratonista',      '30 dias sobrevividos',    '🏃', 'bronze', 'days',               30),
+  ('veteran',       'Veterano',         '60 dias sobrevividos',    '🎖️', 'silver', 'days',               60),
+  ('legend',        'Lenda',            '100 dias sobrevividos',   '👑', 'gold',   'days',              100),
+  ('immortal',      'Imortal',          '365 dias sobrevividos',   '🌟', 'gold',   'days',              365),
+  -- PZRX3 extended stats
+  ('hunter',        'Caçador',          '50 animais abatidos',     '🏹', 'bronze', 'animals_killed',      50),
+  ('big-game',      'Caça Grossa',      '200 animais abatidos',    '🦌', 'gold',   'animals_killed',     200),
+  ('fisherman',     'Pescador',         '30 peixes capturados',    '🐟', 'bronze', 'fish_caught',         30),
+  ('master-angler', 'Mestre da Pesca',  '100 peixes capturados',   '🎣', 'silver', 'fish_caught',        100),
+  ('farmer',        'Fazendeiro',       '50 vegetais colhidos',    '🌽', 'bronze', 'crops_harvested',     50),
+  ('agronomist',    'Agrônomo',         '200 vegetais colhidos',   '🚜', 'silver', 'crops_harvested',    200),
+  ('builder',       'Construtor',       '50 itens fabricados',     '🔨', 'bronze', 'items_crafted',       50),
+  ('engineer',      'Engenheiro',       '500 itens fabricados',    '🏗️', 'gold',   'items_crafted',      500),
+  ('looter',        'Saqueador',        '20 casas saqueadas',      '🏚️', 'bronze', 'houses_looted',       20),
+  ('raider',        'Pilhador',         '100 casas saqueadas',     '🗝️', 'silver', 'houses_looted',      100),
+  ('insomniac',     'Insone',           '48h sem dormir',          '😴', 'silver', 'hours_without_sleep', 48),
+  ('no-sleep',      'Sem Sono',         '96h sem dormir',          '👁️', 'gold',   'hours_without_sleep', 96);
 
 -- Seed: jogador aprovado para testar sync
 INSERT OR IGNORE INTO players (nick, status, twitch_url, player_token) VALUES (

@@ -18,7 +18,7 @@ import { supabase } from '../supabase';
 import { parsePzrCode } from '../lib/decoder';
 import { dbError } from '../lib/errors';
 import { computeScore } from '../lib/scoring';
-import { evaluateAchievements } from '../lib/achievements';
+import { evaluateAchievements, type ExtendedStats } from '../lib/achievements';
 import { config } from '../config';
 import type { Objectives } from '../types';
 
@@ -324,6 +324,10 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
 
   const score = computeScore(decoded.kills, existingObjectives);
 
+  const hasExtended = decoded.animalsKilled > 0 || decoded.fishCaught > 0 ||
+    decoded.cropsHarvested > 0 || decoded.itemsCrafted > 0 ||
+    decoded.housesLooted > 0 || decoded.hoursWithoutSleep > 0;
+
   const entry = {
     player_id:      player.id,
     moderator_id:   null,
@@ -344,6 +348,15 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     flagged_reason: flaggedReason,
     flagged_at:     flaggedAt,
     updated_at:     new Date().toISOString(),
+    // PZRX3: only write when present to avoid overwriting with zeros on PZRX2 syncs
+    ...(hasExtended ? {
+      animals_killed:      decoded.animalsKilled,
+      fish_caught:         decoded.fishCaught,
+      crops_harvested:     decoded.cropsHarvested,
+      items_crafted:       decoded.itemsCrafted,
+      houses_looted:       decoded.housesLooted,
+      hours_without_sleep: decoded.hoursWithoutSleep,
+    } : {}),
   };
 
   let data, error;
@@ -371,7 +384,17 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   const finalEntryId = (data as { id: number }).id;
 
   // Fire-and-forget — falha na avaliação não afeta a resposta do sync
-  void evaluateAchievements(player.id, finalEntryId, decoded.kills, decoded.days)
+  const extStats: ExtendedStats = {
+    kills:              decoded.kills,
+    days:               decoded.days,
+    animalsKilled:      decoded.animalsKilled,
+    fishCaught:         decoded.fishCaught,
+    cropsHarvested:     decoded.cropsHarvested,
+    itemsCrafted:       decoded.itemsCrafted,
+    housesLooted:       decoded.housesLooted,
+    hoursWithoutSleep:  decoded.hoursWithoutSleep,
+  };
+  void evaluateAchievements(player.id, finalEntryId, extStats)
     .catch(e => console.error('[achievements]', e));
 
   // Posição no ranking: contagem de entradas com score mais alto (best-effort)

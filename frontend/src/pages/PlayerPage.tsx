@@ -281,6 +281,20 @@ function CharacterCard({ entry, rank }: { entry: Entry; rank: number | null }) {
         <span className="pp-stat"><i className="ti ti-sword" />{entry.kills.toLocaleString('pt-BR')}</span>
       </div>
 
+      {/* Extended stats (PZRX3 — only shown when mod reports them) */}
+      {(entry.animals_killed != null || entry.fish_caught != null ||
+        entry.crops_harvested != null || entry.items_crafted != null ||
+        entry.houses_looted != null || entry.hours_without_sleep != null) && (
+        <div className="pp-ext-stats">
+          {entry.animals_killed  != null && <span className="pp-ext-stat" title="Animais abatidos">🏹 {entry.animals_killed.toLocaleString('pt-BR')}</span>}
+          {entry.fish_caught     != null && <span className="pp-ext-stat" title="Peixes capturados">🐟 {entry.fish_caught.toLocaleString('pt-BR')}</span>}
+          {entry.crops_harvested != null && <span className="pp-ext-stat" title="Vegetais colhidos">🌽 {entry.crops_harvested.toLocaleString('pt-BR')}</span>}
+          {entry.items_crafted   != null && <span className="pp-ext-stat" title="Itens fabricados">🔨 {entry.items_crafted.toLocaleString('pt-BR')}</span>}
+          {entry.houses_looted   != null && <span className="pp-ext-stat" title="Casas saqueadas">🏚️ {entry.houses_looted.toLocaleString('pt-BR')}</span>}
+          {entry.hours_without_sleep != null && <span className="pp-ext-stat" title="Horas sem dormir">😴 {entry.hours_without_sleep}h</span>}
+        </div>
+      )}
+
       {/* Perfil Psicológico */}
       {(() => {
         const arch = resolveArchetype(entry);

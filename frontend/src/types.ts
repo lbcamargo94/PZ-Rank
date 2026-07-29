@@ -25,6 +25,13 @@
   updated_at?:                string | null;
   sandbox_config?:            Record<string, unknown> | null;
   sandbox_config_updated_at?: string | null;
+  // PZRX3 extended stats (null = not yet reported)
+  animals_killed?:      number | null;
+  fish_caught?:         number | null;
+  crops_harvested?:     number | null;
+  items_crafted?:       number | null;
+  houses_looted?:       number | null;
+  hours_without_sleep?: number | null;
 }
 
 export type SortKey = 'days' | 'kills' | 'time' | 'score';
@@ -42,6 +49,12 @@ export interface DecodedCode {
   sandboxOk:              boolean;
   traits:                 string[];
   disqualificationReason: string | null;
+  animalsKilled:          number;
+  fishCaught:             number;
+  cropsHarvested:         number;
+  itemsCrafted:           number;
+  housesLooted:           number;
+  hoursWithoutSleep:      number;
 }
 
 export type ModeratorRole  = 'moderator' | 'master';

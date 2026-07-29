@@ -7724,6 +7724,26 @@ a.btn-ghost { text-decoration: none; }
   font-family: var(--font-mono);
 }
 
+/* ── Stats estendidas PZRX3 ────────────────────────────────────────────── */
+.pp-ext-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-3);
+}
+
+.pp-ext-stat {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-2);
+  background: var(--bg-4);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+
 /* ── Conquistas (achievements) ──────────────────────────────────────────── */
 .pp-ach-section {
   margin-top: 32px;

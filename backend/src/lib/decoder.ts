@@ -2,10 +2,11 @@
 import { SKILL_NAMES } from './skills';
 
 const XOR_KEY = 'PZRank-Community-2026-Key!';
-// PZRX1 = formato antigo (6 campos, sem status); PZRX2 = atual (7+ campos, com status)
-const PZR_PREFIX_RE = /^PZRX[12]:([\s\S]+)$/;
-// Grupos: nome|prof|kills|tempo|skills|status|sandbox|traits|motivo|ts — opcionais a partir do 6º
-const PZR_PAYLOAD_RE = /^PZR\|([^|]*)\|([^|]*)\|(\d+)\|(\d+)\|([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?(\d*)\|?([^|]*)$/;
+// PZRX1 = formato antigo; PZRX2 = atual; PZRX3 = estendido (stats do mod v2.6+)
+const PZR_PREFIX_RE = /^PZRX[123]:([\s\S]+)$/;
+// Grupos 1-11: nome|prof|kills|tempo|skills|status|sandbox|traits|motivo|ts|modVersion (opcionais a partir do 6º)
+// Grupos 12-17 (PZRX3): animals_killed|fish_caught|crops_harvested|items_crafted|houses_looted|hours_without_sleep
+const PZR_PAYLOAD_RE = /^PZR\|([^|]*)\|([^|]*)\|(\d+)\|(\d+)\|([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?(\d*)\|?([^|]*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)$/;
 
 function xorBuffer(data: Buffer, key: string): Buffer {
   const keyBuf = Buffer.from(key, 'utf8');
@@ -52,7 +53,8 @@ export function parsePzrCode(raw: string): DecodedCode | null {
   const match = plain.match(PZR_PAYLOAD_RE);
   if (!match) return null;
 
-  const [, characterName, profession, kills, timeRaw, skillsRaw, statusRaw, sandboxRaw, traitsRaw, reasonRaw, codeTsRaw, modVersionRaw] = match;
+  const [, characterName, profession, kills, timeRaw, skillsRaw, statusRaw, sandboxRaw, traitsRaw, reasonRaw, codeTsRaw, modVersionRaw,
+    animalsKilledRaw, fishCaughtRaw, cropsHarvestedRaw, itemsCraftedRaw, housesLootedRaw, hoursWithoutSleepRaw] = match;
   const timeRawNum = parseInt(timeRaw!, 10);
 
   // Traduz tokens de skill: mod v1.7+ exporta IDs em inglês ("Axe 6"), versões anteriores
@@ -76,6 +78,11 @@ export function parsePzrCode(raw: string): DecodedCode | null {
     ? parseInt(codeTsRaw.trim(), 10)
     : null;
 
+  const parseExt = (raw: string | undefined) => {
+    const n = parseInt(raw ?? '', 10);
+    return isNaN(n) ? 0 : n;
+  };
+
   return {
     characterName: characterName || 'Sobrevivente',
     profession: profession || 'Desconhecida',
@@ -90,5 +97,11 @@ export function parsePzrCode(raw: string): DecodedCode | null {
     disqualificationReason: (reasonRaw && reasonRaw.trim()) ? reasonRaw.trim() : null,
     codeTimestamp: (codeTimestamp && !isNaN(codeTimestamp)) ? codeTimestamp : null,
     modVersion,
+    animalsKilled:     parseExt(animalsKilledRaw),
+    fishCaught:        parseExt(fishCaughtRaw),
+    cropsHarvested:    parseExt(cropsHarvestedRaw),
+    itemsCrafted:      parseExt(itemsCraftedRaw),
+    housesLooted:      parseExt(housesLootedRaw),
+    hoursWithoutSleep: parseExt(hoursWithoutSleepRaw),
   };
 }

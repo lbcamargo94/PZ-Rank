@@ -77,4 +77,11 @@ export interface DecodedCode {
   disqualificationReason: string | null;
   codeTimestamp:          number | null;
   modVersion:             string | null;
+  // PZRX3 — extended stats (0 when absent / PZRX2 code)
+  animalsKilled:     number;
+  fishCaught:        number;
+  cropsHarvested:    number;
+  itemsCrafted:      number;
+  housesLooted:      number;
+  hoursWithoutSleep: number;
 }
