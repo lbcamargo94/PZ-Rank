@@ -21,7 +21,7 @@ const KNOWN_B42_TRAIT_IDS = [
   'Lucky', 'FastLearner', 'FastReader', 'Handy', 'Outdoorsman',
   'SpeedDemon', 'FirstAider', 'BornSurvivor', 'CatEyes', 'Marksman',
   'Hunter', 'Herbalist', 'Inconspicuous', 'IronGut', 'Desensitized',
-  'Construction',
+  'Construction', 'target_shooter',
   // Negativas
   'Weak', 'Unfit', 'Obese', 'Overweight', 'OutOfShape', 'ThinSkinned',
   'SlowHealer', 'ProneToIllness', 'Smoker', 'Underweight',
@@ -35,10 +35,10 @@ const KNOWN_B42_TRAIT_IDS = [
 const POSITIVE_TRAITS: [string, string][] = [
   ['Athletic',      'Atlético'],
   ['Fit',           'Em Forma'],
-  ['Strong',        'Forte'],
+  ['Strong',        'Musculoso'],
   ['Lucky',         'Sortudo'],
   ['FastLearner',   'Aprendiz Rápido'],
-  ['FastReader',    'Leitor Rápido'],
+  ['FastReader',    'Leitura Dinâmica'],
   ['Brave',         'Corajoso'],
   ['Organized',     'Organizado'],
   ['KeenHearing',   'Audição Aguçada'],
@@ -46,18 +46,18 @@ const POSITIVE_TRAITS: [string, string][] = [
   ['IronGut',       'Estômago de Ferro'],
   ['Inconspicuous', 'Discreto'],
   ['CatEyes',       'Olhos de Gato'],
-  ['SpeedDemon',    'Demônio da Velocidade'],
+  ['SpeedDemon',    'Bom de Volante'],
   ['Outdoorsman',   'Andarilho'],
   ['Desensitized',  'Destemido'],
 ];
 
 const NEGATIVE_TRAITS: [string, string][] = [
   ['Smoker',        'Fumante'],
-  ['Weak',          'Fraco'],
+  ['Weak',          'Fracote'],
   ['Unfit',         'Sedentário'],
   ['Obese',         'Obeso'],
   ['Cowardly',      'Covarde'],
-  ['Clumsy',        'Desajeitado'],
+  ['Clumsy',        'Desastrado'],
   ['SlowReader',    'Semi-Analfabeto'],
   ['SlowLearner',   'Aprendiz Lento'],
   ['Sleepyhead',    'Dorminhoco'],

@@ -39,15 +39,15 @@ export const TRAITS: Record<string, TraitDef> = {
     description: "Em boa forma física.",
   },
   Strong: {
-    name: "Forte",
-    type: "positive",
-    image: "Forte",
-    description: "Aumento do impacto de armas brancas e da capacidade de carga.",
-  },
-  Stout: {
     name: "Musculoso",
     type: "positive",
     image: "Musculoso",
+    description: "Aumento do impacto de armas brancas e da capacidade de carga.",
+  },
+  Stout: {
+    name: "Forte",
+    type: "positive",
+    image: "Forte",
     description: "Aumento do impacto de armas brancas e da capacidade de carga.",
   },
   Graceful: {
@@ -57,7 +57,7 @@ export const TRAITS: Record<string, TraitDef> = {
     description: "Faz menos barulho ao se movimentar.",
   },
   ThickSkinned: {
-    name: "Pele Grossa",
+    name: "Casca Grossa",
     type: "positive",
     image: "Pele grossa",
     description: "Menor probabilidade de arranhões ou mordidas que rompam a pele.",
@@ -142,7 +142,7 @@ export const TRAITS: Record<string, TraitDef> = {
     description: "Melhor visão noturna.",
   },
   NightOwl: {
-    name: "Coruja Noturna",
+    name: "Coruja da Noite",
     type: "positive",
     image: "Coruja Noturna",
     description: "Precisa de pouco sono. Permanece extremamente alerta durante o sono.",
@@ -174,7 +174,7 @@ export const TRAITS: Record<string, TraitDef> = {
     description: "Aumenta o ganho de XP.",
   },
   FastReader: {
-    name: "Leitor Rápido",
+    name: "Leitura Dinâmica",
     type: "positive",
     image: "Leitor Rápido",
     description: "Leva menos tempo para ler livros.",
@@ -192,10 +192,10 @@ export const TRAITS: Record<string, TraitDef> = {
     description: "Não é afetado por condições climáticas adversas.",
   },
   SpeedDemon: {
-    name: "Demônio da Velocidade",
+    name: "Bom de Volante",
     type: "positive",
     image: "Demônio da Velocidade",
-    description: "O motorista veloz.",
+    description: "Dirige mais rápido.",
   },
   FirstAider: {
     name: "Socorrista",
@@ -239,22 +239,28 @@ export const TRAITS: Record<string, TraitDef> = {
     description: "Menos propenso a ser visto por zumbis.",
   },
   Inventive: {
-    name: "Inventivo",
+    name: "Inventor",
     type: "positive",
     image: "Inventivo",
     description: "Possui requisitos de habilidade mais baixos para pesquisar receitas a partir de itens.",
   },
   Inventive_prof: {
-    name: "Inventivo",
+    name: "Inventor",
     type: "positive",
     image: "Inventivo",
     description: "Possui requisitos de habilidade mais baixos para pesquisar receitas a partir de itens.",
   },
   Marksman: {
-    name: "Atirador de Alvo",
+    name: "Atirador",
     type: "positive",
     image: "Atirador de alvo",
     description: "+1 Mira",
+  },
+  target_shooter: {
+    name: "Atirador de Alvo",
+    type: "positive",
+    image: "Atirador de alvo",
+    description: "+1 Mira. Pratica esporte de tiro ao alvo.",
   },
   Herbalist: {
     name: "Herbalista",
@@ -306,7 +312,7 @@ export const TRAITS: Record<string, TraitDef> = {
     description: "É possível encontrar ervas medicinais, fabricar ferramentas simples de pedra e osso, e acender fogueiras mais rapidamente.",
   },
   Blacksmith: {
-    name: "Conhecimento de Ferreiro",
+    name: "Ferreiro",
     type: "positive",
     image: "Ferreiro",
     description: "É possível usar uma bigorna para criar objetos de metal.",
@@ -342,7 +348,7 @@ export const TRAITS: Record<string, TraitDef> = {
     description: "Sabe cozinhar.",
   },
   Crafty: {
-    name: "Astuto",
+    name: "Engenhoso",
     type: "positive",
     image: "Astuto",
     description: "Aumento nos ganhos de XP para habilidades de Criação.",
@@ -354,7 +360,7 @@ export const TRAITS: Record<string, TraitDef> = {
     description: "Conhece os princípios básicos da pesca.",
   },
   FormerScout: {
-    name: "Ex-Escoteiro",
+    name: "Escoteiro",
     type: "positive",
     image: "Ex-escoteiro",
     description: "Sabe colher frutos silvestres e tratar pequenos ferimentos.",
@@ -444,25 +450,25 @@ export const TRAITS: Record<string, TraitDef> = {
     description: "Capaz de esculpir peças em madeira e osso.",
   },
   WildernessKnowledge: {
-    name: "Sobrevivencialista",
+    name: "Biólogo",
     type: "positive",
-    image: "Sobrevivencialista",
-    description: "Acostumado a sobreviver na selva.",
+    image: "Biólogo",
+    description: "É possível encontrar ervas medicinais e criar remédios e cataplasmas, além de fabricar ferramentas simples de pedra e osso.",
   },
-  Tinkerer: { name: "Engenhoso", type: "positive" },
-  tinkerer: { name: "Engenhoso", type: "positive" },
+  Tinkerer: { name: "Faz-tudo", type: "positive", image: "Faz-tudo" },
+  tinkerer: { name: "Faz-tudo", type: "positive", image: "Faz-tudo" },
 
   // ── Negativos — Físico ────────────────────────────────────
   Weak: {
-    name: "Fraco",
-    type: "negative",
-    image: "Fraco",
-    description: "Menos recuo de armas de combate corpo a corpo. Capacidade de carga reduzida.",
-  },
-  Feeble: {
     name: "Fracote",
     type: "negative",
     image: "Fracote",
+    description: "Menos recuo de armas de combate corpo a corpo. Capacidade de carga reduzida.",
+  },
+  Feeble: {
+    name: "Fraco",
+    type: "negative",
+    image: "Fraco",
     description: "Menos recuo de armas de combate corpo a corpo. Capacidade de carga reduzida.",
   },
   Unfit: {
@@ -496,7 +502,7 @@ export const TRAITS: Record<string, TraitDef> = {
     description: "Pouca força, pouca resistência e propensão a lesões.",
   },
   Emaciated: {
-    name: "Pele e Osso",
+    name: "Emaciado",
     type: "negative",
     image: "Pele e osso",
     description: "Pouca força, pouca resistência e propensão a lesões.",
@@ -584,16 +590,16 @@ export const TRAITS: Record<string, TraitDef> = {
     description: "Especialmente propenso a entrar em pânico.",
   },
   Clumsy: {
-    name: "Desajeitado",
-    type: "negative",
-    image: "Desajeitado",
-    description: "Transfere itens do estoque lentamente.",
-  },
-  AllThumbs: {
     name: "Desastrado",
     type: "negative",
     image: "Desastrado",
     description: "Faz mais barulho ao se movimentar.",
+  },
+  AllThumbs: {
+    name: "Desajeitado",
+    type: "negative",
+    image: "Desajeitado",
+    description: "Transfere itens do estoque lentamente.",
   },
   SlowReader: {
     name: "Semi-Analfabeto",
