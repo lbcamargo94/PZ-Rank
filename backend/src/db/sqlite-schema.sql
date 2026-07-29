@@ -116,6 +116,13 @@ CREATE TABLE IF NOT EXISTS hall_of_fame (
   score          INTEGER  DEFAULT 0
 );
 
+CREATE TABLE IF NOT EXISTS daily_news (
+  id        INTEGER  PRIMARY KEY AUTOINCREMENT,
+  date      TEXT     NOT NULL UNIQUE,   -- 'YYYY-MM-DD'
+  headline  TEXT     DEFAULT NULL,      -- manchete manual (opcional)
+  stats     TEXT     DEFAULT NULL       -- JSON snapshot do dia
+);
+
 -- Seed: jogador aprovado para testar sync
 INSERT OR IGNORE INTO players (nick, status, twitch_url, player_token) VALUES (
   'TestPlayer',

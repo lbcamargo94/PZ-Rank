@@ -14,6 +14,7 @@ import syncRouter        from './routes/sync';
 import accountRouter     from './routes/account';
 import statsRouter       from './routes/stats';
 import seasonsRouter     from './routes/seasons';
+import newsRouter        from './routes/news';
 
 // Rate limiters por contexto de uso
 const authLimiter = rateLimit({
@@ -111,6 +112,7 @@ export function createApp() {
   app.use('/account',    accountRouter);
   app.use('/stats',      statsRouter);
   app.use('/seasons',   seasonsRouter);
+  app.use('/news',      newsRouter);
 
   return app;
 }

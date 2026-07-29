@@ -6929,3 +6929,228 @@ a.btn-ghost { text-decoration: none; }
   .legends-grid { grid-template-columns: 1fr; }
   .legends-title { font-size: 26px; }
 }
+
+/* ── Jornal do Apocalipse — NewsCard (MainView) ────────────── */
+.news-card {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--red);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  margin: 0 0 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.news-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.news-card-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--red);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.news-card-date {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-3);
+  text-transform: capitalize;
+}
+
+.news-card-headline {
+  font-size: 16px;
+  color: var(--text-1);
+  line-height: 1.4;
+  font-style: italic;
+}
+
+.news-card-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+}
+
+.news-stat {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-3);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.news-stat .ti { font-size: 13px; }
+.news-stat--alive .ti { color: var(--green); }
+.news-stat--dead  .ti { color: var(--text-3); }
+.news-stat--kills .ti { color: var(--red); }
+.news-stat--sync  .ti { color: var(--blue-light); }
+
+/* ── NewsManager (Painel) ──────────────────────────────────── */
+.nm-today-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--red);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.nm-today-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.nm-today-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--red);
+}
+
+.nm-today-date {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-3);
+  text-transform: capitalize;
+}
+
+.nm-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
+.nm-stat {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-3);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nm-stat .ti { font-size: 13px; }
+.nm-stat--alive .ti { color: var(--green); }
+.nm-stat--dead  .ti { color: var(--text-3); }
+.nm-stat--kills .ti { color: var(--red); }
+
+.nm-headline-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nm-form-label {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nm-form-hint {
+  font-size: 12px;
+  color: var(--text-4);
+  font-style: italic;
+}
+
+.nm-headline-textarea {
+  background: var(--bg-3);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  color: var(--text-1);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.4;
+  padding: 10px 12px;
+  resize: vertical;
+  width: 100%;
+  transition: border-color 0.15s;
+}
+.nm-headline-textarea:focus {
+  outline: none;
+  border-color: var(--red);
+}
+
+.nm-form-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.nm-history-title {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 12px;
+}
+
+.nm-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.nm-history-item {
+  background: var(--bg-2);
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nm-history-date {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-3);
+  text-transform: capitalize;
+}
+
+.nm-history-headline {
+  font-size: 16px;
+  color: var(--text-2);
+  font-style: italic;
+  line-height: 1.3;
+}
+
+.nm-history-headline .ti { color: var(--text-4); margin-right: 4px; }
+
+.nm-history-auto {
+  font-size: 14px;
+  color: var(--text-4);
+  font-style: italic;
+}
+
+.nm-history-mini {
+  display: flex;
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-4);
+}
+.nm-history-mini .ti { margin-right: 3px; }

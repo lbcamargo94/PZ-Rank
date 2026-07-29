@@ -8,6 +8,7 @@ import { Header } from './components/Header';
 import { DownloadBanner } from './components/DownloadBanner';
 import { SeasonEndOverlay } from './components/SeasonEndOverlay';
 import { CommunityStats } from './components/CommunityStats';
+import { NewsCard }       from './components/NewsCard';
 import { RankTable } from './components/RankTable';
 import { PlayerRegisterModal } from './components/PlayerRegisterModal';
 import { RulesModal } from './components/RulesModal';
@@ -116,6 +117,7 @@ function MainView() {
       <DownloadBanner />
       <main>
         <CommunityStats />
+        <NewsCard />
 
         <div className="container rank-tabs-bar">
           <div className="rank-tabs">

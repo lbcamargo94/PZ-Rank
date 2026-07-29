@@ -1,4 +1,4 @@
-import type { Player, Moderator, ModSession, ModeratorRole, Entry, PlayerFilter, PlayerProfile, Mod } from '../types';
+import type { Player, Moderator, ModSession, ModeratorRole, Entry, PlayerFilter, PlayerProfile, Mod, DailyNews } from '../types';
 
 const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:3000';
 
@@ -394,4 +394,18 @@ export function apiUpdateMyLinks(
     ...json(null, links),
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${playerToken}` },
   });
+}
+
+// ── Jornal do Apocalipse ─────────────────────────────
+
+export function apiGetLatestNews(): Promise<DailyNews> {
+  return request<DailyNews>('/news/latest');
+}
+
+export function apiGetNewsHistory(token: string): Promise<DailyNews[]> {
+  return request<DailyNews[]>('/news/history', auth(token));
+}
+
+export function apiSetHeadline(token: string, date: string, headline: string | null): Promise<DailyNews> {
+  return request<DailyNews>(`/news/${date}/headline`, { method: 'PATCH', ...json(token, { headline }) });
 }

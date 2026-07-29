@@ -29,7 +29,8 @@ const BOOL_COLS: Record<string, string[]> = {
 };
 
 const JSON_COLS: Record<string, string[]> = {
-  entries: ['objectives', 'sandbox_config'],
+  entries:    ['objectives', 'sandbox_config'],
+  daily_news: ['stats'],
 };
 
 // Colunas UUID geradas automaticamente na inserção quando ausentes
@@ -40,7 +41,7 @@ const UUID_DEFAULTS: Record<string, string[]> = {
 
 // Allowlist de tabelas e colunas válidas para evitar SQL injection
 // via interpolação de nomes de tabela/coluna no adapter.
-const ALLOWED_TABLES = new Set(['players', 'moderators', 'entries', 'mods', 'mod_dependencies', 'player_tokens', 'seasons', 'hall_of_fame']);
+const ALLOWED_TABLES = new Set(['players', 'moderators', 'entries', 'mods', 'mod_dependencies', 'player_tokens', 'seasons', 'hall_of_fame', 'daily_news']);
 
 const ALLOWED_COLS: Record<string, Set<string>> = {
   players:          new Set(['id','nick','email','password_hash','email_verified_at','twitch_url','youtube_url','kick_url','tiktok_url','status','blocked','player_token','created_at','deleted_at']),
@@ -51,6 +52,7 @@ const ALLOWED_COLS: Record<string, Set<string>> = {
   player_tokens:    new Set(['id','player_id','token','type','expires_at','used_at','created_at']),
   seasons:          new Set(['id','name','theme_slug','started_at','ended_at','is_active']),
   hall_of_fame:     new Set(['id','season_id','player_id','entry_name','character_name','position','days','kills','score']),
+  daily_news:       new Set(['id','date','headline','stats']),
 };
 
 function assertTable(table: string): void {
@@ -404,6 +406,17 @@ function runMigrations(db: Database): void {
       score          INTEGER  DEFAULT 0
     )`);
     console.log('[SQLite] migração: tabela hall_of_fame criada');
+  }
+
+  const hasNews = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='daily_news'").get();
+  if (!hasNews) {
+    db.exec(`CREATE TABLE daily_news (
+      id        INTEGER  PRIMARY KEY AUTOINCREMENT,
+      date      TEXT     NOT NULL UNIQUE,
+      headline  TEXT     DEFAULT NULL,
+      stats     TEXT     DEFAULT NULL
+    )`);
+    console.log('[SQLite] migração: tabela daily_news criada');
   }
 
   if (!playerCols.includes('email')) {

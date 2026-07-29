@@ -15,6 +15,7 @@ import { CodeDecoder }           from '../components/painel/CodeDecoder';
 import { SandboxPage }          from '../components/painel/SandboxPage';
 import { ModManagement }        from '../components/painel/ModManagement';
 import { SeasonManager }        from '../components/painel/SeasonManager';
+import { NewsManager }          from '../components/painel/NewsManager';
 
 const DEAD_ZONE_DAYS = 15;
 
@@ -38,7 +39,7 @@ function fmtEntryDate(iso: string | null | undefined): string {
   );
 }
 
-type Tab         = 'players' | 'entries' | 'moderators' | 'mods' | 'decoder' | 'seasons';
+type Tab         = 'players' | 'entries' | 'moderators' | 'mods' | 'decoder' | 'seasons' | 'jornal';
 type EntryFilter = 'all' | 'alive' | 'dead' | 'disqualified';
 
 const ENTRY_FILTER_CONFIG: { key: EntryFilter; label: string; icon: string }[] = [
@@ -344,6 +345,10 @@ export function PainelPage({ session, onSession, onBack }: Props) {
               <i className="ti ti-trophy" /> Temporadas
             </button>
           )}
+          <button className={`painel-tab${tab === 'jornal' ? ' active' : ''}`}
+            onClick={() => setTab('jornal')}>
+            <i className="ti ti-news" /> Jornal
+          </button>
         </div>
         <button className="btn-primary" onClick={() => setShowUpdateRank(true)}>
           <i className="ti ti-trophy" /> Atualizar Rank
@@ -364,6 +369,10 @@ export function PainelPage({ session, onSession, onBack }: Props) {
 
         {tab === 'seasons' && session.role === 'master' && (
           <SeasonManager token={session.token} showToast={showToast} />
+        )}
+
+        {tab === 'jornal' && (
+          <NewsManager token={session.token} showToast={showToast} />
         )}
 
         {tab === 'moderators' && (

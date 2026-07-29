@@ -122,6 +122,22 @@ export interface HallOfFameEntry {
   score:          number;
 }
 
+export interface NewsStats {
+  alive_count:     number;
+  dead_count:      number;
+  total_kills:     number;
+  player_count:    number;
+  deaths_today:    number;
+  new_syncs_today: number;
+}
+
+export interface DailyNews {
+  id:       number;
+  date:     string;
+  headline: string | null;
+  stats:    NewsStats | null;
+}
+
 export interface PlayerSession {
   token:     string;
   player_id: number;
