@@ -140,32 +140,6 @@ body::before {
   animation: season-chip-glow 2.5s ease-in-out infinite;
 }
 
-.rules-bar {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-  padding: 10px 0;
-  border-top: 1px solid var(--border);
-}
-
-.rule-tag {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  letter-spacing: 0.3px;
-  color: var(--text-3);
-  background: transparent;
-  border: none;
-  border-left: 2px solid var(--green-border);
-  padding: 3px 10px;
-  border-radius: 0;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  transition: color 0.15s;
-}
-
-.rule-tag:hover { color: var(--text-2); }
-.rule-tag .ti { font-size: 13px; color: var(--green); }
 
 /* ===== BUTTONS ===== */
 .btn-primary {
@@ -1107,6 +1081,30 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
   font-size: 13px;
 }
 .nav-item-mod:hover { color: var(--text-3); border-bottom-color: var(--border-mid); }
+
+.nav-criteria {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 6px 0 7px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.nav-criteria-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.3px;
+  color: var(--text-4);
+}
+
+.nav-criteria-tag .ti {
+  font-size: 12px;
+  color: var(--green-border);
+}
 
 /* ===== AUTH ===== */
 .user-info {
@@ -2855,6 +2853,7 @@ a.btn-ghost { text-decoration: none; }
   .nav-item-logged:hover { border-left-color: var(--green-light); }
   .nav-item-mod { margin-left: 0; border-top: 1px solid var(--border); margin-top: 4px; padding-top: 12px; }
   .nav-item-mod:hover { border-left-color: var(--border-mid); }
+  .nav-criteria { display: none; }
   .user-info { flex-wrap: wrap; width: 100%; }
 }
 

@@ -68,14 +68,13 @@ export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
             <i className="ti ti-shield-half" aria-hidden="true" /> Moderadores
           </button>
         </div>
+        <div className="container nav-criteria">
+          <span className="nav-criteria-tag"><i className="ti ti-skull" aria-hidden="true" /> Stats do mod</span>
+          <span className="nav-criteria-tag"><i className="ti ti-calendar" aria-hidden="true" /> Tempo, dias, zumbis</span>
+          <span className="nav-criteria-tag"><i className="ti ti-shield-check" aria-hidden="true" /> Sandbox validado</span>
+          <span className="nav-criteria-tag"><i className="ti ti-mail-check" aria-hidden="true" /> Email verificado</span>
+        </div>
       </nav>
-
-      <div className="container rules-bar">
-        <span className="rule-tag"><i className="ti ti-skull" aria-hidden="true" /> Stats do mod</span>
-        <span className="rule-tag"><i className="ti ti-calendar" aria-hidden="true" /> Tempo, dias, zumbis</span>
-        <span className="rule-tag"><i className="ti ti-settings" aria-hidden="true" /> Sandbox validado</span>
-        <span className="rule-tag"><i className="ti ti-mail-check" aria-hidden="true" /> Email verificado</span>
-      </div>
     </header>
   );
 }
