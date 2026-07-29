@@ -266,6 +266,26 @@ export function apiGetGlobalStats(): Promise<GlobalStats> {
   return request('/stats/global');
 }
 
+export interface LegendEntry {
+  name:           string;
+  character_name: string | null;
+  player_id:      number | null;
+  kills:          number;
+  days:           number;
+  score:          number;
+}
+
+export interface Legends {
+  most_kills:     LegendEntry | null;
+  most_days:      LegendEntry | null;
+  highest_score:  LegendEntry | null;
+  first_champion: (LegendEntry & { entry_name?: string; season_name: string | null }) | null;
+}
+
+export function apiGetLegends(): Promise<Legends> {
+  return request('/stats/legends');
+}
+
 // ── Seasons ─────────────────────────────────────────────────
 
 export function apiGetSeasons(): Promise<import('../types').Season[]> {

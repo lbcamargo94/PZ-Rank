@@ -6740,3 +6740,192 @@ a.btn-ghost { text-decoration: none; }
   .season-confirm-text { text-align: left; }
   .hof-stats { flex-direction: column; gap: 4px; }
 }
+
+/* ===== LEGENDS PAGE ===== */
+.legends-page {
+  min-height: 100vh;
+  padding: 32px 0 60px;
+}
+
+.legends-header {
+  margin-bottom: 32px;
+}
+
+.legends-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 16px;
+  color: var(--text-3);
+  text-decoration: none;
+  margin-bottom: 20px;
+  transition: color 0.15s;
+}
+.legends-back:hover { color: var(--text-1); }
+
+.legends-title {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-1);
+  margin: 0 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.legends-title .ti { color: var(--gold); }
+
+.legends-sub {
+  font-size: 16px;
+  color: var(--text-3);
+  margin: 0;
+}
+
+.legends-loading,
+.legends-error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 40px 0;
+  font-size: 16px;
+  color: var(--text-3);
+}
+
+.legends-error { color: var(--red); }
+
+.legends-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+/* Legend card */
+.legend-card {
+  background: linear-gradient(145deg, var(--bg-2) 0%, var(--bg-1) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.legend-top-bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--legend-color, var(--green));
+}
+
+.legend-icon {
+  font-size: 36px;
+  line-height: 1;
+}
+
+.legend-category {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--legend-color, var(--text-3));
+}
+
+.legend-player-block {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 4px;
+}
+
+.legend-char-name {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-1);
+  line-height: 1.1;
+}
+
+.legend-nick {
+  font-size: 16px;
+  color: var(--text-3);
+}
+
+.legend-season-tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: rgba(200,168,75,0.1);
+  border: 1px solid rgba(200,168,75,0.25);
+  border-radius: 3px;
+  padding: 2px 6px;
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
+.legend-stat-block {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.legend-stat-value {
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--legend-color, var(--text-1));
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.legend-stat-label {
+  font-size: 16px;
+  color: var(--text-3);
+}
+
+.legend-secondary {
+  display: flex;
+  gap: 14px;
+  font-size: 16px;
+  color: var(--text-3);
+  flex-wrap: wrap;
+}
+
+.legend-secondary .ti { margin-right: 3px; }
+
+.legend-profile-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 16px;
+  color: var(--legend-color, var(--green));
+  text-decoration: none;
+  margin-top: auto;
+  padding-top: 6px;
+  transition: opacity 0.15s;
+  align-self: flex-start;
+}
+.legend-profile-link:hover { opacity: 0.75; }
+
+.legend-pending {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 16px 0;
+  color: var(--text-4);
+}
+
+.legend-pending .ti { font-size: 24px; }
+.legend-pending span { font-size: 16px; line-height: 1.4; }
+
+@media (max-width: 680px) {
+  .legends-grid { grid-template-columns: 1fr; }
+  .legends-title { font-size: 26px; }
+}

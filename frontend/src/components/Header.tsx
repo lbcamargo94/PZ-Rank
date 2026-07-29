@@ -53,6 +53,9 @@ export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
           <Link to="/mods" className="nav-item" onClick={close}>
             <i className="ti ti-puzzle" aria-hidden="true" /> Mods
           </Link>
+          <Link to="/lendas" className="nav-item" onClick={close}>
+            <i className="ti ti-award" aria-hidden="true" /> Lendas
+          </Link>
           <button className="nav-item" onClick={() => { onSettings(); close(); }}>
             <i className="ti ti-settings" aria-hidden="true" /> Configurações
           </button>

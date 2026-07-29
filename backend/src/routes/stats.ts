@@ -32,4 +32,45 @@ router.get('/global', async (_req: Request, res: Response) => {
   res.json({ total_kills, total_days, alive_count, dead_count, player_count });
 });
 
+// GET /stats/legends — recordes all-time
+router.get('/legends', async (_req: Request, res: Response) => {
+  const entrySelect = 'name, character_name, player_id, kills, days, score';
+
+  const [killsRes, daysRes, scoreRes, hofRes] = await Promise.all([
+    supabase.from('entries').select(entrySelect)
+      .is('deleted_at', null).neq('sandbox_ok', false)
+      .order('kills', { ascending: false }).limit(1).maybeSingle(),
+
+    supabase.from('entries').select(entrySelect)
+      .is('deleted_at', null).neq('sandbox_ok', false)
+      .order('days', { ascending: false }).limit(1).maybeSingle(),
+
+    supabase.from('entries').select(entrySelect)
+      .is('deleted_at', null).neq('sandbox_ok', false)
+      .order('score', { ascending: false }).limit(1).maybeSingle(),
+
+    supabase.from('hall_of_fame')
+      .select('entry_name, character_name, player_id, kills, days, score, season_id')
+      .eq('position', 1)
+      .order('season_id', { ascending: true }).limit(1).maybeSingle(),
+  ]);
+
+  const firstErr = [killsRes.error, daysRes.error, scoreRes.error, hofRes.error].find(Boolean);
+  if (firstErr) { const e = dbError(firstErr); return res.status(e.httpStatus).json({ error: e.message }); }
+
+  let firstChampion: Record<string, unknown> | null = null;
+  if (hofRes.data) {
+    const { data: season } = await supabase
+      .from('seasons').select('name').eq('id', (hofRes.data as Record<string, unknown>).season_id).maybeSingle();
+    firstChampion = { ...(hofRes.data as Record<string, unknown>), season_name: (season as Record<string, unknown> | null)?.name ?? null };
+  }
+
+  res.json({
+    most_kills:     killsRes.data,
+    most_days:      daysRes.data,
+    highest_score:  scoreRes.data,
+    first_champion: firstChampion,
+  });
+});
+
 export default router;
