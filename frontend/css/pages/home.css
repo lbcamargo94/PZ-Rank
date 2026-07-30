@@ -26,10 +26,9 @@
   flex: 1;
 }
 
-/* Ad: flex column com min-height garante que o container nunca colapsa */
+/* Ad: position:relative torna o wrap o containing block do placeholder */
 .home-top-row .home-ad-wrap {
-  display: flex;
-  flex-direction: column;
+  position: relative;
   min-height: 300px;
   margin: 0;
 }
@@ -275,7 +274,10 @@
   margin: 8px 0 0;
 }
 
+/* Placeholder padrão (sem imagem): centraliza o conteúdo */
 .home-ad-wrap .ad-placeholder {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -290,28 +292,17 @@
   color: var(--text-3);
   font-size: 14px;
   text-align: center;
-  flex: 1;
-  min-height: 300px;
+  overflow: hidden;
 }
 
 .home-ad-wrap .ad-placeholder .ti { font-size: 28px; color: var(--text-3); }
 
-/* Imagem customizada ocupa todo o placeholder sem padding */
-.home-ad-wrap .ad-placeholder:has(.ad-placeholder-img) {
-  padding: 0;
-  gap: 0;
-  background: rgba(8,12,6,0.80);
-  border-color: var(--border-mid);
-}
-
+/* Link com imagem: preenche o placeholder absolutamente */
 .ad-placeholder-img-link {
-  display: flex;
-  flex: 1;
-  width: 100%;
-  min-height: 300px;
+  position: absolute;
+  inset: 0;
+  display: block;
   overflow: hidden;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-mid);
 }
 
 .ad-placeholder-img {
