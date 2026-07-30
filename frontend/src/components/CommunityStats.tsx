@@ -32,12 +32,12 @@ export function CommunityStats() {
         <div className="cs-item cs-item--alive">
           <i className="ti ti-heartbeat" />
           <span className="cs-value">{fmt(stats.alive_count)}</span>
-          <span className="cs-desc">ainda de pé</span>
+          <span className="cs-desc">sobreviventes</span>
         </div>
         <div className="cs-item cs-item--dead">
           <i className="ti ti-skull" />
           <span className="cs-value">{fmt(stats.dead_count)}</span>
-          <span className="cs-desc">tombaram</span>
+          <span className="cs-desc">mortos</span>
         </div>
       </div>
     </div>

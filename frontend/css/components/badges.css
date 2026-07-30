@@ -45,46 +45,49 @@
 
 .cs-item {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 8px;
-  padding: 20px 12px;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 16px;
   background: var(--bg-1);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  text-align: center;
   transition: background 0.15s;
 }
 
 .cs-item:hover { background: var(--bg-2); }
 
 .cs-item .ti {
-  font-size: 22px;
+  font-size: 18px;
   line-height: 1;
+  flex-shrink: 0;
 }
 
-.cs-item--kills .ti  { color: var(--red);         }
-.cs-item--days .ti   { color: var(--gold);         }
-.cs-item--alive .ti  { color: var(--green-light);  }
-.cs-item--dead .ti   { color: var(--text-3);       }
+.cs-item--kills .ti  { color: var(--red);        }
+.cs-item--days .ti   { color: var(--gold);        }
+.cs-item--alive .ti  { color: var(--green-light); }
+.cs-item--dead .ti   { color: var(--text-3);      }
 
 .cs-value {
   font-family: var(--font-display);
-  font-size: 26px;
+  font-size: 20px;
   font-weight: 700;
   color: var(--text-1);
   line-height: 1;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .cs-desc {
   font-size: 16px;
   color: var(--text-3);
-  letter-spacing: 0.3px;
+  white-space: nowrap;
 }
 
 @media (max-width: 560px) {
   .cs-grid { grid-template-columns: repeat(2, 1fr); }
+  .cs-item { justify-content: flex-start; padding: 10px 14px; }
 }
 
 .stats-bar {
