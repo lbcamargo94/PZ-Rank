@@ -1,8 +1,8 @@
-﻿/* PZ Rank - Registro e Cadastro page */
+/* PZ Rank - Registro e Cadastro page */
 
 .reg-card {
   width: 100%;
-  max-width: 440px;
+  max-width: 460px;
 }
 
 .reg-header {
@@ -106,28 +106,218 @@
 .reg-step-item.is-done   .reg-step-dot   { border-color: var(--green); background: var(--green); color: #fff; }
 .reg-step-item.is-done   .reg-step-label { color: var(--text-2); }
 
-/* Form scoping */
-.reg-card .account-login-form { gap: 18px; }
+/* ── Form fields ──────────────────────────────────── */
+.reg-card .account-login-form { gap: 16px; }
 
-/* Field hint */
+.reg-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.reg-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.3px;
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: uppercase;
+}
+
+.reg-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.reg-input {
+  width: 100%;
+  background: var(--bg-3);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  color: var(--text-1);
+  font-family: var(--font-body);
+  font-size: 15px;
+  padding: 10px 38px 10px 12px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+}
+
+.reg-input:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(94,144,64,0.14);
+}
+
+.reg-input::placeholder { color: var(--text-4); }
+
+.reg-input--invalid:not(:focus) {
+  border-color: var(--red);
+}
+
+.reg-input-icon {
+  position: absolute;
+  right: 11px;
+  font-size: 15px;
+  pointer-events: none;
+  line-height: 1;
+}
+.reg-input-icon--ok  { color: var(--green-light); }
+.reg-input-icon--err { color: var(--red); }
+
 .reg-field-hint {
-  display: block;
   font-size: 12px;
   color: var(--text-4);
-  margin-top: 4px;
   line-height: 1.4;
 }
 
-/* Submit button */
+/* ── Gender / Aparência picker ───────────────────── */
+.reg-gender-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.reg-gender-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.3px;
+  color: var(--text-2);
+  text-transform: uppercase;
+}
+
+.reg-gender-optional {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-4);
+  background: var(--bg-3);
+  border: 1px solid var(--border-mid);
+  padding: 1px 7px;
+  border-radius: 99px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-left: auto;
+}
+
+.reg-gender-hint {
+  font-size: 12px;
+  color: var(--text-4);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.reg-gender-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.reg-gender-option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 10px 14px;
+  background: var(--bg-1);
+  border: 2px solid var(--border-mid);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  color: var(--text-3);
+  font-family: var(--font-body);
+  user-select: none;
+}
+
+.reg-gender-option:hover {
+  border-color: var(--border-focus, var(--border-mid));
+  background: var(--bg-2);
+  color: var(--text-2);
+}
+
+.reg-gender-option.is-selected {
+  border-color: var(--green);
+  background: var(--green-dim);
+  color: var(--green-light);
+}
+
+.reg-gender-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  background: var(--bg-3);
+  border: 1px solid var(--border-mid);
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.reg-gender-option.is-selected .reg-gender-icon {
+  background: rgba(94,144,64,0.18);
+  border-color: var(--green-border);
+}
+
+.reg-gender-option-label {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+.reg-gender-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 13px;
+  color: var(--green-light);
+  background: rgba(94,144,64,0.22);
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.reg-gender-required-hint {
+  font-size: 11px;
+  color: var(--text-4);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+}
+
+/* ── Submit button ───────────────────────────────── */
 .reg-submit {
   width: 100%;
   justify-content: center;
   padding: 12px;
   font-size: 14px;
-  margin-top: 8px;
+  margin-top: 4px;
+  transition: opacity 0.2s, transform 0.1s, box-shadow 0.2s;
 }
 
-/* Footer links */
+.reg-submit--ready {
+  box-shadow: 0 2px 10px rgba(94,144,64,0.28);
+}
+
+.reg-submit--ready:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(94,144,64,0.35);
+}
+
+/* ── Footer links ────────────────────────────────── */
 .reg-footer {
   display: flex;
   align-items: center;
@@ -166,105 +356,7 @@
 }
 .reg-back-home:hover { color: var(--text-1); }
 
-/* ── Gender / Aparência picker ───────────────────────── */
-.reg-gender-picker {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 14px;
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-}
-
-.reg-gender-label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-family: var(--font-mono);
-  color: var(--text-2);
-  letter-spacing: 0.2px;
-}
-
-.reg-gender-optional {
-  font-size: 10px;
-  font-family: var(--font-mono);
-  color: var(--text-4);
-  background: var(--bg-3);
-  border: 1px solid var(--border-mid);
-  padding: 1px 7px;
-  border-radius: 99px;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  margin-left: auto;
-}
-
-.reg-gender-hint {
-  font-size: 12px;
-  color: var(--text-4);
-  line-height: 1.4;
-  margin: 0;
-}
-
-.reg-gender-options {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 4px;
-}
-
-.reg-gender-option {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 10px;
-  background: var(--bg-1);
-  border: 2px solid var(--border-mid);
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s, color 0.15s;
-  color: var(--text-3);
-  font-family: var(--font-body);
-}
-
-.reg-gender-option:hover {
-  border-color: var(--border-focus);
-  background: var(--bg-2);
-  color: var(--text-2);
-}
-
-.reg-gender-option.is-selected {
-  border-color: var(--green);
-  background: var(--green-dim);
-  color: var(--green-light);
-}
-
-.reg-gender-icon {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  background: var(--bg-3);
-  border: 1px solid var(--border-mid);
-  transition: background 0.15s, border-color 0.15s;
-}
-
-.reg-gender-option.is-selected .reg-gender-icon {
-  background: rgba(94,144,64,0.18);
-  border-color: var(--green-border);
-}
-
-.reg-gender-option-label {
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.2px;
-}
-
 @media (max-width: 460px) {
   .claim-page-wrap .account-login-card { padding: 28px 20px; }
+  .reg-gender-icon { width: 44px; height: 44px; font-size: 22px; }
 }
