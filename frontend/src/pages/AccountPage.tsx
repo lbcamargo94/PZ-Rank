@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import loginBg from '../../assets/background/tela-de-login.webp';
 import { useToast } from '../hooks/useToast';
 import { Toast } from '../components/Toast';
 import { checkPassword } from '../lib/password';
@@ -43,6 +44,8 @@ function StatusMsg({ msg, ok }: { msg: string; ok: boolean }) {
   return <p className={`account-status ${ok ? 'account-status--ok' : 'account-status--err'}`}>{msg}</p>;
 }
 
+const RE_EMAIL_LOGIN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 // ── Login form ────────────────────────────────────────────────
 function LoginForm({ onLogin }: { onLogin: (s: PlayerSession) => void }) {
   const [email,    setEmail]    = useState('');
@@ -51,8 +54,12 @@ function LoginForm({ onLogin }: { onLogin: (s: PlayerSession) => void }) {
   const [showPass, setShowPass] = useState(false);
   const { toast, showToast, clearToast } = useToast();
 
+  const emailOk   = RE_EMAIL_LOGIN.test(email.trim());
+  const canSubmit = emailOk && password.length > 0;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!canSubmit) return;
     setLoading(true);
     try {
       const data = await apiPlayerLogin(email.trim(), password);
@@ -65,34 +72,92 @@ function LoginForm({ onLogin }: { onLogin: (s: PlayerSession) => void }) {
   }
 
   return (
-    <div className="account-login-wrap">
-      <div className="account-login-card">
-        <h1 className="account-login-title">Minha Conta</h1>
-        <p className="account-login-sub">Entre com seu email e senha para gerenciar sua conta.</p>
+    <div className="account-login-wrap claim-page-wrap" style={{ backgroundImage: `url(${loginBg})` }}>
+      <div className="account-login-card reg-card">
+        <Link to="/" className="reg-back-home">
+          <i className="ti ti-arrow-left" /> Página inicial
+        </Link>
+
+        <div className="reg-header">
+          <div className="reg-icon-wrap">
+            <i className="ti ti-lock" />
+          </div>
+          <h1 className="reg-title">Minha Conta</h1>
+          <p className="reg-sub">Entre com seu e-mail e senha para acessar sua conta.</p>
+        </div>
+
         <form onSubmit={handleSubmit} className="account-login-form">
-          <FormField label="Email" type="email" value={email} onChange={setEmail}
-            placeholder="seu@email.com" autoComplete="email" />
-          <div className="account-field">
-            <label className="account-label">Senha</label>
-            <div className="account-pass-wrap">
-              <input className="account-input" type={showPass ? 'text' : 'password'}
-                value={password} onChange={e => setPassword(e.target.value)}
-                placeholder="Sua senha" autoComplete="current-password" />
-              <button type="button" className="account-pass-toggle"
-                onClick={() => setShowPass(p => !p)} aria-label="Mostrar/ocultar senha">
+          <div className="reg-field">
+            <label className="reg-label" htmlFor="login-email">
+              <i className="ti ti-mail" /> E-mail
+            </label>
+            <div className="reg-input-wrap">
+              <input
+                id="login-email"
+                className="reg-input"
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="seu@email.com"
+                autoComplete="email"
+                autoFocus
+              />
+              {email && emailOk && (
+                <i className="ti ti-check reg-input-icon reg-input-icon--ok" />
+              )}
+            </div>
+          </div>
+
+          <div className="reg-field">
+            <label className="reg-label" htmlFor="login-password">
+              <i className="ti ti-lock" /> Senha
+            </label>
+            <div className="reg-input-wrap">
+              <input
+                id="login-password"
+                className="reg-input reg-input--pass"
+                type={showPass ? 'text' : 'password'}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="Sua senha"
+                autoComplete="current-password"
+              />
+              <button
+                type="button"
+                className="reg-pass-toggle"
+                onClick={() => setShowPass(p => !p)}
+                aria-label="Mostrar/ocultar senha"
+              >
                 <i className={`ti ti-eye${showPass ? '-off' : ''}`} />
               </button>
             </div>
+            <Link to="/esqueci-senha" className="reg-forgot-link">
+              <i className="ti ti-key" /> Esqueci minha senha
+            </Link>
           </div>
-          <button type="submit" className="btn-primary account-submit" disabled={loading}>
-            {loading ? 'Entrando…' : 'Entrar'}
+
+          <button
+            type="submit"
+            className={`btn-primary reg-submit${canSubmit ? ' reg-submit--ready' : ''}`}
+            disabled={loading || !canSubmit}
+          >
+            {loading
+              ? <><i className="ti ti-loader-2" /> Entrando...</>
+              : <><i className="ti ti-login" /> Entrar</>}
           </button>
         </form>
-        <div className="account-login-links">
-          <Link to="/esqueci-senha"   className="btn-ghost btn-sm"><i className="ti ti-key" /> Esqueci minha senha</Link>
-          <Link to="/cadastrar-conta" className="btn-ghost btn-sm"><i className="ti ti-user-question" /> Sou jogador legado</Link>
-          <Link to="/verificar-conta" className="btn-ghost btn-sm"><i className="ti ti-mail-forward" /> Reenviar código de verificação</Link>
-          <Link to="/"                className="btn-ghost btn-sm"><i className="ti ti-arrow-left" /> Voltar ao Rank</Link>
+
+        <div className="reg-footer">
+          <span className="reg-footer-text">Não tem conta?</span>
+          <Link to="/cadastrar-conta" className="reg-footer-link">
+            <i className="ti ti-user-plus" /> Criar conta
+          </Link>
+        </div>
+
+        <div className="reg-aux-links">
+          <Link to="/verificar-conta" className="reg-aux-link">
+            <i className="ti ti-mail-forward" /> Reenviar verificação de e-mail
+          </Link>
         </div>
       </div>
       <Toast {...toast} onClose={clearToast} />

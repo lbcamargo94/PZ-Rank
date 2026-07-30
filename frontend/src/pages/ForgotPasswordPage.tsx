@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom';
 import { apiForgotPassword } from '../lib/api';
 import { useToast } from '../hooks/useToast';
 import { Toast } from '../components/Toast';
+import loginBg from '../../assets/background/tela-de-login.webp';
+
+const RE_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function ForgotPasswordPage() {
   const [email,   setEmail]   = useState('');
@@ -11,9 +14,11 @@ export function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);
   const { toast, showToast, clearToast } = useToast();
 
+  const emailOk = RE_EMAIL.test(email.trim());
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!email.trim()) return;
+    if (!emailOk) return;
     setLoading(true);
     try {
       const res = await apiForgotPassword(email.trim());
@@ -27,44 +32,70 @@ export function ForgotPasswordPage() {
   }
 
   return (
-    <div className="account-login-wrap">
-      <div className="account-login-card">
-        <h1 className="account-login-title">Recuperar senha</h1>
-        <p className="account-login-sub">
-          Informe o email cadastrado. Se existir, você receberá as instruções por email.
-        </p>
+    <div className="account-login-wrap claim-page-wrap" style={{ backgroundImage: `url(${loginBg})` }}>
+      <div className="account-login-card reg-card">
+        <Link to="/minha-conta" className="reg-back-home">
+          <i className="ti ti-arrow-left" /> Voltar ao login
+        </Link>
+
+        <div className="reg-header">
+          <div className="reg-icon-wrap">
+            <i className="ti ti-key" />
+          </div>
+          <h1 className="reg-title">Recuperar senha</h1>
+          <p className="reg-sub">
+            Informe o e-mail cadastrado e enviaremos as instruções de recuperação.
+          </p>
+        </div>
 
         {ok ? (
-          <>
-            <p className="account-status account-status--ok">{okMsg}</p>
-            <div className="account-login-links" style={{ marginTop: 20 }}>
-              <Link to="/minha-conta" className="btn-ghost btn-sm"><i className="ti ti-arrow-left" /> Voltar ao login</Link>
-            </div>
-          </>
+          <div className="reg-success-card">
+            <i className="ti ti-circle-check reg-success-icon" />
+            <p className="reg-success-text">{okMsg}</p>
+            <Link to="/minha-conta" className="btn-primary reg-submit" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <i className="ti ti-login" /> Ir para login
+            </Link>
+          </div>
         ) : (
           <form onSubmit={handleSubmit} className="account-login-form">
-            <div className="account-field">
-              <label className="account-label">Email</label>
-              <input
-                className="account-input"
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="seu@email.com"
-                autoComplete="email"
-                autoFocus
-              />
+            <div className="reg-field">
+              <label className="reg-label" htmlFor="fp-email">
+                <i className="ti ti-mail" /> E-mail
+              </label>
+              <div className="reg-input-wrap">
+                <input
+                  id="fp-email"
+                  className="reg-input"
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="seu@email.com"
+                  autoComplete="email"
+                  autoFocus
+                />
+                {email && emailOk && (
+                  <i className="ti ti-check reg-input-icon reg-input-icon--ok" />
+                )}
+                {email && !emailOk && (
+                  <i className="ti ti-alert-circle reg-input-icon reg-input-icon--err" />
+                )}
+              </div>
             </div>
+
             <button
               type="submit"
-              className="btn-primary"
-              disabled={loading || !email.trim()}
+              className={`btn-primary reg-submit${emailOk ? ' reg-submit--ready' : ''}`}
+              disabled={loading || !emailOk}
             >
-              {loading ? 'Enviando…' : 'Enviar link de recuperação'}
+              {loading
+                ? <><i className="ti ti-loader-2" /> Enviando...</>
+                : <><i className="ti ti-send" /> Enviar link de recuperação</>}
             </button>
-            <div className="account-login-links">
-              <Link to="/minha-conta" className="btn-ghost btn-sm"><i className="ti ti-arrow-left" /> Voltar ao login</Link>
-              <Link to="/"            className="btn-ghost btn-sm"><i className="ti ti-home" /> Ir ao Rank</Link>
+
+            <div className="reg-aux-links">
+              <Link to="/" className="reg-aux-link">
+                <i className="ti ti-home" /> Ir ao Rank
+              </Link>
             </div>
           </form>
         )}

@@ -4,7 +4,9 @@ import { apiResendRegistrationOtp, apiConfirmRegistrationOtp } from '../lib/api'
 import { OtpInput } from '../components/OtpInput';
 import { useToast } from '../hooks/useToast';
 import { Toast } from '../components/Toast';
+import loginBg from '../../assets/background/tela-de-login.webp';
 
+const RE_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 type Step = 'email' | 'otp' | 'done' | 'verified';
 
 export function ResendVerificationPage() {
@@ -15,9 +17,11 @@ export function ResendVerificationPage() {
   const [resendMsg, setResendMsg] = useState('');
   const { toast, showToast, clearToast } = useToast();
 
+  const emailOk = RE_EMAIL.test(email.trim());
+
   async function handleSendCode(e: React.FormEvent) {
     e.preventDefault();
-    if (!email.trim()) return;
+    if (!emailOk) return;
     setLoading(true);
     try {
       await apiResendRegistrationOtp(email.trim());
@@ -59,87 +63,140 @@ export function ResendVerificationPage() {
     }
   }
 
+  const bgStyle = { backgroundImage: `url(${loginBg})` };
+
+  if (step === 'verified' || step === 'done') {
+    const isVerified = step === 'verified';
+    return (
+      <div className="account-login-wrap claim-page-wrap" style={bgStyle}>
+        <div className="account-login-card reg-card">
+          <div className="reg-success-card">
+            <i className="ti ti-circle-check reg-success-icon" />
+            <h1 className="reg-title" style={{ marginBottom: 8 }}>
+              {isVerified ? 'Conta já ativa!' : 'Conta verificada!'}
+            </h1>
+            <p className="reg-sub" style={{ marginBottom: 24 }}>
+              {isVerified
+                ? <>O email <strong className="reg-email-highlight">{email}</strong> já está verificado. Faça login normalmente.</>
+                : 'Seu email foi confirmado. Agora faça login com seu email e senha.'}
+            </p>
+            <Link to="/minha-conta" className="btn-primary reg-submit" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <i className="ti ti-login" /> Ir para login
+            </Link>
+          </div>
+        </div>
+        <Toast {...toast} onClose={clearToast} />
+      </div>
+    );
+  }
+
+  if (step === 'otp') {
+    return (
+      <div className="account-login-wrap claim-page-wrap" style={bgStyle}>
+        <div className="account-login-card reg-card">
+          <button className="reg-back-home" style={{ background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => { setStep('email'); setCode(''); }}>
+            <i className="ti ti-arrow-left" /> Trocar e-mail
+          </button>
+
+          <div className="reg-header">
+            <div className="reg-icon-wrap">
+              <i className="ti ti-mail-check" />
+            </div>
+            <h1 className="reg-title">Digite o código</h1>
+            <p className="reg-sub">
+              Enviamos um código de 6 dígitos para{' '}
+              <strong className="reg-email-highlight">{email}</strong>
+            </p>
+          </div>
+
+          <form onSubmit={handleConfirm} className="account-login-form">
+            <OtpInput
+              value={code}
+              onChange={setCode}
+              loading={loading}
+              onResend={handleResend}
+              resendMsg={resendMsg}
+            />
+            <button
+              type="submit"
+              className={`btn-primary reg-submit${code.length === 6 ? ' reg-submit--ready' : ''}`}
+              disabled={loading || code.length !== 6}
+            >
+              {loading
+                ? <><i className="ti ti-loader-2" /> Verificando...</>
+                : <><i className="ti ti-check" /> Confirmar código</>}
+            </button>
+          </form>
+
+          <div className="reg-aux-links">
+            <Link to="/minha-conta" className="reg-aux-link">
+              <i className="ti ti-login" /> Voltar ao login
+            </Link>
+          </div>
+        </div>
+        <Toast {...toast} onClose={clearToast} />
+      </div>
+    );
+  }
+
   return (
-    <div className="account-login-wrap">
-      <div className="account-login-card">
+    <div className="account-login-wrap claim-page-wrap" style={bgStyle}>
+      <div className="account-login-card reg-card">
+        <Link to="/minha-conta" className="reg-back-home">
+          <i className="ti ti-arrow-left" /> Voltar ao login
+        </Link>
 
-        {step === 'verified' ? (
-          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-            <i className="ti ti-circle-check" style={{ fontSize: 48, color: 'var(--green)' }} />
-            <h1 className="account-login-title" style={{ margin: 0 }}>Conta já ativa!</h1>
-            <p className="account-login-sub" style={{ marginBottom: 8 }}>
-              O email <strong>{email}</strong> já está verificado. Faça login normalmente com seu email e senha.
-            </p>
-            <Link to="/minha-conta" className="btn-primary" style={{ textDecoration: 'none' }}>
-              <i className="ti ti-login" /> Ir para login
-            </Link>
+        <div className="reg-header">
+          <div className="reg-icon-wrap">
+            <i className="ti ti-mail-forward" />
           </div>
-        ) : step === 'done' ? (
-          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-            <i className="ti ti-circle-check" style={{ fontSize: 48, color: 'var(--green)' }} />
-            <h1 className="account-login-title" style={{ margin: 0 }}>Conta verificada!</h1>
-            <p className="account-login-sub" style={{ marginBottom: 8 }}>
-              Seu email foi confirmado. Agora faça login com seu email e senha.
-            </p>
-            <Link to="/minha-conta" className="btn-primary" style={{ textDecoration: 'none' }}>
-              <i className="ti ti-login" /> Ir para login
-            </Link>
-          </div>
-        ) : step === 'otp' ? (
-          <>
-            <h1 className="account-login-title">Digite o código</h1>
-            <p className="account-login-sub">
-              Enviamos um código de 6 dígitos para <strong>{email}</strong>.
-            </p>
-            <form onSubmit={handleConfirm} className="account-login-form">
-              <OtpInput
-                value={code}
-                onChange={setCode}
-                loading={loading}
-                onResend={handleResend}
-                resendMsg={resendMsg}
+          <h1 className="reg-title">Verificar e-mail</h1>
+          <p className="reg-sub">
+            Informe o e-mail do cadastro para recebermos um novo código de verificação.
+          </p>
+        </div>
+
+        <form onSubmit={handleSendCode} className="account-login-form">
+          <div className="reg-field">
+            <label className="reg-label" htmlFor="rv-email">
+              <i className="ti ti-mail" /> E-mail do cadastro
+            </label>
+            <div className="reg-input-wrap">
+              <input
+                id="rv-email"
+                className="reg-input"
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="seu@email.com"
+                autoComplete="email"
+                autoFocus
               />
-              <button type="submit" className="btn-primary" disabled={loading || code.length !== 6}>
-                {loading ? <><i className="ti ti-loader-2" /> Verificando…</> : <><i className="ti ti-check" /> Confirmar</>}
-              </button>
-              <div className="account-login-links">
-                <button type="button" className="btn-ghost btn-sm" onClick={() => { setStep('email'); setCode(''); }}>
-                  <i className="ti ti-arrow-left" /> Trocar email
-                </button>
-                <Link to="/minha-conta" className="btn-ghost btn-sm"><i className="ti ti-login" /> Voltar ao login</Link>
-              </div>
-            </form>
-          </>
-        ) : (
-          <>
-            <h1 className="account-login-title">Verificar email</h1>
-            <p className="account-login-sub">
-              Informe o email que você usou no cadastro e enviaremos um novo código de verificação.
-            </p>
-            <form onSubmit={handleSendCode} className="account-login-form">
-              <div className="account-field">
-                <label className="account-label">Email do cadastro</label>
-                <input
-                  className="account-input"
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="seu@email.com"
-                  autoComplete="email"
-                  autoFocus
-                />
-              </div>
-              <button type="submit" className="btn-primary" disabled={loading || !email.trim()}>
-                {loading ? <><i className="ti ti-loader-2" /> Enviando…</> : <><i className="ti ti-send" /> Enviar código</>}
-              </button>
-              <div className="account-login-links">
-                <Link to="/minha-conta" className="btn-ghost btn-sm"><i className="ti ti-arrow-left" /> Voltar ao login</Link>
-                <Link to="/"            className="btn-ghost btn-sm"><i className="ti ti-home" /> Ir ao Rank</Link>
-              </div>
-            </form>
-          </>
-        )}
+              {email && emailOk && (
+                <i className="ti ti-check reg-input-icon reg-input-icon--ok" />
+              )}
+              {email && !emailOk && (
+                <i className="ti ti-alert-circle reg-input-icon reg-input-icon--err" />
+              )}
+            </div>
+          </div>
 
+          <button
+            type="submit"
+            className={`btn-primary reg-submit${emailOk ? ' reg-submit--ready' : ''}`}
+            disabled={loading || !emailOk}
+          >
+            {loading
+              ? <><i className="ti ti-loader-2" /> Enviando...</>
+              : <><i className="ti ti-send" /> Enviar código</>}
+          </button>
+        </form>
+
+        <div className="reg-aux-links">
+          <Link to="/" className="reg-aux-link">
+            <i className="ti ti-home" /> Ir ao Rank
+          </Link>
+        </div>
       </div>
       <Toast {...toast} onClose={clearToast} />
     </div>
