@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { apiGetLatestNews } from '../lib/api';
 import type { DailyNews, NewsStats } from '../types';
 
@@ -24,11 +24,6 @@ const LORE_HEADLINES: ReadonlyArray<{ source: string; text: string }> = [
   { source: 'Knox Knews · 5 jul 1993',           text: 'CHEIRO FÉTIDO PODE SER "PROCESSO NATURAL". Professora de geografia liga odor misterioso ao Rio Ohio.' },
 ];
 
-function getLoreHeadline(): { source: string; text: string } {
-  const start = new Date(new Date().getFullYear(), 0, 1).getTime();
-  const dayOfYear = Math.floor((Date.now() - start) / 86_400_000);
-  return LORE_HEADLINES[dayOfYear % LORE_HEADLINES.length];
-}
 
 function fmt(n: number): string {
   return n.toLocaleString('pt-BR');
@@ -180,14 +175,39 @@ function NewsModal({ news, loading, onClose }: ModalProps) {
 export function NewsInline() {
   const [news,    setNews]    = useState<DailyNews | null>(null);
   const [loading, setLoading] = useState(true);
-  const lore = getLoreHeadline();
+
+  const initIdx = (() => {
+    const start = new Date(new Date().getFullYear(), 0, 1).getTime();
+    return Math.floor((Date.now() - start) / 86_400_000) % LORE_HEADLINES.length;
+  })();
+  const [loreIdx, setLoreIdx] = useState(initIdx);
+  const loreTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  function startLoreTimer() {
+    if (loreTimer.current) clearInterval(loreTimer.current);
+    loreTimer.current = setInterval(() => {
+      setLoreIdx(i => (i + 1) % LORE_HEADLINES.length);
+    }, 60_000);
+  }
+
+  function prevLore() {
+    setLoreIdx(i => (i - 1 + LORE_HEADLINES.length) % LORE_HEADLINES.length);
+    startLoreTimer();
+  }
+
+  function nextLore() {
+    setLoreIdx(i => (i + 1) % LORE_HEADLINES.length);
+    startLoreTimer();
+  }
 
   useEffect(() => {
     apiGetLatestNews()
       .then(setNews)
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+    startLoreTimer();
+    return () => { if (loreTimer.current) clearInterval(loreTimer.current); };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) return (
     <div className="news-inline news-inline--loading">
@@ -201,6 +221,7 @@ export function NewsInline() {
   const stats    = news.stats ?? null;
   const headline = news.headline ?? (stats ? autoHeadline(stats) : null);
   const hasActivity = stats && (stats.deaths_today > 0 || stats.syncs_today > 0 || stats.kills_today > 0);
+  const lore = LORE_HEADLINES[loreIdx];
 
   return (
     <div className="news-inline">
@@ -250,11 +271,26 @@ export function NewsInline() {
         </div>
       )}
 
+      {/* Arquivo histórico — carrossel de manchetes do PZ */}
       <div className="news-inline-lore">
-        <span className="news-inline-lore-source">
-          <i className="ti ti-archive" /> {lore.source}
-        </span>
-        <p className="news-inline-lore-text">{lore.text}</p>
+        <div className="news-lore-header">
+          <span className="news-inline-lore-source">
+            <i className="ti ti-archive" /> Arquivo Histórico
+          </span>
+          <div className="news-lore-controls">
+            <button className="lore-nav-btn" onClick={prevLore} aria-label="Anterior">
+              <i className="ti ti-chevron-left" />
+            </button>
+            <span className="lore-nav-counter">{loreIdx + 1}/{LORE_HEADLINES.length}</span>
+            <button className="lore-nav-btn" onClick={nextLore} aria-label="Próximo">
+              <i className="ti ti-chevron-right" />
+            </button>
+          </div>
+        </div>
+        <div key={loreIdx} className="news-lore-body">
+          <span className="news-lore-origin">{lore.source}</span>
+          <p className="news-inline-lore-text">{lore.text}</p>
+        </div>
       </div>
     </div>
   );

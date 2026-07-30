@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { setOnUnauthorized } from './lib/api';
 import type { ModSession } from './types';
@@ -43,6 +43,74 @@ const QUICK_NAV = [
   { to: '/transparencia', icon: 'ti-file-certificate', label: 'Transparência',   sub: 'Dados do servidor'     },
 ] as const;
 
+const PAGE_SIZE  = 4;
+const NAV_PAGES  = Math.ceil(QUICK_NAV.length / PAGE_SIZE);
+
+function QuickNavCarousel() {
+  const [page, setPage] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  function startTimer() {
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setPage(p => (p + 1) % NAV_PAGES);
+    }, 60_000);
+  }
+
+  function handlePrev() {
+    setPage(p => (p - 1 + NAV_PAGES) % NAV_PAGES);
+    startTimer();
+  }
+
+  function handleNext() {
+    setPage(p => (p + 1) % NAV_PAGES);
+    startTimer();
+  }
+
+  useEffect(() => {
+    startTimer();
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const pageItems = QUICK_NAV.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
+
+  return (
+    <section className="home-quick-nav" aria-label="Acesso rápido">
+      <div className="home-quick-nav-header">
+        <p className="home-quick-nav-title">Acesso Rápido</p>
+        <div className="quick-nav-controls">
+          <button className="qnav-arrow-btn" onClick={handlePrev} aria-label="Anterior">
+            <i className="ti ti-chevron-left" />
+          </button>
+          <div className="qnav-dots">
+            {Array.from({ length: NAV_PAGES }, (_, i) => (
+              <button
+                key={i}
+                className={`qnav-dot${i === page ? ' qnav-dot--active' : ''}`}
+                onClick={() => { setPage(i); startTimer(); }}
+                aria-label={`Página ${i + 1}`}
+              />
+            ))}
+          </div>
+          <button className="qnav-arrow-btn" onClick={handleNext} aria-label="Próximo">
+            <i className="ti ti-chevron-right" />
+          </button>
+        </div>
+      </div>
+
+      <div key={page} className="quick-nav-page">
+        {pageItems.map(item => (
+          <Link key={item.to} to={item.to} className="quick-nav-card">
+            <i className={`ti ${item.icon} quick-nav-icon`} aria-hidden="true" />
+            <span className="quick-nav-label">{item.label}</span>
+            <span className="quick-nav-sub">{item.sub}</span>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function MainView() {
   const navigate = useNavigate();
   const [showRules,    setShowRules]   = useState(false);
@@ -70,18 +138,7 @@ function MainView() {
             </aside>
           </div>
 
-          <section className="home-quick-nav" aria-label="Acesso rápido">
-            <p className="home-quick-nav-title">Acesso Rápido</p>
-            <div className="quick-nav-track">
-              {QUICK_NAV.map(item => (
-                <Link key={item.to} to={item.to} className="quick-nav-card">
-                  <i className={`ti ${item.icon} quick-nav-icon`} aria-hidden="true" />
-                  <span className="quick-nav-label">{item.label}</span>
-                  <span className="quick-nav-sub">{item.sub}</span>
-                </Link>
-              ))}
-            </div>
-          </section>
+          <QuickNavCarousel />
 
         </div>
       </main>
