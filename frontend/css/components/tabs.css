@@ -1,0 +1,154 @@
+﻿/* PZ Rank - Tabs (auth e rank) */
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-account-nick {
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-email {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-3);
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-sm {
+  padding: 7px 12px !important;
+}
+
+a.btn-ghost { text-decoration: none; }
+
+.auth-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+}
+
+.auth-tab {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 12px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.auth-tab:hover { color: var(--text-1); }
+.auth-tab.active { color: var(--green-light); border-bottom-color: var(--green); }
+
+.auth-success {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: var(--green-dim);
+  border: 1px solid var(--green-border);
+  border-radius: var(--radius);
+  color: var(--green-light);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 10px 12px;
+}
+
+.auth-success .ti { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+
+/* delete button on own entries */
+.btn-del {
+  background: transparent;
+  border: none;
+  color: var(--red);
+  cursor: pointer;
+  padding: 0 3px;
+  font-size: 14px;
+  opacity: 0;
+  transition: opacity 0.15s;
+  vertical-align: middle;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.rank-row:hover .btn-del { opacity: 0.55; }
+.btn-del:hover { opacity: 1 !important; }
+
+/* ── Rank tabs ────────────────────────────────────────────── */
+.rank-tabs-bar {
+  padding-top: 4px;
+  padding-bottom: 0;
+}
+
+.rank-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+}
+
+.rank-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
+  text-transform: uppercase;
+}
+
+.rank-tab:hover { color: var(--text-1); }
+
+.rank-tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  padding: 1px 5px;
+  border-radius: 10px;
+  font-size: 14px;
+  background: var(--bg-3);
+  color: var(--text-3);
+  border: 1px solid var(--border);
+  transition: background 0.15s, color 0.15s;
+}
+
+/* Rank (vivos) — verde */
+.rank-tab.tab-rank.active         { color: var(--green-light); border-bottom-color: var(--green); }
+.rank-tab.tab-rank.active .rank-tab-badge { background: var(--green-dim); color: var(--green-light); border-color: var(--green-border); }
+
+/* Records (todos) — âmbar */
+.rank-tab.tab-records.active      { color: var(--amber-light); border-bottom-color: var(--amber); }
+.rank-tab.tab-records.active .rank-tab-badge { background: rgba(200,120,32,0.15); color: var(--amber-light); border-color: rgba(200,120,32,0.4); }
+
+/* Mortos — vermelho */
+.rank-tab.tab-dead.active         { color: var(--red); border-bottom-color: var(--red); }
+.rank-tab.tab-dead.active .rank-tab-badge { background: rgba(224,64,64,0.12); color: var(--red); border-color: rgba(224,64,64,0.3); }
+
+/* Desclassificados — laranja */
+.rank-tab.tab-disqualified.active { color: var(--amber); border-bottom-color: var(--amber-border); }
+.rank-tab.tab-disqualified.active .rank-tab-badge { background: rgba(200,120,32,0.12); color: var(--amber); border-color: rgba(200,120,32,0.3); }
+

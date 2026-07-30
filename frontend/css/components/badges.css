@@ -1,0 +1,174 @@
+﻿/* PZ Rank - Badges e stats bar */
+
+.division-badge {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  padding: 2px 5px;
+  border-radius: 3px;
+  margin-top: 5px;
+  line-height: 1.4;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.division-badge--a {
+  color: var(--gold);
+  background: rgba(200, 168, 75, 0.12);
+  border-color: rgba(200, 168, 75, 0.28);
+}
+.division-badge--b {
+  color: var(--silver);
+  background: rgba(144, 153, 165, 0.12);
+  border-color: rgba(144, 153, 165, 0.28);
+}
+.division-badge--c {
+  color: var(--bronze);
+  background: rgba(138, 92, 58, 0.12);
+  border-color: rgba(138, 92, 58, 0.28);
+}
+
+.community-stats {
+  margin-bottom: 20px;
+}
+
+.cs-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cs-header-icon {
+  font-size: 16px;
+  color: var(--green);
+  flex-shrink: 0;
+}
+
+.cs-title {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.cs-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.cs-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 12px;
+  background: var(--bg-1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  text-align: center;
+  transition: background 0.15s;
+}
+
+.cs-item:hover { background: var(--bg-2); }
+
+.cs-item .ti {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.cs-item--kills .ti  { color: var(--red);         }
+.cs-item--days .ti   { color: var(--gold);         }
+.cs-item--alive .ti  { color: var(--green-light);  }
+.cs-item--dead .ti   { color: var(--text-3);       }
+
+.cs-value {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-1);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.cs-desc {
+  font-size: 16px;
+  color: var(--text-3);
+  letter-spacing: 0.3px;
+}
+
+@media (max-width: 560px) {
+  .cs-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 32px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: linear-gradient(135deg, var(--bg-2) 0%, var(--bg-1) 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px;
+  height: 100%;
+  background: var(--green);
+  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+}
+
+.stat-card:nth-child(2)::before { background: var(--red);    opacity: 0.7; }
+.stat-card:nth-child(3)::before { background: var(--gold);   opacity: 0.6; }
+
+.stat-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: var(--text-3);
+  text-transform: uppercase;
+}
+
+.stat-value {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--text-1);
+  line-height: 1;
+}
+
+.stat-card:nth-child(1) .stat-value { color: var(--green-light); }
+.stat-card:nth-child(2) .stat-value { color: #e06060; }
+.stat-card:nth-child(3) .stat-value { color: var(--text-2); }
+
+/* ── StatsBar colorida ────────────────────────────────────── */
+.stat-card.stat-alive  .stat-label { color: var(--green-light); }
+.stat-card.stat-dead   .stat-label { color: var(--red); }
+.stat-card.stat-disc   .stat-label { color: var(--amber); }
+

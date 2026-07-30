@@ -1,0 +1,171 @@
+﻿/* PZ Rank - Registro e Cadastro page */
+
+.reg-card {
+  width: 100%;
+  max-width: 440px;
+}
+
+.reg-header {
+  text-align: center;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.reg-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--green-dim);
+  border: 1px solid var(--green-border);
+  color: var(--green-light);
+  font-size: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.reg-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-1);
+  margin-bottom: 8px;
+}
+
+.reg-sub {
+  font-size: 13px;
+  color: var(--text-3);
+  line-height: 1.6;
+}
+
+.reg-email-highlight {
+  color: var(--amber-light);
+  font-weight: 600;
+}
+
+/* ── Stepper ─────────────────────────────────────── */
+.reg-steps {
+  display: flex;
+  align-items: flex-start;
+  padding: 0 8px;
+  margin-bottom: 24px;
+}
+
+.reg-step-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.reg-step-track {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.reg-step-dot {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid var(--border-mid);
+  background: var(--bg-3);
+  color: var(--text-4);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+
+.reg-step-half {
+  flex: 1;
+  height: 2px;
+  background: var(--border-mid);
+  transition: background 0.2s;
+}
+.reg-step-half.invisible { background: transparent; }
+.reg-step-half.done      { background: var(--green); }
+
+.reg-step-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-4);
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+
+.reg-step-item.is-active .reg-step-dot   { border-color: var(--green); background: var(--green-dim); color: var(--green-light); }
+.reg-step-item.is-active .reg-step-label { color: var(--green-light); }
+.reg-step-item.is-done   .reg-step-dot   { border-color: var(--green); background: var(--green); color: #fff; }
+.reg-step-item.is-done   .reg-step-label { color: var(--text-2); }
+
+/* Form scoping */
+.reg-card .account-login-form { gap: 18px; }
+
+/* Field hint */
+.reg-field-hint {
+  display: block;
+  font-size: 12px;
+  color: var(--text-4);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+/* Submit button */
+.reg-submit {
+  width: 100%;
+  justify-content: center;
+  padding: 12px;
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+/* Footer links */
+.reg-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.reg-footer-text { font-size: 13px; color: var(--text-3); }
+
+.reg-footer-link {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--green-light);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: opacity 0.15s;
+}
+.reg-footer-link:hover { opacity: 0.8; }
+
+.reg-back-link { text-align: center; margin-top: 12px; }
+
+.reg-back-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-3);
+  text-decoration: none;
+  margin-bottom: 20px;
+  transition: color 0.15s;
+}
+.reg-back-home:hover { color: var(--text-1); }
+
+@media (max-width: 460px) {
+  .claim-page-wrap .account-login-card { padding: 28px 20px; }
+}

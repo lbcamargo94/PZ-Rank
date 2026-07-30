@@ -1,0 +1,291 @@
+﻿/* PZ Rank - Modais */
+
+.modal-bg {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.82);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.modal-bg.open { display: flex; }
+
+.modal {
+  background: var(--bg-2);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 500px;
+  max-height: 92vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-title .ti { color: var(--green); font-size: 18px; }
+
+.modal-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+
+.modal-footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+/* fields */
+.field { display: flex; flex-direction: column; gap: 6px; }
+
+.field-label {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 1px;
+  color: var(--green);
+  text-transform: uppercase;
+}
+
+.field-label-sm {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 1px;
+  color: var(--text-3);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.required { color: var(--red); }
+
+.field-input {
+  background: var(--bg-1);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  color: var(--text-1);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  padding: 9px 12px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.field-input:focus { border-color: var(--green); }
+.field-input::placeholder { color: var(--text-4); }
+.field-input.error { border-color: var(--red); }
+
+.field-error {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--red);
+  min-height: 14px;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+
+/* código do mod */
+.decoded-info {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--green-light);
+  background: var(--green-dim);
+  border: 1px solid var(--green-border);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+}
+
+.skills-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.skill-tag {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--green-light);
+  background: var(--green-dim);
+  border: 1px solid var(--green-border);
+  padding: 3px 8px;
+  border-radius: var(--radius);
+}
+
+/* profissão e habilidades resumidas na linha do ranking */
+.player-profession {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.player-skills {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+/* upload */
+.upload-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-1);
+  border: 1px dashed var(--border-mid);
+  border-radius: var(--radius);
+  padding: 14px 12px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-3);
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.upload-area:hover { border-color: var(--green); color: var(--text-2); }
+.upload-area .ti { font-size: 20px; flex-shrink: 0; }
+
+.file-preview {
+  display: none;
+  width: 100%;
+  max-height: 140px;
+  object-fit: cover;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-mid);
+  margin-top: 8px;
+}
+
+.img-modal-bg {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.92);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+
+.img-modal-bg.open { display: flex; }
+
+.img-modal-bg img {
+  max-width: 90vw;
+  max-height: 88vh;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-mid);
+  object-fit: contain;
+}
+
+.img-close {
+  position: fixed;
+  top: 16px;
+  right: 20px;
+  background: var(--bg-3);
+  border: 1px solid rgba(224,64,64,0.35);
+  color: var(--red);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s;
+  z-index: 201;
+}
+
+.img-close:hover { color: #ff6060; border-color: var(--red); background: rgba(224,64,64,0.1); }
+/* ── Modal overlay (React) ────────────────────────────────── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(2px);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.modal-overlay.active { display: flex; }
+
+.modal-box {
+  background: var(--bg-2);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 480px;
+  max-height: 92vh;
+  overflow-y: auto;
+  position: relative;
+  padding: 28px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: var(--bg-3);
+  border: 1px solid rgba(224,64,64,0.35);
+  color: var(--red);
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, border-color 0.15s;
+}
+.modal-close:hover { color: #ff6060; border-color: var(--red); background: rgba(224,64,64,0.1); }
+
+.modal-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.modal-hint {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-3);
+  line-height: 1.6;
+  margin-top: -8px;
+}
+

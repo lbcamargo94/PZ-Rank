@@ -1,0 +1,77 @@
+﻿/* PZ Rank - Formularios React */
+
+/* ── Formulário (React) ───────────────────────────────────── */
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 1.2px;
+  color: var(--text-3);
+  text-transform: uppercase;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.form-label .ti { font-size: 14px; }
+
+.form-input {
+  background: var(--bg-1);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  color: var(--text-1);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  padding: 9px 12px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.form-input:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 2px var(--green-dim);
+}
+.form-input::placeholder { color: var(--text-4); }
+
+.form-select { appearance: none; cursor: pointer; }
+
+.code-input {
+  resize: vertical;
+  min-height: 72px;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+}
+
+.form-error {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--red);
+  margin-top: -4px;
+}
+.form-warning {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--amber);
+  margin-top: -4px;
+}
+
+.decoded-preview {
+  background: var(--green-dim);
+  border: 1px solid var(--green-border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.decoded-row { display: flex; justify-content: space-between; gap: 8px; }
+.decoded-label { font-family: var(--font-mono); font-size: 14px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.8px; }
+.decoded-value { font-family: var(--font-mono); font-size: 14px; color: var(--green-light); }
+.decoded-value.sandbox-ok    { color: var(--green-light); }
+.decoded-value.sandbox-invalid { color: #e07820; }

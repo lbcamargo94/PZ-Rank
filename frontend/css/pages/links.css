@@ -1,0 +1,140 @@
+﻿/* PZ Rank - Links uteis */
+
+.lu-page {
+  padding: 40px 0 80px;
+}
+
+.lu-container {
+  max-width: 700px;
+}
+
+.lu-header {
+  margin-bottom: 36px;
+}
+
+.lu-title {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-1);
+  margin: 12px 0 6px;
+}
+
+.lu-sub {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.lu-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.lu-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.lu-card-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  flex-shrink: 0;
+}
+
+.lu-card-icon--discord {
+  background: rgba(88,101,242,0.15);
+  border: 1px solid rgba(88,101,242,0.3);
+  color: #7289da;
+}
+
+.lu-card-icon--companion {
+  background: var(--amber-dim);
+  border: 1px solid var(--amber-border);
+  color: var(--amber-light);
+}
+
+.lu-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.lu-card-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-1);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lu-ver {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--amber);
+  background: var(--amber-dim);
+  border: 1px solid var(--amber-border);
+  border-radius: 100px;
+  padding: 2px 8px;
+  font-weight: 400;
+}
+
+.lu-card-desc {
+  font-size: 14px;
+  color: var(--text-3);
+  line-height: 1.5;
+}
+
+.btn-lu {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s, opacity 0.15s;
+  flex-shrink: 0;
+}
+
+.btn-lu--discord {
+  background: rgba(88,101,242,0.2);
+  border: 1px solid rgba(88,101,242,0.4);
+  color: #aab4ff;
+}
+.btn-lu--discord:hover { background: rgba(88,101,242,0.35); }
+
+.btn-lu--companion {
+  background: var(--amber-dim);
+  border: 1px solid var(--amber-border);
+  color: var(--amber-light);
+}
+.btn-lu--companion:hover { background: #3a2010; }
+
+@media (max-width: 600px) {
+  .lu-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .btn-lu { width: 100%; justify-content: center; }
+}
+
