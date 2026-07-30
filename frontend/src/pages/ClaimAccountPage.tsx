@@ -149,8 +149,13 @@ export function ClaimAccountPage() {
           <div className="reg-icon-wrap">
             <i className="ti ti-user-plus" />
           </div>
-          <h1 className="reg-title">Criar conta</h1>
-          <p className="reg-sub">Cadastre-se no Campeonato Brasileiro PZ</p>
+          <h1 className="reg-title">Bem-vindo ao PZRank</h1>
+          <p className="reg-sub">
+            Junte-se à comunidade e acompanhe sua evolução no Campeonato Brasileiro de Project Zomboid.
+            <br /><br />
+            Crie sua conta para participar dos rankings, registrar suas estatísticas, acompanhar
+            temporadas, descobrir novos desafios e acessar todos os recursos da plataforma.
+          </p>
         </div>
 
         <StepBar />
