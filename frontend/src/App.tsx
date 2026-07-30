@@ -8,7 +8,7 @@ import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { SeasonEndOverlay } from './components/SeasonEndOverlay';
 import { CommunityStats } from './components/CommunityStats';
-import { NewsButton }     from './components/NewsCard';
+import { NewsInline }     from './components/NewsCard';
 import { AdBanner }      from './components/AdBanner';
 import { RulesModal } from './components/RulesModal';
 import { ChallengeSettingsModal } from './components/ChallengeSettingsModal';
@@ -49,8 +49,8 @@ function MainView() {
       <CommunityStats />
       <main>
 
-        <div className="container news-trigger-row">
-          <NewsButton />
+        <div className="container">
+          <NewsInline />
         </div>
 
         <div className="container ad-banner-container">
