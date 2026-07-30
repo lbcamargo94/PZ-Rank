@@ -7,32 +7,29 @@
   gap: 12px;
   margin: 20px 0 0;
   align-items: stretch;
-  min-height: 380px;
 }
 
-/* Jornal vira coluna flex para propagar a altura ao body-grid */
+/* Jornal: flex column para propagar altura ao body-grid */
 .home-top-row .news-inline {
   margin: 0;
   display: flex;
   flex-direction: column;
 }
 
-/* Body-grid ocupa o espaço restante após o masthead */
 .home-top-row .news-body-grid {
   flex: 1;
 }
 
-/* Ad ocupa toda a altura da coluna */
+/* Ad: height: 100% garante que preenche toda a célula do grid */
 .home-top-row .home-ad-wrap {
   display: flex;
   flex-direction: column;
+  height: 100%;
 }
 
 @media (max-width: 860px) {
-  .home-top-row {
-    grid-template-columns: 1fr;
-    min-height: unset;
-  }
+  .home-top-row { grid-template-columns: 1fr; }
+  .home-top-row .home-ad-wrap { height: auto; }
 }
 
 /* ── Embla base ────────────────────────────────────────────── */
