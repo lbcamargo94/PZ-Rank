@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { apiGetMods } from '../lib/api';
 import type { Mod } from '../types';
+import modsBg from '../../assets/background/tela-de-mods.webp';
 import './mods.css';
 
 export function ModsPage() {
@@ -24,7 +25,7 @@ export function ModsPage() {
   }, [mods, search]);
 
   return (
-    <div className="mods-page">
+    <div className="mods-page claim-page-wrap" style={{ backgroundImage: `url(${modsBg})` }}>
       <div className="mods-header">
         <div className="mods-header-inner container">
           <Link to="/" className="wiki-back">
