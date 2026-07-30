@@ -77,7 +77,7 @@ function MainView() {
         <div className="container">
           <div className="home-top-row">
             <NewsInline />
-            <div className="home-ad-wrap">
+            <div className="home-patrocinio">
               <AdBanner />
             </div>
           </div>

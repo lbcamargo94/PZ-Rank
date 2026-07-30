@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import adImg from '../../assets/background/espaco-publicidade.webp';
+import adImg from '../../assets/background/patrocinio.webp';
 
 const CLIENT = (import.meta.env.VITE_ADSENSE_CLIENT as string) ?? '';
 const SLOT   = (import.meta.env.VITE_ADSENSE_SLOT   as string) ?? '';
@@ -39,7 +39,7 @@ export function AdBanner() {
   if (supporter) return null;
 
   return (
-    <div className="ad-placeholder">
+    <div className="patrocinio-card">
       {CLIENT && SLOT ? (
         <ins
           className="adsbygoogle"
@@ -50,11 +50,11 @@ export function AdBanner() {
           data-full-width-responsive="true"
         />
       ) : (
-        <Link to="/transparencia" className="ad-placeholder-img-link" title="Anuncie no Brasileirão PZ">
+        <Link to="/transparencia" className="patrocinio-link" title="Anuncie no Brasileirão PZ">
           <img
             src={adImg}
             alt="Anuncie aqui — Apoie o Brasileirão PZ"
-            className="ad-placeholder-img"
+            className="patrocinio-img"
           />
         </Link>
       )}

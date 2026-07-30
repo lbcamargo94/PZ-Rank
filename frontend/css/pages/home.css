@@ -11,7 +11,7 @@
 
 /* Ambos os itens: alinhamento explícito ao topo e mesma altura */
 .home-top-row .news-inline,
-.home-top-row .home-ad-wrap {
+.home-top-row .home-patrocinio {
   align-self: stretch;
 }
 
@@ -27,7 +27,7 @@
 }
 
 /* Ad: position:relative torna o wrap o containing block do placeholder */
-.home-top-row .home-ad-wrap {
+.home-top-row .home-patrocinio {
   position: relative;
   min-height: 300px;
   margin: 0;
@@ -36,7 +36,7 @@
 @media (max-width: 860px) {
   .home-top-row { grid-template-columns: 1fr; }
   .home-top-row .news-inline,
-  .home-top-row .home-ad-wrap { align-self: auto; }
+  .home-top-row .home-patrocinio { align-self: auto; }
 }
 
 /* ── Embla base ────────────────────────────────────────────── */
@@ -270,12 +270,12 @@
 }
 
 /* ── Ad Banner ─────────────────────────────────────────────── */
-.home-ad-wrap {
+.home-patrocinio {
   margin: 8px 0 0;
 }
 
 /* Placeholder padrão (sem imagem): centraliza o conteúdo */
-.home-ad-wrap .ad-placeholder {
+.home-patrocinio .patrocinio-card {
   position: absolute;
   inset: 0;
   display: flex;
@@ -295,17 +295,17 @@
   overflow: hidden;
 }
 
-.home-ad-wrap .ad-placeholder .ti { font-size: 28px; color: var(--text-3); }
+.home-patrocinio .patrocinio-card .ti { font-size: 28px; color: var(--text-3); }
 
 /* Link com imagem: preenche o placeholder absolutamente */
-.ad-placeholder-img-link {
+.patrocinio-link {
   position: absolute;
   inset: 0;
   display: block;
   overflow: hidden;
 }
 
-.ad-placeholder-img {
+.patrocinio-img {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -315,15 +315,15 @@
   transition: opacity 0.2s;
 }
 
-.ad-placeholder-img-link:hover .ad-placeholder-img { opacity: 0.88; }
-.home-ad-wrap .ad-placeholder-link {
+.patrocinio-link:hover .patrocinio-img { opacity: 0.88; }
+.home-patrocinio .patrocinio-btn {
   color: var(--text-3);
   text-decoration: underline;
   font-size: 13px;
   margin-left: auto;
   transition: color 0.15s;
 }
-.home-ad-wrap .ad-placeholder-link:hover { color: var(--text-2); }
+.home-patrocinio .patrocinio-btn:hover { color: var(--text-2); }
 
 /* ── Acesso Rápido — static grid ───────────────────────────── */
 .home-quick-nav {
@@ -416,5 +416,5 @@
   .quick-nav-card { padding: 18px 12px; min-height: 100px; }
   .quick-nav-icon { font-size: 22px; }
   .quick-nav-label { font-size: 13px; }
-  .home-ad-wrap .ad-placeholder-link { margin-left: 0; }
+  .home-patrocinio .patrocinio-btn { margin-left: 0; }
 }

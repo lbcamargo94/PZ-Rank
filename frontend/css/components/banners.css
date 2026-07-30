@@ -134,16 +134,16 @@
 }
 
 
-.ad-banner-container {
+.banner-container {
   margin: 0 0 4px;
 }
 
-.ad-banner-wrap {
+.banner-wrap {
   width: 100%;
   overflow: hidden;
 }
 
-.ad-placeholder {
+.patrocinio-card {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -158,12 +158,12 @@
   text-align: center;
 }
 
-.ad-placeholder .ti { font-size: 16px; }
+.patrocinio-card .ti { font-size: 16px; }
 
-.ad-placeholder-link {
+.patrocinio-btn {
   color: var(--green-light);
   text-decoration: none;
   font-size: 13px;
 }
-.ad-placeholder-link:hover { text-decoration: underline; }
+.patrocinio-btn:hover { text-decoration: underline; }
 
