@@ -2,6 +2,20 @@
 
 html { scroll-behavior: smooth; }
 
+/* Sticky footer: root ocupa no mínimo o viewport inteiro em coluna;
+   .page-body cresce para empurrar o footer sempre para o final */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
 body {
   background-color: #080B06;
   background-image: url('../../assets/background/background-image.webp');

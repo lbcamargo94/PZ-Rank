@@ -30,7 +30,7 @@ export function VerifyEmailPage() {
   }, [searchParams]);
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
       <div style={{ maxWidth: 480, width: '100%', textAlign: 'center' }}>
         {status === 'loading' && (
           <>

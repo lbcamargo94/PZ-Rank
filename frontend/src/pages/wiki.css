@@ -2,7 +2,7 @@
 
 /* ── Header ── */
 .wiki-page {
-  min-height: 100vh;
+  flex: 1;
   background: var(--bg-0);
 }
 

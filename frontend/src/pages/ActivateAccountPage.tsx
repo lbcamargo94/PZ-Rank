@@ -37,7 +37,7 @@ export function ActivateAccountPage() {
 
   if (!token) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
         <div style={{ textAlign: 'center' }}>
           <i className="ti ti-circle-x" style={{ fontSize: 56, color: 'var(--red)' }} />
           <h1 style={{ margin: '16px 0 8px' }}>Link inválido</h1>
@@ -49,7 +49,7 @@ export function ActivateAccountPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
       <div style={{ maxWidth: 400, width: '100%' }}>
         {done ? (
           <div style={{ textAlign: 'center' }}>

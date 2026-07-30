@@ -2,7 +2,7 @@
 
 
 .account-login-wrap {
-  min-height: 100vh;
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -85,7 +85,7 @@
 .account-wrap {
   max-width: 780px;
   margin: 0 auto;
-  padding: 32px 20px 60px;
+  padding: 32px 20px 24px;
 }
 
 .account-header {

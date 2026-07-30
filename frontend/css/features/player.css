@@ -574,8 +574,7 @@
 
 /* ── Player Profile Page ────────────────────────────────────── */
 .player-page {
-  min-height: 100vh;
-  padding: 24px 0 60px;
+  padding: 24px 0;
 }
 .player-page-state {
   display: flex;
