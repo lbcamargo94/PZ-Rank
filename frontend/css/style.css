@@ -8241,3 +8241,166 @@ a.btn-ghost { text-decoration: none; }
   }
   .btn-lu { width: 100%; justify-content: center; }
 }
+
+/* ===== REGISTRO / CADASTRO PAGE ===== */
+.reg-card {
+  width: 100%;
+  max-width: 420px;
+}
+
+.reg-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.reg-icon-wrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--green-dim);
+  border: 1px solid var(--green-border);
+  color: var(--green-light);
+  font-size: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.reg-title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-1);
+  margin-bottom: 6px;
+}
+
+.reg-sub {
+  font-size: 14px;
+  color: var(--text-3);
+  line-height: 1.5;
+}
+
+.reg-email-highlight {
+  color: var(--amber-light);
+  font-weight: 600;
+}
+
+/* Steps */
+.reg-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 28px;
+}
+
+.reg-step {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  position: relative;
+}
+
+.reg-step-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--border-mid);
+  background: var(--bg-3);
+  color: var(--text-4);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+
+.reg-step-label {
+  position: absolute;
+  top: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-4);
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+
+.reg-step-line {
+  width: 56px;
+  height: 2px;
+  background: var(--border-mid);
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.reg-step.active .reg-step-dot {
+  border-color: var(--green);
+  background: var(--green-dim);
+  color: var(--green-light);
+}
+.reg-step.active .reg-step-label { color: var(--green-light); }
+
+.reg-step.done .reg-step-dot {
+  border-color: var(--green);
+  background: var(--green);
+  color: #fff;
+}
+.reg-step.done .reg-step-label { color: var(--text-2); }
+.reg-step.done + .reg-step .reg-step-line { background: var(--green); }
+
+/* Field hint */
+.reg-field-hint {
+  display: block;
+  font-size: 12px;
+  color: var(--text-4);
+  margin-top: 5px;
+  line-height: 1.4;
+}
+
+/* Submit button */
+.reg-submit {
+  width: 100%;
+  justify-content: center;
+  padding: 12px;
+  font-size: 15px;
+  margin-top: 4px;
+}
+
+/* Footer links */
+.reg-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.reg-footer-text {
+  font-size: 14px;
+  color: var(--text-3);
+}
+
+.reg-footer-link {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--green-light);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: opacity 0.15s;
+}
+.reg-footer-link:hover { opacity: 0.8; }
+
+.reg-back-link {
+  text-align: center;
+  margin-top: 12px;
+}

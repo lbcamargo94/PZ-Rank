@@ -64,15 +64,48 @@ export function ClaimAccountPage() {
 
   const bgStyle = { backgroundImage: `url(${cadastroBg})` };
 
+  /* ── Step indicator ─────────────────────────────────────── */
+  const steps = [
+    { icon: 'ti-user-plus',  label: 'Dados'  },
+    { icon: 'ti-mail-check', label: 'Email'  },
+    { icon: 'ti-lock',       label: 'Senha'  },
+  ];
+  const currentStep = step === 'form' ? 0 : 1;
+
+  const StepBar = () => (
+    <div className="reg-steps">
+      {steps.map((s, i) => (
+        <div key={i} className={`reg-step${i === currentStep ? ' active' : i < currentStep ? ' done' : ''}`}>
+          <div className="reg-step-dot">
+            {i < currentStep
+              ? <i className="ti ti-check" />
+              : <i className={`ti ${s.icon}`} />}
+          </div>
+          <span className="reg-step-label">{s.label}</span>
+          {i < steps.length - 1 && <div className="reg-step-line" />}
+        </div>
+      ))}
+    </div>
+  );
+
+  /* ── OTP step ───────────────────────────────────────────── */
   if (step === 'otp') {
     return (
       <div className="account-login-wrap claim-page-wrap" style={bgStyle}>
-        <div className="account-login-card">
-          <h1 className="account-login-title">Confirme seu email</h1>
-          <p className="account-login-sub">
-            Enviamos um código de 6 dígitos para <strong>{claimEmail}</strong>.
-            Insira abaixo para continuar.
-          </p>
+        <div className="account-login-card reg-card">
+          <div className="reg-header">
+            <div className="reg-icon-wrap">
+              <i className="ti ti-mail-check" />
+            </div>
+            <h1 className="reg-title">Confirme seu e-mail</h1>
+            <p className="reg-sub">
+              Enviamos um código de 6 dígitos para{' '}
+              <strong className="reg-email-highlight">{claimEmail}</strong>
+            </p>
+          </div>
+
+          <StepBar />
+
           <form onSubmit={handleOtpSubmit} className="account-login-form">
             <OtpInput
               value={otpCode}
@@ -81,45 +114,70 @@ export function ClaimAccountPage() {
               onResend={handleResend}
               resendMsg={resendMsg}
             />
-            {otpError && <p className="account-status account-status--err">{otpError}</p>}
+            {otpError && (
+              <p className="account-status account-status--err">
+                <i className="ti ti-alert-circle" /> {otpError}
+              </p>
+            )}
             <button
               type="submit"
-              className="btn-primary"
+              className="btn-primary reg-submit"
               disabled={loading || otpCode.length !== 6}
             >
               {loading
                 ? <><i className="ti ti-loader-2" /> Verificando...</>
-                : <><i className="ti ti-check" /> Confirmar</>}
+                : <><i className="ti ti-arrow-right" /> Continuar</>}
             </button>
           </form>
+
+          <p className="reg-back-link">
+            <button className="btn-ghost btn-sm" onClick={() => setStep('form')}>
+              <i className="ti ti-arrow-left" /> Voltar
+            </button>
+          </p>
         </div>
       </div>
     );
   }
 
+  /* ── Form step ──────────────────────────────────────────── */
   return (
     <div className="account-login-wrap claim-page-wrap" style={bgStyle}>
-      <div className="account-login-card">
-        <h1 className="account-login-title">Vincular conta</h1>
-        <p className="account-login-sub">
-          Já está no ranking mas ainda não tem email e senha? Informe seu nick e cadastre seu email.
-          Você receberá um código para confirmar e depois definir sua senha.
-        </p>
+      <div className="account-login-card reg-card">
+
+        <div className="reg-header">
+          <div className="reg-icon-wrap">
+            <i className="ti ti-user-plus" />
+          </div>
+          <h1 className="reg-title">Criar conta</h1>
+          <p className="reg-sub">Cadastre-se no Campeonato Brasileiro PZ</p>
+        </div>
+
+        <StepBar />
+
         <form onSubmit={handleSubmit} className="account-login-form">
           <div className="account-field">
-            <label className="account-label">Nick no ranking</label>
+            <label className="account-label">
+              <i className="ti ti-at" /> Nick no jogo
+            </label>
             <input
               className="account-input"
               type="text"
               value={nick}
               onChange={e => setNick(e.target.value)}
-              placeholder="Seu nick exato (ex: SurvivorBR)"
+              placeholder="Seu nick exato no ranking (ex: SurvivorBR)"
               autoComplete="username"
               autoFocus
             />
+            <span className="reg-field-hint">
+              Use o mesmo nick que aparece no ranking do campeonato.
+            </span>
           </div>
+
           <div className="account-field">
-            <label className="account-label">Email</label>
+            <label className="account-label">
+              <i className="ti ti-mail" /> E-mail
+            </label>
             <input
               className="account-input"
               type="email"
@@ -128,22 +186,35 @@ export function ClaimAccountPage() {
               placeholder="seu@email.com"
               autoComplete="email"
             />
+            <span className="reg-field-hint">
+              Você receberá um código de confirmação neste e-mail.
+            </span>
           </div>
-          {msg && <p className="account-status account-status--err">{msg}</p>}
+
+          {msg && (
+            <p className="account-status account-status--err">
+              <i className="ti ti-alert-circle" /> {msg}
+            </p>
+          )}
+
           <button
             type="submit"
-            className="btn-primary"
+            className="btn-primary reg-submit"
             disabled={loading || !nick.trim() || !email.trim()}
           >
             {loading
               ? <><i className="ti ti-loader-2" /> Enviando...</>
-              : <><i className="ti ti-link" /> Vincular conta</>}
+              : <><i className="ti ti-user-plus" /> Criar conta</>}
           </button>
-          <div className="account-login-links">
-            <Link to="/minha-conta" className="btn-ghost btn-sm"><i className="ti ti-login" /> Já tenho conta</Link>
-            <Link to="/"            className="btn-ghost btn-sm"><i className="ti ti-home" /> Ver o ranking</Link>
-          </div>
         </form>
+
+        <div className="reg-footer">
+          <span className="reg-footer-text">Já tem uma conta?</span>
+          <Link to="/minha-conta" className="reg-footer-link">
+            <i className="ti ti-login" /> Fazer login
+          </Link>
+        </div>
+
       </div>
     </div>
   );
