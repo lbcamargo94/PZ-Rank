@@ -223,6 +223,16 @@ export function NewsInline() {
         <time className="news-inline-date">{fmtDateLong(news.date)}</time>
       </header>
 
+      {/* ── Vídeo de introdução ── */}
+      <div className="news-video-row">
+        <iframe
+          src="https://www.youtube.com/embed/PLczjbLOmMg?rel=0&modestbranding=1"
+          title="Jornal do Apocalipse — Introdução"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+
       {/* ── Corpo em duas colunas ── */}
       <div className="news-body-grid">
 
