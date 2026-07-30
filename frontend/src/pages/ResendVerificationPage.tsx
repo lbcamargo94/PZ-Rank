@@ -80,7 +80,7 @@ export function ResendVerificationPage() {
                 ? <>O email <strong className="reg-email-highlight">{email}</strong> já está verificado. Faça login normalmente.</>
                 : 'Seu email foi confirmado. Agora faça login com seu email e senha.'}
             </p>
-            <Link to="/minha-conta" className="btn-primary reg-submit" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <Link to="/login" className="btn-primary reg-submit" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
               <i className="ti ti-login" /> Ir para login
             </Link>
           </div>
@@ -129,7 +129,7 @@ export function ResendVerificationPage() {
           </form>
 
           <div className="reg-aux-links">
-            <Link to="/minha-conta" className="reg-aux-link">
+            <Link to="/login" className="reg-aux-link">
               <i className="ti ti-login" /> Voltar ao login
             </Link>
           </div>
@@ -142,7 +142,7 @@ export function ResendVerificationPage() {
   return (
     <div className="account-login-wrap claim-page-wrap" style={bgStyle}>
       <div className="account-login-card reg-card">
-        <Link to="/minha-conta" className="reg-back-home">
+        <Link to="/login" className="reg-back-home">
           <i className="ti ti-arrow-left" /> Voltar ao login
         </Link>
 

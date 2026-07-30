@@ -82,7 +82,7 @@ function LoginForm({ onLogin }: { onLogin: (s: PlayerSession) => void }) {
           <div className="reg-icon-wrap">
             <i className="ti ti-lock" />
           </div>
-          <h1 className="reg-title">Minha Conta</h1>
+          <h1 className="reg-title">Login</h1>
           <p className="reg-sub">Entre com seu e-mail e senha para acessar sua conta.</p>
         </div>
 

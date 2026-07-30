@@ -41,7 +41,7 @@ export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
             </a>
 
             {playerSession ? (
-              <Link to="/minha-conta" className="btn-header btn-header-account" onClick={close}>
+              <Link to="/login" className="btn-header btn-header-account" onClick={close}>
                 <i className="ti ti-user-filled" aria-hidden="true" />
                 <span className="btn-header-nick">{playerSession.nick}</span>
               </Link>
@@ -50,7 +50,7 @@ export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
                 <Link to="/cadastrar-conta" className="btn-header btn-header-register" onClick={close}>
                   Cadastre-se
                 </Link>
-                <Link to="/minha-conta" className="btn-header btn-header-login" onClick={close}>
+                <Link to="/login" className="btn-header btn-header-login" onClick={close}>
                   Login
                 </Link>
               </>
@@ -96,12 +96,12 @@ export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
           </button>
           <div className="site-nav-divider" />
           <Link
-            to="/minha-conta"
+            to="/login"
             className={`nav-item${playerSession ? ' nav-item-logged' : ''}`}
             onClick={close}
           >
             <i className={`ti ${playerSession ? 'ti-user-filled' : 'ti-user-circle'}`} aria-hidden="true" />
-            {playerSession ? playerSession.nick : 'Minha Conta'}
+            {playerSession ? playerSession.nick : 'Login'}
           </Link>
           <button className="nav-item nav-item-mod" onClick={() => { onPainel(); close(); }}>
             <i className="ti ti-shield-half" aria-hidden="true" /> Moderadores

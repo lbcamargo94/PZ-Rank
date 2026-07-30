@@ -34,7 +34,7 @@ export function ForgotPasswordPage() {
   return (
     <div className="account-login-wrap claim-page-wrap" style={{ backgroundImage: `url(${loginBg})` }}>
       <div className="account-login-card reg-card">
-        <Link to="/minha-conta" className="reg-back-home">
+        <Link to="/login" className="reg-back-home">
           <i className="ti ti-arrow-left" /> Voltar ao login
         </Link>
 
@@ -52,7 +52,7 @@ export function ForgotPasswordPage() {
           <div className="reg-success-card">
             <i className="ti ti-circle-check reg-success-icon" />
             <p className="reg-success-text">{okMsg}</p>
-            <Link to="/minha-conta" className="btn-primary reg-submit" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <Link to="/login" className="btn-primary reg-submit" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
               <i className="ti ti-login" /> Ir para login
             </Link>
           </div>

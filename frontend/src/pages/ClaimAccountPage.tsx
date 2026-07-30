@@ -273,7 +273,7 @@ export function ClaimAccountPage() {
 
         <div className="reg-footer">
           <span className="reg-footer-text">Já tem uma conta?</span>
-          <Link to="/minha-conta" className="reg-footer-link">
+          <Link to="/login" className="reg-footer-link">
             <i className="ti ti-login" /> Fazer login
           </Link>
         </div>

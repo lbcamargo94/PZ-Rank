@@ -105,7 +105,7 @@ export default function App() {
           <Route path="/verificar-email"  element={<VerifyEmailPage />} />
           <Route path="/redefinir-senha"  element={<ResetPasswordPage />} />
           <Route path="/ativar-conta"     element={<ActivateAccountPage />} />
-          <Route path="/minha-conta"      element={<AccountPage />} />
+          <Route path="/login"             element={<AccountPage />} />
           <Route path="/esqueci-senha"    element={<ForgotPasswordPage />} />
           <Route path="/verificar-conta"  element={<ResendVerificationPage />} />
           <Route path="/cadastrar-conta"  element={<ClaimAccountPage />} />

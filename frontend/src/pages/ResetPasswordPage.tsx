@@ -67,9 +67,9 @@ export function ResetPasswordPage() {
             <i className="ti ti-circle-check reg-success-icon" />
             <h1 className="reg-title">Senha redefinida!</h1>
             <p className="reg-sub" style={{ marginBottom: 24 }}>
-              Use a nova senha no Companion ou em <strong>Minha Conta</strong> no site.
+              Use a nova senha no Companion ou acesse <strong>Login</strong> no site.
             </p>
-            <button className="btn-primary reg-submit reg-submit--ready" onClick={() => navigate('/minha-conta')}>
+            <button className="btn-primary reg-submit reg-submit--ready" onClick={() => navigate('/login')}>
               <i className="ti ti-login" /> Ir para login
             </button>
           </div>
@@ -86,7 +86,7 @@ export function ResetPasswordPage() {
         <button
           className="reg-back-home"
           style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-          onClick={() => navigate('/minha-conta')}
+          onClick={() => navigate('/login')}
         >
           <i className="ti ti-arrow-left" /> Voltar ao login
         </button>

@@ -205,7 +205,7 @@ export function PlayerRegisterModal({ onClose, showToast }: Props) {
           {step === 2 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <p className="reg-socials-hint" style={{ margin: 0 }}>
-                Adicione seus canais para aparecer como criador de conteúdo. Você pode pular e adicionar depois em <strong>Minha Conta</strong>.
+                Adicione seus canais para aparecer como criador de conteúdo. Você pode pular e adicionar depois em <strong>Login</strong>.
               </p>
               <div className="reg-socials-grid">
                 {SOCIALS.map(s => (
