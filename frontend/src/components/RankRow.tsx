@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import type { Entry } from '../types';
 import { parseSkillMap, SKILL_CATEGORIES, TOTAL_SKILLS, MAX_SKILL_LEVEL } from '../lib/skills';
-import { getProfessionImageUrl } from '../lib/professions';
 import { MAX_POSSIBLE_SCORE } from '../lib/objectives';
 import { getDivision } from '../lib/divisions';
 
@@ -175,20 +174,7 @@ export function RankRow({ entry, rank, hideStatus, iconOnly }: RankRowProps) {
       </td>
       <td className="rank-name">
         <span className="char-name">{entry.character_name || entry.name}</span>
-        {entry.profession && (
-          <span className="profession-badge">
-            {getProfessionImageUrl(entry.profession) && (
-              <img src={getProfessionImageUrl(entry.profession)} alt="" className="profession-img" />
-            )}
-            {entry.profession}
-          </span>
-        )}
         <span className="player-alias">{entry.name}</span>
-        {entry.player_id && (
-          <Link to={`/player/${entry.player_id}`} className="btn-details">
-            <i className="ti ti-user" /> Ver detalhes
-          </Link>
-        )}
       </td>
       {!hideStatus && (
         <td className="rank-alive">
@@ -226,6 +212,13 @@ export function RankRow({ entry, rank, hideStatus, iconOnly }: RankRowProps) {
         <SkillsCell skills={entry.skills} charName={entry.character_name ?? undefined} />
       </td>
       <td className="rank-updated">{fmtDate(entry.updated_at ?? entry.created_at)}</td>
+      <td className="rank-actions">
+        {entry.player_id && (
+          <Link to={`/player/${entry.player_id}`} className="btn-details">
+            <i className="ti ti-user" /> Ver detalhes
+          </Link>
+        )}
+      </td>
     </tr>
   );
 }

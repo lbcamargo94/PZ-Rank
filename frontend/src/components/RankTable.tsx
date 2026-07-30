@@ -185,6 +185,7 @@ export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, ic
                   <th>Zumbis</th>
                   <th>Habilidades</th>
                   <th>Atualizado</th>
+                  <th>Ações</th>
                 </tr>
               </thead>
               <tbody>
