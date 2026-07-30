@@ -28,6 +28,20 @@ export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
           <img src={pzrankLogo} alt="PZ Rank" className="header-logo" />
         </Link>
 
+        <div className="header-auth">
+          {playerSession ? (
+            <Link to="/minha-conta" className="btn-secondary header-auth-btn nav-item-logged" onClick={close}>
+              <i className="ti ti-user-filled" aria-hidden="true" />
+              {playerSession.nick}
+            </Link>
+          ) : (
+            <>
+              <Link to="/vincular-conta" className="btn-secondary header-auth-btn" onClick={close}>Cadastre-se</Link>
+              <Link to="/minha-conta"    className="btn-primary  header-auth-btn" onClick={close}>Login</Link>
+            </>
+          )}
+        </div>
+
         <button
           className="header-hamburger"
           onClick={() => setMenuOpen(o => !o)}
