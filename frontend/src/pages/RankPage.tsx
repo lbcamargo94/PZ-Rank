@@ -117,14 +117,22 @@ export function RankPage() {
 
   const sortedEntries = useMemo(() => sortEntries(baseEntries, sortKey), [baseEntries, sortKey]);
 
+  // Quando há busca ativa: pesquisa em TODAS as categorias combinadas
+  const allCombinedEntries = useMemo(
+    () => sortEntries([...aliveEntries, ...deadEntries, ...discEntries], sortKey),
+    [aliveEntries, deadEntries, discEntries, sortKey],
+  );
+
+  const isSearching = search.trim().length > 0;
+
   const filteredEntries = useMemo(() => {
-    if (!search.trim()) return sortedEntries;
+    if (!isSearching) return sortedEntries;
     const q = search.trim().toLowerCase();
-    return sortedEntries.filter(e =>
+    return allCombinedEntries.filter(e =>
       e.name.toLowerCase().includes(q) ||
       (e.character_name?.toLowerCase().includes(q) ?? false)
     );
-  }, [sortedEntries, search]);
+  }, [sortedEntries, allCombinedEntries, isSearching, search]);
 
   return (
     <>
@@ -141,7 +149,7 @@ export function RankPage() {
             <input
               className="rank-search-input"
               type="search"
-              placeholder="Buscar por jogador ou personagem..."
+              placeholder="Buscar por jogador ou personagem em todas as categorias..."
               value={search}
               onChange={e => setSearch(e.target.value)}
               aria-label="Buscar jogador"
@@ -157,6 +165,14 @@ export function RankPage() {
               </button>
             )}
           </div>
+          {isSearching && (
+            <div className="rank-search-global-note" role="status">
+              <i className="ti ti-search" />
+              {filteredEntries.length === 0
+                ? 'Nenhum resultado encontrado.'
+                : `${filteredEntries.length} resultado${filteredEntries.length !== 1 ? 's' : ''} em todas as categorias`}
+            </div>
+          )}
         </div>
 
         <div className="container rank-tabs-bar">
@@ -183,6 +199,7 @@ export function RankPage() {
           onReload={fetchEntries}
           tab={activeTab}
           iconOnly
+          isSearching={isSearching}
         />
       </main>
 

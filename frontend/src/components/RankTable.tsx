@@ -1,16 +1,25 @@
-﻿import { useNavigate } from 'react-router-dom';
+﻿import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { Entry, SortKey, RankTab } from '../types';
 import { RankRow, KILLS_TARGET } from './RankRow';
 import { MAX_POSSIBLE_SCORE } from '../lib/objectives';
 
+type PageSize = 15 | 50 | 'all';
+const PAGE_SIZES: { value: PageSize; label: string }[] = [
+  { value: 15,    label: '15'   },
+  { value: 50,    label: '50'   },
+  { value: 'all', label: 'Tudo' },
+];
+
 interface RankTableProps {
-  entries:    Entry[];
-  sortKey:    SortKey;
-  loading:    boolean;
-  onSort:    (key: SortKey) => void;
-  onReload:  () => void;
-  tab:        RankTab;
-  iconOnly?:  boolean;
+  entries:      Entry[];
+  sortKey:      SortKey;
+  loading:      boolean;
+  onSort:       (key: SortKey) => void;
+  onReload:     () => void;
+  tab:          RankTab;
+  iconOnly?:    boolean;
+  isSearching?: boolean;
 }
 
 const EMPTY_MESSAGES: Record<RankTab, { icon: string; text: string }> = {
@@ -136,10 +145,38 @@ function RankCard({ entry, rank, onPlayerClick, hideStatus }: {
   );
 }
 
-export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, iconOnly }: RankTableProps) {
+// Helper: monta lista de páginas com elipses para o pagination bar
+function buildPageList(current: number, total: number): (number | '…')[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const pages: (number | '…')[] = [1];
+  if (current > 3)           pages.push('…');
+  for (let p = Math.max(2, current - 1); p <= Math.min(total - 1, current + 1); p++) pages.push(p);
+  if (current < total - 2)   pages.push('…');
+  pages.push(total);
+  return pages;
+}
+
+export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, iconOnly, isSearching }: RankTableProps) {
   const navigate = useNavigate();
   const hideStatus = false;
-  const { icon: emptyIcon, text: emptyText } = EMPTY_MESSAGES[tab];
+  const { icon: emptyIcon, text: emptyText } = EMPTY_MESSAGES[isSearching ? 'rank' : tab];
+
+  const [page,     setPage]     = useState(1);
+  const [pageSize, setPageSize] = useState<PageSize>(15);
+
+  // Volta para pág 1 quando os entries mudam (tab ou busca)
+  useEffect(() => { setPage(1); }, [entries, pageSize]);
+
+  const totalPages   = pageSize === 'all' ? 1 : Math.ceil(entries.length / pageSize);
+  const numPageSize  = pageSize === 'all' ? entries.length : pageSize;
+  const start        = entries.length === 0 ? 0 : (page - 1) * numPageSize + 1;
+  const end          = Math.min(page * numPageSize, entries.length);
+  const visibleEntries = pageSize === 'all'
+    ? entries
+    : entries.slice((page - 1) * numPageSize, page * numPageSize);
+
+  // Offset de rank: para mostrar posição global correta mesmo em páginas além da 1
+  const rankOffset = (page - 1) * numPageSize;
 
   function handlePlayerClick(playerId: number) {
     navigate(`/player/${playerId}`);
@@ -158,6 +195,17 @@ export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, ic
           </button>
         ))}
         <div className="sort-bar-actions">
+          <div className="page-size-sep" aria-hidden="true" />
+          <span className="sort-label">Exibir:</span>
+          {PAGE_SIZES.map(({ value, label }) => (
+            <button key={String(value)}
+              className={`sort-btn${pageSize === value ? ' active' : ''}`}
+              onClick={() => setPageSize(value)}
+              aria-pressed={pageSize === value}>
+              {label}
+            </button>
+          ))}
+          <div className="page-size-sep" aria-hidden="true" />
           <button className="btn-reload" onClick={onReload} disabled={loading} aria-label="Recarregar tabela">
             <i className={`ti ti-refresh${loading ? ' spin' : ''}`} />
           </button>
@@ -167,7 +215,10 @@ export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, ic
       {entries.length === 0 && !loading ? (
         <div className="empty-state">
           <i className={`ti ${emptyIcon}`} aria-hidden="true" />
-          <p>{emptyText.split('\n').map((line, i) => <span key={i}>{line}{i === 0 && emptyText.includes('\n') ? <br /> : ''}</span>)}</p>
+          <p>{isSearching
+            ? 'Nenhum resultado encontrado para a busca.'
+            : emptyText.split('\n').map((line, i) => <span key={i}>{line}{i === 0 && emptyText.includes('\n') ? <br /> : ''}</span>)
+          }</p>
         </div>
       ) : (
         <>
@@ -188,25 +239,81 @@ export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, ic
                 </tr>
               </thead>
               <tbody>
-                {entries.map((entry, i) => (
-                  <RankRow key={entry.id} entry={entry} rank={i + 1} hideStatus={hideStatus} iconOnly={iconOnly} />
+                {visibleEntries.map((entry, i) => (
+                  <RankRow key={entry.id} entry={entry} rank={rankOffset + i + 1} hideStatus={hideStatus} iconOnly={iconOnly} />
                 ))}
               </tbody>
             </table>
+
+            {/* Paginação */}
+            {entries.length > 0 && pageSize !== 'all' && (
+              <div className="rank-pagination">
+                <span className="rank-pagination-info">
+                  {entries.length === 0 ? '0 resultados' : `${start}–${end} de ${entries.length}`}
+                </span>
+                {totalPages > 1 && (
+                  <div className="rank-pagination-controls">
+                    <button
+                      className="pag-btn"
+                      disabled={page === 1}
+                      onClick={() => setPage(p => p - 1)}
+                      aria-label="Página anterior"
+                    >
+                      <i className="ti ti-chevron-left" />
+                    </button>
+                    <div className="pag-pages">
+                      {buildPageList(page, totalPages).map((p, i) =>
+                        p === '…'
+                          ? <span key={`e${i}`} className="pag-ellipsis">…</span>
+                          : <button
+                              key={p}
+                              className={`pag-page-btn${page === p ? ' active' : ''}`}
+                              onClick={() => setPage(p as number)}
+                              aria-current={page === p ? 'page' : undefined}
+                            >{p}</button>
+                      )}
+                    </div>
+                    <button
+                      className="pag-btn"
+                      disabled={page === totalPages}
+                      onClick={() => setPage(p => p + 1)}
+                      aria-label="Próxima página"
+                    >
+                      <i className="ti ti-chevron-right" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Mobile cards */}
           <div className={`rank-cards${loading ? ' table-loading' : ''}`}>
-            {entries.map((entry, i) => (
+            {visibleEntries.map((entry, i) => (
               <RankCard
                 key={entry.id}
                 entry={entry}
-                rank={i + 1}
-               
+                rank={rankOffset + i + 1}
                 onPlayerClick={handlePlayerClick}
                 hideStatus={hideStatus}
               />
             ))}
+            {entries.length > 0 && pageSize !== 'all' && (
+              <div className="rank-pagination">
+                <span className="rank-pagination-info">{start}–{end} de {entries.length}</span>
+                {totalPages > 1 && (
+                  <div className="rank-pagination-controls">
+                    <button className="pag-btn" disabled={page === 1} onClick={() => setPage(p => p - 1)}>
+                      <i className="ti ti-chevron-left" />
+                    </button>
+                    <span className="rank-pagination-info">Pág {page}/{totalPages}</span>
+                    <button className="pag-btn" disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>
+                      <i className="ti ti-chevron-right" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </>
       )}
