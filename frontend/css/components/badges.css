@@ -64,10 +64,35 @@
   flex-shrink: 0;
 }
 
-.cs-item--kills .ti  { color: var(--red);        }
-.cs-item--days .ti   { color: var(--gold);        }
-.cs-item--alive .ti  { color: var(--green-light); }
-.cs-item--dead .ti   { color: var(--text-3);      }
+.cs-item--kills { --neon-glow: var(--red);        }
+.cs-item--days  { --neon-glow: var(--gold);       }
+.cs-item--alive { --neon-glow: var(--green-light);}
+.cs-item--dead  { --neon-glow: var(--text-3);     }
+
+.cs-item--kills .ti  { color: var(--red);         animation: neon-pulse 2s ease-in-out infinite; }
+.cs-item--days .ti   { color: var(--gold);        animation: neon-pulse 2s ease-in-out infinite 0.5s; }
+.cs-item--alive .ti  { color: var(--green-light); animation: neon-pulse 2s ease-in-out infinite 1s; }
+.cs-item--dead .ti   { color: var(--text-3);      animation: neon-pulse 2s ease-in-out infinite 1.5s; }
+
+@keyframes neon-pulse {
+  0%, 100% {
+    text-shadow:
+      0 0 4px  currentColor,
+      0 0 10px currentColor,
+      0 0 20px var(--neon-glow),
+      0 0 40px var(--neon-glow);
+  }
+  50% {
+    text-shadow:
+      0 0 2px currentColor,
+      0 0 6px currentColor,
+      0 0 10px var(--neon-glow);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cs-item .ti { animation: none; }
+}
 
 .cs-value {
   font-family: var(--font-display);
