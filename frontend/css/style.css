@@ -82,7 +82,7 @@ body::before {
   -webkit-backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--border);
   position: relative;
-  padding: 28px 0 0;
+  padding: 14px 0 0;
 }
 
 .site-header::before {
@@ -98,7 +98,7 @@ body::before {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding-bottom: 20px;
+  padding-bottom: 12px;
 }
 
 .game-label {
@@ -3209,7 +3209,7 @@ a.btn-ghost { text-decoration: none; }
 
 .header-logo {
   display: block;
-  height: 64px;
+  height: 80px;
   width: auto;
   max-width: 100%;
   object-fit: contain;
@@ -3218,7 +3218,7 @@ a.btn-ghost { text-decoration: none; }
 .header-brand:hover .header-logo { opacity: 0.85; }
 
 @media (max-width: 460px) {
-  .header-logo { height: 48px; }
+  .header-logo { height: 60px; }
 }
 
 /* ── Back link ──────────────────────────────────────────────── */
