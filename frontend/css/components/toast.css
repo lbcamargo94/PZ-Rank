@@ -1,31 +1,100 @@
-﻿/* PZ Rank - Toast e skeleton */
+/* PZ Rank - Toast e skeleton */
 
-.toast {
+/* ===== TOAST ===== */
+
+.toast-wrap {
   position: fixed;
   bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%) translateY(80px);
+  right: 24px;
+  width: 340px;
+  max-width: calc(100vw - 48px);
   background: var(--bg-3);
   border: 1px solid var(--border-mid);
-  color: var(--text-1);
-  font-family: var(--font-mono);
-  font-size: 14px;
-  padding: 12px 20px;
   border-radius: var(--radius);
-  opacity: 0;
-  transition: transform 0.25s ease, opacity 0.25s;
+  overflow: hidden;
+  z-index: 900;
   pointer-events: none;
-  z-index: 300;
-  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(calc(100% + 24px));
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.22s ease;
 }
 
-.toast.show {
-  transform: translateX(-50%) translateY(0);
+.toast-wrap.is-visible {
   opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
 }
 
-.toast.success { border-color: var(--green); color: var(--green-light); }
-.toast.error { border-color: var(--red); color: var(--red); }
+/* Variantes de tipo */
+.toast-success { border-color: var(--green); }
+.toast-error   { border-color: var(--red); }
+.toast-warning { border-color: var(--amber); }
+.toast-info    { border-color: var(--blue-light); }
+
+/* Corpo */
+.toast-body {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 14px 14px 16px;
+}
+
+.toast-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.toast-success .toast-icon { color: var(--green-light); }
+.toast-error   .toast-icon { color: var(--red); }
+.toast-warning .toast-icon { color: var(--amber-light); }
+.toast-info    .toast-icon { color: var(--blue-light); }
+
+.toast-message {
+  flex: 1;
+  font-size: 14px;
+  font-family: var(--font-body);
+  color: var(--text-1);
+  line-height: 1.45;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.toast-close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--text-3);
+  cursor: pointer;
+  padding: 4px;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius);
+  transition: color 0.15s, background 0.15s;
+}
+.toast-close:hover { color: var(--text-1); background: var(--bg-4); }
+
+/* Barra de progresso */
+.toast-progress {
+  height: 3px;
+  width: 100%;
+  transform-origin: left center;
+  animation: toast-shrink 5s linear forwards;
+}
+
+.toast-success .toast-progress { background: var(--green); }
+.toast-error   .toast-progress { background: var(--red); }
+.toast-warning .toast-progress { background: var(--amber); }
+.toast-info    .toast-progress { background: var(--blue-light); }
+
+@keyframes toast-shrink {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}
+
+/* ===== SKELETON ===== */
 
 .skeleton {
   background: linear-gradient(90deg, var(--bg-2) 25%, var(--bg-3) 50%, var(--bg-2) 75%);
@@ -36,7 +105,7 @@
 }
 
 @keyframes shimmer {
-  0% { background-position: 200% 0; }
+  0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
 
@@ -48,4 +117,3 @@
   gap: 8px;
   align-items: center;
 }
-

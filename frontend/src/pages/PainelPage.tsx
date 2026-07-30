@@ -208,7 +208,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
     return (
       <>
         <PainelLogin onSuccess={(s) => { clearToast(); onSession(s); }} onBack={onBack} showToast={showToast} />
-        <Toast {...toast} />
+        <Toast {...toast} onClose={clearToast} />
       </>
     );
   }
@@ -530,7 +530,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
         )}
       </main>
 
-      <Toast {...toast} />
+      <Toast {...toast} onClose={clearToast} />
 
       {showUpdateRank && (
         <UpdateRankModal

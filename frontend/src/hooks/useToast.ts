@@ -1,21 +1,28 @@
 import { useState, useRef, useCallback } from 'react';
 
+export type ToastType = 'success' | 'error' | 'info' | 'warning';
+
 export interface ToastState {
   message: string;
-  type: string;
+  type: ToastType | '';
   visible: boolean;
+  id: number;
 }
 
-export function useToast() {
-  const [toast, setToast] = useState<ToastState>({ message: '', type: '', visible: false });
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+const DURATION = 5000;
 
-  const showToast = useCallback((message: string, type = '') => {
+export function useToast() {
+  const [toast, setToast] = useState<ToastState>({ message: '', type: '', visible: false, id: 0 });
+  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const idRef    = useRef(0);
+
+  const showToast = useCallback((message: string, type: string = '') => {
     clearTimeout(timerRef.current);
-    setToast({ message, type, visible: true });
+    idRef.current += 1;
+    setToast({ message, type: type as ToastType | '', visible: true, id: idRef.current });
     timerRef.current = setTimeout(
       () => setToast(t => ({ ...t, visible: false })),
-      3500
+      DURATION
     );
   }, []);
 

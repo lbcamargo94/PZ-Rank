@@ -57,7 +57,7 @@ function MainView() {
   const [showRegister,  setShowRegister] = useState(false);
   const [showRules,     setShowRules]    = useState(false);
   const [showSettings,  setShowSettings] = useState(false);
-  const { toast, showToast } = useToast();
+  const { toast, showToast, clearToast } = useToast();
 
   const fetchEntries = useCallback(async () => {
     setLoadingRank(true);
@@ -155,7 +155,7 @@ function MainView() {
         />
       </main>
 
-      <Toast {...toast} />
+      <Toast {...toast} onClose={clearToast} />
 
       {showRegister && (
         <PlayerRegisterModal
