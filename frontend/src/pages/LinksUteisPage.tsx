@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import linksBg from '../../assets/background/tela-de-links-uteis.webp';
 
 const DISCORD_URL     = 'https://discord.gg/ebhts347WJ';
 const COMPANION_URL   = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.8.0/PZ.Rank.Companion.Setup.1.8.0.exe';
@@ -6,7 +7,7 @@ const COMPANION_VER   = 'v1.8.0';
 
 export function LinksUteisPage() {
   return (
-    <main className="lu-page">
+    <main className="lu-page claim-page-wrap" style={{ backgroundImage: `url(${linksBg})` }}>
       <div className="container lu-container">
         <div className="lu-header">
           <Link to="/" className="back-link">

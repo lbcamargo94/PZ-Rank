@@ -1,7 +1,20 @@
 ﻿/* PZ Rank - Links uteis */
 
 .lu-page {
-  padding: 40px 0 24px;
+  padding: 40px 0 60px;
+  min-height: 100vh;
+}
+
+.lu-page.claim-page-wrap .lu-header .lu-title,
+.lu-page.claim-page-wrap .lu-header .lu-sub {
+  text-shadow: 0 1px 8px rgba(0,0,0,0.55);
+}
+
+.lu-page.claim-page-wrap .lu-card {
+  background: rgba(14,19,11,0.80);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-color: var(--border-mid);
 }
 
 .lu-container {
