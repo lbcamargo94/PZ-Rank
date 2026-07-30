@@ -6,7 +6,6 @@ import { useToast } from './hooks/useToast';
 import { Toast } from './components/Toast';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
-import { SeasonEndOverlay } from './components/SeasonEndOverlay';
 import { CommunityStats } from './components/CommunityStats';
 import { NewsInline }     from './components/NewsCard';
 import { AdBanner }      from './components/AdBanner';
@@ -73,7 +72,6 @@ function MainView() {
         onRules={() => setShowRules(true)}
         onSettings={() => setShowSettings(true)}
       />
-      <SeasonEndOverlay />
       <CommunityStats />
       <main>
         <div className="container">
