@@ -8,6 +8,10 @@
 
 .mods-page.claim-page-wrap {
   background-color: #080B06;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-position: center top;
 }
 
 .mods-page.claim-page-wrap .mods-header {
@@ -199,6 +203,55 @@
   font-family: var(--font-mono);
 }
 .mod-card-deps .ti { font-size: 14px; color: var(--text-3); }
+
+/* ── Paginação ── */
+.mods-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 20px 0 40px;
+}
+
+.mods-page-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  background: rgba(12,17,10,0.80);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  color: var(--text-2);
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.mods-page-btn:hover:not(:disabled) {
+  color: var(--text-1);
+  border-color: var(--green-border);
+  background: rgba(18,28,14,0.90);
+}
+
+.mods-page-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.mods-page-info {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-3);
+  min-width: 120px;
+  text-align: center;
+}
+
+.mods-page-info strong {
+  color: var(--text-1);
+  font-weight: 600;
+}
 
 @media (max-width: 460px) {
   .mods-filters-bar {
