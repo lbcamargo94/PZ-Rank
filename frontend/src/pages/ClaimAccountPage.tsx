@@ -99,6 +99,9 @@ export function ClaimAccountPage() {
     return (
       <div className="account-login-wrap claim-page-wrap" style={bgStyle}>
         <div className="account-login-card reg-card">
+          <Link to="/" className="reg-back-home">
+            <i className="ti ti-arrow-left" /> Página inicial
+          </Link>
           <div className="reg-header">
             <div className="reg-icon-wrap">
               <i className="ti ti-mail-check" />
@@ -150,6 +153,10 @@ export function ClaimAccountPage() {
   return (
     <div className="account-login-wrap claim-page-wrap" style={bgStyle}>
       <div className="account-login-card reg-card">
+
+        <Link to="/" className="reg-back-home">
+          <i className="ti ti-arrow-left" /> Página inicial
+        </Link>
 
         <div className="reg-header">
           <div className="reg-icon-wrap">

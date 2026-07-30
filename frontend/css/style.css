@@ -6241,7 +6241,7 @@ a.btn-ghost { text-decoration: none; }
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-color: var(--border-mid);
-  padding: 0;
+  padding: 36px 40px;
 }
 
 .account-login-card {
@@ -8247,7 +8247,6 @@ a.btn-ghost { text-decoration: none; }
 .reg-card {
   width: 100%;
   max-width: 440px;
-  padding: 36px 40px;
 }
 
 .reg-header {
@@ -8399,6 +8398,18 @@ a.btn-ghost { text-decoration: none; }
 
 .reg-back-link { text-align: center; margin-top: 12px; }
 
+.reg-back-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-3);
+  text-decoration: none;
+  margin-bottom: 20px;
+  transition: color 0.15s;
+}
+.reg-back-home:hover { color: var(--text-1); }
+
 @media (max-width: 460px) {
-  .reg-card { padding: 28px 24px; }
+  .claim-page-wrap .account-login-card { padding: 28px 20px; }
 }
