@@ -75,14 +75,18 @@ export function ClaimAccountPage() {
   const StepBar = () => (
     <div className="reg-steps">
       {steps.map((s, i) => (
-        <div key={i} className={`reg-step${i === currentStep ? ' active' : i < currentStep ? ' done' : ''}`}>
-          <div className="reg-step-dot">
-            {i < currentStep
-              ? <i className="ti ti-check" />
-              : <i className={`ti ${s.icon}`} />}
+        <div key={i} className="reg-step-outer">
+          <div className={`reg-step${i === currentStep ? ' active' : i < currentStep ? ' done' : ''}`}>
+            <div className="reg-step-dot">
+              {i < currentStep
+                ? <i className="ti ti-check" />
+                : <i className={`ti ${s.icon}`} />}
+            </div>
+            <span className="reg-step-label">{s.label}</span>
           </div>
-          <span className="reg-step-label">{s.label}</span>
-          {i < steps.length - 1 && <div className="reg-step-line" />}
+          {i < steps.length - 1 && (
+            <div className={`reg-step-line${i < currentStep ? ' done' : ''}`} />
+          )}
         </div>
       ))}
     </div>

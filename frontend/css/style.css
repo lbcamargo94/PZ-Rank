@@ -8291,15 +8291,21 @@ a.btn-ghost { text-decoration: none; }
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0;
-  margin-bottom: 28px;
+  margin-bottom: 40px;
 }
 
-.reg-step {
+/* outer: dot+label | linha */
+.reg-step-outer {
   display: flex;
   align-items: center;
-  gap: 0;
-  position: relative;
+}
+
+/* inner: dot acima, label abaixo */
+.reg-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
 }
 
 .reg-step-dot {
@@ -8318,10 +8324,6 @@ a.btn-ghost { text-decoration: none; }
 }
 
 .reg-step-label {
-  position: absolute;
-  top: 36px;
-  left: 50%;
-  transform: translateX(-50%);
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 1px;
@@ -8332,10 +8334,11 @@ a.btn-ghost { text-decoration: none; }
 }
 
 .reg-step-line {
-  width: 56px;
+  width: 52px;
   height: 2px;
   background: var(--border-mid);
   flex-shrink: 0;
+  margin-bottom: 16px; /* compensa a altura da label para alinhar ao centro do dot */
   transition: background 0.2s;
 }
 
@@ -8352,7 +8355,7 @@ a.btn-ghost { text-decoration: none; }
   color: #fff;
 }
 .reg-step.done .reg-step-label { color: var(--text-2); }
-.reg-step.done + .reg-step .reg-step-line { background: var(--green); }
+.reg-step-line.done { background: var(--green); }
 
 /* Field hint */
 .reg-field-hint {
