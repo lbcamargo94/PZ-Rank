@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import type { ToastState } from '../hooks/useToast';
 
 const ICONS: Record<string, string> = {
@@ -15,7 +16,7 @@ export function Toast({ message, type, visible, id, onClose }: ToastProps) {
   const variant = type || 'info';
   const icon    = ICONS[variant] ?? 'ti-info-circle';
 
-  return (
+  return createPortal(
     <div
       className={`toast-wrap toast-${variant}${visible ? ' is-visible' : ''}`}
       role="alert"
@@ -36,6 +37,7 @@ export function Toast({ message, type, visible, id, onClose }: ToastProps) {
       </div>
 
       {visible && <div className="toast-progress" key={id} />}
-    </div>
+    </div>,
+    document.body
   );
 }
