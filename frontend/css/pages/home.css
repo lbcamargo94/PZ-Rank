@@ -1,0 +1,132 @@
+/* PZ Rank - Home page layout */
+
+.home-grid {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 16px;
+  align-items: start;
+  margin: 20px 0 4px;
+}
+
+/* Remove a margem interna do news-inline dentro do grid */
+.home-aside-news .news-inline { margin: 0; }
+
+/* Aside publicitário: ocupa toda a altura do aside */
+.home-aside-ad {
+  display: flex;
+  flex-direction: column;
+}
+
+.home-aside-ad .ad-placeholder,
+.home-aside-ad .ad-banner-wrap {
+  flex: 1;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-radius: var(--radius-lg);
+}
+
+/* ── Acesso Rápido (carrossel) ─────────────────────────── */
+.home-quick-nav {
+  margin: 8px 0 28px;
+}
+
+.home-quick-nav-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-4);
+  margin: 0 0 12px;
+}
+
+.quick-nav-track {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-mid) transparent;
+}
+
+.quick-nav-track::-webkit-scrollbar         { height: 4px; }
+.quick-nav-track::-webkit-scrollbar-track   { background: transparent; }
+.quick-nav-track::-webkit-scrollbar-thumb   { background: var(--border-mid); border-radius: 2px; }
+
+.quick-nav-card {
+  flex-shrink: 0;
+  width: 130px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 18px 10px;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  color: var(--text-1);
+  scroll-snap-align: start;
+  transition: border-color 0.15s, background 0.15s;
+  text-align: center;
+}
+
+.quick-nav-card:hover {
+  background: var(--bg-2);
+  border-color: var(--border-mid);
+}
+
+.quick-nav-icon {
+  font-size: 24px;
+  line-height: 1;
+  color: var(--green);
+  transition: color 0.15s;
+}
+
+.quick-nav-card:hover .quick-nav-icon { color: var(--green-light); }
+
+.quick-nav-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-1);
+  line-height: 1.2;
+}
+
+.quick-nav-sub {
+  font-size: 12px;
+  color: var(--text-4);
+  line-height: 1.3;
+}
+
+@media (max-width: 860px) {
+  .home-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Arquivo Histórico (lore PZ no jornal inline) ───────── */
+.news-inline-lore {
+  padding: 10px 20px 14px;
+  border-top: 1px solid var(--border);
+}
+
+.news-inline-lore-source {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-4);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.news-inline-lore-text {
+  font-size: 14px;
+  color: var(--text-3);
+  font-style: italic;
+  margin: 5px 0 0;
+  line-height: 1.5;
+}

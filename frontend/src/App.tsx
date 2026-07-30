@@ -32,6 +32,17 @@ import { MapPage }                from './pages/MapPage';
 import { LinksUteisPage }         from './pages/LinksUteisPage';
 import { RankPage }               from './pages/RankPage';
 
+const QUICK_NAV = [
+  { to: '/rank',          icon: 'ti-trophy',           label: 'Ranking',         sub: 'Classificação geral'   },
+  { to: '/wiki',          icon: 'ti-book',             label: 'Wiki de Caça',    sub: 'Guia de caçadas'       },
+  { to: '/mods',          icon: 'ti-puzzle',           label: 'Mods Permitidos', sub: 'Lista oficial'         },
+  { to: '/dicas',         icon: 'ti-bulb',             label: 'Dicas',           sub: 'Guia de sobrevivência' },
+  { to: '/lendas',        icon: 'ti-medal',            label: 'Lendas',          sub: 'Hall da fama'          },
+  { to: '/links',         icon: 'ti-link',             label: 'Links Úteis',     sub: 'Recursos do campeonato'},
+  { to: '/mapa',          icon: 'ti-map',              label: 'Mapa',            sub: 'Knox County'           },
+  { to: '/transparencia', icon: 'ti-file-certificate', label: 'Transparência',   sub: 'Dados do servidor'     },
+] as const;
+
 function MainView() {
   const navigate = useNavigate();
   const [showRules,    setShowRules]   = useState(false);
@@ -48,19 +59,30 @@ function MainView() {
       <SeasonEndOverlay />
       <CommunityStats />
       <main>
-
         <div className="container">
-          <NewsInline />
-        </div>
 
-        <div className="container ad-banner-container">
-          <AdBanner />
-        </div>
+          <div className="home-grid">
+            <aside className="home-aside-news">
+              <NewsInline />
+            </aside>
+            <aside className="home-aside-ad">
+              <AdBanner />
+            </aside>
+          </div>
 
-        <div className="container home-rank-cta">
-          <Link to="/rank" className="btn-primary btn-lg">
-            <i className="ti ti-trophy" aria-hidden="true" /> Ver Ranking
-          </Link>
+          <section className="home-quick-nav" aria-label="Acesso rápido">
+            <p className="home-quick-nav-title">Acesso Rápido</p>
+            <div className="quick-nav-track">
+              {QUICK_NAV.map(item => (
+                <Link key={item.to} to={item.to} className="quick-nav-card">
+                  <i className={`ti ${item.icon} quick-nav-icon`} aria-hidden="true" />
+                  <span className="quick-nav-label">{item.label}</span>
+                  <span className="quick-nav-sub">{item.sub}</span>
+                </Link>
+              ))}
+            </div>
+          </section>
+
         </div>
       </main>
 
