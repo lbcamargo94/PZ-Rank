@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import pzrankLogo from '../../assets/logo/pzrank-logo.png';
 
 interface HeaderProps {
   onPainel:   () => void;
@@ -23,9 +24,8 @@ export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
   return (
     <header className="site-header">
       <div className="container header-inner">
-        <Link to="/" className="header-brand" aria-label="Página inicial" onClick={close}>
-          <span className="game-label">Project Zomboid</span>
-          <h1 className="site-title">Ranking de Sobrevivência</h1>
+        <Link to="/" className="header-brand" aria-label="PZ Rank — Página inicial" onClick={close}>
+          <img src={pzrankLogo} alt="PZ Rank" className="header-logo" />
           <div className="site-sub-row">
             <p className="site-sub">Desafio BRASILEIRÃO PZ</p>
             <span className="season-chip">Temporada 1</span>
