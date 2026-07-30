@@ -144,7 +144,7 @@ export function RankPage() {
 
       <main>
         <div className="container rank-page-top">
-          <button className="rank-back-btn" onClick={() => navigate(-1)} type="button">
+          <button className="btn-ghost btn-sm" onClick={() => navigate(-1)} type="button">
             <i className="ti ti-arrow-left" /> Voltar
           </button>
           <div className="rank-search-wrap">
