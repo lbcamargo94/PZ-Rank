@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiClaimAccount, apiConfirmClaimOtp, apiResendClaimOtp } from '../lib/api';
 import { OtpInput } from '../components/OtpInput';
+import cadastroBg from '../../assets/background/cadastro-bg.jpg';
 
 export function ClaimAccountPage() {
   const navigate = useNavigate();
@@ -61,9 +62,11 @@ export function ClaimAccountPage() {
     }
   }
 
+  const bgStyle = { backgroundImage: `url(${cadastroBg})` };
+
   if (step === 'otp') {
     return (
-      <div className="account-login-wrap">
+      <div className="account-login-wrap claim-page-wrap" style={bgStyle}>
         <div className="account-login-card">
           <h1 className="account-login-title">Confirme seu email</h1>
           <p className="account-login-sub">
@@ -95,7 +98,7 @@ export function ClaimAccountPage() {
   }
 
   return (
-    <div className="account-login-wrap">
+    <div className="account-login-wrap claim-page-wrap" style={bgStyle}>
       <div className="account-login-card">
         <h1 className="account-login-title">Vincular conta</h1>
         <p className="account-login-sub">

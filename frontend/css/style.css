@@ -6213,6 +6213,18 @@ a.btn-ghost { text-decoration: none; }
   background: var(--bg-0);
 }
 
+.claim-page-wrap {
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+.claim-page-wrap .account-login-card {
+  background: rgba(18,23,16,0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-color: var(--border-mid);
+}
+
 .account-login-card {
   background: var(--bg-2);
   border: 1px solid var(--border-mid);
