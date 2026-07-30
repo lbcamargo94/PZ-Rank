@@ -5,9 +5,13 @@
   min-height: 100vh;
 }
 
-.lu-page.claim-page-wrap .lu-header .lu-title,
-.lu-page.claim-page-wrap .lu-header .lu-sub {
+.lu-page.claim-page-wrap .lu-header .lu-title {
   text-shadow: 0 1px 8px rgba(0,0,0,0.55);
+}
+
+.lu-page.claim-page-wrap .lu-header .lu-sub {
+  color: var(--text-1);
+  text-shadow: 0 1px 6px rgba(0,0,0,0.6);
 }
 
 .lu-page.claim-page-wrap .lu-card {
