@@ -419,8 +419,13 @@ export function PlayerPage() {
 
         {/* Player header */}
         <div className="pp-header">
-          <div className="pp-avatar-wrap">
+          <div className={`pp-avatar-wrap${profile.player.gender ? ` pp-avatar-wrap--${profile.player.gender}` : ''}`}>
             <img src={avatarDefault} alt="Avatar" className="pp-avatar-img" />
+            {profile.player.gender && (
+              <span className={`pp-avatar-gender-badge pp-avatar-gender-badge--${profile.player.gender}`}>
+                <i className={`ti ${profile.player.gender === 'm' ? 'ti-man' : 'ti-woman'}`} />
+              </span>
+            )}
           </div>
           <div className="pp-header-info">
             <h1 className="pp-nick">{profile.player.nick}</h1>

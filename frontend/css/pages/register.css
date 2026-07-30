@@ -166,6 +166,105 @@
 }
 .reg-back-home:hover { color: var(--text-1); }
 
+/* ── Gender / Aparência picker ───────────────────────── */
+.reg-gender-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.reg-gender-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-family: var(--font-mono);
+  color: var(--text-2);
+  letter-spacing: 0.2px;
+}
+
+.reg-gender-optional {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-4);
+  background: var(--bg-3);
+  border: 1px solid var(--border-mid);
+  padding: 1px 7px;
+  border-radius: 99px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-left: auto;
+}
+
+.reg-gender-hint {
+  font-size: 12px;
+  color: var(--text-4);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.reg-gender-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.reg-gender-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 10px;
+  background: var(--bg-1);
+  border: 2px solid var(--border-mid);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  color: var(--text-3);
+  font-family: var(--font-body);
+}
+
+.reg-gender-option:hover {
+  border-color: var(--border-focus);
+  background: var(--bg-2);
+  color: var(--text-2);
+}
+
+.reg-gender-option.is-selected {
+  border-color: var(--green);
+  background: var(--green-dim);
+  color: var(--green-light);
+}
+
+.reg-gender-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  background: var(--bg-3);
+  border: 1px solid var(--border-mid);
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.reg-gender-option.is-selected .reg-gender-icon {
+  background: rgba(94,144,64,0.18);
+  border-color: var(--green-border);
+}
+
+.reg-gender-option-label {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
 @media (max-width: 460px) {
   .claim-page-wrap .account-login-card { padding: 28px 20px; }
 }

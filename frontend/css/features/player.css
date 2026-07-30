@@ -596,13 +596,47 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
 }
+.pp-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+  display: inline-flex;
+}
+
 .pp-avatar-img {
   width: 80px;
   height: 80px;
   border-radius: 12px;
   object-fit: cover;
-  border: 1px solid var(--border-mid);
-  flex-shrink: 0;
+  border: 2px solid var(--border-mid);
+  display: block;
+}
+
+.pp-avatar-wrap--m .pp-avatar-img { border-color: var(--green-border); }
+.pp-avatar-wrap--f .pp-avatar-img { border-color: var(--amber-border, var(--amber)); }
+
+.pp-avatar-gender-badge {
+  position: absolute;
+  bottom: -6px;
+  right: -6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  border: 2px solid var(--bg-2);
+  line-height: 1;
+}
+
+.pp-avatar-gender-badge--m {
+  background: var(--green-dim);
+  color: var(--green-light);
+}
+
+.pp-avatar-gender-badge--f {
+  background: rgba(200,120,32,0.18);
+  color: var(--amber-light, var(--amber));
 }
 .pp-nick {
   font-family: var(--font-display);

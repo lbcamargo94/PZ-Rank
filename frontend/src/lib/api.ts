@@ -92,8 +92,8 @@ export function apiForgotPassword(email: string): Promise<{ message: string }> {
   return request('/auth/player/forgot-password', { method: 'POST', ...json(null, { email }) });
 }
 
-export function apiClaimAccount(nick: string, email: string): Promise<{ otp_pending: boolean; email: string; message: string }> {
-  return request('/auth/player/claim', { method: 'POST', ...json(null, { nick, email }) });
+export function apiClaimAccount(nick: string, email: string, gender: 'm' | 'f'): Promise<{ otp_pending: boolean; email: string; message: string }> {
+  return request('/auth/player/claim', { method: 'POST', ...json(null, { nick, email, gender }) });
 }
 
 export function apiConfirmClaimOtp(email: string, code: string): Promise<{ message: string; activate_token: string }> {

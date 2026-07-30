@@ -28,7 +28,7 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
   const [playerRes, entriesRes] = await Promise.all([
     supabase
       .from('players')
-      .select('id, nick, twitch_url, youtube_url, kick_url, tiktok_url')
+      .select('id, nick, twitch_url, youtube_url, kick_url, tiktok_url, gender')
       .eq('id', id)
       .single(),
     supabase

@@ -383,7 +383,7 @@ router.post('/otp/resend-registration', async (req: Request, res: Response): Pro
 
 // POST /auth/player/claim — jogador legado (sem email/senha) vincula email + senha sem OTP
 router.post('/claim', async (req: Request, res: Response): Promise<void> => {
-  const { nick, email } = req.body as { nick?: string; email?: string };
+  const { nick, email, gender } = req.body as { nick?: string; email?: string; gender?: string };
 
   const GENERIC = { message: 'Se o nick existir sem conta configurada, seu cadastro foi recebido.' };
 
@@ -429,6 +429,7 @@ router.post('/claim', async (req: Request, res: Response): Promise<void> => {
   const { error: claimUpdateErr } = await supabase.from('players').update({
     email:  newEmail,
     status: 'pending',
+    gender: gender === 'm' || gender === 'f' ? gender : null,
   }).eq('id', row.id);
 
   if (claimUpdateErr) {

@@ -12,6 +12,7 @@ export function ClaimAccountPage() {
 
   const [nick,       setNick]       = useState('');
   const [email,      setEmail]      = useState('');
+  const [gender,     setGender]     = useState<'m' | 'f' | null>(null);
   const [loading,    setLoading]    = useState(false);
   const [step,       setStep]       = useState<'form' | 'otp'>('form');
   const [claimEmail, setClaimEmail] = useState('');
@@ -20,10 +21,10 @@ export function ClaimAccountPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!nick.trim() || !email.trim()) return;
+    if (!nick.trim() || !email.trim() || !gender) return;
     setLoading(true);
     try {
-      const res = await apiClaimAccount(nick.trim(), email.trim());
+      const res = await apiClaimAccount(nick.trim(), email.trim(), gender);
       if (res.otp_pending) {
         setClaimEmail(res.email);
         setStep('otp');
@@ -201,10 +202,42 @@ export function ClaimAccountPage() {
             </span>
           </div>
 
+          <div className="reg-gender-picker">
+            <div className="reg-gender-label">
+              <i className="ti ti-shirt" />
+              <span>Aparência do personagem</span>
+            </div>
+            <p className="reg-gender-hint">
+              Escolha a aparência do seu personagem para exibição no perfil público.
+            </p>
+            <div className="reg-gender-options">
+              <button
+                type="button"
+                className={`reg-gender-option${gender === 'm' ? ' is-selected' : ''}`}
+                onClick={() => setGender(g => g === 'm' ? null : 'm')}
+              >
+                <span className="reg-gender-icon reg-gender-icon--m">
+                  <i className="ti ti-man" />
+                </span>
+                <span className="reg-gender-option-label">Masculino</span>
+              </button>
+              <button
+                type="button"
+                className={`reg-gender-option${gender === 'f' ? ' is-selected' : ''}`}
+                onClick={() => setGender(g => g === 'f' ? null : 'f')}
+              >
+                <span className="reg-gender-icon reg-gender-icon--f">
+                  <i className="ti ti-woman" />
+                </span>
+                <span className="reg-gender-option-label">Feminino</span>
+              </button>
+            </div>
+          </div>
+
           <button
             type="submit"
             className="btn-primary reg-submit"
-            disabled={loading || !nick.trim() || !email.trim()}
+            disabled={loading || !nick.trim() || !email.trim() || !gender}
           >
             {loading
               ? <><i className="ti ti-loader-2" /> Enviando...</>

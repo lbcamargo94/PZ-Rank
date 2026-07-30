@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS players (
   is_supporter       INTEGER  NOT NULL DEFAULT 0,
   supporter_until    TEXT     DEFAULT NULL,
   deleted_at         TEXT     DEFAULT NULL,
+  gender             TEXT     DEFAULT NULL CHECK (gender IN ('m', 'f')),
   player_token       TEXT     NOT NULL DEFAULT (lower(hex(randomblob(16)))),
   created_at         TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
 );

@@ -44,7 +44,7 @@ const UUID_DEFAULTS: Record<string, string[]> = {
 const ALLOWED_TABLES = new Set(['players', 'moderators', 'entries', 'mods', 'mod_dependencies', 'player_tokens', 'seasons', 'hall_of_fame', 'daily_news', 'season_finances', 'achievements', 'player_achievements', 'heatmap_events']);
 
 const ALLOWED_COLS: Record<string, Set<string>> = {
-  players:          new Set(['id','nick','email','password_hash','email_verified_at','twitch_url','youtube_url','kick_url','tiktok_url','status','blocked','is_supporter','supporter_until','player_token','created_at','deleted_at']),
+  players:          new Set(['id','nick','email','password_hash','email_verified_at','twitch_url','youtube_url','kick_url','tiktok_url','status','blocked','is_supporter','supporter_until','player_token','created_at','deleted_at','gender']),
   moderators:       new Set(['id','login','role','password_hash','created_at']),
   entries:          new Set(['id','player_id','moderator_id','name','character_name','profession','days','time_raw','time_str','kills','skills','live_url','is_alive','sandbox_ok','traits','objectives','score','created_at','updated_at','sandbox_config','sandbox_config_updated_at','disqualified_at','disqualification_reason','flagged_reason','flagged_at','deleted_at','season_id','animals_killed','fish_caught','crops_harvested','items_crafted','houses_looted','hours_without_sleep']),
   mods:             new Set(['id','name','mod_id','workshop_url','status','is_required','image_url','created_at','updated_at']),
@@ -381,6 +381,11 @@ function runMigrations(db: Database): void {
   if (!entryCols.includes('flagged_at')) {
     db.exec('ALTER TABLE entries ADD COLUMN flagged_at TEXT DEFAULT NULL');
     console.log('[SQLite] migração: coluna flagged_at adicionada em entries');
+  }
+
+  if (!playerCols.includes('gender')) {
+    db.exec("ALTER TABLE players ADD COLUMN gender TEXT DEFAULT NULL CHECK (gender IN ('m', 'f'))");
+    console.log('[SQLite] migração: coluna gender adicionada em players');
   }
 
   // PZRX3 extended stats

@@ -70,6 +70,7 @@ export interface Player {
   youtube_url:        string | null;
   kick_url:           string | null;
   tiktok_url:         string | null;
+  gender?:            'm' | 'f' | null;
   status:             PlayerStatus;
   blocked:            boolean;
   is_supporter:       boolean;
@@ -112,7 +113,7 @@ export interface Mod {
 }
 
 export interface PlayerProfile {
-  player: Pick<Player, 'id' | 'nick' | 'twitch_url' | 'youtube_url' | 'kick_url' | 'tiktok_url'>;
+  player: Pick<Player, 'id' | 'nick' | 'twitch_url' | 'youtube_url' | 'kick_url' | 'tiktok_url' | 'gender'>;
   entries: Entry[];
 }
 
@@ -210,6 +211,7 @@ export interface PlayerAccount {
   youtube_url:        string | null;
   kick_url:           string | null;
   tiktok_url:         string | null;
+  gender?:            'm' | 'f' | null;
   status:             PlayerStatus;
   created_at:         string;
 }
