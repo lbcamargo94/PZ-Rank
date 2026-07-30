@@ -36,26 +36,24 @@ export function AdBanner() {
 
   if (supporter) return null;
 
-  if (!CLIENT || !SLOT) {
-    return (
-      <div className="ad-placeholder">
-        <i className="ti ti-ad" />
-        <span>Espaço Publicitário — Apoie o campeonato</span>
-        <a href="/transparencia" className="ad-placeholder-link">Ver transparência</a>
-      </div>
-    );
-  }
-
   return (
-    <div className="ad-banner-wrap">
-      <ins
-        className="adsbygoogle"
-        style={{ display: 'block' }}
-        data-ad-client={CLIENT}
-        data-ad-slot={SLOT}
-        data-ad-format="auto"
-        data-full-width-responsive="true"
-      />
+    <div className="ad-placeholder">
+      {CLIENT && SLOT ? (
+        <ins
+          className="adsbygoogle"
+          style={{ display: 'block', width: '100%' }}
+          data-ad-client={CLIENT}
+          data-ad-slot={SLOT}
+          data-ad-format="auto"
+          data-full-width-responsive="true"
+        />
+      ) : (
+        <>
+          <i className="ti ti-ad" />
+          <span>Espaço Publicitário — Apoie o campeonato</span>
+          <a href="/transparencia" className="ad-placeholder-link">Ver transparência</a>
+        </>
+      )}
     </div>
   );
 }
