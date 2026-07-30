@@ -6241,6 +6241,7 @@ a.btn-ghost { text-decoration: none; }
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-color: var(--border-mid);
+  padding: 0;
 }
 
 .account-login-card {
@@ -8246,39 +8247,40 @@ a.btn-ghost { text-decoration: none; }
 .reg-card {
   width: 100%;
   max-width: 420px;
+  padding: 28px 32px;
 }
 
 .reg-header {
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .reg-icon-wrap {
-  width: 56px;
-  height: 56px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: var(--green-dim);
   border: 1px solid var(--green-border);
   color: var(--green-light);
-  font-size: 24px;
+  font-size: 20px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .reg-title {
   font-family: var(--font-display);
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 700;
   color: var(--text-1);
   margin-bottom: 6px;
 }
 
 .reg-sub {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text-3);
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 .reg-email-highlight {
@@ -8286,42 +8288,50 @@ a.btn-ghost { text-decoration: none; }
   font-weight: 600;
 }
 
-/* Steps */
+/* ── Stepper ─────────────────────────────────────── */
 .reg-steps {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 40px;
+  align-items: flex-start;
+  margin-bottom: 20px;
 }
 
-/* outer: dot+label | linha */
-.reg-step-outer {
-  display: flex;
-  align-items: center;
-}
-
-/* inner: dot acima, label abaixo */
-.reg-step {
+.reg-step-item {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
+}
+
+.reg-step-track {
+  display: flex;
+  align-items: center;
+  width: 100%;
 }
 
 .reg-step-dot {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   border: 2px solid var(--border-mid);
   background: var(--bg-3);
   color: var(--text-4);
-  font-size: 14px;
+  font-size: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   transition: border-color 0.2s, background 0.2s, color 0.2s;
 }
+
+.reg-step-half {
+  flex: 1;
+  height: 2px;
+  background: var(--border-mid);
+  transition: background 0.2s;
+}
+.reg-step-half.invisible { background: transparent; }
+.reg-step-half.done      { background: var(--green); }
 
 .reg-step-label {
   font-family: var(--font-mono);
@@ -8333,36 +8343,17 @@ a.btn-ghost { text-decoration: none; }
   transition: color 0.2s;
 }
 
-.reg-step-line {
-  width: 52px;
-  height: 2px;
-  background: var(--border-mid);
-  flex-shrink: 0;
-  margin-bottom: 16px; /* compensa a altura da label para alinhar ao centro do dot */
-  transition: background 0.2s;
-}
-
-.reg-step.active .reg-step-dot {
-  border-color: var(--green);
-  background: var(--green-dim);
-  color: var(--green-light);
-}
-.reg-step.active .reg-step-label { color: var(--green-light); }
-
-.reg-step.done .reg-step-dot {
-  border-color: var(--green);
-  background: var(--green);
-  color: #fff;
-}
-.reg-step.done .reg-step-label { color: var(--text-2); }
-.reg-step-line.done { background: var(--green); }
+.reg-step-item.is-active .reg-step-dot  { border-color: var(--green); background: var(--green-dim); color: var(--green-light); }
+.reg-step-item.is-active .reg-step-label { color: var(--green-light); }
+.reg-step-item.is-done   .reg-step-dot  { border-color: var(--green); background: var(--green); color: #fff; }
+.reg-step-item.is-done   .reg-step-label { color: var(--text-2); }
 
 /* Field hint */
 .reg-field-hint {
   display: block;
   font-size: 12px;
   color: var(--text-4);
-  margin-top: 5px;
+  margin-top: 4px;
   line-height: 1.4;
 }
 
@@ -8370,8 +8361,8 @@ a.btn-ghost { text-decoration: none; }
 .reg-submit {
   width: 100%;
   justify-content: center;
-  padding: 12px;
-  font-size: 15px;
+  padding: 11px;
+  font-size: 14px;
   margin-top: 4px;
 }
 
@@ -8381,15 +8372,12 @@ a.btn-ghost { text-decoration: none; }
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin-top: 20px;
-  padding-top: 20px;
+  margin-top: 16px;
+  padding-top: 16px;
   border-top: 1px solid var(--border);
 }
 
-.reg-footer-text {
-  font-size: 14px;
-  color: var(--text-3);
-}
+.reg-footer-text { font-size: 13px; color: var(--text-3); }
 
 .reg-footer-link {
   font-family: var(--font-mono);
@@ -8403,7 +8391,4 @@ a.btn-ghost { text-decoration: none; }
 }
 .reg-footer-link:hover { opacity: 0.8; }
 
-.reg-back-link {
-  text-align: center;
-  margin-top: 12px;
-}
+.reg-back-link { text-align: center; margin-top: 10px; }
