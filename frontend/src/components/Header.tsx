@@ -26,11 +26,6 @@ export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
       <div className="container header-inner">
         <Link to="/" className="header-brand" aria-label="PZ Rank — Página inicial" onClick={close}>
           <img src={pzrankLogo} alt="PZ Rank" className="header-logo" />
-          <div className="site-sub-row">
-            <p className="site-sub">Desafio BRASILEIRÃO PZ</p>
-            <span className="season-chip">Temporada 1</span>
-          </div>
-          <p className="site-tagline">Sobreviva. Evolua. Supere.</p>
         </Link>
 
         <button
