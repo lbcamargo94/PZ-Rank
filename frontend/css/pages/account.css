@@ -12,7 +12,7 @@
 
 .claim-page-wrap {
   background-color: #080B06;
-  background-size: contain;
+  background-size: cover;
   background-position: center center;
   background-attachment: fixed;
   background-repeat: no-repeat;
