@@ -46,8 +46,8 @@ function MainView() {
         onSettings={() => setShowSettings(true)}
       />
       <SeasonEndOverlay />
+      <CommunityStats />
       <main>
-        <CommunityStats />
 
         <div className="container news-trigger-row">
           <NewsButton />

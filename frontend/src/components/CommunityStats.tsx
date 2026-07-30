@@ -17,11 +17,7 @@ export function CommunityStats() {
   if (!stats) return null;
 
   return (
-    <div className="community-stats container">
-      <div className="cs-header">
-        <i className="ti ti-chart-bar cs-header-icon" />
-        <span className="cs-title">Temporada 1 — Totais Acumulados</span>
-      </div>
+    <div className="community-stats">
       <div className="cs-grid">
         <div className="cs-item cs-item--kills">
           <i className="ti ti-sword" />
