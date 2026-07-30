@@ -383,6 +383,15 @@ function runMigrations(db: Database): void {
     console.log('[SQLite] migração: coluna flagged_at adicionada em entries');
   }
 
+  // PZRX3 extended stats
+  const pzrx3Cols = ['animals_killed', 'fish_caught', 'crops_harvested', 'items_crafted', 'houses_looted', 'hours_without_sleep'] as const;
+  for (const col of pzrx3Cols) {
+    if (!entryCols.includes(col)) {
+      db.exec(`ALTER TABLE entries ADD COLUMN ${col} INTEGER DEFAULT NULL`);
+      console.log(`[SQLite] migração: coluna ${col} adicionada em entries`);
+    }
+  }
+
   const hasSeasons = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='seasons'").get();
   if (!hasSeasons) {
     db.exec(`CREATE TABLE seasons (
@@ -495,6 +504,22 @@ function runMigrations(db: Database): void {
     `);
     console.log('[SQLite] migração: player_tokens recriado com suporte aos tipos activate e otp');
   }
+}
+
+/**
+ * Abre o local.db, aplica o schema e todas as migrations, e retorna a instância
+ * raw do BetterSqlite3. Usado pelo seed script para inicializar o banco sem
+ * precisar subir o servidor Express.
+ */
+export function openLocalDb(): Database {
+  const dbPath     = path.join(process.cwd(), 'local.db');
+  const schemaPath = path.join(__dirname, 'sqlite-schema.sql');
+  const db = new BetterSqlite3(dbPath);
+  db.pragma('journal_mode = WAL');
+  db.pragma('foreign_keys = ON');
+  db.exec(fs.readFileSync(schemaPath, 'utf-8'));
+  runMigrations(db);
+  return db;
 }
 
 export function createSQLiteClient() {

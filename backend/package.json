@@ -9,7 +9,8 @@
     "postbuild": "node -e \"const fs=require('fs');fs.mkdirSync('dist/db',{recursive:true});fs.copyFileSync('src/db/sqlite-schema.sql','dist/db/sqlite-schema.sql');console.log('postbuild: sqlite-schema.sql copiado')\"",
     "start": "node dist/index.js",
     "start:local": "node --env-file=.env.local dist/index.js",
-    "test": "vitest run"
+    "test": "vitest run",
+    "seed": "tsx --env-file=.env.local src/db/seed.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",
