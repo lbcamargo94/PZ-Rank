@@ -9,6 +9,12 @@
   align-items: stretch;
 }
 
+/* Ambos os itens: alinhamento explícito ao topo e mesma altura */
+.home-top-row .news-inline,
+.home-top-row .home-ad-wrap {
+  align-self: stretch;
+}
+
 /* Jornal: flex column para propagar altura ao body-grid */
 .home-top-row .news-inline {
   margin: 0;
@@ -20,16 +26,16 @@
   flex: 1;
 }
 
-/* Ad: height: 100% garante que preenche toda a célula do grid */
+/* Ad: flex column para o placeholder preencher a célula */
 .home-top-row .home-ad-wrap {
   display: flex;
   flex-direction: column;
-  height: 100%;
 }
 
 @media (max-width: 860px) {
   .home-top-row { grid-template-columns: 1fr; }
-  .home-top-row .home-ad-wrap { height: auto; }
+  .home-top-row .news-inline,
+  .home-top-row .home-ad-wrap { align-self: auto; }
 }
 
 /* ── Embla base ────────────────────────────────────────────── */
