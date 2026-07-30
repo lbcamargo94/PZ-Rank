@@ -49,14 +49,14 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 10px 16px;
-  background: var(--bg-1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  padding: 12px 16px;
+  background: rgba(8,12,6,0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   transition: background 0.15s;
 }
 
-.cs-item:hover { background: var(--bg-2); }
+.cs-item:hover { background: rgba(14,20,10,0.95); }
 
 .cs-item .ti {
   font-size: 18px;
@@ -96,7 +96,7 @@
 
 .cs-value {
   font-family: var(--font-display);
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
   color: var(--text-1);
   line-height: 1;
@@ -106,7 +106,7 @@
 
 .cs-desc {
   font-size: 16px;
-  color: var(--text-3);
+  color: var(--text-2);
   white-space: nowrap;
 }
 
