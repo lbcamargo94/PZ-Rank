@@ -5,7 +5,6 @@ import type { Entry, SortKey, RankTab, ModSession } from './types';
 import { useToast } from './hooks/useToast';
 import { Toast } from './components/Toast';
 import { Header } from './components/Header';
-import { DownloadBanner } from './components/DownloadBanner';
 import { SeasonEndOverlay } from './components/SeasonEndOverlay';
 import { CommunityStats } from './components/CommunityStats';
 import { NewsButton }     from './components/NewsCard';
@@ -31,6 +30,7 @@ import { ResendVerificationPage } from './pages/ResendVerificationPage';
 import { LegendsPage }            from './pages/LegendsPage';
 import { TransparenciaPage }      from './pages/TransparenciaPage';
 import { MapPage }                from './pages/MapPage';
+import { LinksUteisPage }         from './pages/LinksUteisPage';
 
 const TAB_CONFIG: { key: RankTab; label: string; icon: string }[] = [
   { key: 'rank',          label: 'Rank',             icon: 'ti-heartbeat' },
@@ -117,7 +117,6 @@ function MainView() {
         onSettings={() => setShowSettings(true)}
       />
       <SeasonEndOverlay />
-      <DownloadBanner />
       <main>
         <CommunityStats />
 
@@ -207,6 +206,7 @@ export default function App() {
       <Route path="/lendas"           element={<LegendsPage />} />
       <Route path="/transparencia"    element={<TransparenciaPage />} />
       <Route path="/mapa"             element={<MapPage />} />
+      <Route path="/links"            element={<LinksUteisPage />} />
       <Route path="/painel" element={
         <PainelPage
           session={modSession}

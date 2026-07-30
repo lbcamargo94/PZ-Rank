@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import pzrankLogo from '../../assets/logo/pzrank-logo.png';
 
+const COMPANION_URL = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.7.3/PZ.Rank.Companion.Setup.1.7.3.exe';
+
 interface HeaderProps {
   onPainel:   () => void;
   onRules:    () => void;
@@ -32,6 +34,11 @@ export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
 
         <div className="header-right">
           <div className="header-auth">
+            <a href={COMPANION_URL} className="btn-header btn-header-companion" download title="Baixar PZ Rank Companion">
+              <i className="ti ti-download" aria-hidden="true" />
+              <span className="btn-header-companion-text">Companion</span>
+            </a>
+
             {playerSession ? (
               <Link to="/minha-conta" className="btn-header btn-header-account" onClick={close}>
                 <i className="ti ti-user-filled" aria-hidden="true" />
@@ -67,6 +74,9 @@ export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
           </button>
           <Link to="/wiki" className="nav-item" onClick={close}>
             <i className="ti ti-book-2" aria-hidden="true" /> Wiki
+          </Link>
+          <Link to="/links" className="nav-item" onClick={close}>
+            <i className="ti ti-link" aria-hidden="true" /> Links Úteis
           </Link>
           <Link to="/mods" className="nav-item" onClick={close}>
             <i className="ti ti-puzzle" aria-hidden="true" /> Mods
