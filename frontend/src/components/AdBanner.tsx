@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import adImg from '../../assets/background/espaco-publicidade.webp';
 
 const CLIENT = (import.meta.env.VITE_ADSENSE_CLIENT as string) ?? '';
 const SLOT   = (import.meta.env.VITE_ADSENSE_SLOT   as string) ?? '';
@@ -48,11 +50,14 @@ export function AdBanner() {
           data-full-width-responsive="true"
         />
       ) : (
-        <>
-          <i className="ti ti-ad" />
-          <span>Espaço Publicitário — Apoie o campeonato</span>
-          <a href="/transparencia" className="ad-placeholder-link">Ver transparência</a>
-        </>
+        <Link to="/transparencia" className="ad-placeholder-img-link" title="Anuncie no Brasileirão PZ">
+          <img
+            src={adImg}
+            alt="Anuncie aqui — Apoie o Brasileirão PZ"
+            className="ad-placeholder-img"
+            loading="lazy"
+          />
+        </Link>
       )}
     </div>
   );

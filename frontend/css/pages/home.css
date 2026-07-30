@@ -294,6 +294,35 @@
 }
 
 .home-ad-wrap .ad-placeholder .ti { font-size: 28px; color: var(--text-3); }
+
+/* Imagem customizada ocupa todo o placeholder sem padding */
+.home-ad-wrap .ad-placeholder:has(.ad-placeholder-img) {
+  padding: 0;
+  gap: 0;
+  background: transparent;
+  border: none;
+}
+
+.ad-placeholder-img-link {
+  display: flex;
+  flex: 1;
+  width: 100%;
+  min-height: 300px;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-mid);
+}
+
+.ad-placeholder-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  transition: opacity 0.2s;
+}
+
+.ad-placeholder-img-link:hover .ad-placeholder-img { opacity: 0.88; }
 .home-ad-wrap .ad-placeholder-link {
   color: var(--text-3);
   text-decoration: underline;
