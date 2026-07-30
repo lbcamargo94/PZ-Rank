@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { apiVerifyEmail } from '../lib/api';
+import loginBg from '../../assets/background/tela-de-login.webp';
 
 type Status = 'loading' | 'success' | 'error';
 
@@ -29,37 +30,41 @@ export function VerifyEmailPage() {
       });
   }, [searchParams]);
 
+  const bgStyle = { backgroundImage: `url(${loginBg})` };
+
   return (
-    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-      <div style={{ maxWidth: 480, width: '100%', textAlign: 'center' }}>
+    <div className="account-login-wrap claim-page-wrap" style={bgStyle}>
+      <div className="account-login-card reg-card">
+
         {status === 'loading' && (
-          <>
-            <i className="ti ti-loader-2" style={{ fontSize: 48, color: 'var(--green)', animation: 'spin 1s linear infinite' }} />
-            <p style={{ marginTop: 16, color: 'var(--text-2)' }}>Verificando email...</p>
-          </>
+          <div className="reg-success-card">
+            <i className="ti ti-loader-2 reg-success-icon" style={{ animation: 'spin 1s linear infinite' }} />
+            <p className="reg-sub">Verificando email...</p>
+          </div>
         )}
 
         {status === 'success' && (
-          <>
-            <i className="ti ti-circle-check" style={{ fontSize: 56, color: 'var(--green)' }} />
-            <h1 style={{ fontSize: 24, margin: '16px 0 8px', color: 'var(--text-1)' }}>Email verificado!</h1>
-            <p style={{ color: 'var(--text-2)', marginBottom: 24, lineHeight: 1.6 }}>{message}</p>
-            <button className="btn-primary" onClick={() => navigate('/')}>
+          <div className="reg-success-card">
+            <i className="ti ti-circle-check reg-success-icon" />
+            <h1 className="reg-title">Email verificado!</h1>
+            <p className="reg-sub" style={{ marginBottom: 24 }}>{message}</p>
+            <button className="btn-primary reg-submit reg-submit--ready" onClick={() => navigate('/')}>
               <i className="ti ti-arrow-left" /> Voltar ao ranking
             </button>
-          </>
+          </div>
         )}
 
         {status === 'error' && (
-          <>
-            <i className="ti ti-circle-x" style={{ fontSize: 56, color: 'var(--red)' }} />
-            <h1 style={{ fontSize: 24, margin: '16px 0 8px', color: 'var(--text-1)' }}>Falha na verificação</h1>
-            <p style={{ color: 'var(--text-2)', marginBottom: 24, lineHeight: 1.6 }}>{message}</p>
-            <button className="btn-primary" onClick={() => navigate('/')}>
+          <div className="reg-success-card">
+            <i className="ti ti-circle-x reg-success-icon" style={{ color: 'var(--red)' }} />
+            <h1 className="reg-title">Falha na verificação</h1>
+            <p className="reg-sub" style={{ marginBottom: 24 }}>{message}</p>
+            <button className="btn-primary reg-submit" onClick={() => navigate('/')}>
               <i className="ti ti-arrow-left" /> Voltar ao ranking
             </button>
-          </>
+          </div>
         )}
+
       </div>
     </div>
   );
