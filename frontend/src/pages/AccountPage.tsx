@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { useToast } from '../hooks/useToast';
+import { Toast } from '../components/Toast';
 import { checkPassword } from '../lib/password';
 import { PasswordHints } from '../components/PasswordHints';
 import {
@@ -43,20 +45,20 @@ function StatusMsg({ msg, ok }: { msg: string; ok: boolean }) {
 
 // ── Login form ────────────────────────────────────────────────
 function LoginForm({ onLogin }: { onLogin: (s: PlayerSession) => void }) {
-  const [email,       setEmail]       = useState('');
-  const [password,    setPassword]    = useState('');
-  const [error,       setError]       = useState('');
-  const [loading,     setLoading]     = useState(false);
-  const [showPass,    setShowPass]    = useState(false);
+  const [email,    setEmail]    = useState('');
+  const [password, setPassword] = useState('');
+  const [loading,  setLoading]  = useState(false);
+  const [showPass, setShowPass] = useState(false);
+  const { toast, showToast, clearToast } = useToast();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError(''); setLoading(true);
+    setLoading(true);
     try {
       const data = await apiPlayerLogin(email.trim(), password);
       onLogin(data);
     } catch (err) {
-      setError((err as Error).message);
+      showToast((err as Error).message, 'error');
     } finally {
       setLoading(false);
     }
@@ -82,18 +84,18 @@ function LoginForm({ onLogin }: { onLogin: (s: PlayerSession) => void }) {
               </button>
             </div>
           </div>
-          {error && <StatusMsg msg={error} ok={false} />}
           <button type="submit" className="btn-primary account-submit" disabled={loading}>
             {loading ? 'Entrando…' : 'Entrar'}
           </button>
         </form>
         <div className="account-login-links">
-          <Link to="/esqueci-senha"  className="btn-ghost btn-sm"><i className="ti ti-key" /> Esqueci minha senha</Link>
+          <Link to="/esqueci-senha"   className="btn-ghost btn-sm"><i className="ti ti-key" /> Esqueci minha senha</Link>
           <Link to="/cadastrar-conta" className="btn-ghost btn-sm"><i className="ti ti-user-question" /> Sou jogador legado</Link>
           <Link to="/verificar-conta" className="btn-ghost btn-sm"><i className="ti ti-mail-forward" /> Reenviar código de verificação</Link>
-          <Link to="/" className="btn-ghost btn-sm"><i className="ti ti-arrow-left" /> Voltar ao Rank</Link>
+          <Link to="/"                className="btn-ghost btn-sm"><i className="ti ti-arrow-left" /> Voltar ao Rank</Link>
         </div>
       </div>
+      <Toast {...toast} onClose={clearToast} />
     </div>
   );
 }

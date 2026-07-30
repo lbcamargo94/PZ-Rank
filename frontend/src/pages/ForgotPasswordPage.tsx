@@ -1,24 +1,26 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { apiForgotPassword } from '../lib/api';
+import { useToast } from '../hooks/useToast';
+import { Toast } from '../components/Toast';
 
 export function ForgotPasswordPage() {
   const [email,   setEmail]   = useState('');
-  const [msg,     setMsg]     = useState('');
   const [ok,      setOk]      = useState(false);
+  const [okMsg,   setOkMsg]   = useState('');
   const [loading, setLoading] = useState(false);
+  const { toast, showToast, clearToast } = useToast();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!email.trim()) return;
     setLoading(true);
-    setMsg('');
     try {
       const res = await apiForgotPassword(email.trim());
-      setMsg(res.message);
+      setOkMsg(res.message);
       setOk(true);
     } catch (err) {
-      setMsg((err as Error).message);
+      showToast((err as Error).message, 'error');
     } finally {
       setLoading(false);
     }
@@ -34,7 +36,7 @@ export function ForgotPasswordPage() {
 
         {ok ? (
           <>
-            <p className="account-status account-status--ok">{msg}</p>
+            <p className="account-status account-status--ok">{okMsg}</p>
             <div className="account-login-links" style={{ marginTop: 20 }}>
               <Link to="/minha-conta" className="btn-ghost btn-sm"><i className="ti ti-arrow-left" /> Voltar ao login</Link>
             </div>
@@ -53,7 +55,6 @@ export function ForgotPasswordPage() {
                 autoFocus
               />
             </div>
-            {msg && <p className="account-status account-status--err">{msg}</p>}
             <button
               type="submit"
               className="btn-primary"
@@ -68,6 +69,7 @@ export function ForgotPasswordPage() {
           </form>
         )}
       </div>
+      <Toast {...toast} onClose={clearToast} />
     </div>
   );
 }

@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { apiResendRegistrationOtp, apiConfirmRegistrationOtp } from '../lib/api';
 import { OtpInput } from '../components/OtpInput';
+import { useToast } from '../hooks/useToast';
+import { Toast } from '../components/Toast';
 
 type Step = 'email' | 'otp' | 'done' | 'verified';
 
@@ -9,14 +11,14 @@ export function ResendVerificationPage() {
   const [step,    setStep]    = useState<Step>('email');
   const [email,   setEmail]   = useState('');
   const [code,    setCode]    = useState('');
-  const [error,   setError]   = useState('');
   const [loading, setLoading] = useState(false);
   const [resendMsg, setResendMsg] = useState('');
+  const { toast, showToast, clearToast } = useToast();
 
   async function handleSendCode(e: React.FormEvent) {
     e.preventDefault();
     if (!email.trim()) return;
-    setLoading(true); setError('');
+    setLoading(true);
     try {
       await apiResendRegistrationOtp(email.trim());
       setStep('otp');
@@ -25,7 +27,7 @@ export function ResendVerificationPage() {
       if (msg === 'already_verified') {
         setStep('verified');
       } else {
-        setError(msg || 'Não foi possível enviar. Verifique o email e tente novamente.');
+        showToast(msg || 'Não foi possível enviar. Verifique o email e tente novamente.', 'error');
       }
     } finally {
       setLoading(false);
@@ -35,19 +37,19 @@ export function ResendVerificationPage() {
   async function handleConfirm(e: React.FormEvent) {
     e.preventDefault();
     if (code.length !== 6) return;
-    setLoading(true); setError('');
+    setLoading(true);
     try {
       await apiConfirmRegistrationOtp(email.trim(), code);
       setStep('done');
     } catch (err) {
-      setError((err as Error).message || 'Código inválido ou expirado.');
+      showToast((err as Error).message || 'Código inválido ou expirado.', 'error');
     } finally {
       setLoading(false);
     }
   }
 
   async function handleResend() {
-    setResendMsg(''); setError('');
+    setResendMsg('');
     try {
       await apiResendRegistrationOtp(email.trim());
       setResendMsg('Novo código enviado!');
@@ -62,17 +64,17 @@ export function ResendVerificationPage() {
       <div className="account-login-card">
 
         {step === 'verified' ? (
-        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-          <i className="ti ti-circle-check" style={{ fontSize: 48, color: 'var(--green)' }} />
-          <h1 className="account-login-title" style={{ margin: 0 }}>Conta já ativa!</h1>
-          <p className="account-login-sub" style={{ marginBottom: 8 }}>
-            O email <strong>{email}</strong> já está verificado. Faça login normalmente com seu email e senha.
-          </p>
-          <Link to="/minha-conta" className="btn-primary" style={{ textDecoration: 'none' }}>
-            <i className="ti ti-login" /> Ir para login
-          </Link>
-        </div>
-      ) : step === 'done' ? (
+          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+            <i className="ti ti-circle-check" style={{ fontSize: 48, color: 'var(--green)' }} />
+            <h1 className="account-login-title" style={{ margin: 0 }}>Conta já ativa!</h1>
+            <p className="account-login-sub" style={{ marginBottom: 8 }}>
+              O email <strong>{email}</strong> já está verificado. Faça login normalmente com seu email e senha.
+            </p>
+            <Link to="/minha-conta" className="btn-primary" style={{ textDecoration: 'none' }}>
+              <i className="ti ti-login" /> Ir para login
+            </Link>
+          </div>
+        ) : step === 'done' ? (
           <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
             <i className="ti ti-circle-check" style={{ fontSize: 48, color: 'var(--green)' }} />
             <h1 className="account-login-title" style={{ margin: 0 }}>Conta verificada!</h1>
@@ -97,12 +99,11 @@ export function ResendVerificationPage() {
                 onResend={handleResend}
                 resendMsg={resendMsg}
               />
-              {error && <p className="account-status account-status--err">{error}</p>}
               <button type="submit" className="btn-primary" disabled={loading || code.length !== 6}>
                 {loading ? <><i className="ti ti-loader-2" /> Verificando…</> : <><i className="ti ti-check" /> Confirmar</>}
               </button>
               <div className="account-login-links">
-                <button type="button" className="btn-ghost btn-sm" onClick={() => { setStep('email'); setCode(''); setError(''); }}>
+                <button type="button" className="btn-ghost btn-sm" onClick={() => { setStep('email'); setCode(''); }}>
                   <i className="ti ti-arrow-left" /> Trocar email
                 </button>
                 <Link to="/minha-conta" className="btn-ghost btn-sm"><i className="ti ti-login" /> Voltar ao login</Link>
@@ -128,7 +129,6 @@ export function ResendVerificationPage() {
                   autoFocus
                 />
               </div>
-              {error && <p className="account-status account-status--err">{error}</p>}
               <button type="submit" className="btn-primary" disabled={loading || !email.trim()}>
                 {loading ? <><i className="ti ti-loader-2" /> Enviando…</> : <><i className="ti ti-send" /> Enviar código</>}
               </button>
@@ -141,6 +141,7 @@ export function ResendVerificationPage() {
         )}
 
       </div>
+      <Toast {...toast} onClose={clearToast} />
     </div>
   );
 }

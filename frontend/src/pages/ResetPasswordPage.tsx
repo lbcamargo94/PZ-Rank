@@ -3,6 +3,8 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { checkPassword } from '../lib/password';
 import { PasswordHints } from '../components/PasswordHints';
 import { apiResetPassword } from '../lib/api';
+import { useToast } from '../hooks/useToast';
+import { Toast } from '../components/Toast';
 
 export function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
@@ -12,23 +14,22 @@ export function ResetPasswordPage() {
   const [password,        setPassword]        = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPass,        setShowPass]        = useState(false);
-  const [loading,         setLoading]         = useState(false);
-  const [done,            setDone]            = useState(false);
-  const [error,           setError]           = useState('');
+  const [loading, setLoading] = useState(false);
+  const [done,    setDone]    = useState(false);
+  const { toast, showToast, clearToast } = useToast();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!token) { setError('Token inválido.'); return; }
-    if (!checkPassword(password).ok) { setError('A senha não atende aos requisitos de segurança.'); return; }
-    if (password !== confirmPassword) { setError('As senhas não coincidem.'); return; }
+    if (!token) { showToast('Token inválido.', 'error'); return; }
+    if (!checkPassword(password).ok) { showToast('A senha não atende aos requisitos de segurança.', 'error'); return; }
+    if (password !== confirmPassword) { showToast('As senhas não coincidem.', 'error'); return; }
 
     setLoading(true);
-    setError('');
     try {
       await apiResetPassword(token, password);
       setDone(true);
     } catch (err) {
-      setError((err as Error).message || 'Erro ao redefinir senha.');
+      showToast((err as Error).message || 'Erro ao redefinir senha.', 'error');
     } finally {
       setLoading(false);
     }
@@ -100,7 +101,6 @@ export function ResetPasswordPage() {
                   )}
                 </div>
               </div>
-              {error && <p style={{ color: 'var(--red)', margin: 0, fontSize: 14 }}>{error}</p>}
               <button
                 className="btn-primary btn-block"
                 type="submit"
@@ -112,6 +112,7 @@ export function ResetPasswordPage() {
           </>
         )}
       </div>
+    <Toast {...toast} onClose={clearToast} />
     </div>
   );
 }

@@ -2,36 +2,36 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiClaimAccount, apiConfirmClaimOtp, apiResendClaimOtp } from '../lib/api';
 import { OtpInput } from '../components/OtpInput';
+import { useToast } from '../hooks/useToast';
+import { Toast } from '../components/Toast';
 import cadastroBg from '../../assets/background/cadastro-bg.jpg';
 
 export function ClaimAccountPage() {
   const navigate = useNavigate();
+  const { toast, showToast, clearToast } = useToast();
 
-  const [nick,      setNick]      = useState('');
-  const [email,     setEmail]     = useState('');
-  const [msg,       setMsg]       = useState('');
-  const [loading,   setLoading]   = useState(false);
-  const [step,      setStep]      = useState<'form' | 'otp'>('form');
+  const [nick,       setNick]       = useState('');
+  const [email,      setEmail]      = useState('');
+  const [loading,    setLoading]    = useState(false);
+  const [step,       setStep]       = useState<'form' | 'otp'>('form');
   const [claimEmail, setClaimEmail] = useState('');
-  const [otpCode,   setOtpCode]   = useState('');
-  const [otpError,  setOtpError]  = useState('');
-  const [resendMsg, setResendMsg] = useState('');
+  const [otpCode,    setOtpCode]    = useState('');
+  const [resendMsg,  setResendMsg]  = useState('');
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!nick.trim() || !email.trim()) return;
     setLoading(true);
-    setMsg('');
     try {
       const res = await apiClaimAccount(nick.trim(), email.trim());
       if (res.otp_pending) {
         setClaimEmail(res.email);
         setStep('otp');
       } else {
-        setMsg(res.message);
+        showToast(res.message, 'info');
       }
     } catch (err) {
-      setMsg((err as Error).message);
+      showToast((err as Error).message, 'error');
     } finally {
       setLoading(false);
     }
@@ -41,12 +41,11 @@ export function ClaimAccountPage() {
     e.preventDefault();
     if (otpCode.length !== 6) return;
     setLoading(true);
-    setOtpError('');
     try {
       const res = await apiConfirmClaimOtp(claimEmail, otpCode);
       navigate(`/ativar-conta?token=${encodeURIComponent(res.activate_token)}`);
     } catch (err) {
-      setOtpError((err as Error).message || 'Código inválido ou expirado.');
+      showToast((err as Error).message || 'Código inválido ou expirado.', 'error');
     } finally {
       setLoading(false);
     }
@@ -64,7 +63,6 @@ export function ClaimAccountPage() {
 
   const bgStyle = { backgroundImage: `url(${cadastroBg})` };
 
-  /* ── Step indicator ─────────────────────────────────────── */
   const steps = [
     { icon: 'ti-user-plus',  label: 'Dados'  },
     { icon: 'ti-mail-check', label: 'Email'  },
@@ -94,7 +92,6 @@ export function ClaimAccountPage() {
     </div>
   );
 
-  /* ── OTP step ───────────────────────────────────────────── */
   if (step === 'otp') {
     return (
       <div className="account-login-wrap claim-page-wrap" style={bgStyle}>
@@ -123,11 +120,6 @@ export function ClaimAccountPage() {
               onResend={handleResend}
               resendMsg={resendMsg}
             />
-            {otpError && (
-              <p className="account-status account-status--err">
-                <i className="ti ti-alert-circle" /> {otpError}
-              </p>
-            )}
             <button
               type="submit"
               className="btn-primary reg-submit"
@@ -145,11 +137,11 @@ export function ClaimAccountPage() {
             </button>
           </p>
         </div>
+        <Toast {...toast} onClose={clearToast} />
       </div>
     );
   }
 
-  /* ── Form step ──────────────────────────────────────────── */
   return (
     <div className="account-login-wrap claim-page-wrap" style={bgStyle}>
       <div className="account-login-card reg-card">
@@ -209,12 +201,6 @@ export function ClaimAccountPage() {
             </span>
           </div>
 
-          {msg && (
-            <p className="account-status account-status--err">
-              <i className="ti ti-alert-circle" /> {msg}
-            </p>
-          )}
-
           <button
             type="submit"
             className="btn-primary reg-submit"
@@ -234,6 +220,7 @@ export function ClaimAccountPage() {
         </div>
 
       </div>
+      <Toast {...toast} onClose={clearToast} />
     </div>
   );
 }
