@@ -5,6 +5,7 @@ import type { ModSession } from './types';
 import { useToast } from './hooks/useToast';
 import { Toast } from './components/Toast';
 import { Header } from './components/Header';
+import { Footer } from './components/Footer';
 import { SeasonEndOverlay } from './components/SeasonEndOverlay';
 import { CommunityStats } from './components/CommunityStats';
 import { NewsButton }     from './components/NewsCard';
@@ -90,33 +91,38 @@ export default function App() {
   }, [modSession]);
 
   return (
-    <Routes>
-      <Route path="/" element={<MainView />} />
-      <Route path="/rank" element={<RankPage />} />
-      <Route path="/player/:id" element={<PlayerPage />} />
-      <Route path="/overlay/:id" element={<OverlayPage />} />
-      <Route path="/wiki" element={<WikiPage />} />
-      <Route path="/wiki/cacada" element={<WikiHuntingPage />} />
-      <Route path="/mods" element={<ModsPage />} />
-      <Route path="/dicas" element={<TipsPage />} />
-      <Route path="/verificar-email"  element={<VerifyEmailPage />} />
-      <Route path="/redefinir-senha"  element={<ResetPasswordPage />} />
-      <Route path="/ativar-conta"     element={<ActivateAccountPage />} />
-      <Route path="/minha-conta"      element={<AccountPage />} />
-      <Route path="/esqueci-senha"    element={<ForgotPasswordPage />} />
-      <Route path="/verificar-conta"  element={<ResendVerificationPage />} />
-      <Route path="/cadastrar-conta"   element={<ClaimAccountPage />} />
-      <Route path="/lendas"           element={<LegendsPage />} />
-      <Route path="/transparencia"    element={<TransparenciaPage />} />
-      <Route path="/mapa"             element={<MapPage />} />
-      <Route path="/links"            element={<LinksUteisPage />} />
-      <Route path="/painel" element={
-        <PainelPage
-          session={modSession}
-          onSession={setModSession}
-          onBack={() => navigate('/')}
-        />
-      } />
-    </Routes>
+    <>
+      <div className="page-body">
+        <Routes>
+          <Route path="/" element={<MainView />} />
+          <Route path="/rank" element={<RankPage />} />
+          <Route path="/player/:id" element={<PlayerPage />} />
+          <Route path="/overlay/:id" element={<OverlayPage />} />
+          <Route path="/wiki" element={<WikiPage />} />
+          <Route path="/wiki/cacada" element={<WikiHuntingPage />} />
+          <Route path="/mods" element={<ModsPage />} />
+          <Route path="/dicas" element={<TipsPage />} />
+          <Route path="/verificar-email"  element={<VerifyEmailPage />} />
+          <Route path="/redefinir-senha"  element={<ResetPasswordPage />} />
+          <Route path="/ativar-conta"     element={<ActivateAccountPage />} />
+          <Route path="/minha-conta"      element={<AccountPage />} />
+          <Route path="/esqueci-senha"    element={<ForgotPasswordPage />} />
+          <Route path="/verificar-conta"  element={<ResendVerificationPage />} />
+          <Route path="/cadastrar-conta"  element={<ClaimAccountPage />} />
+          <Route path="/lendas"           element={<LegendsPage />} />
+          <Route path="/transparencia"    element={<TransparenciaPage />} />
+          <Route path="/mapa"             element={<MapPage />} />
+          <Route path="/links"            element={<LinksUteisPage />} />
+          <Route path="/painel" element={
+            <PainelPage
+              session={modSession}
+              onSession={setModSession}
+              onBack={() => navigate('/')}
+            />
+          } />
+        </Routes>
+      </div>
+      <Footer />
+    </>
   );
 }

@@ -318,9 +318,6 @@ export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, ic
         </>
       )}
 
-      <footer className="site-footer-bottom">
-        <p>PZ Community Rank &copy; {new Date().getFullYear()} — Projeto da comunidade</p>
-      </footer>
     </div>
   );
 }

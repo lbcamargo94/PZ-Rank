@@ -8,47 +8,67 @@ body.rank-page-active {
   background-repeat: no-repeat;
 }
 
+body.rank-page-active .site-footer {
+  margin-top: 20px;
+}
+
 /* ── Rank page: surface tokens com mais opacidade ────────────── */
-/* Sobrescreve os tokens globais apenas no contexto da página /rank,
-   tornando todos os painéis (tabela, sort bar, tabs) menos transparentes
-   sem precisar alterar cada componente individualmente. */
 body.rank-page-active .rank-tabs-bar,
-body.rank-page-active .sort-bar,
-body.rank-page-active .table-wrapper,
+body.rank-page-active .table-section,
 body.rank-page-active .rank-table thead th {
   --bg-1: rgba(12,17,10,0.90);
   --bg-2: rgba(18,23,16,0.92);
   --bg-3: rgba(24,30,20,0.94);
 }
 
-/* Tabs bar — fundo sólido com blur para destacar as tabs da imagem */
+/* ── Painel unificado: tabs (topo) + table-section (base) ──────
+   Ambos são .container no mesmo nível do DOM → bordas alinhadas.
+   .sort-bar e .table-wrapper não têm estilo próprio — vivem dentro
+   do painel; a separação visual fica por conta de suas bordas internas. */
+
 body.rank-page-active .rank-tabs-bar {
-  background: rgba(10,14,8,0.84);
+  background: rgba(10,14,8,0.88);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-bottom: none;
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  padding: 0 10px;
   margin-top: 10px;
+  margin-bottom: 0;
 }
 body.rank-page-active .rank-tabs {
-  border-bottom-color: rgba(255,255,255,0.08);
+  border-bottom-color: rgba(255,255,255,0.09);
 }
 
-/* Sort bar — mesmo tratamento frosted-glass */
-body.rank-page-active .sort-bar {
-  background: rgba(10,14,8,0.84);
+/* Table section — continua o painel direto abaixo das tabs */
+body.rank-page-active .table-section {
+  background: rgba(10,14,8,0.88);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: var(--radius);
-  padding: 8px 14px;
-  margin-bottom: 10px;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-top: none;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  overflow: hidden;
+  padding-bottom: 20px;
 }
 
-/* Table wrapper — menos transparente */
+/* Sort bar — sem painel próprio; apenas divisor sutil antes da tabela */
+body.rank-page-active .sort-bar {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: none;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  border-radius: 0;
+  padding: 8px 0;
+  margin-bottom: 0;
+}
+
+/* Table wrapper — fundo ligeiramente mais escuro; sem borda própria */
 body.rank-page-active .table-wrapper {
   background: rgba(12,17,10,0.90);
+  border: none;
+  border-radius: 0;
 }
 body.rank-page-active .rank-table thead th {
   background: rgba(18,23,16,0.94);
