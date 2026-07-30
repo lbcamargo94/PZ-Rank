@@ -26,10 +26,11 @@
   flex: 1;
 }
 
-/* Ad: flex column para o placeholder preencher a célula */
+/* Ad: height 100% estabelece dimensão definida para o flex filho crescer */
 .home-top-row .home-ad-wrap {
   display: flex;
   flex-direction: column;
+  height: 100%;
 }
 
 @media (max-width: 860px) {
@@ -289,6 +290,7 @@
   font-size: 14px;
   text-align: center;
   flex: 1;
+  min-height: 300px;
 }
 
 .home-ad-wrap .ad-placeholder .ti { font-size: 28px; color: var(--text-3); }
