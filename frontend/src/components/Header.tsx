@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import pzrankLogo from '../../assets/logo/pzrank-logo.png';
 
 const COMPANION_URL = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.8.0/PZ.Rank.Companion.Setup.1.8.0.exe';
+const COMPANION_VER = 'v1.8.0';
 
 interface HeaderProps {
   onPainel:   () => void;
@@ -36,7 +37,7 @@ export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
           <div className="header-auth">
             <a href={COMPANION_URL} className="btn-header btn-header-companion" download title="Baixar PZ Rank Companion">
               <i className="ti ti-download" aria-hidden="true" />
-              <span className="btn-header-companion-text">Companion</span>
+              <span className="btn-header-companion-text">Companion {COMPANION_VER}</span>
             </a>
 
             {playerSession ? (
