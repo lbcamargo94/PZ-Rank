@@ -208,85 +208,98 @@ export function NewsInline() {
 
   if (!news) return null;
 
-  const stats    = news.stats ?? null;
-  const headline = news.headline ?? (stats ? autoHeadline(stats) : null);
+  const stats       = news.stats ?? null;
+  const headline    = news.headline ?? (stats ? autoHeadline(stats) : null);
   const hasActivity = stats && (stats.deaths_today > 0 || stats.syncs_today > 0 || stats.kills_today > 0);
+
   return (
-    <div className="news-inline">
-      <div className="news-inline-head">
+    <article className="news-inline">
+
+      {/* ── Masthead ── */}
+      <header className="news-inline-head">
         <span className="news-inline-label">
           <i className="ti ti-news" /> Jornal do Apocalipse
         </span>
-        <span className="news-inline-date">{fmtDateLong(news.date)}</span>
-      </div>
+        <time className="news-inline-date">{fmtDateLong(news.date)}</time>
+      </header>
 
-      {headline && (
-        <p className="news-inline-headline">{headline}</p>
-      )}
+      {/* ── Corpo em duas colunas ── */}
+      <div className="news-body-grid">
 
-      {(hasActivity || stats) && (
-        <div className="news-inline-footer">
-          {hasActivity && (
-            <div className="news-inline-stats">
-              {stats!.kills_today > 0 && (
-                <span className="news-inline-stat news-inline-stat--kills">
-                  <i className="ti ti-sword" /> +{fmt(stats!.kills_today)} eliminações
-                </span>
-              )}
-              {stats!.deaths_today > 0 && (
-                <span className="news-inline-stat news-inline-stat--deaths">
-                  <i className="ti ti-skull" /> {stats!.deaths_today} {stats!.deaths_today === 1 ? 'morte' : 'mortes'}
-                </span>
-              )}
-              {stats!.syncs_today > 0 && (
-                <span className="news-inline-stat news-inline-stat--syncs">
-                  <i className="ti ti-users" /> {stats!.syncs_today} {stats!.syncs_today === 1 ? 'ativo' : 'ativos'}
-                </span>
-              )}
-            </div>
+        {/* Coluna esquerda — notícia do dia */}
+        <div className="news-col-main">
+          {headline && (
+            <p className="news-headline-main">{headline}</p>
           )}
+
           {stats && (
-            <div className="news-inline-current">
-              <span className="news-inline-cur--alive">
-                <i className="ti ti-heartbeat" /> <strong>{fmt(stats.alive_count)}</strong> vivos
-              </span>
-              <span className="news-inline-sep" />
-              <span className="news-inline-cur--dead">
-                <i className="ti ti-skull" /> <strong>{fmt(stats.dead_count)}</strong> mortos
-              </span>
+            <div className="news-stats-row">
+              {hasActivity && (
+                <div className="news-pills">
+                  {stats.kills_today > 0 && (
+                    <span className="news-pill news-pill--kills">
+                      <i className="ti ti-sword" /> +{fmt(stats.kills_today)} eliminados
+                    </span>
+                  )}
+                  {stats.deaths_today > 0 && (
+                    <span className="news-pill news-pill--deaths">
+                      <i className="ti ti-skull" /> {stats.deaths_today} {stats.deaths_today === 1 ? 'morte' : 'mortes'}
+                    </span>
+                  )}
+                  {stats.syncs_today > 0 && (
+                    <span className="news-pill news-pill--syncs">
+                      <i className="ti ti-users" /> {stats.syncs_today} {stats.syncs_today === 1 ? 'ativo' : 'ativos'}
+                    </span>
+                  )}
+                </div>
+              )}
+              <div className="news-alive-row">
+                <span className="news-alive-item news-alive-item--alive">
+                  <i className="ti ti-heartbeat" />
+                  <strong>{fmt(stats.alive_count)}</strong>
+                  <span>vivos</span>
+                </span>
+                <span className="news-alive-sep" />
+                <span className="news-alive-item news-alive-item--dead">
+                  <i className="ti ti-skull" />
+                  <strong>{fmt(stats.dead_count)}</strong>
+                  <span>mortos</span>
+                </span>
+              </div>
             </div>
           )}
         </div>
-      )}
 
-      {/* Arquivo histórico — carrossel Embla */}
-      <div className="news-inline-lore">
-        <div className="news-lore-header">
-          <span className="news-inline-lore-source">
-            <i className="ti ti-archive" /> Arquivo Histórico
-          </span>
-          <div className="news-lore-controls">
-            <button className="lore-nav-btn" onClick={() => loreApi?.scrollPrev()} aria-label="Anterior">
-              <i className="ti ti-chevron-left" />
-            </button>
-            <span className="lore-nav-counter">{loreIdx + 1}/{LORE_HEADLINES.length}</span>
-            <button className="lore-nav-btn" onClick={() => loreApi?.scrollNext()} aria-label="Próximo">
-              <i className="ti ti-chevron-right" />
-            </button>
+        {/* Coluna direita — arquivo histórico */}
+        <aside className="news-col-lore">
+          <div className="news-lore-header">
+            <span className="news-lore-label">
+              <i className="ti ti-archive" /> Arquivo Histórico
+            </span>
+            <div className="news-lore-controls">
+              <button className="lore-nav-btn" onClick={() => loreApi?.scrollPrev()} aria-label="Anterior">
+                <i className="ti ti-chevron-left" />
+              </button>
+              <span className="lore-nav-counter">{loreIdx + 1}/{LORE_HEADLINES.length}</span>
+              <button className="lore-nav-btn" onClick={() => loreApi?.scrollNext()} aria-label="Próximo">
+                <i className="ti ti-chevron-right" />
+              </button>
+            </div>
           </div>
-        </div>
-        <div className="embla lore-embla" ref={loreRef}>
-          <div className="embla__container">
-            {LORE_HEADLINES.map((lore, i) => (
-              <div key={i} className="embla__slide news-lore-body">
-                <span className="news-lore-origin">{lore.source}</span>
-                <p className="news-inline-lore-text">{lore.text}</p>
-              </div>
-            ))}
+          <div className="embla lore-embla" ref={loreRef}>
+            <div className="embla__container">
+              {LORE_HEADLINES.map((lore, i) => (
+                <div key={i} className="embla__slide news-lore-slide">
+                  <span className="news-lore-origin">{lore.source}</span>
+                  <p className="news-lore-text">{lore.text}</p>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        </aside>
+
       </div>
-    </div>
+    </article>
   );
 }
 

@@ -1,105 +1,145 @@
 /* PZ Rank - Home page layout */
 
-.home-grid {
-  display: grid;
-  grid-template-columns: 3fr 2fr;
-  gap: 16px;
-  align-items: stretch;
-  margin: 20px 0 8px;
-}
-
-/* Aside esquerdo: jornal preenche toda a altura do grid */
-.home-aside-news {
-  display: flex;
-  flex-direction: column;
-}
-
-.home-aside-news .news-inline {
-  margin: 0;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-/* A seção de lore expande para ocupar o espaço restante */
-.home-aside-news .news-inline-lore {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.home-aside-news .news-lore-body {
-  flex: 1;
-}
-
-.home-aside-ad {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.home-aside-ad .ad-placeholder,
-.home-aside-ad .ad-banner-wrap {
-  flex: 1;
-  min-height: 220px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  border-radius: var(--radius-lg);
-}
-
-/* Ad placeholder mais visível no contexto da home */
-.home-aside-ad .ad-placeholder {
-  background: rgba(8,12,6,0.90);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px dashed var(--border-mid);
-  color: var(--text-2);
-  font-size: 14px;
-  flex-direction: column;
-  gap: 14px;
-  padding: 28px 20px;
-}
-
-.home-aside-ad .ad-placeholder .ti { font-size: 28px; color: var(--text-3); }
-
-@media (max-width: 860px) {
-  .home-grid { grid-template-columns: 1fr; }
-  .home-aside-ad .ad-placeholder { min-height: 100px; }
-}
-
 /* ── Embla base ────────────────────────────────────────────── */
-.embla          { overflow: hidden; }
+.embla            { overflow: hidden; }
 .embla__container { display: flex; }
-.embla__slide   { flex: 0 0 100%; min-width: 0; }
+.embla__slide     { flex: 0 0 100%; min-width: 0; }
 
-/* Lore embla: preenche o espaço flex herdado */
-.lore-embla,
-.home-aside-news .lore-embla { flex: 1; }
-.lore-embla .embla__container { height: 100%; }
-.lore-embla .embla__slide    { height: 100%; }
+/* Lore carousel: fill the flex column */
+.lore-embla                    { flex: 1; display: flex; flex-direction: column; }
+.lore-embla .embla__container  { flex: 1; }
+.lore-embla .embla__slide      { height: 100%; }
 
-/* Quick nav embla */
-.qnav-embla .embla__slide { padding: 0; }
-
-/* ── Arquivo Histórico — carrossel de lore ─────────────────── */
-.news-inline-lore {
+/* ── Jornal do Apocalipse — two-column body ─────────────────── */
+.news-body-grid {
+  display: grid;
+  grid-template-columns: 58% 42%;
   border-top: 1px solid var(--border-mid);
+  min-height: 200px;
 }
 
+/* Left: headline + stats */
+.news-col-main {
+  padding: 20px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-right: 1px solid var(--border-mid);
+}
+
+/* Right: lore carousel */
+.news-col-lore {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Main headline */
+.news-headline-main {
+  font-size: 18px;
+  color: var(--text-1);
+  font-style: italic;
+  line-height: 1.65;
+  margin: 0;
+  font-weight: 500;
+  flex: 1;
+}
+
+/* Stats wrapper — pushed to bottom of left column */
+.news-stats-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: auto;
+}
+
+/* Activity pills */
+.news-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.news-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.news-pill--kills {
+  background: rgba(160, 50, 50, 0.18);
+  border-color: rgba(180, 70, 70, 0.35);
+  color: #e08080;
+}
+.news-pill--kills .ti { color: var(--red); }
+
+.news-pill--deaths {
+  background: rgba(90, 90, 90, 0.15);
+  border-color: rgba(130, 130, 130, 0.25);
+  color: var(--text-2);
+}
+
+.news-pill--syncs {
+  background: rgba(40, 100, 40, 0.18);
+  border-color: rgba(60, 130, 60, 0.30);
+  color: var(--green-light);
+}
+.news-pill--syncs .ti { color: var(--green); }
+
+/* Alive / dead count row */
+.news-alive-row {
+  display: flex;
+  align-items: center;
+}
+
+.news-alive-item--alive,
+.news-alive-item--dead {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.news-alive-item--alive strong,
+.news-alive-item--dead  strong {
+  color: var(--text-1);
+  font-weight: 700;
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-display);
+}
+
+.news-alive-item--alive .ti { color: var(--green);  font-size: 15px; }
+.news-alive-item--dead  .ti { color: var(--silver); font-size: 15px; }
+
+.news-alive-sep {
+  display: inline-block;
+  width: 1px;
+  height: 18px;
+  background: var(--border-mid);
+  margin: 0 16px;
+}
+
+/* ── Lore column ───────────────────────────────────────────── */
 .news-lore-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 10px 16px 8px;
-  background: rgba(6,10,4,0.95);
+  padding: 10px 14px 9px;
+  background: rgba(6,10,4,0.80);
   border-bottom: 1px solid var(--border);
 }
 
-.news-inline-lore-source {
+.news-lore-label {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 10px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--text-3);
@@ -119,14 +159,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   background: rgba(30,38,24,0.6);
   border: 1px solid var(--border-mid);
   border-radius: 4px;
   color: var(--text-2);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
   padding: 0;
   transition: color 0.15s, border-color 0.15s, background 0.15s;
 }
@@ -134,56 +174,77 @@
 .lore-nav-btn:hover {
   color: var(--text-1);
   border-color: var(--red);
-  background: rgba(40,10,10,0.5);
+  background: rgba(40,10,10,0.50);
 }
 
 .lore-nav-counter {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-3);
-  min-width: 30px;
+  min-width: 28px;
   text-align: center;
 }
 
-.news-lore-body {
-  padding: 12px 16px 16px;
+/* Slide content */
+.news-lore-slide {
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .news-lore-origin {
   display: block;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 10px;
   letter-spacing: 0.5px;
   color: var(--text-2);
-  margin-bottom: 6px;
-  font-style: normal;
 }
 
-.news-inline-lore-text {
+.news-lore-text {
   font-size: 15px;
   color: var(--text-1);
   font-style: italic;
   margin: 0;
-  line-height: 1.6;
-  opacity: 0.88;
+  line-height: 1.65;
 }
 
-@keyframes lore-slide-in {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* ── Ad Banner ─────────────────────────────────────────────── */
+.home-ad-wrap {
+  margin: 8px 0 0;
 }
 
-/* ── Acesso Rápido — carrossel de cards ────────────────────── */
-.home-quick-nav {
-  margin: 12px 0 28px;
-}
-
-.home-quick-nav-header {
+.home-ad-wrap .ad-placeholder {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 12px;
-  margin-bottom: 12px;
+  padding: 14px 20px;
+  background: rgba(8,12,6,0.80);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px dashed var(--border-mid);
+  border-radius: var(--radius-lg);
+  color: var(--text-3);
+  font-size: 14px;
+  flex-direction: row;
+}
+
+.home-ad-wrap .ad-placeholder .ti { font-size: 18px; color: var(--text-3); }
+.home-ad-wrap .ad-placeholder-link {
+  color: var(--text-3);
+  text-decoration: underline;
+  font-size: 13px;
+  margin-left: auto;
+  transition: color 0.15s;
+}
+.home-ad-wrap .ad-placeholder-link:hover { color: var(--text-2); }
+
+/* ── Acesso Rápido — static grid ───────────────────────────── */
+.home-quick-nav {
+  margin: 18px 0 28px;
 }
 
 .home-quick-nav-title {
@@ -192,70 +253,13 @@
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--text-3);
-  margin: 0;
+  margin: 0 0 10px;
 }
 
-.quick-nav-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.qnav-arrow-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  background: rgba(14,20,10,0.80);
-  border: 1px solid var(--border-mid);
-  border-radius: var(--radius);
-  color: var(--text-2);
-  cursor: pointer;
-  font-size: 15px;
-  padding: 0;
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
-}
-
-.qnav-arrow-btn:hover {
-  color: var(--text-1);
-  border-color: var(--green);
-  background: rgba(24,36,18,0.90);
-}
-
-.qnav-dots {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.qnav-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--border-mid);
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  transition: background 0.2s, transform 0.2s;
-}
-
-.qnav-dot--active {
-  background: var(--green);
-  transform: scale(1.4);
-}
-
-/* Grade de cards (por página) */
-.quick-nav-page {
+.quick-nav-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  animation: qnav-fade-in 0.4s ease;
-}
-
-@keyframes qnav-fade-in {
-  from { opacity: 0; transform: translateX(16px); }
-  to   { opacity: 1; transform: translateX(0); }
+  gap: 10px;
 }
 
 .quick-nav-card {
@@ -263,8 +267,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 24px 16px;
+  gap: 8px;
+  padding: 22px 14px;
   background: rgba(10,14,8,0.90);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -272,7 +276,7 @@
   border-radius: var(--radius-lg);
   text-decoration: none;
   color: var(--text-1);
-  min-height: 130px;
+  min-height: 110px;
   transition: border-color 0.15s, background 0.15s, transform 0.15s;
   text-align: center;
 }
@@ -284,7 +288,7 @@
 }
 
 .quick-nav-icon {
-  font-size: 28px;
+  font-size: 26px;
   line-height: 1;
   color: var(--green);
   transition: color 0.15s;
@@ -293,25 +297,42 @@
 .quick-nav-card:hover .quick-nav-icon { color: var(--green-light); }
 
 .quick-nav-label {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-1);
   line-height: 1.2;
 }
 
 .quick-nav-sub {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-3);
   line-height: 1.3;
 }
 
+/* ── Responsivo ────────────────────────────────────────────── */
 @media (max-width: 860px) {
-  .quick-nav-page { grid-template-columns: repeat(2, 1fr); }
+  .news-body-grid {
+    grid-template-columns: 1fr;
+  }
+  .news-col-main {
+    border-right: none;
+    border-bottom: 1px solid var(--border-mid);
+  }
+  .news-alive-item--alive strong,
+  .news-alive-item--dead  strong {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 680px) {
+  .quick-nav-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 460px) {
-  .quick-nav-page { gap: 8px; }
-  .quick-nav-card { padding: 18px 12px; min-height: 110px; }
-  .quick-nav-icon { font-size: 24px; }
-  .quick-nav-label { font-size: 14px; }
+  .quick-nav-grid { gap: 8px; }
+  .quick-nav-card { padding: 18px 12px; min-height: 100px; }
+  .quick-nav-icon { font-size: 22px; }
+  .quick-nav-label { font-size: 13px; }
+  .home-ad-wrap .ad-placeholder { flex-direction: column; gap: 6px; text-align: center; }
+  .home-ad-wrap .ad-placeholder-link { margin-left: 0; }
 }

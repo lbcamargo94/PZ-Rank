@@ -1,6 +1,4 @@
 import { useState, useEffect } from 'react';
-import useEmblaCarousel from 'embla-carousel-react';
-import Autoplay from 'embla-carousel-autoplay';
 import { Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { setOnUnauthorized } from './lib/api';
 import type { ModSession } from './types';
@@ -45,68 +43,18 @@ const QUICK_NAV = [
   { to: '/transparencia', icon: 'ti-file-certificate', label: 'Transparência',   sub: 'Dados do servidor'     },
 ] as const;
 
-const PAGE_SIZE = 4;
-
-function chunkNav<T>(arr: readonly T[], size: number): T[][] {
-  return Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
-    [...arr.slice(i * size, i * size + size)]
-  );
-}
-
-const NAV_PAGES_DATA = chunkNav(QUICK_NAV, PAGE_SIZE);
-
-function QuickNavCarousel() {
-  const [page, setPage] = useState(0);
-  const [navRef, navApi] = useEmblaCarousel(
-    { loop: true },
-    [Autoplay({ delay: 60_000, stopOnInteraction: false })]
-  );
-
-  useEffect(() => {
-    if (!navApi) return;
-    navApi.on('select', () => setPage(navApi.selectedScrollSnap()));
-  }, [navApi]);
-
+function QuickNav() {
   return (
     <section className="home-quick-nav" aria-label="Acesso rápido">
-      <div className="home-quick-nav-header">
-        <p className="home-quick-nav-title">Acesso Rápido</p>
-        <div className="quick-nav-controls">
-          <button className="qnav-arrow-btn" onClick={() => navApi?.scrollPrev()} aria-label="Anterior">
-            <i className="ti ti-chevron-left" />
-          </button>
-          <div className="qnav-dots">
-            {NAV_PAGES_DATA.map((_, i) => (
-              <button
-                key={i}
-                className={`qnav-dot${i === page ? ' qnav-dot--active' : ''}`}
-                onClick={() => navApi?.scrollTo(i)}
-                aria-label={`Página ${i + 1}`}
-              />
-            ))}
-          </div>
-          <button className="qnav-arrow-btn" onClick={() => navApi?.scrollNext()} aria-label="Próximo">
-            <i className="ti ti-chevron-right" />
-          </button>
-        </div>
-      </div>
-
-      <div className="embla qnav-embla" ref={navRef}>
-        <div className="embla__container">
-          {NAV_PAGES_DATA.map((pageItems, pi) => (
-            <div key={pi} className="embla__slide">
-              <div className="quick-nav-page">
-                {pageItems.map(item => (
-                  <Link key={item.to} to={item.to} className="quick-nav-card">
-                    <i className={`ti ${item.icon} quick-nav-icon`} aria-hidden="true" />
-                    <span className="quick-nav-label">{item.label}</span>
-                    <span className="quick-nav-sub">{item.sub}</span>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+      <p className="home-quick-nav-title">Acesso Rápido</p>
+      <div className="quick-nav-grid">
+        {QUICK_NAV.map(item => (
+          <Link key={item.to} to={item.to} className="quick-nav-card">
+            <i className={`ti ${item.icon} quick-nav-icon`} aria-hidden="true" />
+            <span className="quick-nav-label">{item.label}</span>
+            <span className="quick-nav-sub">{item.sub}</span>
+          </Link>
+        ))}
       </div>
     </section>
   );
@@ -129,18 +77,11 @@ function MainView() {
       <CommunityStats />
       <main>
         <div className="container">
-
-          <div className="home-grid">
-            <aside className="home-aside-news">
-              <NewsInline />
-            </aside>
-            <aside className="home-aside-ad">
-              <AdBanner />
-            </aside>
+          <NewsInline />
+          <div className="home-ad-wrap">
+            <AdBanner />
           </div>
-
-          <QuickNavCarousel />
-
+          <QuickNav />
         </div>
       </main>
 

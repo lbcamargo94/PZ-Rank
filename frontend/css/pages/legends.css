@@ -240,77 +240,8 @@
   text-align: right;
 }
 
-.news-inline-headline {
-  font-size: 17px;
-  color: var(--text-1);
-  line-height: 1.65;
-  font-style: italic;
-  padding: 16px 20px;
-  margin: 0;
-  border-bottom: 1px solid var(--border-mid);
-}
-
-.news-inline-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 10px 20px;
-}
-
-.news-inline-stats {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.news-inline-stat {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  color: var(--text-2);
-}
-.news-inline-stat .ti { font-size: 14px; }
-.news-inline-stat--kills .ti  { color: var(--red);    }
-.news-inline-stat--deaths .ti { color: var(--silver); }
-.news-inline-stat--syncs .ti  { color: var(--green);  }
-
-.news-inline-current {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  flex-shrink: 0;
-}
-
-.news-inline-cur--alive,
-.news-inline-cur--dead {
-  font-size: 14px;
-  color: var(--text-2);
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-.news-inline-cur--alive .ti { font-size: 13px; color: var(--green);  }
-.news-inline-cur--dead  .ti { font-size: 13px; color: var(--silver); }
-.news-inline-cur--alive strong,
-.news-inline-cur--dead  strong { color: var(--text-1); font-weight: 600; }
-
-.news-inline-sep {
-  display: inline-block;
-  width: 1px;
-  height: 14px;
-  background: var(--border-mid);
-  margin: 0 12px;
-}
-
 @media (max-width: 560px) {
   .news-inline-head { flex-direction: column; align-items: flex-start; gap: 4px; }
-  .news-inline-footer { flex-direction: column; align-items: flex-start; }
-  .news-inline-current { flex-wrap: wrap; }
 }
 
 .news-trigger-row {
