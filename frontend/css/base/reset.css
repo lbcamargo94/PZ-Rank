@@ -4,7 +4,7 @@ html { scroll-behavior: smooth; }
 
 body {
   background-color: #080B06;
-  background-image: url('../assets/background/background-image.webp');
+  background-image: url('../../assets/background/background-image.webp');
   background-size: contain;
   background-position: center center;
   background-attachment: fixed;
