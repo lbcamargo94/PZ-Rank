@@ -202,7 +202,7 @@ export default function App() {
       <Route path="/minha-conta"      element={<AccountPage />} />
       <Route path="/esqueci-senha"    element={<ForgotPasswordPage />} />
       <Route path="/verificar-conta"  element={<ResendVerificationPage />} />
-      <Route path="/vincular-conta"   element={<ClaimAccountPage />} />
+      <Route path="/cadastrar-conta"   element={<ClaimAccountPage />} />
       <Route path="/lendas"           element={<LegendsPage />} />
       <Route path="/transparencia"    element={<TransparenciaPage />} />
       <Route path="/mapa"             element={<MapPage />} />

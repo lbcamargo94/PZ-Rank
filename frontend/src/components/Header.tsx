@@ -47,7 +47,7 @@ export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
               </Link>
             ) : (
               <>
-                <Link to="/vincular-conta" className="btn-header btn-header-register" onClick={close}>
+                <Link to="/cadastrar-conta" className="btn-header btn-header-register" onClick={close}>
                   Cadastre-se
                 </Link>
                 <Link to="/minha-conta" className="btn-header btn-header-login" onClick={close}>
