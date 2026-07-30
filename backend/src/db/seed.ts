@@ -4,8 +4,8 @@
  * Uso:  npx tsx --env-file=.env.local src/db/seed.ts
  *   ou: npm run seed
  *
- * Pré-requisito: banco criado pelo dev:local (local.db deve existir).
- * Idempotente: usa INSERT OR IGNORE em todos os registros.
+ * Idempotente: limpa dados anteriores do seed antes de reinserir.
+ * Dados preservados: moderator 'admin', player_id=1 (TestPlayer) e seus tokens.
  */
 
 import { openLocalDb } from './sqlite-adapter';
@@ -102,7 +102,22 @@ const TR_BASE    = 'base:Brave,base:Fit';
 
 const MOD_ID = 'aaaaaaaa-0000-4000-8000-000000000001';
 
+// IDs dos jogadores gerenciados pelo seed (player_id=1 é o TestPlayer do schema, não tocamos)
+const SEED_PLAYER_IDS = [2,3,4,5,6,7,8,9,10,11,12,13,14,15];
+const SEED_PLAYER_IDS_SQL = SEED_PLAYER_IDS.join(',');
+
 const run = db.transaction(() => {
+
+  // ── 0. LIMPEZA — remove dados anteriores do seed para garantir idempotência ──
+  // Tabelas sem UNIQUE natural são limpas por inteiro (dados 100% sintéticos).
+  // Entries dos players do seed são deletadas antes de recriar.
+
+  db.prepare(`DELETE FROM player_achievements WHERE player_id IN (${SEED_PLAYER_IDS_SQL})`).run();
+  db.prepare(`DELETE FROM entries WHERE player_id IN (${SEED_PLAYER_IDS_SQL})`).run();
+  db.prepare('DELETE FROM heatmap_events WHERE season_id IN (1,2)').run();
+  db.prepare('DELETE FROM hall_of_fame WHERE season_id IN (1,2)').run();
+  db.prepare('DELETE FROM season_finances WHERE season_id IN (1,2)').run();
+  db.prepare('DELETE FROM daily_news').run();
 
   // ── 1. SEASONS ─────────────────────────────────────────────────────────────
 
@@ -407,7 +422,7 @@ const run = db.transaction(() => {
        @created_at, @updated_at`;
 
   const stmtEntry = db.prepare(`
-    INSERT OR IGNORE INTO entries (${entryCols}) VALUES (${entryParams})
+    INSERT INTO entries (${entryCols}) VALUES (${entryParams})
   `);
 
   for (const e of entries) {
@@ -512,7 +527,7 @@ const run = db.transaction(() => {
   ];
 
   const stmtFin = db.prepare(`
-    INSERT OR IGNORE INTO season_finances (season_id, category, label, amount_brl, goal_brl)
+    INSERT INTO season_finances (season_id, category, label, amount_brl, goal_brl)
     VALUES (@season_id, @category, @label, @amount_brl, @goal_brl)
   `);
 
@@ -528,7 +543,7 @@ const run = db.transaction(() => {
   ];
 
   const stmtHof = db.prepare(`
-    INSERT OR IGNORE INTO hall_of_fame
+    INSERT INTO hall_of_fame
       (season_id, player_id, entry_name, character_name, position, days, kills, score)
     VALUES
       (@season_id, @player_id, @entry_name, @character_name, @position, @days, @kills, @score)
@@ -540,7 +555,7 @@ const run = db.transaction(() => {
   // ── 8. HEATMAP EVENTS ──────────────────────────────────────────────────────
 
   const stmtHeat = db.prepare(`
-    INSERT OR IGNORE INTO heatmap_events (season_id, event_type, grid_x, grid_y, count)
+    INSERT INTO heatmap_events (season_id, event_type, grid_x, grid_y, count)
     VALUES (?, ?, ?, ?, ?)
   `);
 
@@ -584,7 +599,7 @@ const run = db.transaction(() => {
   const achId   = Object.fromEntries(achRows.map(a => [a.slug, a.id]));
 
   const stmtAch = db.prepare(`
-    INSERT OR IGNORE INTO player_achievements (player_id, achievement_id, entry_id)
+    INSERT INTO player_achievements (player_id, achievement_id, entry_id)
     VALUES (?, ?, ?)
   `);
 
