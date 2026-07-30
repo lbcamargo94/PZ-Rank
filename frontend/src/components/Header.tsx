@@ -24,32 +24,40 @@ export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
   return (
     <header className="site-header">
       <div className="container header-inner">
+
         <Link to="/" className="header-brand" aria-label="PZ Rank — Página inicial" onClick={close}>
           <img src={pzrankLogo} alt="PZ Rank" className="header-logo" />
+          <span className="header-subtitle">Campeonato Brasileiro PZ</span>
         </Link>
 
-        <div className="header-auth">
-          {playerSession ? (
-            <Link to="/minha-conta" className="btn-secondary header-auth-btn nav-item-logged" onClick={close}>
-              <i className="ti ti-user-filled" aria-hidden="true" />
-              {playerSession.nick}
-            </Link>
-          ) : (
-            <>
-              <Link to="/vincular-conta" className="btn-secondary header-auth-btn" onClick={close}>Cadastre-se</Link>
-              <Link to="/minha-conta"    className="btn-primary  header-auth-btn" onClick={close}>Login</Link>
-            </>
-          )}
-        </div>
+        <div className="header-right">
+          <div className="header-auth">
+            {playerSession ? (
+              <Link to="/minha-conta" className="btn-header btn-header-account" onClick={close}>
+                <i className="ti ti-user-filled" aria-hidden="true" />
+                <span className="btn-header-nick">{playerSession.nick}</span>
+              </Link>
+            ) : (
+              <>
+                <Link to="/vincular-conta" className="btn-header btn-header-register" onClick={close}>
+                  Cadastre-se
+                </Link>
+                <Link to="/minha-conta" className="btn-header btn-header-login" onClick={close}>
+                  Login
+                </Link>
+              </>
+            )}
+          </div>
 
-        <button
-          className="header-hamburger"
-          onClick={() => setMenuOpen(o => !o)}
-          aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
-          aria-expanded={menuOpen}
-        >
-          <i className={`ti ${menuOpen ? 'ti-x' : 'ti-menu-2'}`} aria-hidden="true" />
-        </button>
+          <button
+            className={`header-hamburger${menuOpen ? ' is-open' : ''}`}
+            onClick={() => setMenuOpen(o => !o)}
+            aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
+            aria-expanded={menuOpen}
+          >
+            <i className={`ti ${menuOpen ? 'ti-x' : 'ti-menu-2'}`} aria-hidden="true" />
+          </button>
+        </div>
       </div>
 
       <nav className={`site-nav${menuOpen ? ' site-nav-open' : ''}`} aria-label="Navegação principal">
@@ -72,6 +80,7 @@ export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
           <button className="nav-item" onClick={() => { onSettings(); close(); }}>
             <i className="ti ti-settings" aria-hidden="true" /> Configurações
           </button>
+          <div className="site-nav-divider" />
           <Link
             to="/minha-conta"
             className={`nav-item${playerSession ? ' nav-item-logged' : ''}`}
@@ -84,7 +93,6 @@ export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
             <i className="ti ti-shield-half" aria-hidden="true" /> Moderadores
           </button>
         </div>
-
       </nav>
     </header>
   );
