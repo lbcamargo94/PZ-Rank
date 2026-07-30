@@ -4,11 +4,33 @@
   display: grid;
   grid-template-columns: 3fr 2fr;
   gap: 16px;
-  align-items: start;
+  align-items: stretch;
   margin: 20px 0 8px;
 }
 
-.home-aside-news .news-inline { margin: 0; }
+/* Aside esquerdo: jornal preenche toda a altura do grid */
+.home-aside-news {
+  display: flex;
+  flex-direction: column;
+}
+
+.home-aside-news .news-inline {
+  margin: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* A seção de lore expande para ocupar o espaço restante */
+.home-aside-news .news-inline-lore {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-aside-news .news-lore-body {
+  flex: 1;
+}
 
 .home-aside-ad {
   display: flex;
