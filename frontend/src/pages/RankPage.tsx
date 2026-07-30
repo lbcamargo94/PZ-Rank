@@ -144,6 +144,9 @@ export function RankPage() {
 
       <main>
         <div className="container rank-page-top">
+          <button className="rank-back-btn" onClick={() => navigate(-1)} type="button">
+            <i className="ti ti-arrow-left" /> Voltar
+          </button>
           <div className="rank-search-wrap">
             <i className="ti ti-search rank-search-icon" aria-hidden="true" />
             <input

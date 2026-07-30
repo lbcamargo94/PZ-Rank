@@ -194,6 +194,23 @@ body.rank-page-active .rank-table tbody tr:hover {
   padding-bottom: 4px;
 }
 
+.rank-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--text-3);
+  font-size: 14px;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 14px;
+  transition: color 0.15s;
+}
+.rank-back-btn:hover { color: var(--text-1); }
+.rank-back-btn .ti { font-size: 14px; }
+
 .rank-search-wrap {
   position: relative;
   display: flex;
