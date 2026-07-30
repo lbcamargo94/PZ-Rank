@@ -9,6 +9,21 @@
   text-shadow: 0 1px 8px rgba(0,0,0,0.55);
 }
 
+.lu-page.claim-page-wrap .back-link {
+  color: var(--text-1);
+  background: rgba(14,19,11,0.60);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  padding: 6px 14px;
+}
+.lu-page.claim-page-wrap .back-link:hover {
+  color: var(--green-light);
+  border-color: var(--green-border);
+  background: rgba(14,19,11,0.80);
+}
+
 .lu-page.claim-page-wrap .lu-header .lu-sub {
   color: var(--text-1);
   text-shadow: 0 1px 6px rgba(0,0,0,0.6);
