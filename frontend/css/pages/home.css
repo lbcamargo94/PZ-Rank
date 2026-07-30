@@ -1,5 +1,31 @@
 /* PZ Rank - Home page layout */
 
+/* ── Linha superior: jornal + publicidade lado a lado ───────── */
+.home-top-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 12px;
+  margin: 20px 0 0;
+  align-items: stretch;
+}
+
+/* Cancela a margem do card quando está no grid */
+.home-top-row .news-inline {
+  margin: 0;
+}
+
+/* Ad ocupa toda a altura da coluna */
+.home-top-row .home-ad-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 860px) {
+  .home-top-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ── Embla base ────────────────────────────────────────────── */
 .embla            { overflow: hidden; }
 .embla__container { display: flex; }
@@ -218,10 +244,11 @@
 
 .home-ad-wrap .ad-placeholder {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 14px 20px;
+  gap: 10px;
+  padding: 24px 16px;
   background: rgba(8,12,6,0.80);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -229,10 +256,11 @@
   border-radius: var(--radius-lg);
   color: var(--text-3);
   font-size: 14px;
-  flex-direction: row;
+  text-align: center;
+  flex: 1;
 }
 
-.home-ad-wrap .ad-placeholder .ti { font-size: 18px; color: var(--text-3); }
+.home-ad-wrap .ad-placeholder .ti { font-size: 28px; color: var(--text-3); }
 .home-ad-wrap .ad-placeholder-link {
   color: var(--text-3);
   text-decoration: underline;
@@ -333,6 +361,5 @@
   .quick-nav-card { padding: 18px 12px; min-height: 100px; }
   .quick-nav-icon { font-size: 22px; }
   .quick-nav-label { font-size: 13px; }
-  .home-ad-wrap .ad-placeholder { flex-direction: column; gap: 6px; text-align: center; }
   .home-ad-wrap .ad-placeholder-link { margin-left: 0; }
 }

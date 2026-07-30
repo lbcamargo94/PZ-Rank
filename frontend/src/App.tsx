@@ -77,9 +77,11 @@ function MainView() {
       <CommunityStats />
       <main>
         <div className="container">
-          <NewsInline />
-          <div className="home-ad-wrap">
-            <AdBanner />
+          <div className="home-top-row">
+            <NewsInline />
+            <div className="home-ad-wrap">
+              <AdBanner />
+            </div>
           </div>
           <QuickNav />
         </div>
