@@ -46,14 +46,9 @@ export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
                 <span className="btn-header-nick">{playerSession.nick}</span>
               </Link>
             ) : (
-              <>
-                <Link to="/cadastrar-conta" className="btn-header btn-header-register" onClick={close}>
-                  Cadastre-se
-                </Link>
-                <Link to="/login" className="btn-header btn-header-login" onClick={close}>
-                  Login
-                </Link>
-              </>
+              <Link to="/login" className="btn-header btn-header-login" onClick={close}>
+                Login
+              </Link>
             )}
           </div>
 

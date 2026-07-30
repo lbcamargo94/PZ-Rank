@@ -6,9 +6,41 @@ import { useToast } from '../hooks/useToast';
 import { Toast } from '../components/Toast';
 import cadastroBg from '../../assets/background/cadastro-bg.jpg';
 
+// ⚠️ Altere para true para reabrir os cadastros.
+const REGISTRATIONS_OPEN = false;
+
 const RE_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function RegistrationsClosed() {
+  return (
+    <div className="account-login-wrap claim-page-wrap" style={{ backgroundImage: `url(${cadastroBg})` }}>
+      <div className="account-login-card reg-card">
+        <Link to="/" className="reg-back-home">
+          <i className="ti ti-arrow-left" /> Página inicial
+        </Link>
+        <div className="reg-header">
+          <div className="reg-icon-wrap">
+            <i className="ti ti-lock" />
+          </div>
+          <h1 className="reg-title">Cadastros suspensos</h1>
+          <p className="reg-sub">
+            Os cadastros estão temporariamente suspensos. Acompanhe o servidor para saber quando a próxima temporada abrirá.
+          </p>
+        </div>
+        <div className="reg-footer" style={{ marginTop: '8px' }}>
+          <span className="reg-footer-text">Já tem uma conta?</span>
+          <Link to="/login" className="reg-footer-link">
+            <i className="ti ti-login" /> Fazer login
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function ClaimAccountPage() {
+  if (!REGISTRATIONS_OPEN) return <RegistrationsClosed />;
+
   const navigate = useNavigate();
   const { toast, showToast, clearToast } = useToast();
 

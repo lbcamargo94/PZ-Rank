@@ -47,7 +47,15 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
 });
 
 // POST /players/register — público
+// ⚠️ Cadastros suspensos temporariamente — altere para true para reabrir.
+const REGISTRATIONS_OPEN = false;
+
 router.post('/register', async (req: Request, res: Response): Promise<void> => {
+  if (!REGISTRATIONS_OPEN) {
+    res.status(403).json({ error: 'Cadastros temporariamente suspensos. Acompanhe o servidor para novidades.' });
+    return;
+  }
+
   const { nick, email, password, twitch_url, youtube_url, kick_url, tiktok_url } = req.body as {
     nick?:        string;
     email?:       string;
