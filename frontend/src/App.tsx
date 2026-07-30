@@ -27,6 +27,7 @@ import { ClaimAccountPage } from './pages/ClaimAccountPage';
 import { ResendVerificationPage } from './pages/ResendVerificationPage';
 import { LegendsPage }            from './pages/LegendsPage';
 import { TransparenciaPage }      from './pages/TransparenciaPage';
+import { ProfilePage }            from './pages/ProfilePage';
 import { MapPage }                from './pages/MapPage';
 import { LinksUteisPage }         from './pages/LinksUteisPage';
 import { RankPage }               from './pages/RankPage';
@@ -127,6 +128,7 @@ export default function App() {
           <Route path="/redefinir-senha"  element={<ResetPasswordPage />} />
           <Route path="/ativar-conta"     element={<ActivateAccountPage />} />
           <Route path="/login"             element={<AccountPage />} />
+          <Route path="/perfil"           element={<ProfilePage />} />
           <Route path="/esqueci-senha"    element={<ForgotPasswordPage />} />
           <Route path="/verificar-conta"  element={<ResendVerificationPage />} />
           <Route path="/cadastrar-conta"  element={<ClaimAccountPage />} />

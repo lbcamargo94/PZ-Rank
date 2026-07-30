@@ -41,7 +41,7 @@ export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
             </a>
 
             {playerSession ? (
-              <Link to="/login" className="btn-header btn-header-account" onClick={close}>
+              <Link to="/perfil" className="btn-header btn-header-account" onClick={close}>
                 <i className="ti ti-user-filled" aria-hidden="true" />
                 <span className="btn-header-nick">{playerSession.nick}</span>
               </Link>
@@ -96,7 +96,7 @@ export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
           </button>
           <div className="site-nav-divider" />
           <Link
-            to="/login"
+            to={playerSession ? '/perfil' : '/login'}
             className={`nav-item${playerSession ? ' nav-item-logged' : ''}`}
             onClick={close}
           >

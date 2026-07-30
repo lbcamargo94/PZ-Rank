@@ -369,3 +369,66 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
 }
+
+/* ── Página de Perfil do Usuário ─────────────────── */
+.profile-page {
+  flex: 1;
+  position: relative;
+  background-color: #050805;
+  background-size: cover;
+  background-position: center top;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+.profile-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: rgba(4,8,3,0.68);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.profile-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 28px 20px 56px;
+}
+
+.profile-loading {
+  color: var(--text-2);
+  text-align: center;
+  padding-top: 60px;
+  font-size: 16px;
+}
+
+.profile-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-3);
+  text-decoration: none;
+  font-size: 14px;
+  font-family: var(--font-mono);
+  margin-bottom: 16px;
+  transition: color 0.15s;
+}
+.profile-back:hover { color: var(--text-1); }
+.profile-back .ti { font-size: 14px; }
+
+.profile-card {
+  background: rgba(10,14,8,0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  padding: 32px 36px;
+}
+
+@media (max-width: 640px) {
+  .profile-card { padding: 24px 20px; }
+}
