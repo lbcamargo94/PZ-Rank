@@ -21,6 +21,7 @@
 a.btn-primary { text-decoration: none; }
 .btn-primary:active { transform: scale(0.97); }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary.btn-lg { font-size: 16px; padding: 13px 28px; gap: 8px; }
 
 .btn-secondary {
   background: transparent;

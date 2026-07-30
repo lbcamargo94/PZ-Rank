@@ -7,10 +7,10 @@ interface RankTableProps {
   entries:    Entry[];
   sortKey:    SortKey;
   loading:    boolean;
-  onSort:     (key: SortKey) => void;
-  onRegister: () => void;
-  onReload:   () => void;
+  onSort:    (key: SortKey) => void;
+  onReload:  () => void;
   tab:        RankTab;
+  iconOnly?:  boolean;
 }
 
 const EMPTY_MESSAGES: Record<RankTab, { icon: string; text: string }> = {
@@ -21,10 +21,11 @@ const EMPTY_MESSAGES: Record<RankTab, { icon: string; text: string }> = {
 };
 
 const SORT_LABELS: { key: SortKey; label: string }[] = [
-  { key: 'score', label: 'Pontos'  },
-  { key: 'days',  label: 'Dias'    },
-  { key: 'kills', label: 'Zumbis'  },
-  { key: 'time',  label: 'Tempo'   },
+  { key: 'score',      label: 'Pontos'      },
+  { key: 'days',       label: 'Dias vivo'   },
+  { key: 'kills',      label: 'Zumbis'      },
+  { key: 'skills',     label: 'Habilidades' },
+  { key: 'updated_at', label: 'Atualização' },
 ];
 
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
@@ -135,7 +136,7 @@ function RankCard({ entry, rank, onPlayerClick, hideStatus }: {
   );
 }
 
-export function RankTable({ entries, sortKey, loading, onSort, onRegister, onReload, tab }: RankTableProps) {
+export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, iconOnly }: RankTableProps) {
   const navigate = useNavigate();
   const hideStatus = false;
   const { icon: emptyIcon, text: emptyText } = EMPTY_MESSAGES[tab];
@@ -159,9 +160,6 @@ export function RankTable({ entries, sortKey, loading, onSort, onRegister, onRel
         <div className="sort-bar-actions">
           <button className="btn-reload" onClick={onReload} disabled={loading} aria-label="Recarregar tabela">
             <i className={`ti ti-refresh${loading ? ' spin' : ''}`} />
-          </button>
-          <button className="btn-primary btn-sm sort-register" onClick={onRegister}>
-            <i className="ti ti-user-plus" aria-hidden="true" /> Cadastrar-se
           </button>
         </div>
       </div>
@@ -191,7 +189,7 @@ export function RankTable({ entries, sortKey, loading, onSort, onRegister, onRel
               </thead>
               <tbody>
                 {entries.map((entry, i) => (
-                  <RankRow key={entry.id} entry={entry} rank={i + 1} hideStatus={hideStatus} />
+                  <RankRow key={entry.id} entry={entry} rank={i + 1} hideStatus={hideStatus} iconOnly={iconOnly} />
                 ))}
               </tbody>
             </table>

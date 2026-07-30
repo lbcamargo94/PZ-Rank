@@ -34,7 +34,7 @@
   hours_without_sleep?: number | null;
 }
 
-export type SortKey = 'days' | 'kills' | 'time' | 'score';
+export type SortKey = 'days' | 'kills' | 'time' | 'score' | 'skills' | 'updated_at';
 export type RankTab = 'rank' | 'records' | 'dead' | 'disqualified';
 
 export interface DecodedCode {

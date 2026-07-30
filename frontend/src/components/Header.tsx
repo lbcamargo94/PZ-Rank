@@ -70,6 +70,9 @@ export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
 
       <nav className={`site-nav${menuOpen ? ' site-nav-open' : ''}`} aria-label="Navegação principal">
         <div className="container site-nav-inner">
+          <Link to="/rank" className="nav-item" onClick={close}>
+            <i className="ti ti-trophy" aria-hidden="true" /> Rank
+          </Link>
           <button className="nav-item" onClick={() => { onRules(); close(); }}>
             <i className="ti ti-book" aria-hidden="true" /> Regras
           </button>

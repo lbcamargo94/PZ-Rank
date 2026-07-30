@@ -1,0 +1,106 @@
+/* RankPage — body background override */
+
+body.rank-page-active {
+  background-image: url('../../assets/background/rank-background.webp');
+  background-size: cover;
+  background-position: center top;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+/* RankPage — homepage CTA + search bar */
+
+.home-rank-cta {
+  padding: 32px 0 40px;
+  display: flex;
+  justify-content: center;
+}
+
+.rank-page-top {
+  padding-top: 20px;
+  padding-bottom: 4px;
+}
+
+.rank-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 440px;
+}
+
+.rank-search-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--text-3);
+  font-size: 16px;
+  pointer-events: none;
+}
+
+.rank-search-input {
+  width: 100%;
+  background: var(--bg-2);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  color: var(--text-1);
+  font-size: 15px;
+  padding: 9px 36px 9px 38px;
+  outline: none;
+  transition: border-color 0.18s;
+}
+
+.rank-search-input:focus {
+  border-color: var(--green);
+}
+
+.rank-search-input::placeholder {
+  color: var(--text-3);
+}
+
+/* Remove browser native clear button to avoid overlap with our own */
+.rank-search-input::-webkit-search-cancel-button { display: none; }
+
+.rank-search-clear {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  color: var(--text-3);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.rank-search-clear:hover {
+  color: var(--text-1);
+}
+
+/* Status icon-only variant (used in RankPage) */
+
+.status-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 14px;
+  cursor: default;
+}
+
+.status-alive {
+  color: var(--green);
+  background: color-mix(in srgb, var(--green) 12%, transparent);
+}
+
+.status-dead {
+  color: var(--red);
+  background: color-mix(in srgb, var(--red) 12%, transparent);
+}
+
+.status-disq {
+  color: var(--amber);
+  background: color-mix(in srgb, var(--amber) 12%, transparent);
+}
