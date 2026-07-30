@@ -174,7 +174,7 @@ export function ClaimAccountPage() {
           {/* Nick */}
           <div className="reg-field">
             <label className="reg-label" htmlFor="reg-nick">
-              <i className="ti ti-at" /> Nick no jogo
+              <i className="ti ti-brand-discord" /> Nick no Discord
             </label>
             <div className="reg-input-wrap">
               <input
