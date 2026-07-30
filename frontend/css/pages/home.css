@@ -26,11 +26,12 @@
   flex: 1;
 }
 
-/* Ad: height 100% estabelece dimensão definida para o flex filho crescer */
+/* Ad: flex column com min-height garante que o container nunca colapsa */
 .home-top-row .home-ad-wrap {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  min-height: 300px;
+  margin: 0;
 }
 
 @media (max-width: 860px) {
@@ -299,8 +300,8 @@
 .home-ad-wrap .ad-placeholder:has(.ad-placeholder-img) {
   padding: 0;
   gap: 0;
-  background: transparent;
-  border: none;
+  background: rgba(8,12,6,0.80);
+  border-color: var(--border-mid);
 }
 
 .ad-placeholder-img-link {

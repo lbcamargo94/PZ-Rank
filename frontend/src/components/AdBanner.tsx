@@ -55,7 +55,6 @@ export function AdBanner() {
             src={adImg}
             alt="Anuncie aqui — Apoie o Brasileirão PZ"
             className="ad-placeholder-img"
-            loading="lazy"
           />
         </Link>
       )}
