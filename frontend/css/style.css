@@ -8246,18 +8246,20 @@ a.btn-ghost { text-decoration: none; }
 /* ===== REGISTRO / CADASTRO PAGE ===== */
 .reg-card {
   width: 100%;
-  max-width: 420px;
-  padding: 28px 32px;
+  max-width: 440px;
+  padding: 36px 40px;
 }
 
 .reg-header {
   text-align: center;
-  margin-bottom: 16px;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
 }
 
 .reg-icon-wrap {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   background: var(--green-dim);
   border: 1px solid var(--green-border);
@@ -8266,7 +8268,7 @@ a.btn-ghost { text-decoration: none; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .reg-title {
@@ -8274,13 +8276,13 @@ a.btn-ghost { text-decoration: none; }
   font-size: 22px;
   font-weight: 700;
   color: var(--text-1);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .reg-sub {
   font-size: 13px;
   color: var(--text-3);
-  line-height: 1.55;
+  line-height: 1.6;
 }
 
 .reg-email-highlight {
@@ -8292,7 +8294,8 @@ a.btn-ghost { text-decoration: none; }
 .reg-steps {
   display: flex;
   align-items: flex-start;
-  margin-bottom: 20px;
+  padding: 0 8px;
+  margin-bottom: 24px;
 }
 
 .reg-step-item {
@@ -8300,7 +8303,7 @@ a.btn-ghost { text-decoration: none; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
 }
 
 .reg-step-track {
@@ -8310,13 +8313,13 @@ a.btn-ghost { text-decoration: none; }
 }
 
 .reg-step-dot {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   border: 2px solid var(--border-mid);
   background: var(--bg-3);
   color: var(--text-4);
-  font-size: 12px;
+  font-size: 13px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -8343,10 +8346,13 @@ a.btn-ghost { text-decoration: none; }
   transition: color 0.2s;
 }
 
-.reg-step-item.is-active .reg-step-dot  { border-color: var(--green); background: var(--green-dim); color: var(--green-light); }
+.reg-step-item.is-active .reg-step-dot   { border-color: var(--green); background: var(--green-dim); color: var(--green-light); }
 .reg-step-item.is-active .reg-step-label { color: var(--green-light); }
-.reg-step-item.is-done   .reg-step-dot  { border-color: var(--green); background: var(--green); color: #fff; }
+.reg-step-item.is-done   .reg-step-dot   { border-color: var(--green); background: var(--green); color: #fff; }
 .reg-step-item.is-done   .reg-step-label { color: var(--text-2); }
+
+/* Form scoping */
+.reg-card .account-login-form { gap: 18px; }
 
 /* Field hint */
 .reg-field-hint {
@@ -8361,9 +8367,9 @@ a.btn-ghost { text-decoration: none; }
 .reg-submit {
   width: 100%;
   justify-content: center;
-  padding: 11px;
+  padding: 12px;
   font-size: 14px;
-  margin-top: 4px;
+  margin-top: 8px;
 }
 
 /* Footer links */
@@ -8372,8 +8378,8 @@ a.btn-ghost { text-decoration: none; }
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin-top: 16px;
-  padding-top: 16px;
+  margin-top: 20px;
+  padding-top: 18px;
   border-top: 1px solid var(--border);
 }
 
@@ -8391,4 +8397,8 @@ a.btn-ghost { text-decoration: none; }
 }
 .reg-footer-link:hover { opacity: 0.8; }
 
-.reg-back-link { text-align: center; margin-top: 10px; }
+.reg-back-link { text-align: center; margin-top: 12px; }
+
+@media (max-width: 460px) {
+  .reg-card { padding: 28px 24px; }
+}
