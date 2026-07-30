@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import useEmblaCarousel from 'embla-carousel-react';
+import Autoplay from 'embla-carousel-autoplay';
 import { apiGetLatestNews } from '../lib/api';
 import type { DailyNews, NewsStats } from '../types';
 
@@ -181,33 +183,21 @@ export function NewsInline() {
     return Math.floor((Date.now() - start) / 86_400_000) % LORE_HEADLINES.length;
   })();
   const [loreIdx, setLoreIdx] = useState(initIdx);
-  const loreTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  function startLoreTimer() {
-    if (loreTimer.current) clearInterval(loreTimer.current);
-    loreTimer.current = setInterval(() => {
-      setLoreIdx(i => (i + 1) % LORE_HEADLINES.length);
-    }, 60_000);
-  }
-
-  function prevLore() {
-    setLoreIdx(i => (i - 1 + LORE_HEADLINES.length) % LORE_HEADLINES.length);
-    startLoreTimer();
-  }
-
-  function nextLore() {
-    setLoreIdx(i => (i + 1) % LORE_HEADLINES.length);
-    startLoreTimer();
-  }
+  const [loreRef, loreApi] = useEmblaCarousel(
+    { loop: true },
+    [Autoplay({ delay: 60_000, stopOnInteraction: false })]
+  );
 
   useEffect(() => {
-    apiGetLatestNews()
-      .then(setNews)
-      .catch(() => {})
-      .finally(() => setLoading(false));
-    startLoreTimer();
-    return () => { if (loreTimer.current) clearInterval(loreTimer.current); };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    apiGetLatestNews().then(setNews).catch(() => {}).finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    if (!loreApi) return;
+    if (initIdx > 0) loreApi.scrollTo(initIdx, false);
+    loreApi.on('select', () => setLoreIdx(loreApi.selectedScrollSnap()));
+  }, [loreApi]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) return (
     <div className="news-inline news-inline--loading">
@@ -221,8 +211,6 @@ export function NewsInline() {
   const stats    = news.stats ?? null;
   const headline = news.headline ?? (stats ? autoHeadline(stats) : null);
   const hasActivity = stats && (stats.deaths_today > 0 || stats.syncs_today > 0 || stats.kills_today > 0);
-  const lore = LORE_HEADLINES[loreIdx];
-
   return (
     <div className="news-inline">
       <div className="news-inline-head">
@@ -271,25 +259,31 @@ export function NewsInline() {
         </div>
       )}
 
-      {/* Arquivo histórico — carrossel de manchetes do PZ */}
+      {/* Arquivo histórico — carrossel Embla */}
       <div className="news-inline-lore">
         <div className="news-lore-header">
           <span className="news-inline-lore-source">
             <i className="ti ti-archive" /> Arquivo Histórico
           </span>
           <div className="news-lore-controls">
-            <button className="lore-nav-btn" onClick={prevLore} aria-label="Anterior">
+            <button className="lore-nav-btn" onClick={() => loreApi?.scrollPrev()} aria-label="Anterior">
               <i className="ti ti-chevron-left" />
             </button>
             <span className="lore-nav-counter">{loreIdx + 1}/{LORE_HEADLINES.length}</span>
-            <button className="lore-nav-btn" onClick={nextLore} aria-label="Próximo">
+            <button className="lore-nav-btn" onClick={() => loreApi?.scrollNext()} aria-label="Próximo">
               <i className="ti ti-chevron-right" />
             </button>
           </div>
         </div>
-        <div key={loreIdx} className="news-lore-body">
-          <span className="news-lore-origin">{lore.source}</span>
-          <p className="news-inline-lore-text">{lore.text}</p>
+        <div className="embla lore-embla" ref={loreRef}>
+          <div className="embla__container">
+            {LORE_HEADLINES.map((lore, i) => (
+              <div key={i} className="embla__slide news-lore-body">
+                <span className="news-lore-origin">{lore.source}</span>
+                <p className="news-inline-lore-text">{lore.text}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

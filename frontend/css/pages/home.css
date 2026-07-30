@@ -68,6 +68,20 @@
   .home-aside-ad .ad-placeholder { min-height: 100px; }
 }
 
+/* ── Embla base ────────────────────────────────────────────── */
+.embla          { overflow: hidden; }
+.embla__container { display: flex; }
+.embla__slide   { flex: 0 0 100%; min-width: 0; }
+
+/* Lore embla: preenche o espaço flex herdado */
+.lore-embla,
+.home-aside-news .lore-embla { flex: 1; }
+.lore-embla .embla__container { height: 100%; }
+.lore-embla .embla__slide    { height: 100%; }
+
+/* Quick nav embla */
+.qnav-embla .embla__slide { padding: 0; }
+
 /* ── Arquivo Histórico — carrossel de lore ─────────────────── */
 .news-inline-lore {
   border-top: 1px solid var(--border-mid);
@@ -133,7 +147,6 @@
 
 .news-lore-body {
   padding: 12px 16px 16px;
-  animation: lore-slide-in 0.35s ease;
 }
 
 .news-lore-origin {
