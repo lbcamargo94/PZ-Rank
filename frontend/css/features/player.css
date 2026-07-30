@@ -2,7 +2,7 @@
 
 /* ── Coluna de habilidades — contador (botão) ─────────────── */
 .rank-skills { white-space: nowrap; }
-.rank-updated { font-family: var(--font-mono); font-size: 14px; color: var(--text-3); white-space: nowrap; }
+/* .rank-updated styles moved to components/table.css */
 
 .skills-no-data { color: var(--text-4); font-family: var(--font-mono); font-size: 14px; }
 
@@ -382,8 +382,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  margin-top: 3px;
-  padding: 2px 8px;
+  padding: 4px 10px;
   font-family: var(--font-mono);
   font-size: 14px;
   color: var(--green);

@@ -181,7 +181,6 @@ export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, ic
                   {!hideStatus && <th>Status</th>}
                   <th>Pontos</th>
                   <th>Dias</th>
-                  <th>Tempo</th>
                   <th>Zumbis</th>
                   <th>Habilidades</th>
                   <th>Atualizado</th>

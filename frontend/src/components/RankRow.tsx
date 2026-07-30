@@ -134,14 +134,14 @@ function SkillsCell({ skills, charName }: { skills: string | null; charName?: st
   );
 }
 
-function fmtDate(iso: string | null | undefined): string {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  const dd   = String(d.getDate()).padStart(2, '0');
-  const mm   = String(d.getMonth() + 1).padStart(2, '0');
-  const hh   = String(d.getHours()).padStart(2, '0');
-  const min  = String(d.getMinutes()).padStart(2, '0');
-  return dd + '/' + mm + '/' + d.getFullYear() + ' - ' + hh + ':' + min;
+function fmtDateParts(iso: string | null | undefined): { date: string; time: string } | null {
+  if (!iso) return null;
+  const d   = new Date(iso);
+  const dd  = String(d.getDate()).padStart(2, '0');
+  const mm  = String(d.getMonth() + 1).padStart(2, '0');
+  const hh  = String(d.getHours()).padStart(2, '0');
+  const min = String(d.getMinutes()).padStart(2, '0');
+  return { date: `${dd}/${mm}/${d.getFullYear()}`, time: `${hh}:${min}` };
 }
 
 function MiniBar({ value, max, done }: { value: number; max: number; done?: boolean }) {
@@ -201,7 +201,6 @@ export function RankRow({ entry, rank, hideStatus, iconOnly }: RankRowProps) {
         </div>
       </td>
       <td className="rank-days">{entry.days}d</td>
-      <td className="rank-time">{entry.time_str ?? '—'}</td>
       <td className="rank-kills">
         <div className="rk-bar-cell">
           <span>{entry.kills.toLocaleString('pt-BR')}</span>
@@ -211,7 +210,14 @@ export function RankRow({ entry, rank, hideStatus, iconOnly }: RankRowProps) {
       <td className="rank-skills">
         <SkillsCell skills={entry.skills} charName={entry.character_name ?? undefined} />
       </td>
-      <td className="rank-updated">{fmtDate(entry.updated_at ?? entry.created_at)}</td>
+      <td className="rank-updated">
+        {(() => {
+          const p = fmtDateParts(entry.updated_at ?? entry.created_at);
+          return p
+            ? <><span className="rank-updated-date">{p.date}</span><span className="rank-updated-time">{p.time}</span></>
+            : '—';
+        })()}
+      </td>
       <td className="rank-actions">
         {entry.player_id && (
           <Link to={`/player/${entry.player_id}`} className="btn-details">
