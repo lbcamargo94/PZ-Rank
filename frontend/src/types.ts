@@ -84,14 +84,17 @@ export interface Player {
 export interface Moderator {
   id:         string;
   login:      string;
+  email:      string;
   role:       ModeratorRole;
   created_at: string;
 }
 
 export interface ModSession {
-  token: string;
-  role:  ModeratorRole;
-  login: string;
+  token:  string;
+  role:   ModeratorRole;
+  login:  string;
+  email:  string;
+  modId:  string;
 }
 
 export type ModStatus = 'active' | 'blocked';

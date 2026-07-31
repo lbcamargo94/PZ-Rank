@@ -9,7 +9,7 @@ import { PendingPlayers }        from '../components/painel/PendingPlayers';
 import { UpdateRankModal }       from '../components/painel/UpdateRankModal';
 import { EditObjectivesModal }   from '../components/painel/EditObjectivesModal';
 import { ModeratorsList }        from '../components/painel/ModeratorsList';
-import { CreateModeratorModal }  from '../components/painel/CreateModeratorModal';
+import { InviteModeratorModal }  from '../components/painel/InviteModeratorModal';
 import { ConfirmModal }          from '../components/painel/ConfirmModal';
 import { CodeDecoder }           from '../components/painel/CodeDecoder';
 import { SandboxPage }          from '../components/painel/SandboxPage';
@@ -122,7 +122,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
   const [entryFilter,    setEntryFilter]    = useState<EntryFilter>('all');
   const [entrySearch,    setEntrySearch]    = useState('');
   const [showUpdateRank,       setShowUpdateRank]       = useState(false);
-  const [showCreateMod,        setShowCreateMod]        = useState(false);
+  const [showInviteMod,        setShowInviteMod]        = useState(false);
   const [editObjEntry,         setEditObjEntry]         = useState<Entry | null>(null);
   const [confirmDeleteEntryId, setConfirmDeleteEntryId] = useState<number | null>(null);
   const [sandboxEntry,         setSandboxEntry]         = useState<Entry | null>(null);
@@ -389,9 +389,9 @@ export function PainelPage({ session, onSession, onBack }: Props) {
         {tab === 'moderators' && (
           <ModeratorsList
             token={session.token}
-            currentId={session.token}
+            currentId={session.modId}
             showToast={showToast}
-            onCreateClick={() => setShowCreateMod(true)}
+            onInviteClick={() => setShowInviteMod(true)}
           />
         )}
 
@@ -551,11 +551,10 @@ export function PainelPage({ session, onSession, onBack }: Props) {
         />
       )}
 
-      {showCreateMod && (
-        <CreateModeratorModal
+      {showInviteMod && (
+        <InviteModeratorModal
           token={session.token}
-          onClose={() => setShowCreateMod(false)}
-          onSuccess={() => {}}
+          onClose={() => setShowInviteMod(false)}
           showToast={showToast}
         />
       )}

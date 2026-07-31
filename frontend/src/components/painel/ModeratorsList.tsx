@@ -7,12 +7,12 @@ interface Props {
   token:      string;
   currentId?: string;
   showToast:  (msg: string, type?: string) => void;
-  onCreateClick: () => void;
+  onInviteClick: () => void;
 }
 
 const ROLE_LABELS = { master: 'Master', moderator: 'Moderador' };
 
-export function ModeratorsList({ token, currentId, showToast, onCreateClick }: Props) {
+export function ModeratorsList({ token, currentId, showToast, onInviteClick }: Props) {
   const [mods,          setMods]          = useState<Moderator[]>([]);
   const [loading,       setLoading]       = useState(false);
   const [deleting,      setDeleting]      = useState<string | null>(null);
@@ -45,8 +45,8 @@ export function ModeratorsList({ token, currentId, showToast, onCreateClick }: P
     <div className="painel-section">
       <div className="painel-section-header">
         <h2>Moderadores</h2>
-        <button className="btn-primary btn-sm" onClick={onCreateClick}>
-          <i className="ti ti-plus" /> Novo moderador
+        <button className="btn-primary btn-sm" onClick={onInviteClick}>
+          <i className="ti ti-mail-forward" /> Convidar moderador
         </button>
       </div>
 
@@ -56,6 +56,7 @@ export function ModeratorsList({ token, currentId, showToast, onCreateClick }: P
         <div key={m.id} className="player-card">
           <div className="player-card-info">
             <span className="player-nick">{m.login}</span>
+            <span className="mod-email-display">{m.email}</span>
             <span className={`player-status status-badge-${m.role}`}>{ROLE_LABELS[m.role]}</span>
           </div>
           {m.id !== currentId && m.role !== 'master' && (

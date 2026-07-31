@@ -11,29 +11,37 @@ const router = Router();
 
 // Login: verifica credenciais na tabela moderators e retorna JWT próprio
 router.post('/login', async (req: Request, res: Response): Promise<void> => {
-  const { login, password } = req.body as { login?: string; password?: string };
-  if (!login || !password) {
-    res.status(400).json({ error: 'Login e senha são obrigatórios.' });
+  const { email, password } = req.body as { email?: string; password?: string };
+  if (!email || !password) {
+    res.status(400).json({ error: 'Email e senha são obrigatórios.' });
     return;
   }
 
   try {
     const { data: mod, error } = await supabase
       .from('moderators')
-      .select('id, login, role, password_hash')
-      .eq('login', login.trim().toLowerCase())
+      .select('id, login, email, role, password_hash, email_verified_at')
+      .eq('email', email.trim().toLowerCase())
       .single();
 
     if (error || !mod) {
-      res.status(401).json({ error: 'Login ou senha incorretos.' });
+      res.status(401).json({ error: 'Email ou senha incorretos.' });
       return;
     }
 
-    const modRow = mod as { id: string; login: string; role: ModeratorRole; password_hash: string };
+    const modRow = mod as {
+      id: string; login: string; email: string;
+      role: ModeratorRole; password_hash: string; email_verified_at: string | null;
+    };
+
+    if (!modRow.email_verified_at) {
+      res.status(401).json({ error: 'Conta não verificada. Conclua o cadastro via link de convite.' });
+      return;
+    }
 
     const valid = await bcrypt.compare(password, modRow.password_hash);
     if (!valid) {
-      res.status(401).json({ error: 'Login ou senha incorretos.' });
+      res.status(401).json({ error: 'Email ou senha incorretos.' });
       return;
     }
 
@@ -45,7 +53,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
 
     res.json({
       session: { access_token: token },
-      user:    { login: modRow.login },
+      user:    { id: modRow.id, login: modRow.login, email: modRow.email },
       role:    modRow.role,
     });
   } catch (err) {
@@ -55,13 +63,11 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
 });
 
 router.post('/logout', (_req: Request, res: Response): void => {
-  // JWT é stateless — basta o cliente descartar o token
   res.status(204).send();
 });
 
-// Mantido para compatibilidade caso necessário no futuro
 router.post('/signup', async (_req: Request, res: Response): Promise<void> => {
-  res.status(403).json({ error: 'Cadastro direto não permitido. Use o painel de moderadores.' });
+  res.status(403).json({ error: 'Cadastro direto não permitido. Use o convite enviado pelo painel de moderadores.' });
 });
 
 export { translateSupabaseError };

@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { apiLogin } from '../../lib/api';
 import type { ModSession } from '../../types';
 
@@ -9,7 +9,7 @@ interface Props {
 }
 
 export function PainelLogin({ onSuccess, onBack, showToast }: Props) {
-  const [login,    setLogin]    = useState('');
+  const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
   const [loading,  setLoading]  = useState(false);
 
@@ -17,7 +17,7 @@ export function PainelLogin({ onSuccess, onBack, showToast }: Props) {
     e.preventDefault();
     setLoading(true);
     try {
-      const session = await apiLogin(login, password);
+      const session = await apiLogin(email, password);
       onSuccess(session);
     } catch (err) {
       showToast((err as Error).message, 'error');
@@ -35,7 +35,6 @@ export function PainelLogin({ onSuccess, onBack, showToast }: Props) {
       </button>
 
       <div className="painel-login-box">
-        {/* ── Ícone de segurança ── */}
         <div className="painel-login-icon-wrap">
           <i className="ti ti-shield-lock painel-login-icon" />
         </div>
@@ -50,17 +49,17 @@ export function PainelLogin({ onSuccess, onBack, showToast }: Props) {
 
         <form className="modal-form" onSubmit={handleSubmit} noValidate>
           <div className="painel-login-field">
-            <label className="form-label" htmlFor="mod-login">
-              <i className="ti ti-user" /> Login
+            <label className="form-label" htmlFor="mod-email">
+              <i className="ti ti-mail" /> Email
             </label>
             <input
-              id="mod-login"
+              id="mod-email"
               className="form-input painel-login-input"
-              type="text"
-              placeholder="seu_login"
-              value={login}
-              onChange={e => setLogin(e.target.value)}
-              autoComplete="username"
+              type="email"
+              placeholder="seu@email.com"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              autoComplete="email"
               required
             />
           </div>
@@ -84,7 +83,7 @@ export function PainelLogin({ onSuccess, onBack, showToast }: Props) {
           <button
             className="btn-primary btn-block painel-login-btn"
             type="submit"
-            disabled={loading || !login || !password}
+            disabled={loading || !email || !password}
           >
             {loading
               ? <><i className="ti ti-loader-2" /> Verificando...</>

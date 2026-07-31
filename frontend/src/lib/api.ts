@@ -16,7 +16,7 @@ export class ApiError extends Error {
 
 interface LoginResponse {
   session: { access_token: string };
-  user:    { login: string };
+  user:    { id: string; login: string; email: string };
   role:    ModeratorRole | null;
 }
 
@@ -72,13 +72,19 @@ function auth(token: string): RequestInit {
 
 // ── Auth ────────────────────────────────────────────────────
 
-export async function apiLogin(login: string, password: string): Promise<ModSession> {
+export async function apiLogin(email: string, password: string): Promise<ModSession> {
   const data = await request<LoginResponse>('/auth/login', {
     method: 'POST',
-    ...json(null, { login, password }),
+    ...json(null, { email, password }),
   });
   if (!data.role) throw new Error('Usuário não tem permissão de moderador.');
-  return { token: data.session.access_token, role: data.role, login: data.user.login };
+  return {
+    token:  data.session.access_token,
+    role:   data.role,
+    login:  data.user.login,
+    email:  data.user.email,
+    modId:  data.user.id,
+  };
 }
 
 export function apiLogout(token: string): Promise<void> {
@@ -251,10 +257,26 @@ export function apiGetModerators(token: string): Promise<Moderator[]> {
   return request('/moderators', auth(token));
 }
 
-export function apiCreateModerator(
-  token: string, data: { login: string; password: string }
-): Promise<Moderator> {
-  return request('/moderators', { method: 'POST', ...json(token, data) });
+export function apiSendModeratorInvite(token: string, email: string): Promise<{ message: string }> {
+  return request('/moderators/invite', { method: 'POST', ...json(token, { email }) });
+}
+
+export function apiGetModeratorInvite(inviteToken: string): Promise<{ email: string }> {
+  return request(`/moderators/invite/${inviteToken}`);
+}
+
+export function apiRegisterModerator(data: {
+  invite_token: string; login: string; password: string;
+}): Promise<{ message: string; email: string; email_failed?: boolean }> {
+  return request('/moderators/register', { method: 'POST', ...json(null, data) });
+}
+
+export function apiConfirmModeratorOtp(email: string, code: string): Promise<{ message: string }> {
+  return request('/moderators/otp/confirm', { method: 'POST', ...json(null, { email, code }) });
+}
+
+export function apiResendModeratorOtp(email: string): Promise<{ message: string }> {
+  return request('/moderators/otp/resend', { method: 'POST', ...json(null, { email }) });
 }
 
 export function apiDeleteModerator(token: string, id: string): Promise<void> {

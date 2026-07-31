@@ -187,6 +187,37 @@ export async function sendOtpEmail(
   });
 }
 
+export async function sendModeratorInviteEmail(email: string, inviteUrl: string): Promise<void> {
+  const html = baseTemplate('Convite de moderador — PZ Community Rank', `
+    <h2 style="margin:0 0 16px;font-size:22px;color:#fff;">Você foi convidado!</h2>
+    <p style="margin:0 0 24px;color:#aaa;line-height:1.6;">
+      Você recebeu um convite para se tornar <strong style="color:#4ade80;">Moderador</strong>
+      do <strong>PZ Community Rank</strong>.
+      Clique no botão abaixo para criar sua conta de moderador.
+    </p>
+    <table cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+      <tr>
+        <td style="background:#4ade80;border-radius:6px;">
+          <a href="${inviteUrl}" style="display:block;padding:14px 28px;color:#000;font-weight:700;font-size:15px;text-decoration:none;">
+            Criar conta de moderador
+          </a>
+        </td>
+      </tr>
+    </table>
+    <p style="margin:0;font-size:12px;color:#555;">
+      Link expira em 48 horas. Se você não esperava este convite, pode ignorar este email com segurança.<br/>
+      <a href="${inviteUrl}" style="color:#4ade80;word-break:break-all;">${inviteUrl}</a>
+    </p>
+  `);
+
+  await sendEmail({
+    from:    config.fromEmail,
+    to:      email,
+    subject: '🛡️ Convite de moderador — PZ Community Rank',
+    html,
+  });
+}
+
 export async function sendApprovalEmail(email: string, nick: string): Promise<void> {
   const link = config.frontendUrl;
   const html = baseTemplate('Conta aprovada — PZ Community Rank', `

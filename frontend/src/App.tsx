@@ -30,6 +30,7 @@ import { ProfilePage }            from './pages/ProfilePage';
 import { MapPage }                from './pages/MapPage';
 import { LinksUteisPage }         from './pages/LinksUteisPage';
 import { RankPage }               from './pages/RankPage';
+import { ModeratorRegisterPage }  from './pages/ModeratorRegisterPage';
 
 const QUICK_NAV = [
   { to: '/rank',          icon: 'ti-trophy',           label: 'Ranking',         sub: 'Classificação geral'   },
@@ -133,6 +134,7 @@ export default function App() {
               onBack={() => navigate('/')}
             />
           } />
+          <Route path="/painel/convite/:token" element={<ModeratorRegisterPage />} />
         </Routes>
       </div>
       <Footer />

@@ -266,6 +266,15 @@
 .status-badge-moderator { color: #80a0cc; background: rgba(80,100,180,.1); border: 1px solid rgba(80,100,180,.25); padding: 2px 7px; border-radius: 10px; }
 .status-badge-master    { color: var(--gold); background: rgba(200,168,75,.12); border: 1px solid rgba(200,168,75,.3); padding: 2px 7px; border-radius: 10px; }
 
+.mod-email-display {
+  font-size: 13px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .player-card-links {
   display: flex;
   align-items: center;

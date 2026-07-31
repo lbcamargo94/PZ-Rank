@@ -34,12 +34,24 @@ CREATE TABLE IF NOT EXISTS player_tokens (
 );
 
 CREATE TABLE IF NOT EXISTS moderators (
-  id            TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
-  login         TEXT    NOT NULL UNIQUE,
-  role          TEXT    NOT NULL DEFAULT 'moderator'
-                CHECK (role IN ('moderator', 'master')),
-  password_hash TEXT    NOT NULL,
-  created_at    TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+  id                TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  login             TEXT    NOT NULL UNIQUE,
+  email             TEXT    UNIQUE,
+  email_verified_at TEXT    DEFAULT NULL,
+  role              TEXT    NOT NULL DEFAULT 'moderator'
+                    CHECK (role IN ('moderator', 'master')),
+  password_hash     TEXT    NOT NULL,
+  created_at        TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+);
+
+CREATE TABLE IF NOT EXISTS moderator_tokens (
+  id          INTEGER  PRIMARY KEY AUTOINCREMENT,
+  email       TEXT     NOT NULL,
+  token       TEXT     NOT NULL UNIQUE,
+  type        TEXT     NOT NULL CHECK (type IN ('invite', 'otp')),
+  expires_at  TEXT     NOT NULL,
+  used_at     TEXT     DEFAULT NULL,
+  created_at  TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
 );
 
 CREATE TABLE IF NOT EXISTS entries (
@@ -99,9 +111,11 @@ CREATE TABLE IF NOT EXISTS mod_dependencies (
 );
 
 -- Seed: moderador master (login=admin, senha=admin123)
-INSERT OR IGNORE INTO moderators (id, login, role, password_hash) VALUES (
+INSERT OR IGNORE INTO moderators (id, login, email, email_verified_at, role, password_hash) VALUES (
   'aaaaaaaa-0000-4000-8000-000000000001',
   'admin',
+  'lb.camargo94@gmail.com',
+  strftime('%Y-%m-%dT%H:%M:%SZ', 'now'),
   'master',
   '$2b$10$USBsx2GHapo/wz7X2mBUremnmMCdZ.p9Sc11EoFgVaAQMB4Efdjz2'
 );
