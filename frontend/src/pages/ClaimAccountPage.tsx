@@ -130,12 +130,17 @@ export function ClaimAccountPage() {
   }
 
   async function handleResend() {
+    setLoading(true);
     try {
       await apiResendRegistrationOtp(email.trim());
-      setResendMsg('Novo código enviado!');
-      setTimeout(() => setResendMsg(''), 4000);
-    } catch {
-      setResendMsg('Erro ao reenviar. Tente novamente.');
+      setOtpCode('');
+      setOtpError('');
+      setResendMsg('Novo código enviado! Verifique seu email.');
+      setTimeout(() => setResendMsg(''), 5000);
+    } catch (err) {
+      setResendMsg((err as Error).message || 'Erro ao reenviar. Tente novamente.');
+    } finally {
+      setLoading(false);
     }
   }
 

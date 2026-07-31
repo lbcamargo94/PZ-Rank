@@ -374,9 +374,13 @@ router.post('/otp/resend-registration', async (req: Request, res: Response): Pro
     expires_at: expiresAt,
   }]);
 
-  await sendOtpEmail(email.trim().toLowerCase(), playerRow.nick, code, 'verify_email').catch(err =>
-    console.error('[resend-registration-otp] Falha ao enviar:', err)
-  );
+  try {
+    await sendOtpEmail(email.trim().toLowerCase(), playerRow.nick, code, 'verify_email');
+  } catch (err) {
+    console.error('[resend-registration-otp] Falha ao enviar:', err);
+    res.status(500).json({ error: 'Não foi possível enviar o email. Tente novamente em instantes.' });
+    return;
+  }
 
   res.json(GENERIC);
 });
