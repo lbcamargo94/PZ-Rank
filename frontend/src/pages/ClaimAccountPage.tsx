@@ -7,7 +7,7 @@ import { Toast } from '../components/Toast';
 import cadastroBg from '../../assets/background/cadastro-bg.jpg';
 
 // ⚠️ Altere para true para reabrir os cadastros.
-const REGISTRATIONS_OPEN = false;
+const REGISTRATIONS_OPEN = true;
 
 const RE_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

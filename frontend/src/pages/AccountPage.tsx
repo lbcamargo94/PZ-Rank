@@ -112,7 +112,9 @@ function LoginForm({ onLogin }: { onLogin: (s: PlayerSession) => void }) {
         </form>
 
         <div className="reg-footer">
-          <span className="reg-footer-text">Cadastros suspensos no momento.</span>
+          <Link to="/cadastrar-conta" className="reg-footer-link">
+            <i className="ti ti-user-plus" /> Não tem conta? Cadastre-se
+          </Link>
         </div>
 
         <div className="reg-aux-links">
