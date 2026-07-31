@@ -57,7 +57,7 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
 
 // POST /players/register — público
 // ⚠️ Cadastros suspensos temporariamente — altere para true para reabrir.
-const REGISTRATIONS_OPEN = false;
+const REGISTRATIONS_OPEN = true;
 
 router.post('/register', async (req: Request, res: Response): Promise<void> => {
   if (!REGISTRATIONS_OPEN) {
