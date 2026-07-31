@@ -74,6 +74,7 @@ export function ClaimAccountPage() {
   const [password,        setPassword]        = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPass,        setShowPass]        = useState(false);
+  const [termsAccepted,   setTermsAccepted]   = useState(false);
   const [socials,         setSocials]         = useState<Record<SocialId, string>>({ twitch: '', youtube: '', kick: '', tiktok: '' });
   const [otpCode,         setOtpCode]         = useState('');
   const [otpError,        setOtpError]        = useState('');
@@ -81,7 +82,7 @@ export function ClaimAccountPage() {
   const [step,            setStep]            = useState<Step>(1);
   const [loading,         setLoading]         = useState(false);
 
-  const step1Valid = nick.trim().length >= 2 && email.trim() && checkPassword(password).ok && password === confirmPassword;
+  const step1Valid = nick.trim().length >= 2 && email.trim() && checkPassword(password).ok && password === confirmPassword && termsAccepted;
 
   function handleStep1(e: React.FormEvent) {
     e.preventDefault();
@@ -94,9 +95,10 @@ export function ClaimAccountPage() {
     setLoading(true);
     try {
       await apiRegisterPlayer({
-        nick:    nick.trim(),
-        email:   email.trim(),
+        nick:           nick.trim(),
+        email:          email.trim(),
         password,
+        terms_accepted: true,
         ...(withSocials && {
           twitch_url:  socials.twitch.trim()  || undefined,
           youtube_url: socials.youtube.trim() || undefined,
@@ -223,6 +225,22 @@ export function ClaimAccountPage() {
                   )}
                 </div>
               </div>
+              <label className="reg-terms-label">
+                <input
+                  type="checkbox"
+                  className="reg-terms-checkbox"
+                  checked={termsAccepted}
+                  onChange={e => setTermsAccepted(e.target.checked)}
+                />
+                <span>
+                  Li e aceito as{' '}
+                  <Link to="/regras" target="_blank" rel="noopener noreferrer" className="link-green">
+                    Regras de Conduta
+                  </Link>{' '}
+                  do Brasileirão PZ
+                </span>
+              </label>
+
               <button className="btn-primary btn-block" type="submit" disabled={!step1Valid} style={{ marginTop: 4 }}>
                 <i className="ti ti-arrow-right" /> Próximo
               </button>

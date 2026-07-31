@@ -65,14 +65,15 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  const { nick, email, password, twitch_url, youtube_url, kick_url, tiktok_url } = req.body as {
-    nick?:        string;
-    email?:       string;
-    password?:    string;
-    twitch_url?:  string;
-    youtube_url?: string;
-    kick_url?:    string;
-    tiktok_url?:  string;
+  const { nick, email, password, twitch_url, youtube_url, kick_url, tiktok_url, terms_accepted } = req.body as {
+    nick?:           string;
+    email?:          string;
+    password?:       string;
+    twitch_url?:     string;
+    youtube_url?:    string;
+    kick_url?:       string;
+    tiktok_url?:     string;
+    terms_accepted?: boolean;
   };
 
   if (!nick?.trim()) {
@@ -81,6 +82,10 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
   }
   if (!email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
     res.status(400).json({ error: 'Email inválido.' });
+    return;
+  }
+  if (!terms_accepted) {
+    res.status(400).json({ error: 'É necessário aceitar as regras de conduta para se cadastrar.' });
     return;
   }
   const pwdError = validatePassword(password ?? '');
@@ -92,15 +97,16 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
     const { data: inserted, error } = await supabase
       .from('players')
       .insert([{
-        nick:              nick.trim(),
-        email:             email.trim().toLowerCase(),
+        nick:               nick.trim(),
+        email:              email.trim().toLowerCase(),
         password_hash,
-        twitch_url:        normalizeUrl(twitch_url),
-        youtube_url:       normalizeUrl(youtube_url),
-        kick_url:          normalizeUrl(kick_url),
-        tiktok_url:        normalizeUrl(tiktok_url),
-        status:            'pending',
-        blocked:           false,
+        twitch_url:         normalizeUrl(twitch_url),
+        youtube_url:        normalizeUrl(youtube_url),
+        kick_url:           normalizeUrl(kick_url),
+        tiktok_url:         normalizeUrl(tiktok_url),
+        status:             'pending',
+        blocked:            false,
+        terms_accepted_at:  new Date().toISOString(),
       }])
       .select('id')
       .single();

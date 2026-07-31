@@ -88,7 +88,7 @@ export function apiLogout(token: string): Promise<void> {
 // ── Players ─────────────────────────────────────────────────
 
 export function apiRegisterPlayer(data: {
-  nick: string; email: string; password: string;
+  nick: string; email: string; password: string; terms_accepted: boolean;
   twitch_url?: string; youtube_url?: string; kick_url?: string; tiktok_url?: string;
 }): Promise<{ message: string }> {
   return request('/players/register', { method: 'POST', ...json(null, data) });
