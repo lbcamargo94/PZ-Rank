@@ -175,13 +175,15 @@ export interface FinanceEntry {
   updated_at: string;
 }
 
+export type AchievementTier = 'bronze' | 'silver' | 'gold' | 'platinum' | 'legendary';
+
 export interface Achievement {
   id:          number;
   slug:        string;
   name:        string;
   description: string;
   icon:        string;
-  tier:        'bronze' | 'silver' | 'gold';
+  tier:        AchievementTier;
   stat:        string;
   threshold:   number;
 }
@@ -192,7 +194,7 @@ export interface PlayerAchievement {
   name:        string;
   description: string;
   icon:        string;
-  tier:        'bronze' | 'silver' | 'gold';
+  tier:        AchievementTier;
   stat:        string;
   threshold:   number;
   unlocked_at: string;

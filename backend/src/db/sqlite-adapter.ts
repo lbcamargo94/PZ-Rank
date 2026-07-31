@@ -509,6 +509,39 @@ function runMigrations(db: Database): void {
     `);
     console.log('[SQLite] migração: player_tokens recriado com suporte aos tipos activate e otp');
   }
+
+  // achievements — adiciona platinum/legendary ao tier CHECK se ausente
+  const achSql = (db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='achievements'").get() as { sql?: string } | undefined)?.sql ?? '';
+  if (achSql && !achSql.includes("'platinum'")) {
+    // Preserva dados: renomeia, recria com novo constraint, copia, descarta backup
+    db.exec(`
+      PRAGMA foreign_keys = OFF;
+      ALTER TABLE achievements RENAME TO achievements_bak;
+      CREATE TABLE achievements (
+        id          INTEGER  PRIMARY KEY AUTOINCREMENT,
+        slug        TEXT     NOT NULL UNIQUE,
+        name        TEXT     NOT NULL,
+        description TEXT     NOT NULL DEFAULT '',
+        icon        TEXT     NOT NULL DEFAULT '',
+        tier        TEXT     NOT NULL DEFAULT 'bronze'
+                    CHECK (tier IN ('bronze', 'silver', 'gold', 'platinum', 'legendary')),
+        stat        TEXT     NOT NULL DEFAULT 'kills',
+        threshold   INTEGER  NOT NULL DEFAULT 0
+      );
+      INSERT INTO achievements SELECT * FROM achievements_bak;
+      DROP TABLE achievements_bak;
+      PRAGMA foreign_keys = ON;
+    `);
+    // Corrige tiers existentes e insere novas conquistas (IDs preservados)
+    db.exec(`
+      UPDATE achievements SET tier = 'bronze', icon = '🍖' WHERE slug = 'hunter'    AND tier != 'bronze';
+      UPDATE achievements SET tier = 'silver'               WHERE slug = 'big-game'  AND tier != 'silver';
+      UPDATE achievements SET tier = 'silver'               WHERE slug = 'engineer'  AND tier != 'silver';
+      UPDATE achievements SET tier = 'bronze'               WHERE slug = 'insomniac' AND tier != 'bronze';
+      UPDATE achievements SET threshold = 500, description = '500 colheitas' WHERE slug = 'agronomist' AND threshold != 500;
+    `);
+    console.log('[SQLite] migração: achievements expandido para 5 raridades (platinum/legendary)');
+  }
 }
 
 /**

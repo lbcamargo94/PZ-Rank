@@ -520,7 +520,19 @@ export function PlayerPage() {
           </div>
         </div>
 
-        <AchievementsSection playerId={profile.player.id} />
+        <AchievementsSection
+          playerId={profile.player.id}
+          playerStats={entries.reduce((best, e) => ({
+            kills:               Math.max(best.kills,               e.kills               ?? 0),
+            days:                Math.max(best.days,                e.days                ?? 0),
+            hours_without_sleep: Math.max(best.hours_without_sleep, e.hours_without_sleep ?? 0),
+            animals_killed:      Math.max(best.animals_killed,      e.animals_killed      ?? 0),
+            fish_caught:         Math.max(best.fish_caught,         e.fish_caught         ?? 0),
+            crops_harvested:     Math.max(best.crops_harvested,     e.crops_harvested     ?? 0),
+            items_crafted:       Math.max(best.items_crafted,       e.items_crafted       ?? 0),
+            houses_looted:       Math.max(best.houses_looted,       e.houses_looted       ?? 0),
+          }), { kills: 0, days: 0, hours_without_sleep: 0, animals_killed: 0, fish_caught: 0, crops_harvested: 0, items_crafted: 0, houses_looted: 0 })}
+        />
       </div>
     </div>
   );

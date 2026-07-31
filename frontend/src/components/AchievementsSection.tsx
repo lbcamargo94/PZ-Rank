@@ -1,31 +1,106 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiGetAchievements, apiGetPlayerAchievements } from '../lib/api';
-import type { Achievement, PlayerAchievement } from '../types';
+import type { Achievement, PlayerAchievement, AchievementTier } from '../types';
 
-const TIER_ORDER = ['gold', 'silver', 'bronze'] as const;
-const TIER_LABELS: Record<string, string> = { gold: 'Ouro', silver: 'Prata', bronze: 'Bronze' };
+const TIER_ORDER: AchievementTier[] = ['legendary', 'platinum', 'gold', 'silver', 'bronze'];
 
-const EXTENDED_STATS = new Set([
+const TIER_META: Record<AchievementTier, { label: string; emoji: string }> = {
+  legendary: { label: 'Lendária', emoji: '🔴' },
+  platinum:  { label: 'Platina',  emoji: '🟣' },
+  gold:      { label: 'Ouro',     emoji: '🟡' },
+  silver:    { label: 'Prata',    emoji: '⚪' },
+  bronze:    { label: 'Bronze',   emoji: '🟤' },
+};
+
+// Stats that are tracked in player entries (can show progress)
+const TRACKED_STATS = new Set([
+  'kills', 'days', 'hours_without_sleep',
   'animals_killed', 'fish_caught', 'crops_harvested',
-  'items_crafted', 'houses_looted', 'hours_without_sleep',
+  'items_crafted', 'houses_looted',
 ]);
 
 const STAT_LABELS: Record<string, string> = {
-  kills:               'kills',
+  kills:               'zumbis',
   days:                'dias',
+  hours_without_sleep: 'h s/ dormir',
   animals_killed:      'animais',
   fish_caught:         'peixes',
   crops_harvested:     'colheitas',
   items_crafted:       'itens',
   houses_looted:       'casas',
-  hours_without_sleep: 'h s/ dormir',
 };
 
-export function AchievementsSection({ playerId }: { playerId: number }) {
+type PlayerStats = Record<string, number>;
+
+function ProgressBar({ value, max }: { value: number; max: number }) {
+  const pct = max > 0 ? Math.min(100, (value / max) * 100) : 0;
+  return (
+    <div className="pp-ach-progress-track">
+      <div className="pp-ach-progress-fill" style={{ width: `${pct}%` }} />
+    </div>
+  );
+}
+
+function AchCard({
+  a, unlocked, playerStats,
+}: {
+  a: Achievement;
+  unlocked: PlayerAchievement | undefined;
+  playerStats: PlayerStats;
+}) {
+  const isTracked  = TRACKED_STATS.has(a.stat);
+  const current    = isTracked ? (playerStats[a.stat] ?? 0) : 0;
+  const statLabel  = STAT_LABELS[a.stat] ?? a.stat;
+
+  return (
+    <div className={`pp-ach-card${unlocked ? ` pp-ach-unlocked pp-ach-${a.tier}` : ' pp-ach-locked'}`}>
+      <span className="pp-ach-icon">{a.icon}</span>
+      <span className="pp-ach-name">{a.name}</span>
+      <span className="pp-ach-desc">{a.description}</span>
+
+      {unlocked ? (
+        <div className="pp-ach-meta">
+          <span className="pp-ach-check"><i className="ti ti-check" /></span>
+          <span className="pp-ach-date">
+            {new Date(unlocked.unlocked_at).toLocaleDateString('pt-BR')}
+          </span>
+        </div>
+      ) : (
+        <div className="pp-ach-meta pp-ach-meta-locked">
+          {isTracked ? (
+            <>
+              <ProgressBar value={current} max={a.threshold} />
+              <span className="pp-ach-progress-label">
+                {current.toLocaleString('pt-BR')}
+                <span className="pp-ach-progress-sep">/</span>
+                {a.threshold.toLocaleString('pt-BR')} {statLabel}
+              </span>
+            </>
+          ) : (
+            <span className="pp-ach-threshold">
+              {a.threshold.toLocaleString('pt-BR')} {statLabel}
+            </span>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function AchievementsSection({
+  playerId,
+  playerStats,
+}: {
+  playerId:    number;
+  playerStats: PlayerStats;
+}) {
   const [all,      setAll]      = useState<Achievement[]>([]);
   const [unlocked, setUnlocked] = useState<PlayerAchievement[]>([]);
   const [loading,  setLoading]  = useState(true);
   const [error,    setError]    = useState<string | null>(null);
+  const [open, setOpen]         = useState<Record<AchievementTier, boolean>>({
+    legendary: true, platinum: true, gold: true, silver: false, bronze: false,
+  });
 
   const load = useCallback(() => {
     setLoading(true);
@@ -43,9 +118,7 @@ export function AchievementsSection({ playerId }: { playerId: number }) {
   if (error) {
     return (
       <div className="pp-ach-section">
-        <h2 className="pp-section-title">
-          <i className="ti ti-trophy" /> Conquistas
-        </h2>
+        <h2 className="pp-section-title"><i className="ti ti-trophy" /> Conquistas</h2>
         <div className="pp-ach-error">
           <i className="ti ti-alert-circle" />
           <span>{error}</span>
@@ -60,59 +133,62 @@ export function AchievementsSection({ playerId }: { playerId: number }) {
   if (all.length === 0) return null;
 
   const unlockedMap = new Map(unlocked.map(u => [u.slug, u]));
-  const byTier = Object.fromEntries(TIER_ORDER.map(t => [t, all.filter(a => a.tier === t)]));
+  const byTier = Object.fromEntries(
+    TIER_ORDER.map(t => [t, all.filter(a => a.tier === t)])
+  ) as Record<AchievementTier, Achievement[]>;
+
+  const totalUnlocked = unlocked.length;
+  const total         = all.length;
 
   return (
     <div className="pp-ach-section">
-      <h2 className="pp-section-title">
-        <i className="ti ti-trophy" /> Conquistas
-        <span className="pp-section-count">{unlocked.length}/{all.length}</span>
-      </h2>
+      <div className="pp-ach-header">
+        <h2 className="pp-section-title">
+          <i className="ti ti-trophy" /> Conquistas
+          <span className="pp-section-count">{totalUnlocked}/{total}</span>
+        </h2>
+        <div className="pp-ach-total-bar">
+          <div
+            className="pp-ach-total-fill"
+            style={{ width: `${total > 0 ? (totalUnlocked / total) * 100 : 0}%` }}
+          />
+        </div>
+      </div>
 
       {TIER_ORDER.map(tier => {
         const achs = byTier[tier];
         if (!achs?.length) return null;
+        const meta       = TIER_META[tier];
+        const tierUnlocked = achs.filter(a => unlockedMap.has(a.slug)).length;
+        const isOpen     = open[tier];
+
         return (
-          <div key={tier} className="pp-ach-tier-group">
-            <span className={`pp-ach-tier-label pp-ach-tier-${tier}`}>{TIER_LABELS[tier]}</span>
-            <div className="pp-ach-grid">
-              {achs.map(a => {
-                const u = unlockedMap.get(a.slug);
-                return (
-                  <div
+          <div key={tier} className={`pp-ach-tier-group pp-ach-tier-group-${tier}`}>
+            <button
+              className="pp-ach-tier-toggle"
+              onClick={() => setOpen(prev => ({ ...prev, [tier]: !prev[tier] }))}
+            >
+              <span className={`pp-ach-tier-label pp-ach-tier-${tier}`}>
+                {meta.emoji} {meta.label}
+              </span>
+              <span className="pp-ach-tier-count">
+                {tierUnlocked}/{achs.length}
+              </span>
+              <i className={`ti ${isOpen ? 'ti-chevron-up' : 'ti-chevron-down'} pp-ach-chevron`} />
+            </button>
+
+            {isOpen && (
+              <div className="pp-ach-grid">
+                {achs.map(a => (
+                  <AchCard
                     key={a.slug}
-                    className={`pp-ach-card${u ? ` pp-ach-unlocked pp-ach-${a.tier}` : ' pp-ach-locked'}`}
-                    title={u
-                      ? `Desbloqueado em ${new Date(u.unlocked_at).toLocaleDateString('pt-BR')}`
-                      : a.description}
-                  >
-                    <span className="pp-ach-icon">{a.icon}</span>
-                    <span className="pp-ach-name">{a.name}</span>
-                    <span className="pp-ach-desc">{a.description}</span>
-                    {u ? (
-                      <div className="pp-ach-meta">
-                        <span className="pp-ach-date">
-                          {new Date(u.unlocked_at).toLocaleDateString('pt-BR')}
-                        </span>
-                        {u.entry_id != null && (
-                          <span className="pp-ach-run">Run #{u.entry_id}</span>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="pp-ach-meta pp-ach-meta-locked">
-                        <span className="pp-ach-threshold">
-                          {a.threshold.toLocaleString('pt-BR')} {STAT_LABELS[a.stat] ?? a.stat}
-                        </span>
-                        {EXTENDED_STATS.has(a.stat) && (
-                          <span className="pp-ach-mod-req">mod v2.7+</span>
-                        )}
-                        <i className="ti ti-lock pp-ach-lock" />
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                    a={a}
+                    unlocked={unlockedMap.get(a.slug)}
+                    playerStats={playerStats}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         );
       })}
