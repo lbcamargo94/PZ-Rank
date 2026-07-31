@@ -210,7 +210,8 @@ router.post('/me/otp/send', requirePlayer, async (req: PlayerRequest, res: Respo
     return;
   }
 
-  let targetEmail = row.email;
+  const targetEmail = row.email; // OTP sempre vai para o email ATUAL
+  let newEmailNormalized: string | null = null;
 
   if (action === 'change_email') {
     if (!new_email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(new_email.trim())) {
@@ -229,7 +230,7 @@ router.post('/me/otp/send', requirePlayer, async (req: PlayerRequest, res: Respo
       res.status(400).json({ error: 'Este email já está cadastrado por outro jogador.' });
       return;
     }
-    targetEmail = normalized; // envia OTP para o NOVO email
+    newEmailNormalized = normalized; // usado apenas para vincular o OTP à troca específica
   }
 
   if (action === 'change_password') {
@@ -241,10 +242,10 @@ router.post('/me/otp/send', requirePlayer, async (req: PlayerRequest, res: Respo
     }
   }
 
-  // Gera OTP e armazena. Para change_email inclui hash do email-alvo para vincular o código.
+  // Gera OTP e armazena. Para change_email, o suffix usa hash do NOVO email para vincular o código.
   const code = String(100000 + crypto.randomInt(900000));
-  const emailSuffix = action === 'change_email'
-    ? `_${crypto.createHash('sha256').update(targetEmail).digest('hex').slice(0, 16)}`
+  const emailSuffix = action === 'change_email' && newEmailNormalized
+    ? `_${crypto.createHash('sha256').update(newEmailNormalized).digest('hex').slice(0, 16)}`
     : '';
   const otpToken = `${row.id}_otp_${code}${emailSuffix}`;
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
