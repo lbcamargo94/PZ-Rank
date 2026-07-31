@@ -29,6 +29,7 @@ export interface BaseObjectives {
   power:    boolean;
   food:     boolean;
   vehicle:  boolean;
+  arsenal?: boolean;
 }
 
 export interface Objectives {

@@ -1,9 +1,9 @@
 import type { Objectives } from '../types';
 
-const BASE_ITEMS = ['bed', 'windows', 'sink', 'power', 'food', 'vehicle'] as const;
+const BASE_ITEMS = ['bed', 'windows', 'sink', 'power', 'food', 'vehicle', 'arsenal'] as const;
 
 const SCORE_KILLS     = 1;
-const SCORE_KILLS_MAX = 500_000;
+const SCORE_KILLS_MAX = 800_000;
 
 export function computeScore(
   kills: number,

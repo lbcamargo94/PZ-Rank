@@ -6,6 +6,7 @@ export interface BaseObjectives {
   power:    boolean;
   food:     boolean;
   vehicle:  boolean;
+  arsenal:  boolean;
 }
 
 export interface Objectives {
@@ -17,33 +18,34 @@ export interface Objectives {
 }
 
 export const SPIFFOS_RESTAURANTS = [
-  { id: 'muldraugh',      name: 'Muldraugh'                      },
-  { id: 'west_point',     name: 'West Point'                     },
-  { id: 'riverside',      name: 'Riverside'                      },
-  { id: 'rosewood',       name: 'Rosewood'                       },
-  { id: 'march_ridge',    name: 'March Ridge'                    },
-  { id: 'ekron',          name: 'Irvington - Autódromo'          },
-  { id: 'valley_station', name: 'Valley Station'                 },
-  { id: 'brandenburg',    name: 'Brandenburg'                    },
-  { id: 'irvington',      name: 'Irvington'                      },
-  { id: 'louisville_w',   name: 'Louisville - Parkwood'          },
-  { id: 'louisville_c',   name: 'Louisville - East Market'       },
-  { id: 'louisville_e',   name: 'Louisville - Centro'            },
-  { id: 'louisville_hq',  name: 'Louisville - Sede (HQ)'        },
+  { id: 'muldraugh',      name: 'Muldraugh'                 },
+  { id: 'west_point',     name: 'West Point'                },
+  { id: 'riverside',      name: 'Riverside'                 },
+  { id: 'rosewood',       name: 'Rosewood'                  },
+  { id: 'march_ridge',    name: 'March Ridge'               },
+  { id: 'irvington',      name: 'Irvington'                 },
+  { id: 'ekron',          name: 'Autódromo'                 },
+  { id: 'valley_station', name: 'Valley Station'            },
+  { id: 'brandenburg',    name: 'Brandenburg'               },
+  { id: 'louisville_w',   name: 'Parkwood'                  },
+  { id: 'louisville_c',   name: 'Louisville – East Market'  },
+  { id: 'louisville_e',   name: 'Louisville – Centro'       },
+  { id: 'louisville_hq',  name: 'Louisville – Sede (HQ)'   },
 ] as const;
 
 export const BASE_ITEMS: { id: keyof Omit<BaseObjectives, 'has_base'>; label: string }[] = [
-  { id: 'bed',     label: 'Cama de boa qualidade'            },
-  { id: 'windows', label: 'Todas as janelas barricadas'      },
-  { id: 'sink',    label: 'Pia encanada'                     },
-  { id: 'power',   label: 'Energia'                          },
-  { id: 'food',    label: '2500 cal. de comida não perecível'},
-  { id: 'vehicle', label: 'Um veículo'                       },
+  { id: 'bed',     label: 'Cama de boa qualidade'                          },
+  { id: 'windows', label: 'Todas as janelas barricadas no nível máximo'    },
+  { id: 'sink',    label: 'Pia com água encanada e funcional'              },
+  { id: 'power',   label: 'Energia elétrica (gerador)'                    },
+  { id: 'food',    label: '12.500 cal. em alimentos não perecíveis'       },
+  { id: 'vehicle', label: 'Veículo funcional e abastecido'                 },
+  { id: 'arsenal', label: '20 armas + 10 ferramentas produzidas pelo jogador' },
 ];
 
 const EMPTY_BASE: BaseObjectives = {
   has_base: false, bed: false, windows: false,
-  sink: false, power: false, food: false, vehicle: false,
+  sink: false, power: false, food: false, vehicle: false, arsenal: false,
 };
 
 export function initObjectives(): Objectives {
@@ -54,15 +56,15 @@ export function initObjectives(): Objectives {
 
 // ── Pontuação ───────────────────────────────────────────────
 export const SCORE_KILLS       = 1;        // pts por zumbi abatido
-export const SCORE_KILLS_MAX   = 500_000;  // máximo de kills contabilizados
+export const SCORE_KILLS_MAX   = 800_000;  // máximo de kills contabilizados
 export const SCORE_BASE        = 50;  // pts por base estabelecida
 export const SCORE_BASE_ITEM   = 10;  // pts por item da base
-export const SCORE_KILLS_500K  = 500; // pts por atingir 500k kills
+export const SCORE_KILLS_500K  = 500; // pts por atingir o marco de kills (mantido para compat. DB)
 export const SCORE_ALL_SKILLS  = 500; // pts por maxar todas as habilidades
 export const SCORE_STATUE      = 300; // pts pela Estátua do Spiffo
 export const SCORE_MILITARY    = 300; // pts por limpar a base militar
 
-const BASE_ITEM_COUNT = 6; // bed, windows, sink, power, food, vehicle
+const BASE_ITEM_COUNT = 7; // bed, windows, sink, power, food, vehicle, arsenal
 
 export const MAX_POSSIBLE_SCORE =
   SCORE_KILLS_MAX +
@@ -88,6 +90,7 @@ export function computeScore(
       if (base.power)   score += SCORE_BASE_ITEM;
       if (base.food)    score += SCORE_BASE_ITEM;
       if (base.vehicle) score += SCORE_BASE_ITEM;
+      if (base.arsenal) score += SCORE_BASE_ITEM;
     }
   }
   if (objectives?.kills_500k)    score += SCORE_KILLS_500K;
