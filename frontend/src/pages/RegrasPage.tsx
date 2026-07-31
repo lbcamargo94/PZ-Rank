@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   SPIFFOS_RESTAURANTS, BASE_ITEMS,
   SCORE_KILLS, SCORE_KILLS_MAX, SCORE_BASE, SCORE_BASE_ITEM,
   SCORE_KILLS_500K, SCORE_ALL_SKILLS, SCORE_STATUE, SCORE_MILITARY,
 } from '../lib/objectives';
+import regrasBg from '../../assets/background/tela-de-regras.webp';
 import './regras.css';
 
 type Section = 'participar' | 'objetivos' | 'sandbox' | 'conduta';
@@ -235,7 +236,7 @@ export function RegrasPage() {
   const [active, setActive] = useState<Section>('participar');
 
   return (
-    <div className="rg-page">
+    <div className="rg-page" style={{ '--rg-bg-img': `url(${regrasBg})` } as React.CSSProperties}>
       <header className="rg-header">
         <div className="rg-header-inner">
           <Link to="/" className="rg-back-link">

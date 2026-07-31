@@ -7,14 +7,22 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: var(--bg);
   color: var(--text);
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(to bottom, rgba(6, 10, 6, 0.83) 0%, rgba(6, 10, 6, 0.76) 100%),
+    var(--rg-bg-img);
+  background-size: cover;
+  background-position: center top;
+  background-attachment: fixed;
 }
 
 /* ── Header ── */
 .rg-header {
-  background: color-mix(in srgb, var(--bg) 80%, var(--green) 20%);
-  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, rgba(6, 10, 6, 0.72) 80%, var(--green) 20%);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, var(--green) 40%);
   padding: 1.25rem 1.5rem;
 }
 
