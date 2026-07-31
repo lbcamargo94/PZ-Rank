@@ -1361,8 +1361,8 @@
   display: flex;
   gap: 8px;
 }
-.reg-step2-actions .btn-ghost { flex-shrink: 0; }
-.reg-step2-actions .btn-primary { flex: 1; }
+.reg-step2-actions .btn-ghost   { flex: 1; justify-content: center; }
+.reg-step2-actions .btn-primary { flex: 1; justify-content: center; }
 /* ── Account resend form ─────────────────────────── */
 .account-resend-form {
   display: flex;
