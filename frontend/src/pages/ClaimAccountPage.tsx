@@ -229,17 +229,18 @@ export function ClaimAccountPage() {
                   )}
                 </div>
               </div>
-              <label className="reg-terms-label">
+              <label className="reg-terms-box">
                 <input
                   type="checkbox"
                   className="reg-terms-checkbox"
                   checked={termsAccepted}
                   onChange={e => setTermsAccepted(e.target.checked)}
                 />
-                <span>
+                <span className="reg-terms-text">
                   Li e aceito as{' '}
-                  <Link to="/regras" target="_blank" rel="noopener noreferrer" className="link-green">
-                    Regras de Conduta
+                  <Link to="/regras" target="_blank" rel="noopener noreferrer" className="reg-terms-link-btn"
+                    onClick={e => e.stopPropagation()}>
+                    <i className="ti ti-book" /> Regras de Conduta <i className="ti ti-external-link" />
                   </Link>{' '}
                   do Brasileirão PZ
                 </span>

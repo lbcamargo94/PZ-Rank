@@ -421,21 +421,57 @@
   margin: 0;
 }
 
-.reg-terms-label {
+.reg-terms-box {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  font-size: 16px;
-  color: var(--text-2);
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  background: var(--bg-2);
   cursor: pointer;
-  line-height: 1.5;
+  transition: border-color 0.2s, background 0.2s;
   margin-top: 4px;
 }
+
+.reg-terms-box:has(.reg-terms-checkbox:checked) {
+  border-color: var(--green-border);
+  background: var(--green-dim);
+}
+
+.reg-terms-text {
+  font-size: 15px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+
+.reg-terms-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--green-light);
+  background: var(--green-dim);
+  border: 1px solid var(--green-border);
+  border-radius: 4px;
+  padding: 1px 7px;
+  text-decoration: none;
+  vertical-align: middle;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+}
+.reg-terms-link-btn:hover {
+  background: rgba(94,144,64,0.22);
+  border-color: var(--green);
+}
+.reg-terms-link-btn .ti { font-size: 12px; }
+
 .reg-terms-checkbox {
   flex-shrink: 0;
   width: 18px;
   height: 18px;
-  margin-top: 2px;
   accent-color: var(--green);
   cursor: pointer;
 }
