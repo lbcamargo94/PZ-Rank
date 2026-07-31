@@ -289,16 +289,16 @@ export function ClaimAccountPage() {
 
           {/* ── Step 3: OTP ── */}
           {step === 3 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center', textAlign: 'center' }}>
               <p className="reg-otp-hint">
                 Enviamos um código de 6 dígitos para <strong>{email.trim()}</strong>.
               </p>
-              <form onSubmit={handleOtpSubmit} noValidate style={{ marginTop: 12 }}>
+              <form onSubmit={handleOtpSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, width: '100%' }}>
                 <OtpInput value={otpCode} onChange={setOtpCode} loading={loading}
                   onResend={handleResend} resendMsg={resendMsg} />
-                {otpError && <p style={{ color: 'var(--red)', fontSize: 14, marginTop: 8 }}>{otpError}</p>}
+                {otpError && <p style={{ color: 'var(--red)', fontSize: 14 }}>{otpError}</p>}
                 <button className="btn-primary btn-block" type="submit"
-                  disabled={loading || otpCode.length !== 6} style={{ marginTop: 16 }}>
+                  disabled={loading || otpCode.length !== 6} style={{ marginTop: 4 }}>
                   {loading ? <><i className="ti ti-loader-2" /> Verificando...</> : <><i className="ti ti-check" /> Confirmar</>}
                 </button>
               </form>
