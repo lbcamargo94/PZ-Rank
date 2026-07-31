@@ -60,6 +60,7 @@
 
 @media (max-width: 640px) {
   .btn-header-companion-text { display: none; }
+  .btn-header-register-text  { display: none; }
 }
 
 .header-hamburger {

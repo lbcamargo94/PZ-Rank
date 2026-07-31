@@ -44,9 +44,15 @@ export function Header({ onPainel }: HeaderProps) {
                 <span className="btn-header-nick">{playerSession.nick}</span>
               </Link>
             ) : (
-              <Link to="/login" className="btn-header btn-header-login" onClick={close}>
-                Login
-              </Link>
+              <>
+                <Link to="/cadastrar-conta" className="btn-header btn-header-register" onClick={close}>
+                  <i className="ti ti-user-plus" aria-hidden="true" />
+                  <span className="btn-header-register-text">Cadastre-se</span>
+                </Link>
+                <Link to="/login" className="btn-header btn-header-login" onClick={close}>
+                  Login
+                </Link>
+              </>
             )}
           </div>
 
