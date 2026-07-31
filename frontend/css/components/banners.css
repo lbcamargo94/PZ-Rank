@@ -167,3 +167,103 @@
 }
 .patrocinio-btn:hover { text-decoration: underline; }
 
+/* ── Season Banner ───────────────────────────────── */
+.season-banner {
+  background: linear-gradient(90deg, #081a04 0%, #0d2208 50%, #081a04 100%);
+  border-bottom: 1px solid #1e3a14;
+  padding: 14px 0;
+}
+
+.sb-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.sb-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sb-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #0a1a05;
+  background: var(--green);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.sb-name {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-1);
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.sb-started {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+.sb-stats {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-wrap: wrap;
+}
+
+.sb-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 18px;
+}
+
+.sb-stat-value {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-1);
+  line-height: 1.1;
+}
+
+.sb-stat-label {
+  font-size: 12px;
+  color: var(--text-3);
+  letter-spacing: 0.3px;
+}
+
+.sb-stat--alive .sb-stat-value { color: var(--green-light); }
+.sb-stat--dead  .sb-stat-value { color: var(--text-3);      }
+.sb-stat--kills .sb-stat-value { color: var(--red);         }
+
+.sb-divider {
+  width: 1px;
+  height: 32px;
+  background: #1e3a14;
+  flex-shrink: 0;
+}
+
+@media (max-width: 700px) {
+  .sb-inner        { justify-content: center; text-align: center; }
+  .sb-title-wrap   { justify-content: center; }
+  .sb-stats        { justify-content: center; }
+  .sb-stat         { padding: 0 12px; }
+  .sb-stat-value   { font-size: 18px; }
+}
+
+@media (max-width: 420px) {
+  .sb-started      { display: none; }
+  .sb-stat         { padding: 0 8px; }
+}
+

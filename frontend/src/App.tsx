@@ -7,6 +7,7 @@ import { Toast } from './components/Toast';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { CommunityStats } from './components/CommunityStats';
+import { SeasonBanner }   from './components/SeasonBanner';
 import { NewsInline }     from './components/NewsCard';
 import { AdBanner }      from './components/AdBanner';
 import { RegrasPage } from './pages/RegrasPage';
@@ -67,6 +68,7 @@ function MainView() {
     <>
       <Header onPainel={() => navigate('/painel')} />
       <CommunityStats />
+      <SeasonBanner />
       <main>
         <div className="container">
           <div className="home-top-row">
