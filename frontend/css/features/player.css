@@ -575,6 +575,12 @@
 /* ── Player Profile Page ────────────────────────────────────── */
 .player-page {
   padding: 24px 0;
+  background-color: rgba(6, 9, 5, 0.97);
+  background-image: var(--pp-bg-img);
+  background-size: cover;
+  background-position: center top;
+  background-attachment: fixed;
+  min-height: 100vh;
 }
 .player-page-state {
   display: flex;

@@ -1,6 +1,7 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import avatarDefault from '../../assets/avatar.png';
+import perfilBg from '../../assets/background/perfil-usuario.webp';
 import { apiGetPlayerProfile, apiGetEntries } from '../lib/api';
 import { parseSkillMap, SKILL_CATEGORIES, MAX_SKILL_LEVEL, TOTAL_SKILLS } from '../lib/skills';
 import { parseTraitList, resolveTrait, getTraitImageUrl } from '../lib/traits';
@@ -410,7 +411,7 @@ export function PlayerPage() {
   );
 
   return (
-    <div className="player-page">
+    <div className="player-page" style={{ '--pp-bg-img': `url(${perfilBg})` } as React.CSSProperties}>
       <div className="container">
         {/* Back link */}
         <button className="btn-primary btn-sm back-btn-rank" onClick={() => navigate(-1)}>
