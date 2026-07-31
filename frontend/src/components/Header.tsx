@@ -2,13 +2,11 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import pzrankLogo from '../../assets/logo/pzrank-logo.png';
 
-const COMPANION_URL = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.8.0/PZ.Rank.Companion.Setup.1.8.0.exe';
-const COMPANION_VER = 'v1.8.0';
+const COMPANION_URL = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.8.1/PZ.Rank.Companion.Setup.1.8.1.exe';
+const COMPANION_VER = 'v1.8.1';
 
 interface HeaderProps {
-  onPainel:   () => void;
-  onRules:    () => void;
-  onSettings: () => void;
+  onPainel: () => void;
 }
 
 function readPlayerSession(): { nick: string; player_id: number } | null {
@@ -18,7 +16,7 @@ function readPlayerSession(): { nick: string; player_id: number } | null {
   } catch { return null; }
 }
 
-export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
+export function Header({ onPainel }: HeaderProps) {
   const [playerSession] = useState(readPlayerSession);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -68,9 +66,9 @@ export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
           <Link to="/rank" className="nav-item" onClick={close}>
             <i className="ti ti-trophy" aria-hidden="true" /> Rank
           </Link>
-          <button className="nav-item" onClick={() => { onRules(); close(); }}>
+          <Link to="/regras" className="nav-item" onClick={close}>
             <i className="ti ti-book" aria-hidden="true" /> Regras
-          </button>
+          </Link>
           <Link to="/wiki" className="nav-item" onClick={close}>
             <i className="ti ti-book-2" aria-hidden="true" /> Wiki
           </Link>
@@ -86,9 +84,9 @@ export function Header({ onPainel, onRules, onSettings }: HeaderProps) {
           <Link to="/transparencia" className="nav-item" onClick={close}>
             <i className="ti ti-chart-pie" aria-hidden="true" /> Transparência
           </Link>
-          <button className="nav-item" onClick={() => { onSettings(); close(); }}>
+          <Link to="/regras#sandbox" className="nav-item" onClick={close}>
             <i className="ti ti-settings" aria-hidden="true" /> Configurações
-          </button>
+          </Link>
           <div className="site-nav-divider" />
           <Link
             to={playerSession ? '/perfil' : '/login'}

@@ -13,8 +13,6 @@ import {
 } from '../lib/api';
 import { OtpInput } from '../components/OtpInput';
 import { Header } from '../components/Header';
-import { RulesModal } from '../components/RulesModal';
-import { ChallengeSettingsModal } from '../components/ChallengeSettingsModal';
 import type { PlayerSession, PlayerAccount, Entry } from '../types';
 
 type AccountTab = 'conta' | 'links' | 'runs';
@@ -418,8 +416,6 @@ export function ProfilePage() {
   const [profile,      setProfile]      = useState<PlayerAccount | null>(null);
   const [loadError,    setLoadError]    = useState('');
   const [tab,          setTab]          = useState<AccountTab>('conta');
-  const [showRules,    setShowRules]    = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
 
   const loadProfile = useCallback(async () => {
     if (!session) return;
@@ -453,11 +449,7 @@ export function ProfilePage() {
 
   return (
     <>
-      <Header
-        onPainel={() => navigate('/painel')}
-        onRules={() => setShowRules(true)}
-        onSettings={() => setShowSettings(true)}
-      />
+      <Header onPainel={() => navigate('/painel')} />
 
       <div className="profile-page" style={bgStyle}>
         <div className="profile-inner">
@@ -507,8 +499,6 @@ export function ProfilePage() {
         </div>
       </div>
 
-      {showRules    && <RulesModal             onClose={() => setShowRules(false)}    />}
-      {showSettings && <ChallengeSettingsModal onClose={() => setShowSettings(false)} />}
     </>
   );
 }

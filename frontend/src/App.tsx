@@ -9,8 +9,7 @@ import { Footer } from './components/Footer';
 import { CommunityStats } from './components/CommunityStats';
 import { NewsInline }     from './components/NewsCard';
 import { AdBanner }      from './components/AdBanner';
-import { RulesModal } from './components/RulesModal';
-import { ChallengeSettingsModal } from './components/ChallengeSettingsModal';
+import { RegrasPage } from './pages/RegrasPage';
 import { PainelPage } from './pages/PainelPage';
 import { PlayerPage } from './pages/PlayerPage';
 import { OverlayPage } from './pages/OverlayPage';
@@ -34,12 +33,12 @@ import { RankPage }               from './pages/RankPage';
 
 const QUICK_NAV = [
   { to: '/rank',          icon: 'ti-trophy',           label: 'Ranking',         sub: 'Classificação geral'   },
-  { to: '/wiki',          icon: 'ti-book',             label: 'Wiki de Caça',    sub: 'Guia de caçadas'       },
+  { to: '/regras',        icon: 'ti-book',             label: 'Regras',          sub: 'Como participar'       },
+  { to: '/wiki',          icon: 'ti-book-2',           label: 'Wiki de Caça',    sub: 'Guia de caçadas'       },
   { to: '/mods',          icon: 'ti-puzzle',           label: 'Mods Permitidos', sub: 'Lista oficial'         },
   { to: '/dicas',         icon: 'ti-bulb',             label: 'Dicas',           sub: 'Guia de sobrevivência' },
   { to: '/lendas',        icon: 'ti-medal',            label: 'Lendas',          sub: 'Hall da fama'          },
   { to: '/links',         icon: 'ti-link',             label: 'Links Úteis',     sub: 'Recursos do campeonato'},
-  { to: '/mapa',          icon: 'ti-map',              label: 'Mapa',            sub: 'Knox County'           },
   { to: '/transparencia', icon: 'ti-file-certificate', label: 'Transparência',   sub: 'Dados do servidor'     },
 ] as const;
 
@@ -62,17 +61,11 @@ function QuickNav() {
 
 function MainView() {
   const navigate = useNavigate();
-  const [showRules,    setShowRules]   = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const { toast, clearToast } = useToast();
 
   return (
     <>
-      <Header
-        onPainel={() => navigate('/painel')}
-        onRules={() => setShowRules(true)}
-        onSettings={() => setShowSettings(true)}
-      />
+      <Header onPainel={() => navigate('/painel')} />
       <CommunityStats />
       <main>
         <div className="container">
@@ -85,11 +78,7 @@ function MainView() {
           <QuickNav />
         </div>
       </main>
-
       <Toast {...toast} onClose={clearToast} />
-
-      {showRules    && <RulesModal             onClose={() => setShowRules(false)}    />}
-      {showSettings && <ChallengeSettingsModal onClose={() => setShowSettings(false)} />}
     </>
   );
 }
@@ -124,6 +113,7 @@ export default function App() {
           <Route path="/wiki/cacada" element={<WikiHuntingPage />} />
           <Route path="/mods" element={<ModsPage />} />
           <Route path="/dicas" element={<TipsPage />} />
+          <Route path="/regras" element={<RegrasPage />} />
           <Route path="/verificar-email"  element={<VerifyEmailPage />} />
           <Route path="/redefinir-senha"  element={<ResetPasswordPage />} />
           <Route path="/ativar-conta"     element={<ActivateAccountPage />} />

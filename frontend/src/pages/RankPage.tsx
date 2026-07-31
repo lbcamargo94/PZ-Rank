@@ -7,8 +7,6 @@ import { useToast } from '../hooks/useToast';
 import { Toast } from '../components/Toast';
 import { Header } from '../components/Header';
 import { RankTable } from '../components/RankTable';
-import { RulesModal } from '../components/RulesModal';
-import { ChallengeSettingsModal } from '../components/ChallengeSettingsModal';
 
 const TAB_CONFIG: { key: RankTab; label: string; icon: string }[] = [
   { key: 'rank',         label: 'Rank',             icon: 'ti-heartbeat' },
@@ -57,8 +55,6 @@ export function RankPage() {
   const [loading,      setLoading]     = useState(false);
   const [activeTab,    setActiveTab]   = useState<RankTab>('rank');
   const [search,       setSearch]      = useState('');
-  const [showRules,    setShowRules]   = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const { toast, showToast, clearToast } = useToast();
 
   useEffect(() => {
@@ -136,11 +132,7 @@ export function RankPage() {
 
   return (
     <>
-      <Header
-        onPainel={() => navigate('/painel')}
-        onRules={() => setShowRules(true)}
-        onSettings={() => setShowSettings(true)}
-      />
+      <Header onPainel={() => navigate('/painel')} />
 
       <main>
         <div className="container rank-page-top">
@@ -208,8 +200,6 @@ export function RankPage() {
 
       <Toast {...toast} onClose={clearToast} />
 
-      {showRules    && <RulesModal             onClose={() => setShowRules(false)}    />}
-      {showSettings && <ChallengeSettingsModal onClose={() => setShowSettings(false)} />}
     </>
   );
 }
