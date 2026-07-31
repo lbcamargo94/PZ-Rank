@@ -383,7 +383,7 @@
 
 .profile-page::before {
   content: '';
-  position: fixed;
+  position: absolute;
   inset: 0;
   background: rgba(4,8,3,0.68);
   pointer-events: none;
@@ -405,19 +405,6 @@
   font-size: 16px;
 }
 
-.profile-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--text-3);
-  text-decoration: none;
-  font-size: 14px;
-  font-family: var(--font-mono);
-  margin-bottom: 16px;
-  transition: color 0.15s;
-}
-.profile-back:hover { color: var(--text-1); }
-.profile-back .ti { font-size: 14px; }
 
 .profile-card {
   background: rgba(10,14,8,0.88);

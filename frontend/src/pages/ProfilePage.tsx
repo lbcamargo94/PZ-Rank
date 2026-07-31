@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import profileBg from '../../assets/background/perfil-usuario.webp';
 import { checkPassword } from '../lib/password';
 import { PasswordHints } from '../components/PasswordHints';
@@ -9,8 +9,12 @@ import {
   apiUpdateMyLinks,
   apiSendAccountOtp,
   apiConfirmAccountOtp,
+  ApiError,
 } from '../lib/api';
 import { OtpInput } from '../components/OtpInput';
+import { Header } from '../components/Header';
+import { RulesModal } from '../components/RulesModal';
+import { ChallengeSettingsModal } from '../components/ChallengeSettingsModal';
 import type { PlayerSession, PlayerAccount, Entry } from '../types';
 
 type AccountTab = 'conta' | 'links' | 'runs';
@@ -405,23 +409,32 @@ const TABS: { id: AccountTab; label: string; icon: string }[] = [
 export function ProfilePage() {
   const navigate = useNavigate();
 
-  const [session, setSession] = useState<PlayerSession | null>(() => {
+  const [session,      setSession]      = useState<PlayerSession | null>(() => {
     try {
       const raw = sessionStorage.getItem(PLAYER_SESSION_KEY);
       return raw ? (JSON.parse(raw) as PlayerSession) : null;
     } catch { return null; }
   });
-  const [profile, setProfile] = useState<PlayerAccount | null>(null);
-  const [tab,     setTab]     = useState<AccountTab>('conta');
+  const [profile,      setProfile]      = useState<PlayerAccount | null>(null);
+  const [loadError,    setLoadError]    = useState('');
+  const [tab,          setTab]          = useState<AccountTab>('conta');
+  const [showRules,    setShowRules]    = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   const loadProfile = useCallback(async () => {
     if (!session) return;
+    setLoadError('');
     try {
       const data = await apiGetMyProfile(session.token);
       setProfile(data);
-    } catch {
-      sessionStorage.removeItem(PLAYER_SESSION_KEY);
-      setSession(null);
+    } catch (err) {
+      const status = err instanceof ApiError ? err.status : 0;
+      if (status === 401 || status === 403) {
+        sessionStorage.removeItem(PLAYER_SESSION_KEY);
+        setSession(null);
+      } else {
+        setLoadError((err as Error).message);
+      }
     }
   }, [session]);
 
@@ -438,59 +451,64 @@ export function ProfilePage() {
 
   const bgStyle = { backgroundImage: `url(${profileBg})` };
 
-  if (!session || !profile) {
-    return (
+  return (
+    <>
+      <Header
+        onPainel={() => navigate('/painel')}
+        onRules={() => setShowRules(true)}
+        onSettings={() => setShowSettings(true)}
+      />
+
       <div className="profile-page" style={bgStyle}>
         <div className="profile-inner">
-          <p className="profile-loading">Carregando…</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="profile-page" style={bgStyle}>
-      <div className="profile-inner">
-        <Link to="/" className="profile-back">
-          <i className="ti ti-arrow-left" /> Página inicial
-        </Link>
-
-        <div className="profile-card">
-          <div className="account-header">
-            <div>
-              <h1 className="account-title">Minha Conta</h1>
-              <p className="account-nick">{profile.nick}</p>
-            </div>
-            <div className="account-header-actions">
-              <Link to="/rank" className="btn-ghost btn-sm">
-                <i className="ti ti-trophy" /> Ver Ranking
-              </Link>
-              <Link to={`/player/${session.player_id}`} className="btn-ghost btn-sm">
-                <i className="ti ti-external-link" /> Perfil público
-              </Link>
-              <button className="btn-ghost btn-sm" onClick={handleLogout}>
-                <i className="ti ti-logout" /> Sair
+          {!session || (!profile && !loadError) ? (
+            <p className="profile-loading">Carregando…</p>
+          ) : loadError ? (
+            <div className="profile-card">
+              <StatusMsg msg={loadError} ok={false} />
+              <button className="btn-ghost btn-sm" style={{ marginTop: '12px' }} onClick={loadProfile}>
+                <i className="ti ti-refresh" /> Tentar novamente
               </button>
             </div>
-          </div>
+          ) : profile && (
+            <div className="profile-card">
+              <div className="account-header">
+                <div>
+                  <h1 className="account-title">Minha Conta</h1>
+                  <p className="account-nick">{profile.nick}</p>
+                </div>
+                <div className="account-header-actions">
+                  <a href={`/player/${session!.player_id}`} className="btn-ghost btn-sm">
+                    <i className="ti ti-external-link" /> Perfil público
+                  </a>
+                  <button className="btn-ghost btn-sm" onClick={handleLogout}>
+                    <i className="ti ti-logout" /> Sair
+                  </button>
+                </div>
+              </div>
 
-          <div className="account-tabs">
-            {TABS.map(t => (
-              <button
-                key={t.id}
-                className={`account-tab-btn${tab === t.id ? ' active' : ''}`}
-                onClick={() => setTab(t.id)}
-              >
-                <i className={`ti ${t.icon}`} /> {t.label}
-              </button>
-            ))}
-          </div>
+              <div className="account-tabs">
+                {TABS.map(t => (
+                  <button
+                    key={t.id}
+                    className={`account-tab-btn${tab === t.id ? ' active' : ''}`}
+                    onClick={() => setTab(t.id)}
+                  >
+                    <i className={`ti ${t.icon}`} /> {t.label}
+                  </button>
+                ))}
+              </div>
 
-          {tab === 'conta' && <TabConta session={session} profile={profile} onProfileChange={loadProfile} />}
-          {tab === 'links' && <TabLinks session={session} profile={profile} onProfileChange={loadProfile} />}
-          {tab === 'runs'  && <TabRuns  session={session} />}
+              {tab === 'conta' && <TabConta session={session!} profile={profile} onProfileChange={loadProfile} />}
+              {tab === 'links' && <TabLinks session={session!} profile={profile} onProfileChange={loadProfile} />}
+              {tab === 'runs'  && <TabRuns  session={session!} />}
+            </div>
+          )}
         </div>
       </div>
-    </div>
+
+      {showRules    && <RulesModal             onClose={() => setShowRules(false)}    />}
+      {showSettings && <ChallengeSettingsModal onClose={() => setShowSettings(false)} />}
+    </>
   );
 }

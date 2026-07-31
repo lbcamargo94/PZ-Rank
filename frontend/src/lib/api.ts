@@ -5,6 +5,15 @@ const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:30
 let _onUnauthorized: (() => void) | null = null;
 export function setOnUnauthorized(cb: () => void) { _onUnauthorized = cb; }
 
+export class ApiError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+  }
+}
+
 interface LoginResponse {
   session: { access_token: string };
   user:    { login: string };
@@ -26,10 +35,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     let errBody: Record<string, unknown> = {};
     try { errBody = await res.json(); } catch { /* sem body */ }
     _onUnauthorized?.();
-    throw new Error(
+    throw new ApiError(
       typeof errBody.error === 'string' && errBody.error
         ? errBody.error
         : 'Sessão expirada. Faça login novamente.',
+      401,
     );
   }
 
@@ -37,14 +47,14 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   try {
     body = await res.json();
   } catch {
-    throw new Error(`Erro inesperado do servidor (HTTP ${res.status}).`);
+    throw new ApiError(`Erro inesperado do servidor (HTTP ${res.status}).`, res.status);
   }
 
   if (!res.ok) {
     const msg = typeof body.error === 'string' && body.error
       ? body.error
       : 'Erro desconhecido. Tente novamente.';
-    throw new Error(msg);
+    throw new ApiError(msg, res.status);
   }
 
   return body as T;
