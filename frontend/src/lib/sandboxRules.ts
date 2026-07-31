@@ -11,15 +11,15 @@ export interface SandboxRule {
 export const SANDBOX_RULES: SandboxRule[] = [
   // Zumbis — População
   { key: 'ZombieConfig.PopulationMultiplier',      expected: 4.0,  label: 'Pop. Multiplicador',            tol: 0.05 },
-  { key: 'ZombieConfig.PopulationStartMultiplier', expected: 2.0,  label: 'Pop. Inicial',                   tol: 0.05 },
-  { key: 'ZombieConfig.PopulationPeakMultiplier',  expected: 2.0,  label: 'Pop. Pico',                      tol: 0.05 },
+  { key: 'ZombieConfig.PopulationStartMultiplier', expected: 2.5,  label: 'Pop. Inicial',                   tol: 0.05 },
+  { key: 'ZombieConfig.PopulationPeakMultiplier',  expected: 2.5,  label: 'Pop. Pico',                      tol: 0.05 },
   { key: 'ZombieConfig.PopulationPeakDay',         expected: 1,    label: 'Dia do Pico' },
   { key: 'ZombieConfig.RespawnHours',              expected: 0.0,  label: 'Respawn (Nenhum=0)',             tol: 0.01 },
   { key: 'ZombieConfig.RedistributeHours',         expected: 24.0, label: 'Migração de Zumbis (24h)',       tol: 0.5  },
-  { key: 'ZombieConfig.RallyGroupSizeVariance',    expected: 5,    label: 'Variância Horda (5)' },
-  { key: 'ZombieConfig.RallyTravelDistance',       expected: 10,   label: 'Distância Rally (10)' },
+  { key: 'ZombieConfig.RallyGroupSizeVariance',    expected: 50,   label: 'Variância Horda (50)' },
+  { key: 'ZombieConfig.RallyTravelDistance',       expected: 20,   label: 'Distância Rally (20)' },
   { key: 'ZombieConfig.RallyGroupSeparation',      expected: 15,   label: 'Separação de Horda (15)' },
-  { key: 'ZombieConfig.RallyGroupRadius',          expected: 6,    label: 'Raio de Horda (6)' },
+  { key: 'ZombieConfig.RallyGroupRadius',          expected: 3,    label: 'Raio de Horda (3)' },
   // Zumbis — Comportamento
   { key: 'ZombieLore.Speed',                       expected: 2,    label: 'Velocidade (Normal=2)' },
   { key: 'ZombieLore.SprinterPercentage',          expected: 0,    label: '% Corredores (0)' },
@@ -30,10 +30,10 @@ export const SANDBOX_RULES: SandboxRule[] = [
   { key: 'ZombieLore.Sight',                       expected: 1,    label: 'Visão (Águia=1)' },
   { key: 'ZombieLore.Memory',                      expected: 1,    label: 'Memória (Longa=1)' },
   { key: 'ZombieLore.Cognition',                   expected: 1,    label: 'Percepção/Portas (Avançado=1)' },
-  { key: 'ZombieConfig.FollowSoundDistance',        expected: 300,  label: 'Raio de Audição (300)' },
+  { key: 'ZombieConfig.FollowSoundDistance',        expected: 600,  label: 'Raio de Audição (600)' },
   { key: 'ZombieLore.DisableFakeDead',             expected: 2,    label: 'Fake Dead Ativado Total (2)' },
   { key: 'ZombieLore.ZombiesCrawlersDragDown',     expected: true, label: 'Rastejadores Derrubam' },
-  { key: 'ZombieConfig.RallyGroupSize',            expected: 1,    label: 'Tamanho da Horda (1)' },
+  { key: 'ZombieConfig.RallyGroupSize',            expected: 0,    label: 'Tamanho da Horda (0)' },
   // Loot — todas as 22 categorias do B42 (0.04 = Muito Baixo)
   { key: 'FoodLootNew',          expected: 0.04, label: 'Comida',                     tol: 0.01 },
   { key: 'CannedFoodLootNew',    expected: 0.04, label: 'Comida Enlatada',             tol: 0.01 },
@@ -65,7 +65,7 @@ export const SANDBOX_RULES: SandboxRule[] = [
   { key: 'Alarm',                                   expected: 6,    label: 'Alarmes Casas (Muito Freq.=6)' },
   // Natureza
   { key: 'NightDarkness',                           expected: 3,    label: 'Escuridão Noite (Normal=3)' },
-  { key: 'Temperature',                             expected: 2,    label: 'Temperatura (Frio=2)' },
+  { key: 'Temperature',                             expected: 1,    label: 'Temperatura (Muito Frio=1)' },
   { key: 'Rain',                                    expected: 2,    label: 'Chuva (Seco=2)' },
   { key: 'FishAbundance',                           expected: 2,    label: 'Pesca (Ruim=2)' },
   { key: 'NatureAbundance',                         expected: 2,    label: 'Natureza (Ruim=2)' },
@@ -85,7 +85,16 @@ export const SANDBOX_RULES: SandboxRule[] = [
   { key: 'BoneFracture',            expected: true,   label: 'Fraturas Ósseas (Ativado)' },
   { key: 'AttackBlockMovements',    expected: true,   label: 'Bloqueio p/ Ataque (Ativado)' },
   // Zumbis — comportamento (complemento)
-  { key: 'ZombieLore.Transmission', expected: 1, label: 'Transmissão (Sangue=1)' },
+  { key: 'ZombieLore.Transmission',              expected: 2,    label: 'Transmissão (Saliva=2)' },
+  // Dificuldade B42.20
+  { key: 'ZombieLore.ZombiesArmorFactor',        expected: 2.0,  label: 'Armadura Zumbi (2.0)',            tol: 0.05 },
+  { key: 'ZombieLore.ChanceOfAttachedWeapon',    expected: 6,    label: 'Chance Arma no Zumbi (6)' },
+  { key: 'ZombieLore.FenceDamageMultiplier',     expected: 2.0,  label: 'Dano em Cercas (2.0)',            tol: 0.05 },
+  { key: 'ZombieLore.ZombiesFallDamage',         expected: 1.0,  label: 'Dano de Queda Zumbi (1.0)',       tol: 0.05 },
+  // Loot — Efeito Populacao B42.20
+  { key: 'ZombiePopLootEffect',                  expected: 2,    label: 'Efeito Pop. no Loot (2)' },
+  // Armas de fogo — Dificuldade B42.20
+  { key: 'FirearmNoiseMultiplier',               expected: 2.0,  label: 'Ruído Armas de Fogo (2.0)',       tol: 0.05 },
   // Veículos
   { key: 'ChanceHasGas',            expected: 1,     label: 'Gasolina (Baixo=1)' },
   { key: 'InitialGas',              expected: 1,     label: 'Gasolina Inicial (M.Baixo=1)' },
@@ -96,7 +105,7 @@ export const SANDBOX_RULES: SandboxRule[] = [
   // Mapa
   { key: 'Map.MapAllKnown', expected: true, label: 'Mapa Aberto (Obrigatório)' },
   // Animais
-  { key: 'AnimalRanchChance', expected: 2, label: 'Animais (Ext.Raro=2)' },
+  { key: 'AnimalRanchChance', expected: 3, label: 'Animais (Raro=3)' },
 ];
 
 export function getNestedValue(obj: Record<string, unknown>, dotPath: string): unknown {
