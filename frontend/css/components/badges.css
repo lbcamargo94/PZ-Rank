@@ -46,44 +46,21 @@
 }
 .cs-row::-webkit-scrollbar { display: none; }
 
-/* ── Bloco da temporada ── */
-.cs-season {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 20px;
-  flex: 1;
-  min-width: 0;
-}
+/* ── Item de temporada ── */
+.cs-item--season { --neon-glow: var(--green-light); }
 
-.cs-season-badge {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  color: #0a1a05;
-  background: var(--green);
-  padding: 3px 8px;
-  border-radius: 3px;
-  flex-shrink: 0;
+.cs-item--season .ti {
+  color: var(--green-light);
+  animation: neon-pulse 2.4s ease-in-out infinite;
 }
 
 .cs-season-name {
-  font-family: var(--font-display);
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-1);
+  font-size: 14px !important;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
-
-.cs-season-days {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  color: var(--text-3);
-  white-space: nowrap;
-}
-
-.cs-season-days strong { color: var(--green-light); }
 
 /* ── Divisor vertical ── */
 .cs-vdivider {

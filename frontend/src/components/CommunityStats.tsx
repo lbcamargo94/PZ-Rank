@@ -31,13 +31,12 @@ export function CommunityStats() {
       <div className="cs-row">
 
         {season && (
-          <div className="cs-season">
-            <span className="cs-season-badge">ATIVA</span>
-            <span className="cs-season-name">{season.name}</span>
-            {days > 0
-              ? <span className="cs-season-days"><strong>{days}</strong> {days === 1 ? 'dia' : 'dias'}</span>
-              : <span className="cs-season-days">Hoje</span>
-            }
+          <div className="cs-item cs-item--season">
+            <i className="ti ti-shield-star" />
+            <span className="cs-value cs-season-name">{season.name}</span>
+            <span className="cs-desc">
+              {days > 0 ? `${days} ${days === 1 ? 'dia' : 'dias'} ativa` : 'ativa hoje'}
+            </span>
           </div>
         )}
 
