@@ -465,6 +465,20 @@ export function apiGetPlayerAchievements(playerId: number): Promise<{ achievemen
   return request<{ achievements: PlayerAchievement[] }>(`/achievements/player/${playerId}`);
 }
 
+export function apiGrantAchievement(token: string, playerId: number, slug: string): Promise<{ achievement: PlayerAchievement }> {
+  return request<{ achievement: PlayerAchievement }>(`/achievements/player/${playerId}/${slug}`, {
+    method: 'POST',
+    ...auth(token),
+  });
+}
+
+export function apiRevokeAchievement(token: string, playerId: number, slug: string): Promise<void> {
+  return request<void>(`/achievements/player/${playerId}/${slug}`, {
+    method: 'DELETE',
+    ...auth(token),
+  });
+}
+
 export function apiGetHeatmap(): Promise<{ points: HeatmapPoint[]; season: { id: number; name: string } | null }> {
   return request<{ points: HeatmapPoint[]; season: { id: number; name: string } | null }>('/heatmap/current');
 }

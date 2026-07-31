@@ -396,8 +396,14 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     housesLooted:       decoded.housesLooted,
     hoursWithoutSleep:  decoded.hoursWithoutSleep,
   };
-  void evaluateAchievements(player.id, finalEntryId, extStats)
-    .catch(e => console.error('[achievements]', e));
+  void (async () => {
+    try {
+      await evaluateAchievements(player.id, finalEntryId, extStats);
+    } catch {
+      await new Promise<void>(r => setTimeout(r, 2000));
+      await evaluateAchievements(player.id, finalEntryId, extStats);
+    }
+  })().catch(e => console.error('[achievements]', e));
 
   // Heatmap: aceita delta opcional do Companion; obtém season ativa para o UPSERT
   if (heatmap_delta && Array.isArray(heatmap_delta) && heatmap_delta.length > 0) {

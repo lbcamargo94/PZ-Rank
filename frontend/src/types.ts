@@ -193,6 +193,8 @@ export interface PlayerAchievement {
   description: string;
   icon:        string;
   tier:        'bronze' | 'silver' | 'gold';
+  stat:        string;
+  threshold:   number;
   unlocked_at: string;
   entry_id:    number | null;
 }
