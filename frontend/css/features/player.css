@@ -575,12 +575,34 @@
 /* ── Player Profile Page ────────────────────────────────────── */
 .player-page {
   padding: 24px 0;
-  background-color: rgba(6, 9, 5, 0.97);
-  background-image: var(--pp-bg-img);
+  background-color: #060905;
+  /* dark overlay (62%) over the concept art so cards remain readable */
+  background-image: linear-gradient(rgba(4, 6, 3, 0.62), rgba(4, 6, 3, 0.62)), var(--pp-bg-img);
   background-size: cover;
   background-position: center top;
   background-attachment: fixed;
   min-height: 100vh;
+}
+
+/* Cards need to be opaque + frosted-glass so the bg doesn't bleed through */
+.player-page .pp-header,
+.player-page .pp-sum-card,
+.player-page .pp-char-card,
+.player-page .pp-archetype {
+  background: rgba(13, 19, 10, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-color: #2a3424;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.55);
+}
+
+.player-page .pp-char-header {
+  background: rgba(20, 28, 16, 0.97);
+  border-color: #2a3424;
+}
+
+.player-page .pp-tabs {
+  background: rgba(20, 28, 16, 0.97);
 }
 .player-page-state {
   display: flex;
