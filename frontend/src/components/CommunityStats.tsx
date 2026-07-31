@@ -24,48 +24,54 @@ export function CommunityStats() {
 
   if (!stats && !season) return null;
 
-  const days       = season ? daysSince(season.started_at) : 0;
-  const startedFmt = season
-    ? new Date(season.started_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
-    : '';
+  const days = season ? daysSince(season.started_at) : 0;
 
   return (
     <div className="community-stats">
-      {season && (
-        <div className="cs-season-header">
-          <span className="cs-season-badge">ATIVA</span>
-          <span className="cs-season-name">{season.name}</span>
-          <span className="cs-season-meta">
-            Iniciada em {startedFmt}
-            {days > 0 && <> · <strong>{days}</strong> {days === 1 ? 'dia' : 'dias'} de campeonato</>}
-            {days === 0 && <> · Iniciada hoje</>}
-          </span>
-        </div>
-      )}
-      {stats && (
-        <div className="cs-grid">
-          <div className="cs-item cs-item--kills">
-            <i className="ti ti-sword" />
-            <span className="cs-value">{fmt(stats.total_kills)}</span>
-            <span className="cs-desc">zumbis abatidos</span>
+      <div className="cs-row">
+
+        {season && (
+          <div className="cs-season">
+            <span className="cs-season-badge">ATIVA</span>
+            <span className="cs-season-name">{season.name}</span>
+            {days > 0
+              ? <span className="cs-season-days"><strong>{days}</strong> {days === 1 ? 'dia' : 'dias'}</span>
+              : <span className="cs-season-days">Hoje</span>
+            }
           </div>
-          <div className="cs-item cs-item--days">
-            <i className="ti ti-calendar-stats" />
-            <span className="cs-value">{fmt(stats.total_days)}</span>
-            <span className="cs-desc">dias sobrevividos</span>
-          </div>
-          <div className="cs-item cs-item--alive">
-            <i className="ti ti-heartbeat" />
-            <span className="cs-value">{fmt(stats.alive_count)}</span>
-            <span className="cs-desc">sobreviventes</span>
-          </div>
-          <div className="cs-item cs-item--dead">
-            <i className="ti ti-skull" />
-            <span className="cs-value">{fmt(stats.dead_count)}</span>
-            <span className="cs-desc">mortos</span>
-          </div>
-        </div>
-      )}
+        )}
+
+        {season && stats && <div className="cs-vdivider" />}
+
+        {stats && (
+          <>
+            <div className="cs-item cs-item--kills">
+              <i className="ti ti-sword" />
+              <span className="cs-value">{fmt(stats.total_kills)}</span>
+              <span className="cs-desc">zumbis</span>
+            </div>
+            <div className="cs-vdivider" />
+            <div className="cs-item cs-item--days">
+              <i className="ti ti-calendar-stats" />
+              <span className="cs-value">{fmt(stats.total_days)}</span>
+              <span className="cs-desc">dias sobrevividos</span>
+            </div>
+            <div className="cs-vdivider" />
+            <div className="cs-item cs-item--alive">
+              <i className="ti ti-heartbeat" />
+              <span className="cs-value">{fmt(stats.alive_count)}</span>
+              <span className="cs-desc">vivos</span>
+            </div>
+            <div className="cs-vdivider" />
+            <div className="cs-item cs-item--dead">
+              <i className="ti ti-skull" />
+              <span className="cs-value">{fmt(stats.dead_count)}</span>
+              <span className="cs-desc">mortos</span>
+            </div>
+          </>
+        )}
+
+      </div>
     </div>
   );
 }

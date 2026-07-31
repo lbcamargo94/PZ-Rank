@@ -33,21 +33,30 @@
 .community-stats {
   width: 100%;
   border-bottom: 1px solid var(--border);
+  background: rgba(8,12,6,0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
-.cs-season-header {
+.cs-row {
+  display: flex;
+  align-items: stretch;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.cs-row::-webkit-scrollbar { display: none; }
+
+.cs-season {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 20px;
-  background: rgba(6,14,4,0.95);
-  border-bottom: 1px solid #1a2e12;
-  flex-wrap: wrap;
+  padding: 10px 20px;
+  flex-shrink: 0;
 }
 
 .cs-season-badge {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 1.5px;
   color: #0a1a05;
@@ -65,28 +74,22 @@
   white-space: nowrap;
 }
 
-.cs-season-meta {
+.cs-season-days {
   font-family: var(--font-mono);
   font-size: 13px;
   color: var(--text-3);
+  white-space: nowrap;
 }
 
-.cs-season-meta strong {
+.cs-season-days strong {
   color: var(--green-light);
-  font-weight: 700;
 }
 
-@media (max-width: 560px) {
-  .cs-season-header { padding: 7px 14px; gap: 8px; }
-  .cs-season-meta   { font-size: 12px; }
-}
-
-.cs-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1px;
+.cs-vdivider {
+  width: 1px;
   background: var(--border);
-  overflow: hidden;
+  flex-shrink: 0;
+  align-self: stretch;
 }
 
 .cs-item {
@@ -95,10 +98,8 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 12px 16px;
-  background: rgba(8,12,6,0.92);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  padding: 10px 20px;
+  flex-shrink: 0;
   transition: background 0.15s;
 }
 
@@ -156,9 +157,11 @@
   white-space: nowrap;
 }
 
-@media (max-width: 560px) {
-  .cs-grid { grid-template-columns: repeat(2, 1fr); }
-  .cs-item { justify-content: flex-start; padding: 10px 14px; }
+@media (max-width: 640px) {
+  .cs-season-name { font-size: 14px; }
+  .cs-season      { padding: 8px 14px; gap: 7px; }
+  .cs-item        { padding: 8px 14px; gap: 8px; }
+  .cs-value       { font-size: 18px; }
 }
 
 .stats-bar {
