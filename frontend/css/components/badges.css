@@ -51,8 +51,9 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 28px 12px 20px;
-  flex-shrink: 0;
+  padding: 12px 20px;
+  flex: 1;
+  min-width: 0;
 }
 
 .cs-season-badge {
@@ -100,8 +101,9 @@
   align-items: center;
   justify-content: center;
   gap: 2px;
-  padding: 10px 24px;
-  flex-shrink: 0;
+  padding: 10px 16px;
+  flex: 1;
+  min-width: 0;
   transition: background 0.15s;
 }
 
@@ -164,10 +166,10 @@
 }
 
 @media (max-width: 640px) {
-  .cs-season      { padding: 10px 16px; gap: 8px; }
+  .cs-season      { padding: 8px 12px; gap: 8px; }
   .cs-season-name { font-size: 14px; }
   .cs-season-days { display: none; }
-  .cs-item        { padding: 10px 16px; }
+  .cs-item        { padding: 8px 10px; }
   .cs-value       { font-size: 18px; }
 }
 
