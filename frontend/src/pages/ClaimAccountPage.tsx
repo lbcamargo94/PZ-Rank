@@ -182,11 +182,15 @@ export function ClaimAccountPage() {
               <div className="reg-field">
                 <label className="form-label" htmlFor="reg-nick">Nick do jogador <span className="required">*</span></label>
                 <div className="reg-nick-input-wrap">
-                  <i className="ti ti-user reg-nick-icon" />
+                  <i className="ti ti-brand-discord reg-nick-icon" />
                   <input id="reg-nick" className="form-input reg-nick-input" type="text"
                     placeholder="SeuNickAqui" value={nick} onChange={e => setNick(e.target.value)}
                     autoComplete="username" spellCheck={false} required />
                 </div>
+                <p className="reg-field-hint">
+                  <i className="ti ti-info-circle" style={{ fontSize: 13, verticalAlign: 'middle' }} />{' '}
+                  Use seu nick do Discord exatamente como aparece no servidor.
+                </p>
               </div>
               <div className="reg-field">
                 <label className="form-label" htmlFor="reg-email">Email <span className="required">*</span></label>
@@ -244,9 +248,9 @@ export function ClaimAccountPage() {
               <button className="btn-primary btn-block" type="submit" disabled={!step1Valid} style={{ marginTop: 4 }}>
                 <i className="ti ti-arrow-right" /> Próximo
               </button>
-              <p className="reg-login-link">
-                Já tem conta? <Link to="/login" className="link-green">Fazer login</Link>
-              </p>
+              <Link to="/login" className="btn-ghost btn-block" style={{ textAlign: 'center' }}>
+                <i className="ti ti-login" /> Já tenho conta — fazer login
+              </Link>
             </form>
           )}
 
