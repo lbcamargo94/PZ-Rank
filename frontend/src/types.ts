@@ -49,6 +49,8 @@ export interface DecodedCode {
   sandboxOk:              boolean;
   traits:                 string[];
   disqualificationReason: string | null;
+  codeTimestamp:          number | null;
+  modVersion:             string | null;
   animalsKilled:          number;
   fishCaught:             number;
   cropsHarvested:         number;

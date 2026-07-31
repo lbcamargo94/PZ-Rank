@@ -5,7 +5,6 @@ const XOR_KEY = 'PZRank-Community-2026-Key!';
 const PZR_PREFIX_RE = /^PZRX[123]:([\s\S]+)$/;
 // 17 grupos: nome|prof|kills|tempo|skills|status|sandbox|traits|motivo|ts|modVersion|
 //            animals_killed|fish_caught|crops_harvested|items_crafted|houses_looted|hours_without_sleep
-// grupos 10 (ts) e 11 (modVersion) são ignorados no frontend (DecodedCode não os usa)
 const PZR_PAYLOAD_RE = /^PZR\|([^|]*)\|([^|]*)\|(\d+)\|(\d+)\|([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?(\d*)\|?([^|]*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)$/;
 
 function xorBytes(bytes: Uint8Array, key: string): Uint8Array {
@@ -57,11 +56,11 @@ export function parsePzrCode(raw: string): DecodedCode | null {
   }
   const match = plain.match(PZR_PAYLOAD_RE);
   if (!match) return null;
-  // grupos 10 (ts) e 11 (modVersion) ignorados — DecodedCode não os usa
   const [, characterName, profession, kills, timeRaw, skillsRaw, statusRaw, sandboxRaw, traitsRaw, reasonRaw,
-    , , animalsKilledRaw, fishCaughtRaw, cropsHarvestedRaw, itemsCraftedRaw, housesLootedRaw, hoursWithoutSleepRaw] = match;
+    tsRaw, modVersionRaw, animalsKilledRaw, fishCaughtRaw, cropsHarvestedRaw, itemsCraftedRaw, housesLootedRaw, hoursWithoutSleepRaw] = match;
   const timeRawNum = parseInt(timeRaw, 10);
   const parseExt = (raw: string | undefined) => { const n = parseInt(raw ?? '', 10); return isNaN(n) ? 0 : n; };
+  const tsNum = parseInt(tsRaw ?? '', 10);
   const skills = skillsRaw ? skillsRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
   return {
     characterName: characterName || 'Sobrevivente',
@@ -75,6 +74,8 @@ export function parsePzrCode(raw: string): DecodedCode | null {
     sandboxOk: sandboxRaw !== 'invalido',
     traits: traitsRaw ? traitsRaw.split(',').map(t => t.trim()).filter(Boolean) : [],
     disqualificationReason: (reasonRaw && reasonRaw.trim()) ? reasonRaw.trim() : null,
+    codeTimestamp:     isNaN(tsNum) ? null : tsNum,
+    modVersion:        (modVersionRaw && modVersionRaw.trim()) ? modVersionRaw.trim() : null,
     animalsKilled:     parseExt(animalsKilledRaw),
     fishCaught:        parseExt(fishCaughtRaw),
     cropsHarvested:    parseExt(cropsHarvestedRaw),

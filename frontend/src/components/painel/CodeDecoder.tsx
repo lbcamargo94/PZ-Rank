@@ -310,6 +310,74 @@ export function CodeDecoder() {
           {result.traits.length === 0 && result.skills.length === 0 && (
             <p className="dc-empty-note">Nenhum traço ou habilidade registrado no código.</p>
           )}
+
+          {/* Estatísticas estendidas */}
+          {(result.animalsKilled > 0 || result.fishCaught > 0 || result.cropsHarvested > 0 ||
+            result.itemsCrafted > 0 || result.housesLooted > 0 || result.hoursWithoutSleep > 0) && (
+            <div className="dc-section">
+              <div className="dc-section-title">
+                <i className="ti ti-chart-bar" /> Estatísticas da Run
+              </div>
+              <div className="dc-ext-grid">
+                {result.animalsKilled > 0 && (
+                  <div className="dc-ext-item">
+                    <i className="ti ti-paw" />
+                    <span className="dc-ext-val">{result.animalsKilled.toLocaleString('pt-BR')}</span>
+                    <span className="dc-ext-lbl">animais abatidos</span>
+                  </div>
+                )}
+                {result.fishCaught > 0 && (
+                  <div className="dc-ext-item">
+                    <i className="ti ti-fish" />
+                    <span className="dc-ext-val">{result.fishCaught.toLocaleString('pt-BR')}</span>
+                    <span className="dc-ext-lbl">peixes pescados</span>
+                  </div>
+                )}
+                {result.cropsHarvested > 0 && (
+                  <div className="dc-ext-item">
+                    <i className="ti ti-plant" />
+                    <span className="dc-ext-val">{result.cropsHarvested.toLocaleString('pt-BR')}</span>
+                    <span className="dc-ext-lbl">colheitas</span>
+                  </div>
+                )}
+                {result.itemsCrafted > 0 && (
+                  <div className="dc-ext-item">
+                    <i className="ti ti-hammer" />
+                    <span className="dc-ext-val">{result.itemsCrafted.toLocaleString('pt-BR')}</span>
+                    <span className="dc-ext-lbl">itens fabricados</span>
+                  </div>
+                )}
+                {result.housesLooted > 0 && (
+                  <div className="dc-ext-item">
+                    <i className="ti ti-home-search" />
+                    <span className="dc-ext-val">{result.housesLooted.toLocaleString('pt-BR')}</span>
+                    <span className="dc-ext-lbl">casas saqueadas</span>
+                  </div>
+                )}
+                {result.hoursWithoutSleep > 0 && (
+                  <div className="dc-ext-item">
+                    <i className="ti ti-moon-off" />
+                    <span className="dc-ext-val">{result.hoursWithoutSleep.toLocaleString('pt-BR')}h</span>
+                    <span className="dc-ext-lbl">sem dormir (máx)</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Metadados do código */}
+          <div className="dc-code-meta">
+            {result.modVersion && (
+              <span className="dc-meta-item">
+                <i className="ti ti-tag" /> mod v{result.modVersion}
+              </span>
+            )}
+            {result.codeTimestamp && (
+              <span className="dc-meta-item">
+                <i className="ti ti-clock" /> gerado em {new Date(result.codeTimestamp * 1000).toLocaleString('pt-BR')}
+              </span>
+            )}
+          </div>
         </div>
       )}
     </div>
