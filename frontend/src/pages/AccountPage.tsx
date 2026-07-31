@@ -42,15 +42,15 @@ function LoginForm({ onLogin }: { onLogin: (s: PlayerSession) => void }) {
           <i className="ti ti-arrow-left" /> Página inicial
         </Link>
 
-        <div className="reg-header">
+        <div className="login-header">
           <div className="reg-icon-wrap">
             <i className="ti ti-lock" />
           </div>
-          <h1 className="reg-title">Login</h1>
-          <p className="reg-sub">Entre com seu e-mail e senha para acessar sua conta.</p>
+          <h1 className="reg-title">Entrar na conta</h1>
+          <p className="reg-sub">Acesse sua conta para acompanhar suas runs e o ranking.</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="account-login-form">
+        <form onSubmit={handleSubmit} className="login-form">
           <div className="reg-field">
             <label className="reg-label" htmlFor="login-email">
               <i className="ti ti-mail" /> E-mail
@@ -73,9 +73,14 @@ function LoginForm({ onLogin }: { onLogin: (s: PlayerSession) => void }) {
           </div>
 
           <div className="reg-field">
-            <label className="reg-label" htmlFor="login-password">
-              <i className="ti ti-lock" /> Senha
-            </label>
+            <div className="login-password-header">
+              <label className="reg-label" htmlFor="login-password">
+                <i className="ti ti-lock" /> Senha
+              </label>
+              <Link to="/esqueci-senha" className="login-forgot-link">
+                Esqueci minha senha
+              </Link>
+            </div>
             <div className="reg-input-wrap">
               <input
                 id="login-password"
@@ -95,9 +100,6 @@ function LoginForm({ onLogin }: { onLogin: (s: PlayerSession) => void }) {
                 <i className={`ti ti-eye${showPass ? '-off' : ''}`} />
               </button>
             </div>
-            <Link to="/esqueci-senha" className="reg-forgot-link">
-              <i className="ti ti-key" /> Esqueci minha senha
-            </Link>
           </div>
 
           <button
@@ -111,17 +113,11 @@ function LoginForm({ onLogin }: { onLogin: (s: PlayerSession) => void }) {
           </button>
         </form>
 
-        <div className="reg-footer">
-          <Link to="/cadastrar-conta" className="reg-footer-link">
-            <i className="ti ti-user-plus" /> Não tem conta? Cadastre-se
-          </Link>
-        </div>
+        <div className="login-divider"><span>ou</span></div>
 
-        <div className="reg-aux-links">
-          <Link to="/verificar-conta" className="reg-aux-link">
-            <i className="ti ti-mail-forward" /> Reenviar verificação de e-mail
-          </Link>
-        </div>
+        <Link to="/cadastrar-conta" className="btn-ghost btn-block login-register-btn">
+          <i className="ti ti-user-plus" /> Criar minha conta
+        </Link>
       </div>
       <Toast {...toast} onClose={clearToast} />
     </div>
