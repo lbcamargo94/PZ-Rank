@@ -209,27 +209,67 @@ const PARTICIPATE_STEPS = [
   },
 ];
 
-const CONDUCT_ALLOWED = [
-  'Mods da lista oficial do campeonato (visíveis em /mods)',
-  'QoL mods que não alteram mecânicas de jogo ou loot',
-  'Texturas e mods de interface (sem impacto em gameplay)',
-  'Mods de mapa que adicionam locais mas não alteram spawn ou loot',
-];
-
-const CONDUCT_FORBIDDEN = [
-  'Mods não autorizados que alterem loot, spawn de zumbis ou mecânicas',
-  'Cheats, trainers ou qualquer forma de manipulação de memória',
-  'Edição manual de arquivos de save (.save, .json, .db)',
-  'Usar o mesmo personagem em múltiplas contas simultâneas',
-  'Compartilhar personagem com outro jogador (run deve ser individual)',
-  'Alterar as configurações do sandbox após iniciar a run',
-];
-
-const CONDUCT_DISQ = [
-  { trigger: 'Sandbox incorreto', detail: 'O mod detecta e marca automaticamente. Qualquer divergência do preset oficial gera desclassificação imediata.' },
-  { trigger: 'Mod não autorizado detectado', detail: 'Identificado pelo moderador via análise do código da run ou denúncia verificada.' },
-  { trigger: 'Save manipulado', detail: 'Inconsistência entre timestamps do save, dados do código e histórico de syncs.' },
-  { trigger: 'Comportamento antidesportivo', detail: 'Denúncias verificadas por moderadores. Decisão final cabe ao time de moderação.' },
+const FUNDAMENTAL_RULES = [
+  {
+    n: '01',
+    icon: 'ti-video',
+    title: 'Transmissão Obrigatória',
+    desc: 'Toda a participação no campeonato deve ser transmitida ao vivo em uma live gameplay.',
+  },
+  {
+    n: '02',
+    icon: 'ti-brand-youtube',
+    title: 'YouTube como Plataforma Oficial',
+    desc: 'A transmissão deve ser realizada no YouTube e permanecer salva no canal do participante para futuras auditorias. Outras plataformas podem ser utilizadas simultaneamente, desde que a live no YouTube seja mantida.',
+  },
+  {
+    n: '03',
+    icon: 'ti-settings',
+    title: 'Configuração Oficial',
+    desc: 'É obrigatório utilizar a versão do jogo, o preset de Sandbox e a Mod List Oficial definidos pelo campeonato. Qualquer alteração resultará na invalidação da tentativa.',
+  },
+  {
+    n: '04',
+    icon: 'ti-puzzle',
+    title: 'Mods Permitidos',
+    desc: 'Somente mods presentes na Mod List Oficial podem ser utilizados. Sugestões de novos mods devem ser enviadas à equipe de moderação para avaliação.',
+  },
+  {
+    n: '05',
+    icon: 'ti-ban',
+    title: 'Proibição de Cheats',
+    desc: 'É proibido utilizar softwares, scripts, macros, trainers, cheats, exploits ou qualquer recurso que conceda vantagem indevida durante a competição.',
+  },
+  {
+    n: '06',
+    icon: 'ti-lock',
+    title: 'Integridade da Partida',
+    desc: 'Não é permitido editar saves, restaurar backups após a morte, utilizar comandos administrativos ou modificar arquivos do jogo para alterar a experiência oficial.',
+  },
+  {
+    n: '07',
+    icon: 'ti-clipboard-check',
+    title: 'Validação da Tentativa',
+    desc: 'Todas as partidas devem ser válidas conforme as regras do campeonato e poderão ser auditadas pela organização por meio das gravações e das informações fornecidas pelo PZ-Rank.',
+  },
+  {
+    n: '08',
+    icon: 'ti-users',
+    title: 'Conduta Esportiva',
+    desc: 'Os participantes devem manter uma postura respeitosa com os demais competidores, espectadores e equipe organizadora. Atitudes antidesportivas poderão resultar em punições.',
+  },
+  {
+    n: '09',
+    icon: 'ti-alert-triangle',
+    title: 'Penalidades',
+    desc: 'O descumprimento de qualquer regra poderá resultar em advertência, invalidação da tentativa, desclassificação ou banimento, conforme a gravidade da infração.',
+  },
+  {
+    n: '10',
+    icon: 'ti-gavel',
+    title: 'Decisão da Organização',
+    desc: 'Em casos omissos ou situações não previstas neste regulamento, a decisão final caberá exclusivamente à equipe organizadora do Brasileirão PZ.',
+  },
 ];
 
 export function RegrasPage() {
@@ -478,65 +518,27 @@ export function RegrasPage() {
               <div className="rg-section-header">
                 <i className="ti ti-shield-check rg-section-icon" />
                 <div>
-                  <h2 className="rg-section-title">Regras de Conduta</h2>
-                  <p className="rg-section-sub">O campeonato preza pelo jogo limpo. Violações resultam em desclassificação ou banimento.</p>
+                  <h2 className="rg-section-title">10 Regras Fundamentais</h2>
+                  <p className="rg-section-sub">As regras que regem a participação no Brasileirão PZ. O cumprimento é obrigatório.</p>
                 </div>
               </div>
 
-              {/* Permitido */}
-              <h3 className="rg-sub-title rg-sub-title--ok">
-                <i className="ti ti-circle-check" /> O que é permitido
-              </h3>
-              <ul className="rg-conduct-list rg-conduct-list--ok">
-                {CONDUCT_ALLOWED.map((item, i) => (
-                  <li key={i} className="rg-conduct-item">
-                    <i className="ti ti-check rg-conduct-icon" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-              <div className="rg-conduct-action">
-                <Link to="/mods" className="rg-step-action">
-                  Ver lista de mods permitidos <i className="ti ti-arrow-right" />
-                </Link>
-              </div>
-
-              {/* Proibido */}
-              <h3 className="rg-sub-title rg-sub-title--err" style={{ marginTop: '2rem' }}>
-                <i className="ti ti-circle-x" /> O que é proibido
-              </h3>
-              <ul className="rg-conduct-list rg-conduct-list--err">
-                {CONDUCT_FORBIDDEN.map((item, i) => (
-                  <li key={i} className="rg-conduct-item">
-                    <i className="ti ti-x rg-conduct-icon" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-
-              {/* Desclassificação */}
-              <h3 className="rg-sub-title" style={{ marginTop: '2rem' }}>
-                <i className="ti ti-ban" /> Desclassificação
-              </h3>
-              <div className="rg-disq-list">
-                {CONDUCT_DISQ.map((d, i) => (
-                  <div key={i} className="rg-disq-card">
-                    <span className="rg-disq-trigger">{d.trigger}</span>
-                    <span className="rg-disq-detail">{d.detail}</span>
+              <div className="rg-steps">
+                {FUNDAMENTAL_RULES.map(rule => (
+                  <div key={rule.n} className="rg-step-card">
+                    <div className="rg-step-n">{rule.n}</div>
+                    <div className="rg-step-body">
+                      <div className="rg-step-head">
+                        <i className={`ti ${rule.icon} rg-step-icon`} />
+                        <h3 className="rg-step-title">{rule.title}</h3>
+                      </div>
+                      <p className="rg-step-desc">{rule.desc}</p>
+                    </div>
                   </div>
                 ))}
               </div>
 
-              {/* Banimento */}
-              <div className="rg-callout rg-callout--err" style={{ marginTop: '2rem' }}>
-                <i className="ti ti-ban" />
-                <div>
-                  <strong>Banimento permanente</strong>
-                  <p style={{ margin: '0.25rem 0 0' }}>Casos de uso comprovado de cheats, manipulação de saves ou criação de múltiplas contas para burlar regras resultam em banimento permanente de todas as temporadas, incluindo remoção do Hall da Fama.</p>
-                </div>
-              </div>
-
-              <div className="rg-callout rg-callout--info" style={{ marginTop: '1rem' }}>
+              <div className="rg-callout rg-callout--info">
                 <i className="ti ti-info-circle" />
                 <span>Dúvidas ou denúncias? Entre em contato com a moderação via Discord ou pelas redes sociais do campeonato.</span>
               </div>
