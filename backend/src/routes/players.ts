@@ -28,7 +28,7 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
   const [playerRes, entriesRes] = await Promise.all([
     supabase
       .from('players')
-      .select('id, nick, twitch_url, youtube_url, kick_url, tiktok_url, gender')
+      .select('id, nick, twitch_url, youtube_url, kick_url, tiktok_url')
       .eq('id', id)
       .single(),
     supabase
@@ -38,7 +38,16 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
       .order('score', { ascending: false }),
   ]);
 
-  if (playerRes.error || !playerRes.data) {
+  if (playerRes.error) {
+    // PGRST116 = zero rows — jogador não existe
+    if (playerRes.error.code === 'PGRST116') {
+      res.status(404).json({ error: 'Jogador não encontrado.' });
+    } else {
+      res.status(500).json({ error: 'Erro ao buscar dados do jogador.' });
+    }
+    return;
+  }
+  if (!playerRes.data) {
     res.status(404).json({ error: 'Jogador não encontrado.' });
     return;
   }

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import profileBg from '../../assets/background/perfil-usuario.webp';
 import { checkPassword } from '../lib/password';
 import { PasswordHints } from '../components/PasswordHints';
@@ -478,9 +478,9 @@ export function ProfilePage() {
                   <p className="account-nick">{profile.nick}</p>
                 </div>
                 <div className="account-header-actions">
-                  <a href={`/player/${session!.player_id}`} className="btn-ghost btn-sm">
+                  <Link to={`/player/${session!.player_id}`} className="btn-ghost btn-sm">
                     <i className="ti ti-external-link" /> Perfil público
-                  </a>
+                  </Link>
                   <button className="btn-ghost btn-sm" onClick={handleLogout}>
                     <i className="ti ti-logout" /> Sair
                   </button>
