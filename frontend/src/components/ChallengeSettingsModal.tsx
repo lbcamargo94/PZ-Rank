@@ -162,7 +162,7 @@ const SETTINGS_GROUPS = [
     icon: 'ti-leaf',
     rows: [
       { label: 'Escuridão durante a noite',         value: 'Escuro' },
-      { label: 'Temperatura',                       value: 'Frio' },
+      { label: 'Temperatura',                       value: 'Muito Frio' },
       { label: 'Chuva',                             value: 'Seco' },
       { label: 'Intensidade máx. da neblina',       value: 'Normal' },
       { label: 'Intensidade máx. efeitos de chuva', value: 'Normal' },

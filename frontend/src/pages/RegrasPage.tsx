@@ -91,7 +91,7 @@ const SANDBOX_GROUPS = [
     title: 'Natureza',
     icon: 'ti-leaf',
     rows: [
-      { label: 'Temperatura',                         value: 'Frio' },
+      { label: 'Temperatura',                         value: 'Muito Frio' },
       { label: 'Chuva',                               value: 'Seco' },
       { label: 'Escuridão noturna',                   value: 'Normal' },
       { label: 'Abundância da pesca',                 value: 'Muito Ruim' },

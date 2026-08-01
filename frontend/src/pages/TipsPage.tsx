@@ -616,7 +616,7 @@ const TIP_GROUPS: TipGroup[] = [
       },
       {
         title:   'Temperatura fria: troque roupas molhadas imediatamente',
-        text:    'O clima é frio no desafio. Roupas encharcadas (por chuva ou por nadar) aumentam drasticamente a perda de temperatura corporal. Hipotermia causa debuff severo de movimento e resistência.',
+        text:    'O clima é muito frio no desafio. Roupas encharcadas (por chuva ou por nadar) aumentam drasticamente a perda de temperatura corporal. Hipotermia causa debuff severo de movimento e resistência.',
         example: 'Você cruza uma chuva moderada sem proteção por 10 minutos de jogo. Suas roupas ficam molhadas. Se você não trocar em 15–20 min: temperatura corporal cai, tremores começam, velocidade reduzida. Troque antes de sintomas.',
         type: 'warning',
       },

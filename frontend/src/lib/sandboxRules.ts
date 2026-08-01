@@ -65,7 +65,7 @@ export const SANDBOX_RULES: SandboxRule[] = [
   { key: 'Alarm',                                   expected: 6,    label: 'Alarmes Casas (Muito Freq.=6)' },
   // Natureza
   { key: 'NightDarkness',                           expected: 3,    label: 'Escuridão Noite (Normal=3)' },
-  { key: 'Temperature',                             expected: 2,    label: 'Temperatura (Frio=2)' },
+  { key: 'Temperature',                             expected: 1,    label: 'Temperatura (Muito Frio=1)' },
   { key: 'Rain',                                    expected: 2,    label: 'Chuva (Seco=2)' },
   { key: 'FishAbundance',                           expected: 2,    label: 'Pesca (Ruim=2)' },
   { key: 'NatureAbundance',                         expected: 2,    label: 'Natureza (Ruim=2)' },
