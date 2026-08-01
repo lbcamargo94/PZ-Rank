@@ -17,6 +17,8 @@ const TRACKED_STATS = new Set([
   'kills', 'days', 'hours_without_sleep',
   'animals_killed', 'fish_caught', 'crops_harvested',
   'items_crafted', 'houses_looted',
+  'trees_cut', 'books_read', 'structures_built', 'crops_planted',
+  'spiffo_visited', 'spiffo_base_any', 'spiffo_base_five', 'all_spiffo_bases',
 ]);
 
 const STAT_LABELS: Record<string, string> = {
@@ -28,6 +30,14 @@ const STAT_LABELS: Record<string, string> = {
   crops_harvested:     'colheitas',
   items_crafted:       'itens',
   houses_looted:       'casas',
+  trees_cut:           'árvores',
+  books_read:          'livros',
+  structures_built:    'estruturas',
+  crops_planted:       'culturas',
+  spiffo_visited:      'Spiffos',
+  spiffo_base_any:     'Spiffos',
+  spiffo_base_five:    'Spiffos',
+  all_spiffo_bases:    'Spiffos',
 };
 
 type PlayerStats = Record<string, number>;

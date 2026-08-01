@@ -531,7 +531,12 @@ export function PlayerPage() {
             crops_harvested:     Math.max(best.crops_harvested,     e.crops_harvested     ?? 0),
             items_crafted:       Math.max(best.items_crafted,       e.items_crafted       ?? 0),
             houses_looted:       Math.max(best.houses_looted,       e.houses_looted       ?? 0),
-          }), { kills: 0, days: 0, hours_without_sleep: 0, animals_killed: 0, fish_caught: 0, crops_harvested: 0, items_crafted: 0, houses_looted: 0 })}
+            trees_cut:           Math.max(best.trees_cut,           e.trees_cut           ?? 0),
+            books_read:          Math.max(best.books_read,          e.books_read          ?? 0),
+            structures_built:    Math.max(best.structures_built,    e.structures_built    ?? 0),
+            crops_planted:       Math.max(best.crops_planted,       e.crops_planted       ?? 0),
+            spiffo_visited:      Math.max(best.spiffo_visited,      e.spiffo_visited      ?? 0),
+          }), { kills: 0, days: 0, hours_without_sleep: 0, animals_killed: 0, fish_caught: 0, crops_harvested: 0, items_crafted: 0, houses_looted: 0, trees_cut: 0, books_read: 0, structures_built: 0, crops_planted: 0, spiffo_visited: 0 })}
         />
       </div>
     </div>

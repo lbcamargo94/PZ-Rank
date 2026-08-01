@@ -32,6 +32,11 @@
   items_crafted?:       number | null;
   houses_looted?:       number | null;
   hours_without_sleep?: number | null;
+  trees_cut?:           number | null;
+  books_read?:          number | null;
+  structures_built?:    number | null;
+  crops_planted?:       number | null;
+  spiffo_visited?:      number | null;
 }
 
 export type SortKey = 'days' | 'kills' | 'time' | 'score' | 'skills' | 'updated_at';
@@ -57,6 +62,13 @@ export interface DecodedCode {
   itemsCrafted:           number;
   housesLooted:           number;
   hoursWithoutSleep:      number;
+  // PZRX4
+  treesCut:               number;
+  booksRead:              number;
+  structuresBuilt:        number;
+  cropsPlanted:           number;
+  // PZRX5
+  spiffoVisited:          number;
 }
 
 export type ModeratorRole  = 'moderator' | 'master';

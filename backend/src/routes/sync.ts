@@ -343,7 +343,10 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
 
   const hasExtended = decoded.animalsKilled > 0 || decoded.fishCaught > 0 ||
     decoded.cropsHarvested > 0 || decoded.itemsCrafted > 0 ||
-    decoded.housesLooted > 0 || decoded.hoursWithoutSleep > 0;
+    decoded.housesLooted > 0 || decoded.hoursWithoutSleep > 0 ||
+    decoded.treesCut > 0 || decoded.booksRead > 0 ||
+    decoded.structuresBuilt > 0 || decoded.cropsPlanted > 0 ||
+    decoded.spiffoVisited > 0;
 
   const entry = {
     player_id:      player.id,
@@ -373,6 +376,11 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       items_crafted:       decoded.itemsCrafted,
       houses_looted:       decoded.housesLooted,
       hours_without_sleep: decoded.hoursWithoutSleep,
+      trees_cut:           decoded.treesCut,
+      books_read:          decoded.booksRead,
+      structures_built:    decoded.structuresBuilt,
+      crops_planted:       decoded.cropsPlanted,
+      spiffo_visited:      decoded.spiffoVisited,
     } : {}),
   };
 
@@ -410,6 +418,11 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     itemsCrafted:       decoded.itemsCrafted,
     housesLooted:       decoded.housesLooted,
     hoursWithoutSleep:  decoded.hoursWithoutSleep,
+    treesCut:           decoded.treesCut,
+    booksRead:          decoded.booksRead,
+    structuresBuilt:    decoded.structuresBuilt,
+    cropsPlanted:       decoded.cropsPlanted,
+    spiffoVisited:      decoded.spiffoVisited,
   };
   void (async () => {
     try {

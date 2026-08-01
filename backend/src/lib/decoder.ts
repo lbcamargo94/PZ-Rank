@@ -2,11 +2,13 @@
 import { SKILL_NAMES } from './skills';
 
 const XOR_KEY = 'PZRank-Community-2026-Key!';
-// PZRX1 = formato antigo; PZRX2 = atual; PZRX3 = estendido (stats do mod v2.6+)
-const PZR_PREFIX_RE = /^PZRX[123]:([\s\S]+)$/;
+// PZRX1 = formato antigo; PZRX2 = atual; PZRX3 = estendido (stats do mod v2.6+); PZRX4 = estendido v2 (mod v2.10+)
+const PZR_PREFIX_RE = /^PZRX[12345]:([\s\S]+)$/;
 // Grupos 1-11: nome|prof|kills|tempo|skills|status|sandbox|traits|motivo|ts|modVersion (opcionais a partir do 6º)
 // Grupos 12-17 (PZRX3): animals_killed|fish_caught|crops_harvested|items_crafted|houses_looted|hours_without_sleep
-const PZR_PAYLOAD_RE = /^PZR\|([^|]*)\|([^|]*)\|(\d+)\|(\d+)\|([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?(\d*)\|?([^|]*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)$/;
+// Grupos 18-21 (PZRX4): trees_cut|books_read|structures_built|crops_planted
+// Grupo 22 (PZRX5): spiffo_visited
+const PZR_PAYLOAD_RE = /^PZR\|([^|]*)\|([^|]*)\|(\d+)\|(\d+)\|([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?(\d*)\|?([^|]*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)$/;
 
 function xorBuffer(data: Buffer, key: string): Buffer {
   const keyBuf = Buffer.from(key, 'utf8');
@@ -54,7 +56,8 @@ export function parsePzrCode(raw: string): DecodedCode | null {
   if (!match) return null;
 
   const [, characterName, profession, kills, timeRaw, skillsRaw, statusRaw, sandboxRaw, traitsRaw, reasonRaw, codeTsRaw, modVersionRaw,
-    animalsKilledRaw, fishCaughtRaw, cropsHarvestedRaw, itemsCraftedRaw, housesLootedRaw, hoursWithoutSleepRaw] = match;
+    animalsKilledRaw, fishCaughtRaw, cropsHarvestedRaw, itemsCraftedRaw, housesLootedRaw, hoursWithoutSleepRaw,
+    treesCutRaw, booksReadRaw, structuresBuiltRaw, cropsPlantedRaw, spiffoVisitedRaw] = match;
   const timeRawNum = parseInt(timeRaw!, 10);
 
   // Traduz tokens de skill: mod v1.7+ exporta IDs em inglês ("Axe 6"), versões anteriores
@@ -103,5 +106,10 @@ export function parsePzrCode(raw: string): DecodedCode | null {
     itemsCrafted:      parseExt(itemsCraftedRaw),
     housesLooted:      parseExt(housesLootedRaw),
     hoursWithoutSleep: parseExt(hoursWithoutSleepRaw),
+    treesCut:          parseExt(treesCutRaw),
+    booksRead:         parseExt(booksReadRaw),
+    structuresBuilt:   parseExt(structuresBuiltRaw),
+    cropsPlanted:      parseExt(cropsPlantedRaw),
+    spiffoVisited:     parseExt(spiffoVisitedRaw),
   };
 }

@@ -85,4 +85,11 @@ export interface DecodedCode {
   itemsCrafted:      number;
   housesLooted:      number;
   hoursWithoutSleep: number;
+  // PZRX4 — extended stats v2 (0 when absent / PZRX3 code)
+  treesCut:          number;
+  booksRead:         number;
+  structuresBuilt:   number;
+  cropsPlanted:      number;
+  // PZRX5 — spiffo visits (0 when absent / PZRX4 code)
+  spiffoVisited:     number;
 }

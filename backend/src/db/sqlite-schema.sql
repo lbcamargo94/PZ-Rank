@@ -88,6 +88,11 @@ CREATE TABLE IF NOT EXISTS entries (
   items_crafted       INTEGER  DEFAULT NULL,
   houses_looted       INTEGER  DEFAULT NULL,
   hours_without_sleep INTEGER  DEFAULT NULL,
+  trees_cut           INTEGER  DEFAULT NULL,
+  books_read          INTEGER  DEFAULT NULL,
+  structures_built    INTEGER  DEFAULT NULL,
+  crops_planted       INTEGER  DEFAULT NULL,
+  spiffo_visited      INTEGER  DEFAULT NULL,
   UNIQUE (player_id, character_name)
 );
 
@@ -192,8 +197,8 @@ CREATE TABLE IF NOT EXISTS player_achievements (
 -- ═══════════════════════════════════════════════════════
 -- CONQUISTAS — 5 raridades, 75 conquistas
 -- stats rastreados: kills, days, hours_without_sleep,
---   animals_killed, fish_caught, crops_harvested,
---   items_crafted, houses_looted
+--   animals_killed, fish_caught, crops_harvested, items_crafted, houses_looted,
+--   trees_cut, books_read, structures_built, crops_planted
 -- stats futuros (mod): demais campos
 -- ═══════════════════════════════════════════════════════
 INSERT OR IGNORE INTO achievements (slug, name, description, icon, tier, stat, threshold) VALUES

@@ -9,6 +9,11 @@ export interface ExtendedStats {
   itemsCrafted:      number;
   housesLooted:      number;
   hoursWithoutSleep: number;
+  treesCut:          number;
+  booksRead:         number;
+  structuresBuilt:   number;
+  cropsPlanted:      number;
+  spiffoVisited:     number;
 }
 
 export async function evaluateAchievements(
@@ -32,14 +37,24 @@ export async function evaluateAchievements(
   );
 
   const stats: Record<string, number> = {
-    kills:              s.kills,
-    days:               s.days,
-    animals_killed:     s.animalsKilled,
-    fish_caught:        s.fishCaught,
-    crops_harvested:    s.cropsHarvested,
-    items_crafted:      s.itemsCrafted,
-    houses_looted:      s.housesLooted,
+    kills:               s.kills,
+    days:                s.days,
+    animals_killed:      s.animalsKilled,
+    fish_caught:         s.fishCaught,
+    crops_harvested:     s.cropsHarvested,
+    items_crafted:       s.itemsCrafted,
+    houses_looted:       s.housesLooted,
     hours_without_sleep: s.hoursWithoutSleep,
+    trees_cut:           s.treesCut,
+    books_read:          s.booksRead,
+    structures_built:    s.structuresBuilt,
+    crops_planted:       s.cropsPlanted,
+    // PZRX5: spiffo_visited é a contagem de restaurantes únicos visitados
+    // Os 4 stats de Spiffo mapeiam o mesmo valor com thresholds diferentes
+    spiffo_visited:   s.spiffoVisited,          // threshold 1
+    spiffo_base_any:  s.spiffoVisited,          // threshold 1
+    spiffo_base_five: s.spiffoVisited,          // threshold 5
+    all_spiffo_bases: s.spiffoVisited >= 13 ? 1 : 0,  // threshold 1 = todos 13
   };
   const now = new Date().toISOString();
 

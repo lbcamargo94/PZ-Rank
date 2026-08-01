@@ -1,11 +1,12 @@
 import type { DecodedCode } from '../types';
 
 const XOR_KEY = 'PZRank-Community-2026-Key!';
-// PZRX1 = formato antigo; PZRX2 = atual; PZRX3 = estendido (stats do mod v2.7+)
-const PZR_PREFIX_RE = /^PZRX[123]:([\s\S]+)$/;
-// 17 grupos: nome|prof|kills|tempo|skills|status|sandbox|traits|motivo|ts|modVersion|
-//            animals_killed|fish_caught|crops_harvested|items_crafted|houses_looted|hours_without_sleep
-const PZR_PAYLOAD_RE = /^PZR\|([^|]*)\|([^|]*)\|(\d+)\|(\d+)\|([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?(\d*)\|?([^|]*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)$/;
+// PZRX1 = formato antigo; PZRX2 = atual; PZRX3 = estendido (mod v2.7+); PZRX4 = estendido v2 (mod v2.10+)
+const PZR_PREFIX_RE = /^PZRX[12345]:([\s\S]+)$/;
+// 17 grupos base + 4 PZRX4 + 1 PZRX5: nome|prof|kills|tempo|skills|status|sandbox|traits|motivo|ts|modVersion|
+//   animals_killed|fish_caught|crops_harvested|items_crafted|houses_looted|hours_without_sleep|
+//   trees_cut|books_read|structures_built|crops_planted|spiffo_visited
+const PZR_PAYLOAD_RE = /^PZR\|([^|]*)\|([^|]*)\|(\d+)\|(\d+)\|([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?(\d*)\|?([^|]*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)$/;
 
 function xorBytes(bytes: Uint8Array, key: string): Uint8Array {
   const keyBytes = new TextEncoder().encode(key);
@@ -57,7 +58,8 @@ export function parsePzrCode(raw: string): DecodedCode | null {
   const match = plain.match(PZR_PAYLOAD_RE);
   if (!match) return null;
   const [, characterName, profession, kills, timeRaw, skillsRaw, statusRaw, sandboxRaw, traitsRaw, reasonRaw,
-    tsRaw, modVersionRaw, animalsKilledRaw, fishCaughtRaw, cropsHarvestedRaw, itemsCraftedRaw, housesLootedRaw, hoursWithoutSleepRaw] = match;
+    tsRaw, modVersionRaw, animalsKilledRaw, fishCaughtRaw, cropsHarvestedRaw, itemsCraftedRaw, housesLootedRaw, hoursWithoutSleepRaw,
+    treesCutRaw, booksReadRaw, structuresBuiltRaw, cropsPlantedRaw, spiffoVisitedRaw] = match;
   const timeRawNum = parseInt(timeRaw, 10);
   const parseExt = (raw: string | undefined) => { const n = parseInt(raw ?? '', 10); return isNaN(n) ? 0 : n; };
   const tsNum = parseInt(tsRaw ?? '', 10);
@@ -82,5 +84,10 @@ export function parsePzrCode(raw: string): DecodedCode | null {
     itemsCrafted:      parseExt(itemsCraftedRaw),
     housesLooted:      parseExt(housesLootedRaw),
     hoursWithoutSleep: parseExt(hoursWithoutSleepRaw),
+    treesCut:          parseExt(treesCutRaw),
+    booksRead:         parseExt(booksReadRaw),
+    structuresBuilt:   parseExt(structuresBuiltRaw),
+    cropsPlanted:      parseExt(cropsPlantedRaw),
+    spiffoVisited:     parseExt(spiffoVisitedRaw),
   };
 }
