@@ -2,8 +2,8 @@ import { Link } from 'react-router-dom';
 import linksBg from '../../assets/background/tela-de-links-uteis.webp';
 
 const DISCORD_URL     = 'https://discord.gg/ebhts347WJ';
-const COMPANION_URL   = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.8.0/PZ.Rank.Companion.Setup.1.8.0.exe';
-const COMPANION_VER   = 'v1.8.0';
+const COMPANION_URL   = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.8.2/PZ.Rank.Companion.Setup.1.8.2.exe';
+const COMPANION_VER   = 'v1.8.2';
 
 export function LinksUteisPage() {
   return (
