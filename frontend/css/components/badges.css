@@ -98,11 +98,13 @@
 .cs-item--alive  { --neon-glow: var(--green-light);}
 .cs-item--dead   { --neon-glow: var(--text-3);     }
 .cs-item--active { --neon-glow: #4ade80;           }
+.cs-item--steam  { --neon-glow: #c2d4f5;           }
 
 .cs-item--kills .ti  { color: var(--red);         animation: neon-pulse 2.4s ease-in-out infinite; }
 .cs-item--days .ti   { color: var(--gold);        animation: neon-pulse 2.4s ease-in-out infinite 0.6s; }
 .cs-item--alive .ti  { color: var(--green-light); animation: neon-pulse 2.4s ease-in-out infinite 1.2s; }
 .cs-item--dead .ti   { color: var(--text-3);      animation: neon-pulse 2.4s ease-in-out infinite 1.8s; }
+.cs-item--steam .ti  { color: #c2d4f5;            animation: neon-pulse 2.4s ease-in-out infinite 2.4s; }
 
 /* Ponto pulsante de "jogando agora" */
 .cs-active-dot {

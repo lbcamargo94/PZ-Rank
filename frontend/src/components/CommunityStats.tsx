@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { apiGetGlobalStats, apiGetActiveSeason, type GlobalStats } from '../lib/api';
+import { apiGetGlobalStats, apiGetActiveSeason, apiGetSteamPlayers, type GlobalStats } from '../lib/api';
 import type { Season } from '../types';
 
 function fmt(n: number): string {
@@ -13,12 +13,17 @@ function daysSince(dateStr: string): number {
 }
 
 export function CommunityStats() {
-  const [stats,  setStats]  = useState<GlobalStats | null>(null);
-  const [season, setSeason] = useState<Season | null>(null);
+  const [stats,        setStats]        = useState<GlobalStats | null>(null);
+  const [season,       setSeason]       = useState<Season | null>(null);
+  const [steamPlayers, setSteamPlayers] = useState<number | null>(null);
 
   useEffect(() => {
     Promise.all([apiGetGlobalStats(), apiGetActiveSeason()])
       .then(([g, s]) => { setStats(g); setSeason(s); })
+      .catch(() => {});
+
+    apiGetSteamPlayers()
+      .then(r => setSteamPlayers(r.player_count))
       .catch(() => {});
   }, []);
 
@@ -74,6 +79,16 @@ export function CommunityStats() {
                   <span className="cs-active-dot" aria-hidden="true" />
                   <span className="cs-value">{fmt(stats.active_count)}</span>
                   <span className="cs-desc">jogando hoje</span>
+                </div>
+              </>
+            )}
+            {steamPlayers !== null && (
+              <>
+                <div className="cs-vdivider" />
+                <div className="cs-item cs-item--steam">
+                  <i className="ti ti-brand-steam" />
+                  <span className="cs-value">{fmt(steamPlayers)}</span>
+                  <span className="cs-desc">no PZ agora</span>
                 </div>
               </>
             )}

@@ -45,6 +45,34 @@ router.get('/global', async (_req: Request, res: Response) => {
   res.json({ total_kills, total_days, alive_count, dead_count, player_count, active_count });
 });
 
+// GET /stats/steam-players — jogadores simultâneos no PZ via Steam Web API (cache 5min)
+const PZ_APP_ID = 108600;
+let _steamCache: { count: number; at: number } | null = null;
+
+router.get('/steam-players', async (_req: Request, res: Response) => {
+  if (_steamCache && Date.now() - _steamCache.at < 5 * 60 * 1000) {
+    return res.json({ player_count: _steamCache.count });
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 5000);
+  try {
+    const r = await fetch(
+      `https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/?appid=${PZ_APP_ID}`,
+      { signal: controller.signal },
+    );
+    const json = await r.json() as { response: { player_count: number; result: number } };
+    if (json.response.result !== 1) throw new Error('Steam API error');
+    _steamCache = { count: json.response.player_count, at: Date.now() };
+    res.json({ player_count: json.response.player_count });
+  } catch {
+    if (_steamCache) return res.json({ player_count: _steamCache.count });
+    res.status(503).json({ error: 'Steam API indisponível' });
+  } finally {
+    clearTimeout(timer);
+  }
+});
+
 // GET /stats/legends — recordes all-time
 router.get('/legends', async (_req: Request, res: Response) => {
   const entrySelect = 'name, character_name, player_id, kills, days, score';

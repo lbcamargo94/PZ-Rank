@@ -299,6 +299,10 @@ export function apiGetGlobalStats(): Promise<GlobalStats> {
   return request('/stats/global');
 }
 
+export function apiGetSteamPlayers(): Promise<{ player_count: number }> {
+  return request('/stats/steam-players');
+}
+
 export interface LegendEntry {
   name:           string;
   character_name: string | null;
