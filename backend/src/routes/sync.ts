@@ -284,7 +284,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     ) {
       // Timestamp do código anterior ao último sync gravado → replay de código antigo
       const prevUpdatedSec = Math.floor(new Date(prev.updated_at).getTime() / 1000);
-      if (decoded.codeTimestamp < prevUpdatedSec - 300) {
+      if (decoded.codeTimestamp < prevUpdatedSec - 900) {
         flaggedReason = 'code_replay';
       }
     }
@@ -322,7 +322,14 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // Desclassificação: apenas sandbox e debug causam desclassificação.
   // Mods não desclassificam — se decoded.sandboxOk=false por mods (mod antigo), ignora e segue.
   const codeReason = decoded.disqualificationReason;
-  if (!decoded.sandboxOk && !isModsReason(codeReason) && prev) {
+  if (!decoded.sandboxOk && !isModsReason(codeReason)) {
+    // Primeiro sync com sandbox/debug ativo: rejeita sem criar entrada no banco.
+    // Sem o && prev anterior, um jogador novo com sandbox podia entrar no rank
+    // temporariamente (INSERT com sandbox_ok:true) até o segundo sync corrigir.
+    if (!prev) {
+      res.status(400).json({ error: 'Sandbox ou modo de depuração ativo. Desative para participar do rank.' });
+      return;
+    }
     const existingRow = prev as { id: number; disqualification_reason?: string | null };
     const validatedReason = companionReason ?? (codeReason && isValidReason(codeReason) ? codeReason : null) ?? 'sandbox';
     const reasonToStore = existingRow.disqualification_reason ?? validatedReason;
@@ -596,12 +603,16 @@ router.post('/heartbeat', syncLimiter, async (req: Request, res: Response): Prom
   // Falso positivo: se a entrada foi sincronizada há menos de 2h, o mod estava ativo
   // recentemente — o jogador provavelmente ficou passivo (sem kills/dias novos).
   // O Companion dispara após 30min sem arquivo; o mod só gera arquivo com mudança de estado.
-  if (entry.updated_at) {
-    const msSinceUpdate = Date.now() - new Date(entry.updated_at).getTime();
-    if (msSinceUpdate < 2 * 60 * 60 * 1000) {
-      res.status(200).json({ success: true, note: 'Entrada sincronizada recentemente — heartbeat ignorado.' });
-      return;
-    }
+  // updated_at nulo = entrada nunca sincronizada (raro) → tratar como recente para evitar
+  // desclassificação imediata de entradas novas sem histórico de sync.
+  if (!entry.updated_at) {
+    res.status(200).json({ success: true, note: 'Entrada sem histórico de sync — heartbeat ignorado.' });
+    return;
+  }
+  const msSinceUpdate = Date.now() - new Date(entry.updated_at).getTime();
+  if (msSinceUpdate < 2 * 60 * 60 * 1000) {
+    res.status(200).json({ success: true, note: 'Entrada sincronizada recentemente — heartbeat ignorado.' });
+    return;
   }
 
   await supabase

@@ -9,7 +9,7 @@ export function computeScore(
   kills: number,
   objectives?: Partial<Objectives> | null,
 ): number {
-  let score = Math.min(kills, SCORE_KILLS_MAX) * SCORE_KILLS;
+  let score = Math.min(Math.max(0, kills || 0), SCORE_KILLS_MAX) * SCORE_KILLS;
 
   if (objectives?.bases) {
     for (const base of Object.values(objectives.bases)) {
