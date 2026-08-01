@@ -46,7 +46,7 @@ export function EditObjectivesModal({ token, entry, onClose, onSuccess, showToas
     }));
   }
 
-  function toggleGlobal(field: 'spiffo_statue' | 'military_base' | 'kills_500k' | 'all_skills_10', checked: boolean) {
+  function toggleGlobal(field: 'spiffo_statue' | 'military_base' | 'kills_800k' | 'all_skills_10', checked: boolean) {
     setObjectives(prev => ({ ...prev, [field]: checked }));
   }
 
@@ -140,9 +140,9 @@ export function EditObjectivesModal({ token, entry, onClose, onSuccess, showToas
                 <span className="obj-check-text"><i className="ti ti-sword" /> Limpou a base militar de Rosewood</span>
               </label>
               <label className="obj-checkbox-label special">
-                <input type="checkbox" checked={objectives.kills_500k}
-                  onChange={e => toggleGlobal('kills_500k', e.target.checked)} />
-                <span className="obj-check-text"><i className="ti ti-skull" /> Atingiu 500.000 zumbis abatidos</span>
+                <input type="checkbox" checked={objectives.kills_800k}
+                  onChange={e => toggleGlobal('kills_800k', e.target.checked)} />
+                <span className="obj-check-text"><i className="ti ti-skull" /> Atingiu 800.000 zumbis abatidos</span>
               </label>
               <label className="obj-checkbox-label special">
                 <input type="checkbox" checked={objectives.all_skills_10}

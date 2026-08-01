@@ -20,7 +20,7 @@ export function computeScore(
       }
     }
   }
-  if (objectives?.kills_500k)    score += 500;
+  if (objectives?.kills_800k)    score += 500;
   if (objectives?.all_skills_10) score += 500;
   if (objectives?.spiffo_statue) score += 300;
   if (objectives?.military_base) score += 300;

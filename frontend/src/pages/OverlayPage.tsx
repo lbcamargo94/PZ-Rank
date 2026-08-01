@@ -104,7 +104,7 @@ export function OverlayPage() {
       {/* Objectives dots */}
       <div className="overlay-objs">
         {[
-          { label: '500k', done: bestEntry.objectives?.kills_500k ?? false },
+          { label: '800k', done: bestEntry.objectives?.kills_800k ?? false },
           { label: 'Skills', done: bestEntry.objectives?.all_skills_10 ?? false },
           { label: 'Estátua', done: bestEntry.objectives?.spiffo_statue ?? false },
           { label: 'Base Mil.', done: bestEntry.objectives?.military_base ?? false },

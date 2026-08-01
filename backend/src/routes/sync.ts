@@ -59,8 +59,8 @@ const sandboxLimiter = rateLimit({
 
 // ── Limites de progressão (anti-cheat básico) ──────────────────────────────
 // Detecta valores claramente impossíveis antes de persistir no banco.
-// 500k kills: cobre jogadores com alta densidade de zumbis em runs muito longas.
-const MAX_KILLS            = 500_000;
+// 800k kills: objetivo máximo do campeonato; cobre runs muito longas com alta densidade de zumbis.
+const MAX_KILLS            = 800_000;
 const MAX_DAYS             = 36_500; // ~100 anos em dias de jogo
 const MAX_KILLS_PER_SECOND = 2.0;    // acima disso é fisicamente impossível no PZ
 

@@ -6,7 +6,7 @@ import { parseSkillMap, SKILL_CATEGORIES, TOTAL_SKILLS, MAX_SKILL_LEVEL } from '
 import { MAX_POSSIBLE_SCORE } from '../lib/objectives';
 import { getDivision } from '../lib/divisions';
 
-export const KILLS_TARGET = 500_000;
+export const KILLS_TARGET = 800_000;
 
 interface RankRowProps {
   entry:       Entry;

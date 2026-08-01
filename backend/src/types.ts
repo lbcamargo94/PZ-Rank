@@ -34,7 +34,7 @@ export interface BaseObjectives {
 
 export interface Objectives {
   bases:         Record<string, BaseObjectives>;
-  kills_500k:    boolean;
+  kills_800k:    boolean;
   all_skills_10: boolean;
   spiffo_statue: boolean;
   military_base: boolean;

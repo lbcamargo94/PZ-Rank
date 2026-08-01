@@ -45,12 +45,12 @@ function ObjectivesSection({ objectives, kills }: { objectives: Objectives | nul
         <h4 className="pp-obj-group-title"><i className="ti ti-star" /> Objetivos Especiais</h4>
 
         <div className="pp-obj-item">
-          <div className={`pp-obj-badge ${obj.kills_500k ? 'pp-obj-done' : ''}`}>
-            {obj.kills_500k ? <i className="ti ti-check" /> : <i className="ti ti-clock" />}
+          <div className={`pp-obj-badge ${obj.kills_800k ? 'pp-obj-done' : ''}`}>
+            {obj.kills_800k ? <i className="ti ti-check" /> : <i className="ti ti-clock" />}
           </div>
           <div className="pp-obj-body">
-            <span className="pp-obj-name">500.000 Zumbis Abatidos</span>
-            <ProgressBar value={Math.min(kills, 500_000)} max={500_000} showValues />
+            <span className="pp-obj-name">800.000 Zumbis Abatidos</span>
+            <ProgressBar value={Math.min(kills, 800_000)} max={800_000} showValues />
           </div>
         </div>
 

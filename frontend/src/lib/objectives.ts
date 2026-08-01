@@ -11,7 +11,7 @@ export interface BaseObjectives {
 
 export interface Objectives {
   bases:          Record<string, BaseObjectives>;
-  kills_500k:     boolean;
+  kills_800k:     boolean;
   all_skills_10:  boolean;
   spiffo_statue:  boolean;
   military_base:  boolean;
@@ -51,7 +51,7 @@ const EMPTY_BASE: BaseObjectives = {
 export function initObjectives(): Objectives {
   const bases: Record<string, BaseObjectives> = {};
   for (const r of SPIFFOS_RESTAURANTS) bases[r.id] = { ...EMPTY_BASE };
-  return { bases, kills_500k: false, all_skills_10: false, spiffo_statue: false, military_base: false };
+  return { bases, kills_800k: false, all_skills_10: false, spiffo_statue: false, military_base: false };
 }
 
 // ── Pontuação ───────────────────────────────────────────────
@@ -59,7 +59,7 @@ export const SCORE_KILLS       = 1;        // pts por zumbi abatido
 export const SCORE_KILLS_MAX   = 800_000;  // máximo de kills contabilizados
 export const SCORE_BASE        = 50;  // pts por base estabelecida
 export const SCORE_BASE_ITEM   = 10;  // pts por item da base
-export const SCORE_KILLS_500K  = 500; // pts por atingir o marco de kills (mantido para compat. DB)
+export const SCORE_KILLS_500K  = 500; // pts por atingir o objetivo de 800k kills (nome mantido por compat.)
 export const SCORE_ALL_SKILLS  = 500; // pts por maxar todas as habilidades
 export const SCORE_STATUE      = 300; // pts pela Estátua do Spiffo
 export const SCORE_MILITARY    = 300; // pts por limpar a base militar
@@ -93,7 +93,7 @@ export function computeScore(
       if (base.arsenal) score += SCORE_BASE_ITEM;
     }
   }
-  if (objectives?.kills_500k)    score += SCORE_KILLS_500K;
+  if (objectives?.kills_800k)    score += SCORE_KILLS_500K;
   if (objectives?.all_skills_10) score += SCORE_ALL_SKILLS;
   if (objectives?.spiffo_statue) score += SCORE_STATUE;
   if (objectives?.military_base) score += SCORE_MILITARY;

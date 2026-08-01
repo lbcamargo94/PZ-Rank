@@ -70,7 +70,7 @@ function KillsBar({ kills }: { kills: number }) {
         <div className={`rk-bar-fill${done ? ' rk-bar-done' : ''}`} style={{ width: pct + '%' }} />
       </div>
       <span className={`rk-bar-pct${done ? ' rk-bar-pct-done' : ''}`}>
-        {pct.toFixed(1)}{'%'}{done ? ' ✓ meta atingida' : ' de 500k'}
+        {pct.toFixed(1)}{'%'}{done ? ' ✓ meta atingida' : ' de 800k'}
       </span>
     </div>
   );

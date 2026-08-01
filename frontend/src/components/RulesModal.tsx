@@ -65,8 +65,8 @@ export function RulesModal({ onClose }: Props) {
               <div className="rules-obj-card">
                 <div className="rules-obj-icon"><i className="ti ti-skull" /></div>
                 <div className="rules-obj-content">
-                  <span className="rules-obj-title">500.000 Zumbis Abatidos</span>
-                  <span className="rules-obj-desc">Abata 500 mil zumbis ao longo da sua sobrevivência.</span>
+                  <span className="rules-obj-title">800.000 Zumbis Abatidos</span>
+                  <span className="rules-obj-desc">Abata 800 mil zumbis ao longo da sua sobrevivência.</span>
                   <span className="rules-pts-badge">+{SCORE_KILLS_500K.toLocaleString('pt-BR')} pts</span>
                 </div>
               </div>
@@ -176,7 +176,7 @@ export function RulesModal({ onClose }: Props) {
                     <td className="pts-col">+{SCORE_MILITARY} pts</td>
                   </tr>
                   <tr>
-                    <td><i className="ti ti-skull" /> 500.000 zumbis abatidos</td>
+                    <td><i className="ti ti-skull" /> 800.000 zumbis abatidos</td>
                     <td className="pts-col">+{SCORE_KILLS_500K} pts</td>
                   </tr>
                   <tr>

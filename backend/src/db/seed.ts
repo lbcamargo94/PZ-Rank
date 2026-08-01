@@ -38,7 +38,7 @@ function dateOnly(offsetDays = 0): string {
 function obj(bases: Record<string, Partial<{
   bed: boolean; windows: boolean; sink: boolean;
   power: boolean; food: boolean; vehicle: boolean;
-}>>, flags: { kills_500k?: boolean; all_skills_10?: boolean; spiffo_statue?: boolean; military_base?: boolean } = {}): string {
+}>>, flags: { kills_800k?: boolean; all_skills_10?: boolean; spiffo_statue?: boolean; military_base?: boolean } = {}): string {
   const basesOut: Record<string, unknown> = {};
   for (const [name, b] of Object.entries(bases)) {
     basesOut[name] = {
@@ -53,7 +53,7 @@ function obj(bases: Record<string, Partial<{
   }
   return JSON.stringify({
     bases:         basesOut,
-    kills_500k:    flags.kills_500k    ?? false,
+    kills_800k:    flags.kills_800k    ?? false,
     all_skills_10: flags.all_skills_10 ?? false,
     spiffo_statue: flags.spiffo_statue ?? false,
     military_base: flags.military_base ?? false,
@@ -267,9 +267,9 @@ const run = db.transaction(() => {
     created_at: string; updated_at: string;
   };
 
-  // Scoring: score = min(kills, 500000) + base bonuses + global flags
+  // Scoring: score = min(kills, 800000) + base bonuses + global flags
   // Base bonus: 50 (has_base) + 10 per true sub-item (max 60) = max 110 per base
-  // kills_500k=+500, all_skills_10=+500, spiffo_statue=+300, military_base=+300
+  // kills_800k=+500, all_skills_10=+500, spiffo_statue=+300, military_base=+300
   const entries: EntryRow[] = [
 
     // ── VIVOS (tab Rank) ───────────────────────────────────────────────────
@@ -355,7 +355,7 @@ const run = db.transaction(() => {
       traits: TR_FIGHTER,
       objectives: obj(
         { 'Forte São Lucas': { bed:true, windows:true, sink:true, power:true, food:true, vehicle:true } },
-        { kills_500k: true }
+        { kills_800k: true }
       ),
       score: 500_000 + 110 + 500,       // 500_610
       animals_killed: 150, fish_caught: 80,  crops_harvested: 200, items_crafted: 900, houses_looted: 200, hours_without_sleep: 110,

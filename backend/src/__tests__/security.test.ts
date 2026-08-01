@@ -629,14 +629,14 @@ describe('validatePoint — validação de ponto de heatmap', () => {
 
 describe('anti-cheat — limites de progressão', () => {
 
-  const MAX_KILLS = 500_000;
+  const MAX_KILLS = 800_000;
   const MAX_DAYS  = 36_500;
 
   // Os limites são verificados na rota sync.ts após o decode.
   // Estes testes documentam os valores e validam que o decoder os extrai corretamente,
   // permitindo que a rota aplique as verificações.
 
-  it('kills = MAX_KILLS (500000) decodificado intacto', () => {
+  it('kills = MAX_KILLS (800000) decodificado intacto', () => {
     const r = parsePzrCode(makePZRX2({ kills: MAX_KILLS }));
     expect(r!.kills).toBe(MAX_KILLS);
   });

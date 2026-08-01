@@ -46,7 +46,7 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
     const d = parsePzrCode(code.trim());
     if (!d) return;
     if (d.kills >= SCORE_KILLS_MAX) {
-      setObjectives(prev => ({ ...prev, kills_500k: true }));
+      setObjectives(prev => ({ ...prev, kills_800k: true }));
     }
   }, [code]);
 
@@ -72,7 +72,7 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
     }));
   }
 
-  function toggleGlobal(field: 'spiffo_statue' | 'military_base' | 'kills_500k' | 'all_skills_10', checked: boolean) {
+  function toggleGlobal(field: 'spiffo_statue' | 'military_base' | 'kills_800k' | 'all_skills_10', checked: boolean) {
     setObjectives(prev => ({ ...prev, [field]: checked }));
   }
 
@@ -235,10 +235,10 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
                 </span>
               </label>
               <label className="obj-checkbox-label special">
-                <input type="checkbox" checked={objectives.kills_500k}
-                  onChange={e => toggleGlobal('kills_500k', e.target.checked)} />
+                <input type="checkbox" checked={objectives.kills_800k}
+                  onChange={e => toggleGlobal('kills_800k', e.target.checked)} />
                 <span className="obj-check-text">
-                  <i className="ti ti-skull" /> Atingiu 500.000 zumbis abatidos
+                  <i className="ti ti-skull" /> Atingiu 800.000 zumbis abatidos
                 </span>
               </label>
               <label className="obj-checkbox-label special">
