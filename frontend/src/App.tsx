@@ -6,6 +6,7 @@ import { useToast } from './hooks/useToast';
 import { Toast } from './components/Toast';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
+import { DonationButton } from './components/DonationButton';
 import { CommunityStats } from './components/CommunityStats';
 import { NewsInline }     from './components/NewsCard';
 import { AdBanner }      from './components/AdBanner';
@@ -138,6 +139,7 @@ export default function App() {
         </Routes>
       </div>
       <Footer />
+      <DonationButton />
     </>
   );
 }

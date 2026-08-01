@@ -1,0 +1,207 @@
+/* PZ Rank – Botão flutuante de doação + modal */
+
+/* ── Botão pin flutuante ────────────────────────────────────── */
+.donation-pin {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  z-index: 80;
+  overflow: hidden;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.65));
+  transition: transform 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.donation-pin img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  transform: scale(1.5);
+  pointer-events: none;
+  user-select: none;
+}
+
+.donation-pin:hover {
+  transform: scale(1.07) rotate(var(--pin-rot, 0deg));
+}
+
+.donation-pin:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 5px;
+  border-radius: 50%;
+}
+
+@keyframes pin-swing {
+  0%   { transform: rotate(0deg);    }
+  20%  { transform: rotate(2deg);    }
+  55%  { transform: rotate(-1.5deg); }
+  80%  { transform: rotate(0.7deg);  }
+  100% { transform: rotate(0deg);    }
+}
+
+.donation-pin--swinging {
+  animation: pin-swing 0.65s ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .donation-pin,
+  .donation-pin--swinging { animation: none; transition: none; }
+}
+
+@media (max-width: 460px) {
+  .donation-pin {
+    width: 100px;
+    height: 100px;
+    bottom: 16px;
+    right: 16px;
+  }
+}
+
+/* ── Modal de doação ────────────────────────────────────────── */
+
+/* Sobrepõe o z-index padrão do modal-overlay (100) para ficar acima */
+.donation-overlay { z-index: 150 !important; }
+
+.donation-modal-box {
+  border-color: var(--green-border) !important;
+  box-shadow:
+    0 0 0 1px var(--green-border),
+    0 8px 48px rgba(0,0,0,0.55),
+    0 0 60px rgba(200,144,42,0.07);
+  max-width: 420px !important;
+  text-align: center;
+}
+
+.donation-modal-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.donation-modal-emoji {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.donation-modal-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-1);
+  text-wrap: balance;
+  line-height: 1.35;
+}
+
+.donation-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+
+.donation-modal-text {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text-2);
+}
+
+.donation-modal-list {
+  list-style: none;
+  padding: 4px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 0;
+}
+
+.donation-modal-list li {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--green-light);
+}
+
+.donation-modal-list li::before {
+  content: '▸ ';
+  color: var(--green);
+}
+
+.donation-modal-thanks {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-3);
+  text-align: center;
+}
+
+/* QR Code */
+.donation-qr-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 4px 0;
+}
+
+.donation-qr-img {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-mid);
+  display: block;
+  max-width: 160px;
+  height: auto;
+}
+
+/* Rodapé do modal */
+.donation-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.btn-livepix {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  background: var(--amber-dim);
+  border: 1px solid var(--amber-border);
+  color: var(--amber-light);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+  width: 100%;
+}
+
+.btn-livepix:hover {
+  background: rgba(200,120,32,0.15);
+  border-color: var(--amber);
+}
+
+.btn-livepix:active { transform: scale(0.97); }
+
+.btn-donation-close {
+  background: transparent;
+  border: 1px solid var(--border-mid);
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  padding: 9px 20px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  width: 100%;
+}
+
+.btn-donation-close:hover { border-color: var(--text-3); color: var(--text-2); }

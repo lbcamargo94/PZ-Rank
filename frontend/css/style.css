@@ -19,6 +19,7 @@
 @import './components/forms.css';
 @import './components/toast.css';
 @import './components/tabs.css';
+@import './components/donation.css';
 
 /* Features */
 @import './features/player.css';
