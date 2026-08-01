@@ -44,6 +44,27 @@
   opacity: 0.45;
 }
 
+.site-footer-contact {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--amber-light);
+  text-decoration: none;
+  opacity: 0.8;
+  transition: opacity 0.15s, color 0.15s;
+}
+
+.site-footer-contact:hover {
+  opacity: 1;
+  color: var(--amber);
+}
+
+.site-footer-contact .ti {
+  font-size: 13px;
+}
+
 /* Responsivo: empilha em telas pequenas */
 @media (max-width: 460px) {
   .site-footer-inner { gap: 6px; }

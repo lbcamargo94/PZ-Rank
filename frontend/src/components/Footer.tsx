@@ -18,6 +18,15 @@ export function Footer() {
         <span className="site-footer-note">
           Não afiliado à The Indie Stone
         </span>
+        <span className="site-footer-sep" aria-hidden="true">·</span>
+        <a
+          className="site-footer-contact"
+          href="mailto:brasileiraozomboid@gmail.com"
+          title="Parcerias e anúncios"
+        >
+          <i className="ti ti-mail" aria-hidden="true" />
+          Parcerias &amp; Anúncios
+        </a>
       </div>
     </footer>
   );
