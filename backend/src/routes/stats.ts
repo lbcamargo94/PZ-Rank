@@ -7,13 +7,24 @@ const router = Router();
 
 // GET /stats/global — totais da temporada (somente entries aprovadas e válidas)
 router.get('/global', async (_req: Request, res: Response) => {
-  const { data, error } = await supabase
-    .from('entries')
-    .select('kills, days, is_alive, sandbox_ok, deleted_at')
-    .is('deleted_at', null)
-    .neq('sandbox_ok', false);
+  const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-  if (error) { const e = dbError(error); return res.status(e.httpStatus).json({ error: e.message }); }
+  const [mainRes, activeRes] = await Promise.all([
+    supabase
+      .from('entries')
+      .select('kills, days, is_alive, sandbox_ok, deleted_at')
+      .is('deleted_at', null)
+      .neq('sandbox_ok', false),
+    supabase
+      .from('entries')
+      .select('id', { count: 'exact', head: true })
+      .is('deleted_at', null)
+      .neq('sandbox_ok', false)
+      .gte('updated_at', since24h),
+  ]);
+
+  if (mainRes.error)   { const e = dbError(mainRes.error);   return res.status(e.httpStatus).json({ error: e.message }); }
+  if (activeRes.error) { const e = dbError(activeRes.error); return res.status(e.httpStatus).json({ error: e.message }); }
 
   let total_kills    = 0;
   let total_days     = 0;
@@ -21,7 +32,7 @@ router.get('/global', async (_req: Request, res: Response) => {
   let dead_count     = 0;
   let player_count   = 0;
 
-  for (const e of (data ?? [])) {
+  for (const e of (mainRes.data ?? [])) {
     total_kills  += e.kills  ?? 0;
     total_days   += e.days   ?? 0;
     player_count += 1;
@@ -29,7 +40,9 @@ router.get('/global', async (_req: Request, res: Response) => {
     else            dead_count++;
   }
 
-  res.json({ total_kills, total_days, alive_count, dead_count, player_count });
+  const active_count = activeRes.count ?? 0;
+
+  res.json({ total_kills, total_days, alive_count, dead_count, player_count, active_count });
 });
 
 // GET /stats/legends — recordes all-time

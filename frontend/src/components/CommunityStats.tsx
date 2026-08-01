@@ -67,6 +67,16 @@ export function CommunityStats() {
               <span className="cs-value">{fmt(stats.dead_count)}</span>
               <span className="cs-desc">mortos</span>
             </div>
+            {stats.active_count > 0 && (
+              <>
+                <div className="cs-vdivider" />
+                <div className="cs-item cs-item--active">
+                  <span className="cs-active-dot" aria-hidden="true" />
+                  <span className="cs-value">{fmt(stats.active_count)}</span>
+                  <span className="cs-desc">jogando hoje</span>
+                </div>
+              </>
+            )}
           </>
         )}
 

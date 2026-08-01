@@ -292,6 +292,7 @@ export interface GlobalStats {
   alive_count:  number;
   dead_count:   number;
   player_count: number;
+  active_count: number;
 }
 
 export function apiGetGlobalStats(): Promise<GlobalStats> {
