@@ -277,16 +277,6 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       flaggedReason = 'kills_regression';
     } else if (decoded.days < prev.days) {
       flaggedReason = 'days_regression';
-    } else if (
-      decoded.codeTimestamp &&
-      decoded.codeTimestamp > 0 &&
-      prev.updated_at
-    ) {
-      // Timestamp do código anterior ao último sync gravado → replay de código antigo
-      const prevUpdatedSec = Math.floor(new Date(prev.updated_at).getTime() / 1000);
-      if (decoded.codeTimestamp < prevUpdatedSec - 900) {
-        flaggedReason = 'code_replay';
-      }
     }
     if (!flaggedReason) {
       const timeDelta  = decoded.timeRaw - prev.time_raw;
