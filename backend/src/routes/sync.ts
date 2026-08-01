@@ -236,13 +236,17 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
 
   // Se já está desclassificado por mods, reabilita automaticamente (mods não desclassificam mais).
   // Para outros motivos (sandbox, debug, manual), mantém a desclassificação.
+  // justReactivated=true sinaliza que o baseline de prev (score/kills) não é confiável:
+  // o score era 0 por desclassificação, não por progressão legítima — a detecção de
+  // anomalias deve ser pulada para este sync para não travar o score em 0.
+  let justReactivated = false;
   if (prev && prev.sandbox_ok === false) {
     if (isModsReason(prev.disqualification_reason)) {
       await supabase
         .from(config.tableName)
         .update({ sandbox_ok: true, disqualification_reason: null, disqualified_at: null })
         .eq('id', prev.id);
-      // Continua o fluxo normal para atualizar o score/estado
+      justReactivated = true;
     } else {
       res.status(200).json({
         success:        true,
@@ -261,11 +265,14 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // Compara submissão atual com o último estado conhecido para detectar
   // progressão impossível (regressão de kills/dias ou ritmo de kills absurdo).
   // Flags ficam gravadas para revisão do moderador — não bloqueiam o sync.
+  // Pulado quando justReactivated=true: o prev vem de um estado desclassificado
+  // (score=0, kills potencialmente desatualizados), então qualquer comparação
+  // geraria falso-positivo e congelaria o score em 0.
 
   let flaggedReason: string | null = null;
   let flaggedAt:     string | null = null;
 
-  if (prev && decoded.sandboxOk) {
+  if (prev && decoded.sandboxOk && !justReactivated) {
     if (decoded.kills < prev.kills) {
       flaggedReason = 'kills_regression';
     } else if (decoded.days < prev.days) {
