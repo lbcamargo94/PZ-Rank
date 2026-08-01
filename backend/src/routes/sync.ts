@@ -211,7 +211,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // Busca entrada existente para preservar objectives, live_url e estado de desclassificação
   const { data: existing, error: existingError } = await supabase
     .from(config.tableName)
-    .select('id, objectives, live_url, sandbox_ok, disqualification_reason, kills, time_raw, days, flagged_reason, flagged_at, updated_at')
+    .select('id, objectives, live_url, sandbox_ok, disqualification_reason, kills, time_raw, days, flagged_reason, flagged_at, updated_at, score, character_name, is_alive')
     .eq('player_id', player.id)
     .eq('character_name', decoded.characterName)
     .maybeSingle();
@@ -230,6 +230,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     sandbox_ok: boolean; disqualification_reason: string | null;
     objectives: Objectives | null; live_url: string | null;
     updated_at: string | null;
+    score: number; character_name: string; is_alive: boolean;
   };
   const prev = existing as ExistingRow | null;
 
@@ -290,6 +291,20 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
 
     if (flaggedReason) {
       flaggedAt = new Date().toISOString();
+
+      // Código mais antigo que o estado atual — rejeita silenciosamente para não
+      // regredir o rank. Retorna 200 para que o Companion descarte da fila de retry.
+      if (flaggedReason === 'kills_regression' || flaggedReason === 'days_regression' || flaggedReason === 'code_replay') {
+        res.status(200).json({
+          success:        true,
+          stale:          true,
+          character_name: prev.character_name,
+          score:          prev.score,
+          is_alive:       prev.is_alive,
+          rank_position:  null,
+        });
+        return;
+      }
     } else if (prev.flagged_reason) {
       // Mantém flag anterior até revisão manual do moderador
       flaggedReason = prev.flagged_reason;
@@ -539,7 +554,7 @@ router.post('/heartbeat', syncLimiter, async (req: Request, res: Response): Prom
   // Mod removido detectado: busca a entrada ativa do personagem e desclassifica
   let query = supabase
     .from(config.tableName)
-    .select('id, is_alive, sandbox_ok')
+    .select('id, is_alive, sandbox_ok, updated_at')
     .eq('player_id', player.id)
     .eq('is_alive', true)
     .eq('sandbox_ok', true);
@@ -550,11 +565,22 @@ router.post('/heartbeat', syncLimiter, async (req: Request, res: Response): Prom
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: entry } = await (query as any).maybeSingle() as { data: { id: number } | null };
+  const { data: entry } = await (query as any).maybeSingle() as { data: { id: number; updated_at: string | null } | null };
 
   if (!entry) {
     res.status(200).json({ success: true, note: 'Sem entrada ativa para desclassificar.' });
     return;
+  }
+
+  // Falso positivo: se a entrada foi sincronizada há menos de 2h, o mod estava ativo
+  // recentemente — o jogador provavelmente ficou passivo (sem kills/dias novos).
+  // O Companion dispara após 30min sem arquivo; o mod só gera arquivo com mudança de estado.
+  if (entry.updated_at) {
+    const msSinceUpdate = Date.now() - new Date(entry.updated_at).getTime();
+    if (msSinceUpdate < 2 * 60 * 60 * 1000) {
+      res.status(200).json({ success: true, note: 'Entrada sincronizada recentemente — heartbeat ignorado.' });
+      return;
+    }
   }
 
   await supabase
