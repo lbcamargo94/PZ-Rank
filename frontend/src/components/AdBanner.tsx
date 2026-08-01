@@ -50,13 +50,23 @@ export function AdBanner() {
           data-full-width-responsive="true"
         />
       ) : (
-        <Link to="/transparencia" className="patrocinio-link" title="Anuncie no Brasileirão PZ">
-          <img
-            src={adImg}
-            alt="Anuncie aqui — Apoie o Brasileirão PZ"
-            className="patrocinio-img"
-          />
-        </Link>
+        <div className="patrocinio-placeholder">
+          <Link to="/transparencia" className="patrocinio-link" title="Anuncie no Brasileirão PZ">
+            <img
+              src={adImg}
+              alt="Anuncie aqui — Apoie o Brasileirão PZ"
+              className="patrocinio-img"
+            />
+          </Link>
+          <a
+            href="mailto:brasileiraozomboid@gmail.com"
+            className="patrocinio-cta-email"
+            title="Fale conosco sobre parcerias"
+          >
+            <i className="ti ti-mail" aria-hidden="true" />
+            brasileiraozomboid@gmail.com
+          </a>
+        </div>
       )}
     </div>
   );

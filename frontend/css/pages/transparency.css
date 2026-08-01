@@ -225,6 +225,43 @@
   line-height: 1.5;
 }
 
+/* Card CTA de patrocínio */
+.transp-card--sponsor-cta {
+  border-color: var(--amber-border);
+}
+
+.transp-card--sponsor-cta .transp-card-header .ti { color: var(--amber); }
+.transp-card--sponsor-cta .transp-card-header h2  { color: var(--amber-light); }
+
+.transp-sponsor-desc {
+  padding: 14px 20px;
+  font-size: 15px;
+  color: var(--text-2);
+  line-height: 1.6;
+}
+
+.btn-sponsor-contact {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 20px 20px;
+  padding: 10px 20px;
+  background: var(--amber-dim);
+  border: 1px solid var(--amber-border);
+  border-radius: var(--radius);
+  color: var(--amber-light);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.btn-sponsor-contact:hover {
+  background: rgba(200,120,32,0.15);
+  border-color: var(--amber);
+}
+
 
 .fm-header-actions {
   display: flex;

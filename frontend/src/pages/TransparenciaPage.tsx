@@ -175,6 +175,26 @@ export function TransparenciaPage() {
                 Este projeto é mantido com amor pela comunidade — sem fins lucrativos.
               </p>
             </div>
+
+            {/* CTA patrocínio */}
+            <section className="transp-card transp-card--sponsor-cta">
+              <div className="transp-card-header">
+                <i className="ti ti-speakerphone" />
+                <h2>Quer anunciar ou patrocinar?</h2>
+              </div>
+              <p className="transp-sponsor-desc">
+                Seu anúncio aparece para toda a comunidade do Brasileirão PZ — jogadores ativos,
+                streamers e entusiastas de Project Zomboid no Brasil.
+                Entre em contato e vamos conversar!
+              </p>
+              <a
+                href="mailto:brasileiraozomboid@gmail.com"
+                className="btn-sponsor-contact"
+              >
+                <i className="ti ti-mail" aria-hidden="true" />
+                brasileiraozomboid@gmail.com
+              </a>
+            </section>
           </>
         )}
       </main>

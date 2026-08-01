@@ -297,6 +297,45 @@
 
 .home-patrocinio .patrocinio-card .ti { font-size: 28px; color: var(--text-3); }
 
+/* Wrapper quando não tem AdSense: imagem + email empilhados */
+.patrocinio-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.patrocinio-placeholder .patrocinio-link {
+  position: relative;
+  flex: 1;
+  display: block;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.patrocinio-cta-email {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: rgba(8,12,6,0.92);
+  border-top: 1px solid var(--border-mid);
+  color: var(--amber-light);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.patrocinio-cta-email:hover {
+  background: rgba(200,120,32,0.12);
+  color: var(--amber);
+}
+
+.patrocinio-cta-email .ti { font-size: 14px; }
+
 /* Link com imagem: preenche o placeholder absolutamente */
 .patrocinio-link {
   position: absolute;
