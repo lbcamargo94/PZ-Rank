@@ -69,6 +69,7 @@ export interface DecodedCode {
   cropsPlanted:           number;
   // PZRX5
   spiffoVisited:          number;
+  skillLevels:            Record<string, number>;
 }
 
 export type ModeratorRole  = 'moderator' | 'master';

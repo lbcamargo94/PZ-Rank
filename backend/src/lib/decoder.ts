@@ -75,6 +75,20 @@ export function parsePzrCode(raw: string): DecodedCode | null {
       }).filter(Boolean)
     : [];
 
+  // Mapa de skill ID em inglês (lowercase) → nível atual; usado para conquistas individuais.
+  const skillLevels: Record<string, number> = {};
+  if (skillsRaw) {
+    for (const s of skillsRaw.split(',')) {
+      const t = s.trim();
+      const lastSpace = t.lastIndexOf(' ');
+      if (lastSpace > 0) {
+        const id    = t.slice(0, lastSpace).toLowerCase();
+        const level = parseInt(t.slice(lastSpace + 1), 10);
+        if (id && !isNaN(level)) skillLevels[id] = level;
+      }
+    }
+  }
+
   const modVersion = (modVersionRaw && modVersionRaw.trim()) ? modVersionRaw.trim() : null;
 
   const codeTimestamp = (codeTsRaw && codeTsRaw.trim())
@@ -111,5 +125,6 @@ export function parsePzrCode(raw: string): DecodedCode | null {
     structuresBuilt:   parseExt(structuresBuiltRaw),
     cropsPlanted:      parseExt(cropsPlantedRaw),
     spiffoVisited:     parseExt(spiffoVisitedRaw),
+    skillLevels,
   };
 }

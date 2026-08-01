@@ -423,6 +423,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     structuresBuilt:    decoded.structuresBuilt,
     cropsPlanted:       decoded.cropsPlanted,
     spiffoVisited:      decoded.spiffoVisited,
+    skillLevels:        decoded.skillLevels,
   };
   void (async () => {
     try {

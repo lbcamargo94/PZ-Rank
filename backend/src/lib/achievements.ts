@@ -14,6 +14,7 @@ export interface ExtendedStats {
   structuresBuilt:   number;
   cropsPlanted:      number;
   spiffoVisited:     number;
+  skillLevels:       Record<string, number>;
 }
 
 export async function evaluateAchievements(
@@ -56,6 +57,11 @@ export async function evaluateAchievements(
     spiffo_base_five: s.spiffoVisited,          // threshold 5
     all_spiffo_bases: s.spiffoVisited >= 13 ? 1 : 0,  // threshold 1 = todos 13
   };
+
+  // Conquistas individuais de skill: stat key = "skill_<id>" (lowercase English ID)
+  for (const [id, level] of Object.entries(s.skillLevels)) {
+    stats[`skill_${id}`] = level;
+  }
   const now = new Date().toISOString();
 
   const toInsert = (allAch as Array<{ id: number; stat: string; threshold: number }>)

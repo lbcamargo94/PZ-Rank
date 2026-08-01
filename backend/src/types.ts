@@ -92,4 +92,6 @@ export interface DecodedCode {
   cropsPlanted:      number;
   // PZRX5 — spiffo visits (0 when absent / PZRX4 code)
   spiffoVisited:     number;
+  // Mapa de skill ID em inglês (lowercase) → nível; derivado do campo skills do payload
+  skillLevels:       Record<string, number>;
 }

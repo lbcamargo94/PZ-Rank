@@ -64,6 +64,18 @@ export function parsePzrCode(raw: string): DecodedCode | null {
   const parseExt = (raw: string | undefined) => { const n = parseInt(raw ?? '', 10); return isNaN(n) ? 0 : n; };
   const tsNum = parseInt(tsRaw ?? '', 10);
   const skills = skillsRaw ? skillsRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+  const skillLevels: Record<string, number> = {};
+  if (skillsRaw) {
+    for (const s of skillsRaw.split(',')) {
+      const t = s.trim();
+      const lastSpace = t.lastIndexOf(' ');
+      if (lastSpace > 0) {
+        const id    = t.slice(0, lastSpace).toLowerCase();
+        const level = parseInt(t.slice(lastSpace + 1), 10);
+        if (id && !isNaN(level)) skillLevels[id] = level;
+      }
+    }
+  }
   return {
     characterName: characterName || 'Sobrevivente',
     profession: profession || 'Desconhecida',
@@ -89,5 +101,6 @@ export function parsePzrCode(raw: string): DecodedCode | null {
     structuresBuilt:   parseExt(structuresBuiltRaw),
     cropsPlanted:      parseExt(cropsPlantedRaw),
     spiffoVisited:     parseExt(spiffoVisitedRaw),
+    skillLevels,
   };
 }
