@@ -273,16 +273,20 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   let flaggedAt:     string | null = null;
 
   if (prev && decoded.sandboxOk && !justReactivated) {
-    if (decoded.kills < prev.kills) {
-      flaggedReason = 'kills_regression';
-    } else if (decoded.days < prev.days) {
-      flaggedReason = 'days_regression';
-    }
-    if (!flaggedReason) {
-      const timeDelta  = decoded.timeRaw - prev.time_raw;
-      const killsDelta = decoded.kills   - prev.kills;
-      if (timeDelta > 0 && killsDelta / timeDelta > MAX_KILLS_PER_SECOND) {
-        flaggedReason = 'kills_spike';
+    // Dias nunca retrocedem numa run legítima — se diminuíram, o personagem morreu
+    // e iniciou nova partida com o mesmo nome. Não aplica detecção de anomalias.
+    const isNewRun = decoded.days < prev.days;
+
+    if (!isNewRun) {
+      if (decoded.kills < prev.kills) {
+        flaggedReason = 'kills_regression';
+      }
+      if (!flaggedReason) {
+        const timeDelta  = decoded.timeRaw - prev.time_raw;
+        const killsDelta = decoded.kills   - prev.kills;
+        if (timeDelta > 0 && killsDelta / timeDelta > MAX_KILLS_PER_SECOND) {
+          flaggedReason = 'kills_spike';
+        }
       }
     }
 
@@ -291,7 +295,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
 
       // Código mais antigo que o estado atual — rejeita silenciosamente para não
       // regredir o rank. Retorna 200 para que o Companion descarte da fila de retry.
-      if (flaggedReason === 'kills_regression' || flaggedReason === 'days_regression' || flaggedReason === 'code_replay') {
+      if (flaggedReason === 'kills_regression' || flaggedReason === 'code_replay') {
         res.status(200).json({
           success:        true,
           stale:          true,
@@ -302,8 +306,8 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
         });
         return;
       }
-    } else if (prev.flagged_reason) {
-      // Mantém flag anterior até revisão manual do moderador
+    } else if (!isNewRun && prev.flagged_reason) {
+      // Mantém flag anterior até revisão manual do moderador (não carrega flags de runs antigas)
       flaggedReason = prev.flagged_reason;
       flaggedAt     = prev.flagged_at ?? null;
     }
