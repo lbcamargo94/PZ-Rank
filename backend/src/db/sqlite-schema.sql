@@ -14,6 +14,10 @@ CREATE TABLE IF NOT EXISTS players (
   status             TEXT     NOT NULL DEFAULT 'pending'
                      CHECK (status IN ('pending', 'approved', 'rejected')),
   blocked            INTEGER  NOT NULL DEFAULT 0,
+  blocked_reason     TEXT     DEFAULT NULL,
+  blocked_at         TEXT     DEFAULT NULL,
+  blocked_by         TEXT     DEFAULT NULL,
+  blocked_note       TEXT     DEFAULT NULL,
   is_supporter       INTEGER  NOT NULL DEFAULT 0,
   supporter_until    TEXT     DEFAULT NULL,
   deleted_at         TEXT     DEFAULT NULL,

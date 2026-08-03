@@ -19,11 +19,104 @@ const FILTER_LABELS: Record<PlayerFilter, string> = {
   pending:   'Pendentes',
   approved:  'Aprovados',
   rejected:  'Rejeitados',
-  blocked:   'Bloqueados',
+  blocked:   'Banidos',
   deleted:   'Excluídos',
   supporter: 'Apoiadores',
   all:       'Todos',
 };
+
+const BAN_REASONS = [
+  'Trapaça / Cheat',
+  'Assédio / Comportamento tóxico',
+  'Jogo em modo Sandbox',
+  'Múltiplas contas',
+  'Identidade falsa / Fraude',
+  'Violação das regras do campeonato',
+  'Outro motivo',
+];
+
+interface BanModalProps {
+  nick:      string;
+  onConfirm: (reason: string, note: string) => void;
+  onCancel:  () => void;
+}
+
+function BanModal({ nick, onConfirm, onCancel }: BanModalProps) {
+  const [reason, setReason] = useState('');
+  const [note,   setNote]   = useState('');
+
+  useEffect(() => {
+    const prev  = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onCancel(); };
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
+  }, [onCancel]);
+
+  return (
+    <div className="modal-overlay active" role="alertdialog" aria-modal="true">
+      <div className="modal-box modal-box--sm ban-modal-box" onClick={e => e.stopPropagation()}>
+        <button className="modal-close" aria-label="Fechar" onClick={onCancel}>
+          <i className="ti ti-x" />
+        </button>
+
+        <h2 className="modal-title">
+          <i className="ti ti-ban" /> Banir jogador
+        </h2>
+
+        <div className="ban-modal-body">
+          <p className="ban-modal-nick">
+            Banindo: <strong>{nick}</strong>
+          </p>
+
+          <div className="ban-modal-field">
+            <label className="form-label" htmlFor="ban-reason">
+              Motivo do banimento <span style={{ color: 'var(--red)' }}>*</span>
+            </label>
+            <select
+              id="ban-reason"
+              className="form-input ban-reason-select"
+              value={reason}
+              onChange={e => setReason(e.target.value)}
+            >
+              <option value="">Selecione um motivo...</option>
+              {BAN_REASONS.map(r => (
+                <option key={r} value={r}>{r}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="ban-modal-field">
+            <label className="form-label" htmlFor="ban-note">
+              Observação adicional <span style={{ color: 'var(--text-4)', fontWeight: 400 }}>(opcional)</span>
+            </label>
+            <textarea
+              id="ban-note"
+              className="form-input ban-note-textarea"
+              value={note}
+              onChange={e => setNote(e.target.value)}
+              placeholder="Detalhes adicionais, links de evidência..."
+              rows={3}
+            />
+          </div>
+        </div>
+
+        <div className="confirm-modal-actions">
+          <button className="btn-secondary" onClick={onCancel}>
+            Cancelar
+          </button>
+          <button
+            className="btn-danger"
+            disabled={!reason}
+            onClick={() => onConfirm(reason, note)}
+          >
+            <i className="ti ti-ban" /> Confirmar banimento
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function PendingPlayers({ token, showToast }: Props) {
   const [players,         setPlayers]         = useState<Player[]>([]);
@@ -31,6 +124,8 @@ export function PendingPlayers({ token, showToast }: Props) {
   const [search,          setSearch]          = useState('');
   const [loading,         setLoading]         = useState(false);
   const [updating,        setUpdating]        = useState<number | null>(null);
+  const [banTargetId,     setBanTargetId]     = useState<number | null>(null);
+  const [unbanTargetId,   setUnbanTargetId]   = useState<number | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [editLinksPlayer, setEditLinksPlayer] = useState<Player | null>(null);
   const [emailInputs,     setEmailInputs]     = useState<Record<number, string>>({});
@@ -71,11 +166,13 @@ export function PendingPlayers({ token, showToast }: Props) {
     }
   }
 
-  async function handleBlock(id: number) {
+  async function handleBanConfirm(reason: string, note: string) {
+    const id = banTargetId!;
+    setBanTargetId(null);
     setUpdating(id);
     try {
-      await apiBlockPlayer(token, id);
-      showToast('Jogador bloqueado.', 'success');
+      await apiBlockPlayer(token, id, reason, note || undefined);
+      showToast('Jogador banido.', 'success');
       fetchPlayers();
     } catch (err) {
       showToast((err as Error).message, 'error');
@@ -84,11 +181,12 @@ export function PendingPlayers({ token, showToast }: Props) {
     }
   }
 
-  async function handleUnblock(id: number) {
+  async function handleUnban(id: number) {
+    setUnbanTargetId(null);
     setUpdating(id);
     try {
       await apiUnblockPlayer(token, id);
-      showToast('Jogador desbloqueado!', 'success');
+      showToast('Jogador desbanido!', 'success');
       fetchPlayers();
     } catch (err) {
       showToast((err as Error).message, 'error');
@@ -172,6 +270,8 @@ export function PendingPlayers({ token, showToast }: Props) {
   const filterOptions: PlayerFilter[] = ['pending', 'approved', 'rejected', 'blocked', 'deleted', 'all'];
   const pendingCount = players.filter(p => p.status === 'pending').length;
   const isDeleted    = filter === 'deleted';
+  const unbanTarget  = unbanTargetId !== null ? players.find(p => p.id === unbanTargetId) : null;
+  const banTarget    = banTargetId   !== null ? players.find(p => p.id === banTargetId)   : null;
 
   return (
     <div className="painel-section">
@@ -193,7 +293,7 @@ export function PendingPlayers({ token, showToast }: Props) {
               {f === 'pending'  && <i className="ti ti-clock" />}
               {f === 'approved' && <i className="ti ti-check" />}
               {f === 'rejected' && <i className="ti ti-x" />}
-              {f === 'blocked'  && <i className="ti ti-lock" />}
+              {f === 'blocked'  && <i className="ti ti-ban" />}
               {f === 'deleted'  && <i className="ti ti-trash" />}
               {f === 'all'      && <i className="ti ti-list" />}
               {' '}{FILTER_LABELS[f]}
@@ -254,7 +354,7 @@ export function PendingPlayers({ token, showToast }: Props) {
                   <span className={`player-status status-badge-${p.status}`}>{STATUS_LABELS[p.status]}</span>
                 )}
                 {p.blocked && !isDeleted && (
-                  <span className="player-status status-badge-blocked"><i className="ti ti-lock" /> Bloqueado</span>
+                  <span className="player-status status-badge-blocked"><i className="ti ti-ban" /> Banido</span>
                 )}
                 {isDeleted && (
                   <span className="player-status status-badge-deleted"><i className="ti ti-trash" /> Excluído</span>
@@ -276,6 +376,23 @@ export function PendingPlayers({ token, showToast }: Props) {
                 )}
               </div>
             </div>
+
+            {/* Informações do banimento */}
+            {p.blocked && p.blocked_reason && (
+              <div className="player-ban-info">
+                <i className="ti ti-ban" />
+                <span>Motivo: <strong>{p.blocked_reason}</strong></span>
+                {p.blocked_by && <span className="player-ban-sep">•</span>}
+                {p.blocked_by && <span>por <strong>{p.blocked_by}</strong></span>}
+                {p.blocked_at && <span className="player-ban-sep">•</span>}
+                {p.blocked_at && (
+                  <span>{new Date(p.blocked_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+                )}
+                {p.blocked_note && (
+                  <div className="player-ban-note">{p.blocked_note}</div>
+                )}
+              </div>
+            )}
 
             <div className="player-card-links">
               {p.twitch_url  && <a href={p.twitch_url}  target="_blank" rel="noopener noreferrer" title="Twitch"><i className="ti ti-brand-twitch" /></a>}
@@ -306,13 +423,15 @@ export function PendingPlayers({ token, showToast }: Props) {
                   )}
                   {!p.blocked ? (
                     <button className="btn-warning btn-sm" disabled={updating === p.id}
-                      onClick={() => handleBlock(p.id)}>
-                      <i className="ti ti-lock" /> Bloquear
+                      title="Banir jogador"
+                      onClick={() => setBanTargetId(p.id)}>
+                      <i className="ti ti-ban" /> Banir
                     </button>
                   ) : (
                     <button className="btn-ghost btn-sm" disabled={updating === p.id}
-                      onClick={() => handleUnblock(p.id)}>
-                      <i className="ti ti-lock-open" /> Desbloquear
+                      title="Remover banimento"
+                      onClick={() => setUnbanTargetId(p.id)}>
+                      <i className="ti ti-lock-open" /> Desbanir
                     </button>
                   )}
                   <button className="btn-ghost btn-sm" disabled={updating === p.id}
@@ -378,6 +497,26 @@ export function PendingPlayers({ token, showToast }: Props) {
           </div>
         ))}
       </div>
+
+      {/* Modal de banimento */}
+      {banTargetId !== null && banTarget && (
+        <BanModal
+          nick={banTarget.nick}
+          onConfirm={handleBanConfirm}
+          onCancel={() => setBanTargetId(null)}
+        />
+      )}
+
+      {/* Confirmação de desbanimento */}
+      {unbanTargetId !== null && unbanTarget && (
+        <ConfirmModal
+          title="Remover banimento"
+          message={`Deseja realmente desbanir ${unbanTarget.nick}? O jogador poderá enviar dados do jogo novamente.`}
+          confirmLabel="Confirmar desbanimento"
+          onConfirm={() => handleUnban(unbanTargetId)}
+          onCancel={() => setUnbanTargetId(null)}
+        />
+      )}
 
       {confirmDeleteId !== null && (
         <ConfirmModal

@@ -99,6 +99,17 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
   const pwdError = validatePassword(password ?? '');
   if (pwdError) { res.status(400).json({ error: pwdError }); return; }
 
+  // Bloqueia cadastro com email vinculado a conta banida
+  const { data: emailOwner } = await supabase
+    .from('players')
+    .select('blocked')
+    .eq('email', email.trim().toLowerCase())
+    .maybeSingle();
+  if (emailOwner?.blocked) {
+    res.status(403).json({ error: 'Este email pertence a uma conta banida e não pode ser utilizado para criar uma nova conta.' });
+    return;
+  }
+
   try {
     const password_hash = await bcrypt.hash(password!, 10);
 
@@ -167,7 +178,7 @@ router.get('/', requireModerator, async (req: ModRequest, res: Response): Promis
   try {
     let query = supabase
       .from('players')
-      .select('id, nick, email, email_verified_at, twitch_url, youtube_url, kick_url, tiktok_url, status, blocked, is_supporter, supporter_until, deleted_at, created_at')
+      .select('id, nick, email, email_verified_at, twitch_url, youtube_url, kick_url, tiktok_url, status, blocked, blocked_reason, blocked_at, blocked_by, blocked_note, is_supporter, supporter_until, deleted_at, created_at')
       .order('created_at', { ascending: false });
 
     if (statusParam === 'deleted') {
@@ -297,19 +308,38 @@ router.patch('/:id/block', requireModerator, async (req: ModRequest, res: Respon
   const id = parseInt(String(req.params.id), 10);
   if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
 
+  const { reason, note } = req.body as { reason?: string; note?: string };
+  if (!reason?.trim()) {
+    res.status(400).json({ error: 'Motivo do banimento é obrigatório.' });
+    return;
+  }
+
   try {
+    // Busca o login do moderador para registrar quem aplicou o ban
+    const { data: mod } = await supabase
+      .from('moderators')
+      .select('login')
+      .eq('id', req.userId!)
+      .single();
+
     const { data, error } = await supabase
       .from('players')
-      .update({ blocked: true })
+      .update({
+        blocked:        true,
+        blocked_reason: reason.trim(),
+        blocked_at:     new Date().toISOString(),
+        blocked_by:     mod?.login ?? req.userId ?? 'moderador',
+        blocked_note:   note?.trim() || null,
+      })
       .eq('id', id)
-      .select('id, nick, email, email_verified_at, twitch_url, youtube_url, kick_url, tiktok_url, status, blocked, deleted_at, created_at')
+      .select('id, nick, email, email_verified_at, twitch_url, youtube_url, kick_url, tiktok_url, status, blocked, blocked_reason, blocked_at, blocked_by, blocked_note, deleted_at, created_at')
       .single();
 
     if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
     res.json(data);
   } catch (err) {
     console.error('[PATCH /players/:id/block] Erro inesperado:', err);
-    res.status(500).json({ error: 'Erro interno ao bloquear jogador.' });
+    res.status(500).json({ error: 'Erro interno ao banir jogador.' });
   }
 });
 
@@ -321,16 +351,22 @@ router.patch('/:id/unblock', requireModerator, async (req: ModRequest, res: Resp
   try {
     const { data, error } = await supabase
       .from('players')
-      .update({ blocked: false })
+      .update({
+        blocked:        false,
+        blocked_reason: null,
+        blocked_at:     null,
+        blocked_by:     null,
+        blocked_note:   null,
+      })
       .eq('id', id)
-      .select('id, nick, email, email_verified_at, twitch_url, youtube_url, kick_url, tiktok_url, status, blocked, deleted_at, created_at')
+      .select('id, nick, email, email_verified_at, twitch_url, youtube_url, kick_url, tiktok_url, status, blocked, blocked_reason, blocked_at, blocked_by, blocked_note, deleted_at, created_at')
       .single();
 
     if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
     res.json(data);
   } catch (err) {
     console.error('[PATCH /players/:id/unblock] Erro inesperado:', err);
-    res.status(500).json({ error: 'Erro interno ao desbloquear jogador.' });
+    res.status(500).json({ error: 'Erro interno ao desbanir jogador.' });
   }
 });
 

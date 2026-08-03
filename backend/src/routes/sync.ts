@@ -126,7 +126,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // Valida token
   const { data: player, error: playerError } = await supabase
     .from('players')
-    .select('id, nick, status, blocked')
+    .select('id, nick, status, blocked, youtube_url')
     .eq('player_token', player_token)
     .maybeSingle();
 
@@ -140,6 +140,10 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   }
   if (player.blocked) {
     res.status(403).json({ error: 'Jogador bloqueado.' });
+    return;
+  }
+  if (!player.youtube_url?.trim()) {
+    res.status(403).json({ error: 'Cadastre o link do seu canal do YouTube no site do rank para enviar atualizações.' });
     return;
   }
 
@@ -205,6 +209,22 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   }
   if (decoded.days > MAX_DAYS || decoded.days < 0) {
     res.status(400).json({ error: 'Valor de dias fora do intervalo permitido.' });
+    return;
+  }
+
+  // Verifica se há outro personagem vivo vinculado a esta conta (apenas um personagem permitido)
+  const { data: conflictEntries } = await supabase
+    .from(config.tableName)
+    .select('character_name')
+    .eq('player_id', player.id)
+    .eq('is_alive', true)
+    .neq('character_name', decoded.characterName)
+    .limit(1);
+
+  if (conflictEntries && conflictEntries.length > 0) {
+    res.status(409).json({
+      error: `Apenas um personagem por conta é permitido. "${(conflictEntries[0] as { character_name: string }).character_name}" ainda está vivo no rank. Contate um moderador para resolver.`,
+    });
     return;
   }
 

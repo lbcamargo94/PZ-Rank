@@ -88,6 +88,10 @@ export interface Player {
   gender?:            'm' | 'f' | null;
   status:             PlayerStatus;
   blocked:            boolean;
+  blocked_reason?:    string | null;
+  blocked_at?:        string | null;
+  blocked_by?:        string | null;
+  blocked_note?:      string | null;
   is_supporter:       boolean;
   supporter_until:    string | null;
   deleted_at?:        string | null;

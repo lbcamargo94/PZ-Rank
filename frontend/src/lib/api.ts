@@ -186,8 +186,8 @@ export function apiUpdatePlayerStatus(
   });
 }
 
-export function apiBlockPlayer(token: string, id: number): Promise<Player> {
-  return request(`/players/${id}/block`, { method: 'PATCH', ...auth(token) });
+export function apiBlockPlayer(token: string, id: number, reason: string, note?: string): Promise<Player> {
+  return request(`/players/${id}/block`, { method: 'PATCH', ...json(token, { reason, note }) });
 }
 
 export function apiUnblockPlayer(token: string, id: number): Promise<Player> {
