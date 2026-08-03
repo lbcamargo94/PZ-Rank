@@ -273,9 +273,11 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   let flaggedAt:     string | null = null;
 
   if (prev && decoded.sandboxOk && !justReactivated) {
-    // Dias nunca retrocedem numa run legítima — se diminuíram, o personagem morreu
-    // e iniciou nova partida com o mesmo nome. Não aplica detecção de anomalias.
-    const isNewRun = decoded.days < prev.days;
+    // timeRaw (minutos totais) nunca retrocede numa run legítima — se diminuiu,
+    // o personagem morreu e iniciou nova partida com o mesmo nome.
+    // Usa timeRaw em vez de days para capturar o caso em que ambas as runs
+    // arredondam para o mesmo número de dias mas o tempo total é menor.
+    const isNewRun = decoded.timeRaw < prev.time_raw;
 
     if (!isNewRun) {
       if (decoded.kills < prev.kills) {
