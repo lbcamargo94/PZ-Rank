@@ -88,6 +88,14 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
     res.status(400).json({ error: 'É necessário aceitar as regras de conduta para se cadastrar.' });
     return;
   }
+  if (!youtube_url?.trim()) {
+    res.status(400).json({ error: 'O link do canal do YouTube é obrigatório para participar do rank.' });
+    return;
+  }
+  if (!/youtube\.com|youtu\.be/i.test(youtube_url.trim())) {
+    res.status(400).json({ error: 'O link informado não parece ser um canal do YouTube válido.' });
+    return;
+  }
   const pwdError = validatePassword(password ?? '');
   if (pwdError) { res.status(400).json({ error: pwdError }); return; }
 

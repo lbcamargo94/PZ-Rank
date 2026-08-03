@@ -40,7 +40,9 @@ CREATE TABLE IF NOT EXISTS moderators (
   email_verified_at TEXT    DEFAULT NULL,
   role              TEXT    NOT NULL DEFAULT 'moderator'
                     CHECK (role IN ('moderator', 'master')),
-  password_hash     TEXT    NOT NULL,
+  password_hash             TEXT    NOT NULL,
+  reset_token               TEXT    DEFAULT NULL,
+  reset_token_expires_at    TEXT    DEFAULT NULL,
   created_at        TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
 );
 

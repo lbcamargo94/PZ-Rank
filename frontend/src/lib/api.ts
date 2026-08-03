@@ -72,6 +72,14 @@ function auth(token: string): RequestInit {
 
 // ── Auth ────────────────────────────────────────────────────
 
+export function apiModForgotPassword(email: string): Promise<{ message: string }> {
+  return request('/auth/mod/forgot-password', { method: 'POST', ...json(null, { email }) });
+}
+
+export function apiModResetPassword(token: string, password: string): Promise<{ message: string }> {
+  return request('/auth/mod/reset-password', { method: 'POST', ...json(null, { token, password }) });
+}
+
 export async function apiLogin(email: string, password: string): Promise<ModSession> {
   const data = await request<LoginResponse>('/auth/login', {
     method: 'POST',

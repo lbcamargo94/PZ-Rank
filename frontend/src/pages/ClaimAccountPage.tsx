@@ -12,10 +12,10 @@ import cadastroBg from '../../assets/background/cadastro-bg.jpg';
 const REGISTRATIONS_OPEN = true;
 
 const SOCIALS = [
-  { id: 'twitch',  label: 'Twitch',  icon: 'ti-brand-twitch',  placeholder: 'https://twitch.tv/seunick',    color: '#9146ff' },
-  { id: 'youtube', label: 'YouTube', icon: 'ti-brand-youtube', placeholder: 'https://youtube.com/@seunick', color: '#ff0000' },
-  { id: 'kick',    label: 'Kick',    icon: 'ti-brand-kick',    placeholder: 'https://kick.com/seunick',      color: '#53fc18' },
-  { id: 'tiktok',  label: 'TikTok',  icon: 'ti-brand-tiktok',  placeholder: 'https://tiktok.com/@seunick',  color: '#ee1d52' },
+  { id: 'twitch',  label: 'Twitch',  icon: 'ti-brand-twitch',  placeholder: 'https://twitch.tv/seunick',    color: '#9146ff', required: false },
+  { id: 'youtube', label: 'YouTube', icon: 'ti-brand-youtube', placeholder: 'https://youtube.com/@seunick', color: '#ff0000', required: true  },
+  { id: 'kick',    label: 'Kick',    icon: 'ti-brand-kick',    placeholder: 'https://kick.com/seunick',      color: '#53fc18', required: false },
+  { id: 'tiktok',  label: 'TikTok',  icon: 'ti-brand-tiktok',  placeholder: 'https://tiktok.com/@seunick',  color: '#ee1d52', required: false },
 ] as const;
 type SocialId = typeof SOCIALS[number]['id'];
 type Step = 1 | 2 | 3 | 'done';
@@ -91,7 +91,10 @@ export function ClaimAccountPage() {
     setStep(2);
   }
 
-  async function submitRegistration(withSocials: boolean) {
+  const step2Valid = socials.youtube.trim().length > 0;
+
+  async function submitRegistration() {
+    if (!step2Valid) { showToast('O link do canal do YouTube é obrigatório.', 'error'); return; }
     setLoading(true);
     try {
       await apiRegisterPlayer({
@@ -99,12 +102,10 @@ export function ClaimAccountPage() {
         email:          email.trim(),
         password,
         terms_accepted: true,
-        ...(withSocials && {
-          twitch_url:  socials.twitch.trim()  || undefined,
-          youtube_url: socials.youtube.trim() || undefined,
-          kick_url:    socials.kick.trim()    || undefined,
-          tiktok_url:  socials.tiktok.trim()  || undefined,
-        }),
+        youtube_url:    socials.youtube.trim(),
+        twitch_url:     socials.twitch.trim()  || undefined,
+        kick_url:       socials.kick.trim()    || undefined,
+        tiktok_url:     socials.tiktok.trim()  || undefined,
       });
       setStep(3);
     } catch (err) {
@@ -264,16 +265,18 @@ export function ClaimAccountPage() {
           {step === 2 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <p className="reg-socials-hint" style={{ margin: 0 }}>
-                Adicione seus canais para aparecer como criador de conteúdo. Você pode pular e adicionar depois em <strong>Login</strong>.
+                Informe seu canal do YouTube para participar do rank. Os demais são opcionais.
               </p>
               <div className="reg-socials-grid">
                 {SOCIALS.map(s => (
                   <div key={s.id} className="reg-social-item" style={{ '--social-color': s.color } as React.CSSProperties}>
                     <label className="reg-social-label" htmlFor={`reg-${s.id}`}>
                       <i className={`ti ${s.icon}`} /> {s.label}
+                      {s.required && <span className="required"> *</span>}
                     </label>
                     <input id={`reg-${s.id}`} className="form-input reg-social-input" type="url"
                       placeholder={s.placeholder} value={socials[s.id]}
+                      required={s.required}
                       onChange={e => setSocials(p => ({ ...p, [s.id]: e.target.value }))} />
                   </div>
                 ))}
@@ -282,13 +285,10 @@ export function ClaimAccountPage() {
                 <button type="button" className="btn-ghost" onClick={() => setStep(1)} disabled={loading}>
                   <i className="ti ti-arrow-left" /> Voltar
                 </button>
-                <button type="button" className="btn-primary" disabled={loading} onClick={() => submitRegistration(true)}>
+                <button type="button" className="btn-primary" disabled={loading || !step2Valid} onClick={submitRegistration}>
                   {loading ? <><i className="ti ti-loader-2" /> Criando...</> : <><i className="ti ti-send" /> Criar conta</>}
                 </button>
               </div>
-              <button type="button" className="btn-ghost btn-block" disabled={loading} onClick={() => submitRegistration(false)}>
-                Pular — criar sem canais de streaming
-              </button>
             </div>
           )}
 

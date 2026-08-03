@@ -187,6 +187,37 @@ export async function sendOtpEmail(
   });
 }
 
+export async function sendModPasswordResetEmail(email: string, login: string, token: string): Promise<void> {
+  const link = `${config.frontendUrl}/painel/redefinir-senha?token=${token}`;
+  const html = baseTemplate('Redefinir senha de moderador — PZ Community Rank', `
+    <h2 style="margin:0 0 16px;font-size:22px;color:#fff;">Redefinir senha</h2>
+    <p style="margin:0 0 24px;color:#aaa;line-height:1.6;">
+      Recebemos uma solicitação de redefinição de senha para o moderador <strong style="color:#4ade80;">${escapeHtml(login)}</strong>.
+      Clique no botão abaixo para criar uma nova senha.
+    </p>
+    <table cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+      <tr>
+        <td style="background:#facc15;border-radius:6px;">
+          <a href="${link}" style="display:block;padding:14px 28px;color:#000;font-weight:700;font-size:15px;text-decoration:none;">
+            Redefinir senha
+          </a>
+        </td>
+      </tr>
+    </table>
+    <p style="margin:0;font-size:12px;color:#555;">
+      Link expira em <strong style="color:#aaa;">1 hora</strong>. Se você não solicitou a redefinição, ignore este email.<br/>
+      <a href="${link}" style="color:#facc15;word-break:break-all;">${link}</a>
+    </p>
+  `);
+
+  await sendEmail({
+    from:    config.fromEmail,
+    to:      email,
+    subject: '🔑 Redefinir senha de moderador — PZ Community Rank',
+    html,
+  });
+}
+
 export async function sendModeratorInviteEmail(email: string, inviteUrl: string): Promise<void> {
   const html = baseTemplate('Convite de moderador — PZ Community Rank', `
     <h2 style="margin:0 0 16px;font-size:22px;color:#fff;">Você foi convidado!</h2>

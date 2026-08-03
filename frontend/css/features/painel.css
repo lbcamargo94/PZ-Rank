@@ -103,6 +103,21 @@
 }
 .painel-login-btn:hover:not(:disabled) { background: #3a2010 !important; }
 
+.painel-forgot-link {
+  display: block;
+  text-align: center;
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--text-4);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.painel-forgot-link:hover { color: var(--amber); }
+
 .painel-login-warn {
   font-family: var(--font-mono);
   font-size: 14px;

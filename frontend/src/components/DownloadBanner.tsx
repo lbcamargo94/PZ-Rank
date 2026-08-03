@@ -1,5 +1,5 @@
 const DOWNLOAD_URL =
-  'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.8.3/PZ.Rank.Companion.Setup.1.8.2.exe';
+  'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.8.4/PZ.Rank.Companion.Setup.1.8.4.exe';
 
 export function DownloadBanner() {
   return (
