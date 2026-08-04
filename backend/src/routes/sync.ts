@@ -218,6 +218,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     .select('character_name')
     .eq('player_id', player.id)
     .eq('is_alive', true)
+    .is('deleted_at', null)
     .neq('character_name', decoded.characterName)
     .limit(1);
 
