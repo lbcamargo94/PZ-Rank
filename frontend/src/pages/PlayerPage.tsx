@@ -298,7 +298,7 @@ function CharacterCard({ entry, rank }: { entry: Entry; rank: number | null }) {
 
       {/* Perfil Psicológico */}
       {(() => {
-        const { primary, secondary, traits } = resolveArchetype(entry);
+        const { primary, secondary, traits, tags } = resolveArchetype(entry);
         return (
           <div className="pp-archetype" style={{ '--arch-color': primary.color } as React.CSSProperties}>
             <div className="pp-arch-badge">
@@ -321,22 +321,39 @@ function CharacterCard({ entry, rank }: { entry: Entry; rank: number | null }) {
               <span className="pp-arch-desc">{primary.desc}</span>
               {traits.length > 0 && (
                 <div className="pp-arch-traits">
-                  {traits.map(t => (
-                    <div key={t.key} className="pp-arch-trait">
-                      <span className="pp-arch-trait-label">
-                        <span className="pp-arch-trait-icon">{t.icon}</span>
-                        {t.label}
-                      </span>
-                      <div className="pp-arch-trait-track">
-                        <div
-                          className="pp-arch-trait-fill"
-                          style={{
-                            width: `${Math.round((t.score / t.max) * 100)}%`,
-                            background: t.color,
-                          }}
-                        />
+                  {traits.map(t => {
+                    const pct = Math.round((t.score / t.max) * 100);
+                    return (
+                      <div key={t.key} className="pp-arch-trait">
+                        <span className="pp-arch-trait-label">
+                          <span className="pp-arch-trait-icon">{t.icon}</span>
+                          {t.label}
+                        </span>
+                        <div className="pp-arch-trait-track">
+                          <div
+                            className="pp-arch-trait-fill"
+                            style={{
+                              width: `${pct}%`,
+                              '--trait-glow': t.color,
+                            } as React.CSSProperties}
+                          />
+                        </div>
+                        <span className="pp-arch-trait-pct">{pct}%</span>
                       </div>
-                    </div>
+                    );
+                  })}
+                </div>
+              )}
+              {tags.length > 0 && (
+                <div className="pp-arch-tags">
+                  {tags.map(tag => (
+                    <span
+                      key={tag.id}
+                      className="pp-arch-tag"
+                      style={{ '--tag-color': tag.color } as React.CSSProperties}
+                    >
+                      {tag.icon} {tag.label}
+                    </span>
                   ))}
                 </div>
               )}

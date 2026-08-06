@@ -979,8 +979,8 @@
 .pp-arch-traits {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-top: 10px;
+  gap: 7px;
+  margin-top: 12px;
 }
 
 .pp-arch-trait {
@@ -1007,18 +1007,60 @@
 
 .pp-arch-trait-track {
   flex: 1;
-  height: 6px;
-  background: var(--bg-3);
+  height: 7px;
+  background: color-mix(in srgb, var(--bg-1) 60%, var(--bg-3));
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: 4px;
   overflow: hidden;
   min-width: 60px;
 }
 
 .pp-arch-trait-fill {
   height: 100%;
-  border-radius: 3px;
-  transition: width 0.4s ease;
+  border-radius: 4px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow:
+    0 0 6px color-mix(in srgb, var(--trait-glow, currentColor) 70%, transparent),
+    0 0 12px color-mix(in srgb, var(--trait-glow, currentColor) 35%, transparent);
+}
+
+.pp-arch-trait-pct {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--text-3);
+  width: 34px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* Tags de conquista */
+.pp-arch-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.pp-arch-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--tag-color, var(--text-2));
+  background: color-mix(in srgb, var(--tag-color, var(--text-2)) 10%, var(--bg-3));
+  border: 1px solid color-mix(in srgb, var(--tag-color, var(--text-2)) 28%, transparent);
+  border-radius: 20px;
+  padding: 3px 10px 3px 8px;
+  letter-spacing: 0.2px;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.pp-arch-tag:hover {
+  background: color-mix(in srgb, var(--tag-color, var(--text-2)) 16%, var(--bg-3));
+  box-shadow: 0 0 8px color-mix(in srgb, var(--tag-color, transparent) 30%, transparent);
 }
 
 /* Tabs */
