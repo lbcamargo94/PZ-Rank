@@ -25,6 +25,49 @@ function requireCronSecret(req: Request, res: Response): boolean {
   return false;
 }
 
+// GET /cron/backfill-yt-subs — inscreve jogadores aprovados que ainda não têm inscrição
+// Chamar uma única vez após configurar as env vars
+router.get('/backfill-yt-subs', async (req: Request, res: Response): Promise<void> => {
+  if (!requireCronSecret(req, res)) return;
+
+  const { data: players, error } = await supabase
+    .from('players')
+    .select('id, nick, youtube_url, yt_channel_id')
+    .eq('status', 'approved')
+    .is('deleted_at', null)
+    .is('yt_channel_id', null)
+    .not('youtube_url', 'is', null);
+
+  if (error) {
+    res.status(500).json({ error: 'Erro ao buscar jogadores.' });
+    return;
+  }
+
+  const { extractChannelId, subscribePubSub } = await import('../lib/youtube');
+  const results: Array<{ nick: string; channelId: string | null; ok: boolean; error?: string }> = [];
+
+  for (const player of (players ?? []) as Array<{ id: number; nick: string; youtube_url: string }>) {
+    const channelId = await extractChannelId(player.youtube_url);
+    if (!channelId) {
+      results.push({ nick: player.nick, channelId: null, ok: false, error: 'channel_id não encontrado' });
+      continue;
+    }
+
+    const sub = await subscribePubSub(channelId);
+    results.push({ nick: player.nick, channelId, ok: sub.ok, error: sub.error });
+
+    await supabase
+      .from('players')
+      .update({
+        yt_channel_id:     channelId,
+        yt_sub_expires_at: sub.ok ? sub.expiresAt : null,
+      })
+      .eq('id', player.id);
+  }
+
+  res.json({ processed: results.length, results });
+});
+
 // GET /cron/renew-yt-subs
 router.get('/renew-yt-subs', async (req: Request, res: Response): Promise<void> => {
   if (!requireCronSecret(req, res)) return;
