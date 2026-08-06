@@ -307,16 +307,7 @@ function CharacterCard({ entry, rank }: { entry: Entry; rank: number | null }) {
               <span className="pp-arch-icon">{primary.icon}</span>
             </div>
             <div className="pp-arch-info">
-              <div className="pp-arch-eyebrow-row">
-                <span className="pp-arch-eyebrow">Perfil Psicológico</span>
-                <button
-                  className="pp-arch-guide-btn"
-                  onClick={() => setShowGuide(true)}
-                  data-tip="Ver todos os perfis e como obtê-los"
-                >
-                  <i className="ti ti-info-circle" />
-                </button>
-              </div>
+              <span className="pp-arch-eyebrow">Perfil Psicológico</span>
               <div className="pp-arch-names">
                 <span className="pp-arch-name">{primary.name}</span>
                 {secondary && (
@@ -368,6 +359,14 @@ function CharacterCard({ entry, rank }: { entry: Entry; rank: number | null }) {
                   ))}
                 </div>
               )}
+              <button
+                className="pp-arch-guide-btn"
+                onClick={() => setShowGuide(true)}
+              >
+                <i className="ti ti-books" />
+                <span>Ver guia completo de perfis</span>
+                <i className="ti ti-arrow-right pp-arch-guide-arrow" />
+              </button>
             </div>
           </div>
         );

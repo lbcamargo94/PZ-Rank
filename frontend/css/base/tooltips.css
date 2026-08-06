@@ -1,19 +1,22 @@
 /* PZ Rank — Tooltips customizados
- * Uso: <element data-tip="texto do tooltip">
- * O atributo title nativo continua funcionando para acessibilidade.
+ * Uso: <element data-tip="texto">
+ * Opcional: data-tip-pos="bottom" | data-tip-align="left|right"
  */
 
 [data-tip] {
   position: relative;
 }
 
+/* Estado oculto (base) — transição rápida ao sair */
 [data-tip]::before,
 [data-tip]::after {
   pointer-events: none;
   position: absolute;
   opacity: 0;
-  transition: opacity 0.15s ease, transform 0.15s ease;
   z-index: 9999;
+  transition:
+    opacity  0.1s ease,
+    transform 0.12s ease;
 }
 
 /* Seta */
@@ -21,9 +24,9 @@
   content: '';
   bottom: calc(100% + 5px);
   left: 50%;
-  transform: translateX(-50%) translateY(4px);
+  transform: translateX(-50%) translateY(5px) scale(0.8);
   border: 5px solid transparent;
-  border-top-color: #1a2016;
+  border-top-color: #1c2818;
 }
 
 /* Balão */
@@ -31,56 +34,89 @@
   content: attr(data-tip);
   bottom: calc(100% + 15px);
   left: 50%;
-  transform: translateX(-50%) translateY(4px);
-  background: #1a2016;
-  border: 1px solid #2E3828;
-  border-radius: 6px;
-  padding: 5px 10px;
+  transform: translateX(-50%) translateY(8px) scale(0.92);
+
+  background: linear-gradient(145deg, #1c2818 0%, #141e10 100%);
+  border: 1px solid rgba(94, 144, 64, 0.35);
+  border-radius: 8px;
+  padding: 7px 13px;
   font-family: var(--font-mono);
   font-size: 12px;
-  color: #EDE5D0;
-  white-space: nowrap;
-  max-width: 260px;
+  font-weight: 500;
+  color: #d8d0b8;
   white-space: normal;
+  max-width: 220px;
   text-align: center;
-  line-height: 1.4;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(94, 144, 64, 0.1);
+  line-height: 1.55;
+  letter-spacing: 0.3px;
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, 0.65),
+    0 0 0 1px rgba(94, 144, 64, 0.06),
+    0 0 16px rgba(94, 144, 64, 0.08);
 }
 
+/* Estado visível — transição com spring e delay de entrada */
 [data-tip]:hover::before,
 [data-tip]:hover::after {
   opacity: 1;
-  transform: translateX(-50%) translateY(0);
+  transition:
+    opacity  0.18s ease    0.38s,
+    transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) 0.38s;
 }
 
-/* Posicionamento: abaixo (padrão quando não há espaço acima) */
+[data-tip]:hover::before {
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
+[data-tip]:hover::after {
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
+/* ── Posição: abaixo ─────────────────────────────────────────────────────── */
 [data-tip-pos="bottom"]::before {
   bottom: auto;
   top: calc(100% + 5px);
   border-top-color: transparent;
-  border-bottom-color: #1a2016;
-  transform: translateX(-50%) translateY(-4px);
+  border-bottom-color: #1c2818;
+  transform: translateX(-50%) translateY(-5px) scale(0.8);
 }
 
 [data-tip-pos="bottom"]::after {
   bottom: auto;
   top: calc(100% + 15px);
-  transform: translateX(-50%) translateY(-4px);
+  transform: translateX(-50%) translateY(-8px) scale(0.92);
 }
 
-[data-tip-pos="bottom"]:hover::before,
+[data-tip-pos="bottom"]:hover::before {
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
 [data-tip-pos="bottom"]:hover::after {
-  transform: translateX(-50%) translateY(0);
+  transform: translateX(-50%) translateY(0) scale(1);
 }
 
-/* Alinhamento: esquerda */
-[data-tip-align="left"]::before { left: 16px; transform: translateY(4px); }
-[data-tip-align="left"]::after  { left: 0; transform: translateY(4px); }
-[data-tip-align="left"]:hover::before,
-[data-tip-align="left"]:hover::after { transform: translateY(0); }
+/* ── Alinhamento: esquerda ───────────────────────────────────────────────── */
+[data-tip-align="left"]::before {
+  left: 14px;
+  transform: translateY(5px) scale(0.8);
+}
+[data-tip-align="left"]::after {
+  left: 0;
+  transform: translateY(8px) scale(0.92);
+}
+[data-tip-align="left"]:hover::before { transform: translateY(0) scale(1); }
+[data-tip-align="left"]:hover::after  { transform: translateY(0) scale(1); }
 
-/* Alinhamento: direita */
-[data-tip-align="right"]::before { left: auto; right: 16px; transform: translateY(4px); }
-[data-tip-align="right"]::after  { left: auto; right: 0; transform: translateY(4px); }
-[data-tip-align="right"]:hover::before,
-[data-tip-align="right"]:hover::after { transform: translateY(0); }
+/* ── Alinhamento: direita ────────────────────────────────────────────────── */
+[data-tip-align="right"]::before {
+  left: auto;
+  right: 14px;
+  transform: translateY(5px) scale(0.8);
+}
+[data-tip-align="right"]::after {
+  left: auto;
+  right: 0;
+  transform: translateY(8px) scale(0.92);
+}
+[data-tip-align="right"]:hover::before { transform: translateY(0) scale(1); }
+[data-tip-align="right"]:hover::after  { transform: translateY(0) scale(1); }
