@@ -31,12 +31,12 @@ export interface ArchetypeResult {
   primary:   Archetype;
   secondary: Archetype | null;
   traits:    TraitBar[];
-  tags:      TraitTag[];   // até 5 conquistas comportamentais do jogador
+  tags:      TraitTag[];
 }
 
 // ─── Archetypes ───────────────────────────────────────────────────────────────
 
-const ARCHETYPES: Record<string, Archetype> = {
+export const ARCHETYPES: Record<string, Archetype> = {
   berserker: { id: 'berserker', name: 'Berserker',   icon: '🪓', color: '#e04040', desc: 'Combatente nato. Deixa um rastro de mortos por onde passa.'                   },
   hunter:    { id: 'hunter',    name: 'Caçador',      icon: '🏹', color: '#c8a84b', desc: 'Mestre das armadilhas e do rastreamento. A floresta é seu lar.'               },
   builder:   { id: 'builder',   name: 'Construtor',   icon: '🏰', color: '#7ab8e0', desc: 'Ergue bases onde outros apenas sobrevivem.'                                   },
@@ -47,6 +47,79 @@ const ARCHETYPES: Record<string, Archetype> = {
   ghost:     { id: 'ghost',     name: 'Fantasma',     icon: '🥷', color: '#9099a5', desc: 'Passa despercebido. Os zumbis nem sabem que ele existe.'                     },
   survivor:  { id: 'survivor',  name: 'Sobrevivente', icon: '🛡️', color: '#b0a890', desc: 'Equilibrado e resiliente. Ainda está de pé — isso já é muito.'               },
 };
+
+// Requisitos de cada arquétipo (usado na modal de guia)
+export interface ArchetypeGuide extends Archetype {
+  how:    string[];   // como desbloquear (frases)
+  skills: string[];   // skills relevantes
+}
+
+export const ARCHETYPE_GUIDE: ArchetypeGuide[] = [
+  {
+    ...ARCHETYPES['berserker']!,
+    how: [
+      'KPD (kills/dia) ≥ 80',
+      'ou KPD ≥ 60 e soma de skills de combate ≥ 6',
+      'ou KPD ≥ 100 e soma de skills de combate ≥ 8',
+    ],
+    skills: ['Machado', 'Contundente Longo/Curto', 'Lâmina Longa/Curta', 'Lança', 'Mira', 'Manutenção'],
+  },
+  {
+    ...ARCHETYPES['medic']!,
+    how: ['Primeiros Socorros ≥ nível 8'],
+    skills: ['Primeiros Socorros'],
+  },
+  {
+    ...ARCHETYPES['hunter']!,
+    how: [
+      'Soma de skills de caça ≥ 5',
+      'Bônus: animais abatidos, peixes, rastros de animais',
+    ],
+    skills: ['Armadilhas', 'Rastreamento', 'Abate', 'Pescaria'],
+  },
+  {
+    ...ARCHETYPES['builder']!,
+    how: [
+      'Soma de skills de construção ≥ 5',
+      'Bônus: estruturas construídas, estruturas de pedra',
+    ],
+    skills: ['Marcenaria', 'Soldagem', 'Alvenaria', 'Eletricidade', 'Costura'],
+  },
+  {
+    ...ARCHETYPES['artisan']!,
+    how: [
+      'Soma de skills de artesanato ≥ 5 (skills B42)',
+      'Bônus: itens forjados, cerâmica, materiais artesanais',
+    ],
+    skills: ['Forja', 'Cerâmica', 'Lascamento', 'Entalhamento', 'Vidraria'],
+  },
+  {
+    ...ARCHETYPES['farmer']!,
+    how: [
+      'Soma de skills de fazenda ≥ 5',
+      'Bônus: colheitas, plantações, refeições, ovos e leite',
+    ],
+    skills: ['Agricultura', 'Culinária', 'Coleta', 'Pecuária'],
+  },
+  {
+    ...ARCHETYPES['explorer']!,
+    how: [
+      'Mecânica + km dirigidos + cidades visitadas ≥ 5',
+      'Bônus: km dirigidos, cidades, bases militares',
+    ],
+    skills: ['Mecânica'],
+  },
+  {
+    ...ARCHETYPES['ghost']!,
+    how: ['Soma de skills de furtividade ≥ 5'],
+    skills: ['Furtividade', 'Pés Leves', 'Agilidade'],
+  },
+  {
+    ...ARCHETYPES['survivor']!,
+    how: ['Padrão — não qualifica para nenhum arquétipo acima'],
+    skills: [],
+  },
+];
 
 // ─── Entry type ───────────────────────────────────────────────────────────────
 
@@ -61,185 +134,188 @@ type ArchetypeEntry = Pick<Entry,
   'forged_weapons' | 'ceramic_items'  | 'materials_crafted'
 >;
 
-// ─── Trait Tags ───────────────────────────────────────────────────────────────
-// Cada grupo exibe apenas o tag de maior peso que o jogador desbloqueou.
-// São exibidos até 5 grupos (sorted por peso decrescente).
+// ─── Tag definitions ──────────────────────────────────────────────────────────
 
 interface TagDef {
   id:     string;
   label:  string;
   icon:   string;
   color:  string;
-  group:  string;   // exibição exclusiva por grupo
-  weight: number;   // peso de impressividade (maior = raro)
+  group:  string;
+  weight: number;
+  desc:   string;   // condição legível para humanos
   check:  (e: ArchetypeEntry, sm: Map<string, number>) => boolean;
 }
+
+export interface TagTierInfo {
+  id:     string;
+  label:  string;
+  icon:   string;
+  color:  string;
+  desc:   string;
+  weight: number;
+}
+
+export interface TagGroupInfo {
+  key:   string;
+  label: string;
+  tiers: TagTierInfo[];  // ordenado do menor para o maior tier
+}
+
+const GROUP_LABELS: Record<string, string> = {
+  kills:       'Abates',
+  survival:    'Sobrevivência',
+  kpd:         'Taxa de Kills (KPD)',
+  sleep:       'Privação de Sono',
+  driving:     'Pilotagem',
+  cities:      'Cidades Exploradas',
+  military:    'Bases Militares',
+  hunting:     'Caça',
+  fishing:     'Pesca',
+  tracking:    'Rastreamento',
+  building:    'Construção',
+  stone:       'Construção Primitiva',
+  farming:     'Agricultura',
+  cooking:     'Culinária',
+  livestock:   'Pecuária',
+  forging:     'Forja',
+  pottery:     'Cerâmica',
+  crafting:    'Artesanato Geral',
+  looting:     'Saque',
+  reading:     'Leitura',
+  woodcutting: 'Corte de Árvores',
+  water:       'Coleta de Água',
+  skill_peak:  'Maestria em Skills',
+  versatility: 'Versatilidade',
+};
 
 const TAG_DEFS: TagDef[] = [
 
   // ── Kills ───────────────────────────────────────────────────────────────
-  { id: 'apocalypse',  group: 'kills', weight: 100, label: 'Apocalipse',     icon: '☠️',  color: '#8b0000',
-    check: e => e.kills >= 50000 },
-  { id: 'terminator',  group: 'kills', weight: 80,  label: 'Exterminador',   icon: '💀',  color: '#c02020',
-    check: e => e.kills >= 10000 },
-  { id: 'executioner', group: 'kills', weight: 60,  label: 'Carrasco',       icon: '🔪',  color: '#e04040',
-    check: e => e.kills >= 3000  },
-  { id: 'fighter',     group: 'kills', weight: 35,  label: 'Combatente',     icon: '⚔️',  color: '#e05858',
-    check: e => e.kills >= 500   },
+  { id: 'fighter',     group: 'kills', weight: 35,  icon: '⚔️',  color: '#e05858', label: 'Combatente',     desc: '500 abates',       check: e => e.kills >= 500   },
+  { id: 'executioner', group: 'kills', weight: 60,  icon: '🔪',  color: '#e04040', label: 'Carrasco',       desc: '3.000 abates',     check: e => e.kills >= 3000  },
+  { id: 'terminator',  group: 'kills', weight: 80,  icon: '💀',  color: '#c02020', label: 'Exterminador',   desc: '10.000 abates',    check: e => e.kills >= 10000 },
+  { id: 'apocalypse',  group: 'kills', weight: 100, icon: '☠️',  color: '#8b0000', label: 'Apocalipse',     desc: '50.000 abates',    check: e => e.kills >= 50000 },
 
-  // ── Tempo de sobrevivência ───────────────────────────────────────────────
-  { id: 'legend',    group: 'survival', weight: 95, label: 'Lendário',       icon: '⭐',  color: '#ffd700',
-    check: e => e.days >= 365 },
-  { id: 'war_vet',   group: 'survival', weight: 70, label: 'Vet. de Guerra', icon: '🎖️', color: '#c8a84b',
-    check: e => e.days >= 180 },
-  { id: 'veteran',   group: 'survival', weight: 45, label: 'Veterano',       icon: '🏅',  color: '#a08030',
-    check: e => e.days >= 90  },
+  // ── Sobrevivência ─────────────────────────────────────────────────────────
+  { id: 'veteran',  group: 'survival', weight: 45, icon: '🏅',  color: '#a08030', label: 'Veterano',       desc: '90 dias',          check: e => e.days >= 90  },
+  { id: 'war_vet',  group: 'survival', weight: 70, icon: '🎖️', color: '#c8a84b', label: 'Vet. de Guerra', desc: '180 dias',         check: e => e.days >= 180 },
+  { id: 'legend',   group: 'survival', weight: 95, icon: '⭐',  color: '#ffd700', label: 'Lendário',       desc: '365 dias',         check: e => e.days >= 365 },
 
-  // ── KPD (kills por dia) ──────────────────────────────────────────────────
-  { id: 'killing_machine', group: 'kpd', weight: 92, label: 'Máquina de Matar', icon: '🌪️', color: '#b00000',
-    check: e => e.days > 0 && (e.kills / e.days) >= 200 },
-  { id: 'aggressive',      group: 'kpd', weight: 65, label: 'Agressivo',         icon: '🔥', color: '#d02020',
-    check: e => e.days > 0 && (e.kills / e.days) >= 80  },
-  { id: 'relentless',      group: 'kpd', weight: 40, label: 'Implacável',        icon: '😤', color: '#c04040',
-    check: e => e.days > 0 && (e.kills / e.days) >= 30  },
+  // ── KPD ──────────────────────────────────────────────────────────────────
+  { id: 'relentless',      group: 'kpd', weight: 40, icon: '😤', color: '#c04040', label: 'Implacável',        desc: 'KPD ≥ 30/dia',  check: e => e.days > 0 && (e.kills / e.days) >= 30  },
+  { id: 'aggressive',      group: 'kpd', weight: 65, icon: '🔥', color: '#d02020', label: 'Agressivo',         desc: 'KPD ≥ 80/dia',  check: e => e.days > 0 && (e.kills / e.days) >= 80  },
+  { id: 'killing_machine', group: 'kpd', weight: 92, icon: '🌪️', color: '#b00000', label: 'Máquina de Matar', desc: 'KPD ≥ 200/dia', check: e => e.days > 0 && (e.kills / e.days) >= 200 },
 
-  // ── Horas sem dormir ─────────────────────────────────────────────────────
-  { id: 'chronic_insomniac', group: 'sleep', weight: 85, label: 'Insone Crônico', icon: '🌙', color: '#4a2890',
-    check: e => (e.hours_without_sleep ?? 0) >= 168 },
-  { id: 'insomniac',         group: 'sleep', weight: 55, label: 'Insone',          icon: '😴', color: '#7060b0',
-    check: e => (e.hours_without_sleep ?? 0) >= 72  },
-  { id: 'night_owl',         group: 'sleep', weight: 30, label: 'Noturno',         icon: '🦉', color: '#9080c0',
-    check: e => (e.hours_without_sleep ?? 0) >= 24  },
+  // ── Sono ─────────────────────────────────────────────────────────────────
+  { id: 'night_owl',         group: 'sleep', weight: 30, icon: '🦉', color: '#9080c0', label: 'Noturno',         desc: '24h sem dormir',  check: e => (e.hours_without_sleep ?? 0) >= 24  },
+  { id: 'insomniac',         group: 'sleep', weight: 55, icon: '😴', color: '#7060b0', label: 'Insone',          desc: '72h sem dormir',  check: e => (e.hours_without_sleep ?? 0) >= 72  },
+  { id: 'chronic_insomniac', group: 'sleep', weight: 85, icon: '🌙', color: '#4a2890', label: 'Insone Crônico',  desc: '168h sem dormir', check: e => (e.hours_without_sleep ?? 0) >= 168 },
 
-  // ── Direção (km_driven) ───────────────────────────────────────────────────
-  { id: 'road_king',   group: 'driving', weight: 92, label: 'Rei da Estrada',  icon: '🏎️', color: '#e07020',
-    check: e => (e.km_driven ?? 0) >= 1000 },
-  { id: 'driver',      group: 'driving', weight: 62, label: 'Motorista',       icon: '🚗',  color: '#c87828',
-    check: e => (e.km_driven ?? 0) >= 300  },
-  { id: 'road_nomad',  group: 'driving', weight: 35, label: 'Nômade',          icon: '🛣️',  color: '#a07030',
-    check: e => (e.km_driven ?? 0) >= 80   },
+  // ── Direção ───────────────────────────────────────────────────────────────
+  { id: 'road_nomad', group: 'driving', weight: 35, icon: '🛣️',  color: '#a07030', label: 'Nômade',         desc: '80 km dirigidos',    check: e => (e.km_driven ?? 0) >= 80   },
+  { id: 'driver',     group: 'driving', weight: 62, icon: '🚗',  color: '#c87828', label: 'Motorista',      desc: '300 km dirigidos',   check: e => (e.km_driven ?? 0) >= 300  },
+  { id: 'road_king',  group: 'driving', weight: 92, icon: '🏎️', color: '#e07020', label: 'Rei da Estrada', desc: '1.000 km dirigidos', check: e => (e.km_driven ?? 0) >= 1000 },
 
-  // ── Cidades visitadas ─────────────────────────────────────────────────────
-  { id: 'cartographer', group: 'cities', weight: 85, label: 'Cartógrafo',  icon: '🗺️', color: '#2090a0',
-    check: e => (e.cities_visited ?? 0) >= 7 },
-  { id: 'explorer_tag', group: 'cities', weight: 55, label: 'Explorador',  icon: '🧭', color: '#30a8b8',
-    check: e => (e.cities_visited ?? 0) >= 3 },
+  // ── Cidades ───────────────────────────────────────────────────────────────
+  { id: 'explorer_tag', group: 'cities', weight: 55, icon: '🧭', color: '#30a8b8', label: 'Explorador',  desc: '3 cidades visitadas', check: e => (e.cities_visited ?? 0) >= 3 },
+  { id: 'cartographer', group: 'cities', weight: 85, icon: '🗺️', color: '#2090a0', label: 'Cartógrafo',  desc: '7 cidades visitadas', check: e => (e.cities_visited ?? 0) >= 7 },
 
-  // ── Bases militares ───────────────────────────────────────────────────────
-  { id: 'commando', group: 'military', weight: 72, label: 'Commando', icon: '🪖', color: '#4a7a4a',
-    check: e => (e.military_visited ?? 0) >= 3 },
-  { id: 'soldier',  group: 'military', weight: 48, label: 'Soldado',   icon: '🎯', color: '#5a8a5a',
-    check: e => (e.military_visited ?? 0) >= 1 },
+  // ── Militar ───────────────────────────────────────────────────────────────
+  { id: 'soldier',  group: 'military', weight: 48, icon: '🎯', color: '#5a8a5a', label: 'Soldado',   desc: '1 base militar',  check: e => (e.military_visited ?? 0) >= 1 },
+  { id: 'commando', group: 'military', weight: 72, icon: '🪖', color: '#4a7a4a', label: 'Commando',  desc: '3 bases militares', check: e => (e.military_visited ?? 0) >= 3 },
 
-  // ── Animais abatidos ──────────────────────────────────────────────────────
-  { id: 'apex_predator',  group: 'hunting', weight: 90, label: 'Predador Alfa',  icon: '🦁', color: '#8a5010',
-    check: e => (e.animals_killed ?? 0) >= 500  },
-  { id: 'poacher',        group: 'hunting', weight: 65, label: 'Caçador Furtivo',icon: '🏹', color: '#a07020',
-    check: e => (e.animals_killed ?? 0) >= 200  },
-  { id: 'hunter_tag',     group: 'hunting', weight: 40, label: 'Caçador',        icon: '🐗', color: '#c8a84b',
-    check: e => (e.animals_killed ?? 0) >= 50   },
+  // ── Caça ─────────────────────────────────────────────────────────────────
+  { id: 'hunter_tag',    group: 'hunting', weight: 40, icon: '🐗', color: '#c8a84b', label: 'Caçador',         desc: '50 animais',  check: e => (e.animals_killed ?? 0) >= 50   },
+  { id: 'poacher',       group: 'hunting', weight: 65, icon: '🏹', color: '#a07020', label: 'Caçador Furtivo', desc: '200 animais', check: e => (e.animals_killed ?? 0) >= 200  },
+  { id: 'apex_predator', group: 'hunting', weight: 90, icon: '🦁', color: '#8a5010', label: 'Predador Alfa',   desc: '500 animais', check: e => (e.animals_killed ?? 0) >= 500  },
 
   // ── Pesca ─────────────────────────────────────────────────────────────────
-  { id: 'master_fisherman', group: 'fishing', weight: 80, label: 'Mestre Pescador', icon: '🐠', color: '#1060a0',
-    check: e => (e.fish_caught ?? 0) >= 200 },
-  { id: 'fisherman_tag',    group: 'fishing', weight: 50, label: 'Pescador',         icon: '🎣', color: '#2878b8',
-    check: e => (e.fish_caught ?? 0) >= 50  },
+  { id: 'fisherman_tag',    group: 'fishing', weight: 50, icon: '🎣', color: '#2878b8', label: 'Pescador',         desc: '50 peixes',  check: e => (e.fish_caught ?? 0) >= 50  },
+  { id: 'master_fisherman', group: 'fishing', weight: 80, icon: '🐠', color: '#1060a0', label: 'Mestre Pescador',  desc: '200 peixes', check: e => (e.fish_caught ?? 0) >= 200 },
 
   // ── Rastreamento ──────────────────────────────────────────────────────────
-  { id: 'master_tracker', group: 'tracking', weight: 78, label: 'Rastreador Mestre', icon: '🐾', color: '#7a5020',
-    check: e => (e.animal_tracks ?? 0) >= 100 },
-  { id: 'tracker_tag',    group: 'tracking', weight: 48, label: 'Rastreador',         icon: '🐾', color: '#9a7040',
-    check: e => (e.animal_tracks ?? 0) >= 30  },
+  { id: 'tracker_tag',    group: 'tracking', weight: 48, icon: '🐾', color: '#9a7040', label: 'Rastreador',         desc: '30 rastros',  check: e => (e.animal_tracks ?? 0) >= 30  },
+  { id: 'master_tracker', group: 'tracking', weight: 78, icon: '🐾', color: '#7a5020', label: 'Rastreador Mestre',  desc: '100 rastros', check: e => (e.animal_tracks ?? 0) >= 100 },
 
   // ── Construção ────────────────────────────────────────────────────────────
-  { id: 'master_builder', group: 'building', weight: 90, label: 'Mestre Construtor', icon: '🏰', color: '#2a60a0',
-    check: e => (e.structures_built ?? 0) >= 500 },
-  { id: 'builder_tag',    group: 'building', weight: 62, label: 'Construtor',        icon: '🏗️', color: '#4a80be',
-    check: e => (e.structures_built ?? 0) >= 100 },
-  { id: 'handyman',       group: 'building', weight: 35, label: 'Faz-tudo',          icon: '🔧', color: '#6898d0',
-    check: e => (e.structures_built ?? 0) >= 30  },
+  { id: 'handyman',       group: 'building', weight: 35, icon: '🔧', color: '#6898d0', label: 'Faz-tudo',           desc: '30 estruturas',  check: e => (e.structures_built ?? 0) >= 30  },
+  { id: 'builder_tag',    group: 'building', weight: 62, icon: '🏗️', color: '#4a80be', label: 'Construtor',         desc: '100 estruturas', check: e => (e.structures_built ?? 0) >= 100 },
+  { id: 'master_builder', group: 'building', weight: 90, icon: '🏰', color: '#2a60a0', label: 'Mestre Construtor',  desc: '500 estruturas', check: e => (e.structures_built ?? 0) >= 500 },
 
-  // ── Estruturas de pedra ────────────────────────────────────────────────────
-  { id: 'stonemason', group: 'stone', weight: 68, label: 'Pedreiro', icon: '🪨', color: '#6a6a80',
-    check: e => (e.stone_structures ?? 0) >= 50 },
+  // ── Pedra ─────────────────────────────────────────────────────────────────
+  { id: 'stonemason', group: 'stone', weight: 68, icon: '🪨', color: '#6a6a80', label: 'Pedreiro', desc: '50 estruturas de pedra', check: e => (e.stone_structures ?? 0) >= 50 },
 
   // ── Agricultura ───────────────────────────────────────────────────────────
-  { id: 'agronomist', group: 'farming', weight: 85, label: 'Agrônomo',   icon: '🌱', color: '#208020',
-    check: e => (e.crops_harvested ?? 0) >= 500 },
-  { id: 'farmer_tag', group: 'farming', weight: 55, label: 'Fazendeiro', icon: '🌾', color: '#4a9830',
-    check: e => (e.crops_harvested ?? 0) >= 100 },
-  { id: 'planter',    group: 'farming', weight: 30, label: 'Plantador',  icon: '🌿', color: '#6ab840',
-    check: e => (e.crops_planted ?? 0) >= 30   },
+  { id: 'planter',    group: 'farming', weight: 30, icon: '🌿', color: '#6ab840', label: 'Plantador',  desc: '30 plantações',   check: e => (e.crops_planted   ?? 0) >= 30  },
+  { id: 'farmer_tag', group: 'farming', weight: 55, icon: '🌾', color: '#4a9830', label: 'Fazendeiro', desc: '100 colheitas',   check: e => (e.crops_harvested ?? 0) >= 100 },
+  { id: 'agronomist', group: 'farming', weight: 85, icon: '🌱', color: '#208020', label: 'Agrônomo',   desc: '500 colheitas',   check: e => (e.crops_harvested ?? 0) >= 500 },
 
   // ── Culinária ─────────────────────────────────────────────────────────────
-  { id: 'star_chef',   group: 'cooking', weight: 88, label: 'Chef Estrelado', icon: '⭐', color: '#e05010',
-    check: e => (e.meals_cooked ?? 0) >= 200 },
-  { id: 'chef_tag',    group: 'cooking', weight: 58, label: 'Chef',           icon: '👨‍🍳',color: '#f07030',
-    check: e => (e.meals_cooked ?? 0) >= 50  },
-  { id: 'cook_tag',    group: 'cooking', weight: 32, label: 'Cozinheiro',     icon: '🍳', color: '#f09050',
-    check: e => (e.meals_cooked ?? 0) >= 15  },
+  { id: 'cook_tag',  group: 'cooking', weight: 32, icon: '🍳', color: '#f09050', label: 'Cozinheiro',    desc: '15 refeições',  check: e => (e.meals_cooked ?? 0) >= 15  },
+  { id: 'chef_tag',  group: 'cooking', weight: 58, icon: '👨‍🍳',color: '#f07030', label: 'Chef',          desc: '50 refeições',  check: e => (e.meals_cooked ?? 0) >= 50  },
+  { id: 'star_chef', group: 'cooking', weight: 88, icon: '⭐', color: '#e05010', label: 'Chef Estrelado', desc: '200 refeições', check: e => (e.meals_cooked ?? 0) >= 200 },
 
   // ── Pecuária ──────────────────────────────────────────────────────────────
-  { id: 'rancher', group: 'livestock', weight: 72, label: 'Pecuarista', icon: '🐄', color: '#a08030',
-    check: e => (e.eggs_collected ?? 0) + (e.milk_produced ?? 0) >= 100 },
-  { id: 'farmhand',group: 'livestock', weight: 42, label: 'Vaqueiro',   icon: '🐔', color: '#b09040',
-    check: e => (e.eggs_collected ?? 0) + (e.milk_produced ?? 0) >= 30  },
+  { id: 'farmhand', group: 'livestock', weight: 42, icon: '🐔', color: '#b09040', label: 'Vaqueiro',    desc: '30 (ovos + leites)',  check: e => (e.eggs_collected ?? 0) + (e.milk_produced ?? 0) >= 30  },
+  { id: 'rancher',  group: 'livestock', weight: 72, icon: '🐄', color: '#a08030', label: 'Pecuarista',  desc: '100 (ovos + leites)', check: e => (e.eggs_collected ?? 0) + (e.milk_produced ?? 0) >= 100 },
 
   // ── Forja ─────────────────────────────────────────────────────────────────
-  { id: 'master_smith', group: 'forging', weight: 90, label: 'Mestre Ferreiro', icon: '⚒️', color: '#a04010',
-    check: e => (e.forged_weapons ?? 0) >= 100 },
-  { id: 'blacksmith',   group: 'forging', weight: 62, label: 'Ferreiro',        icon: '🔨', color: '#c06030',
-    check: e => (e.forged_weapons ?? 0) >= 20  },
+  { id: 'blacksmith',   group: 'forging', weight: 62, icon: '🔨', color: '#c06030', label: 'Ferreiro',         desc: '20 armas forjadas',  check: e => (e.forged_weapons ?? 0) >= 20  },
+  { id: 'master_smith', group: 'forging', weight: 90, icon: '⚒️', color: '#a04010', label: 'Mestre Ferreiro',  desc: '100 armas forjadas', check: e => (e.forged_weapons ?? 0) >= 100 },
 
   // ── Cerâmica ──────────────────────────────────────────────────────────────
-  { id: 'master_potter', group: 'pottery', weight: 82, label: 'Ceramista',  icon: '🏺', color: '#b04030',
-    check: e => (e.ceramic_items ?? 0) >= 100 },
-  { id: 'potter_tag',    group: 'pottery', weight: 52, label: 'Oleiro',     icon: '🏺', color: '#c05040',
-    check: e => (e.ceramic_items ?? 0) >= 30  },
+  { id: 'potter_tag',    group: 'pottery', weight: 52, icon: '🏺', color: '#c05040', label: 'Oleiro',     desc: '30 itens de cerâmica',  check: e => (e.ceramic_items ?? 0) >= 30  },
+  { id: 'master_potter', group: 'pottery', weight: 82, icon: '🏺', color: '#b04030', label: 'Ceramista',  desc: '100 itens de cerâmica', check: e => (e.ceramic_items ?? 0) >= 100 },
 
   // ── Artesanato geral ──────────────────────────────────────────────────────
-  { id: 'artisan_tag',   group: 'crafting', weight: 75, label: 'Artesão',       icon: '🛠️', color: '#985030',
-    check: e => (e.materials_crafted ?? 0) >= 200 },
-  { id: 'craftsman_tag', group: 'crafting', weight: 45, label: 'Artesão',       icon: '🛠️', color: '#a86040',
-    check: e => (e.materials_crafted ?? 0) >= 50  },
+  { id: 'craftsman_tag', group: 'crafting', weight: 45, icon: '🛠️', color: '#a86040', label: 'Artesão',      desc: '50 materiais artesanais',  check: e => (e.materials_crafted ?? 0) >= 50  },
+  { id: 'artisan_tag',   group: 'crafting', weight: 75, icon: '🛠️', color: '#985030', label: 'Grande Artesão', desc: '200 materiais artesanais', check: e => (e.materials_crafted ?? 0) >= 200 },
 
   // ── Saque ─────────────────────────────────────────────────────────────────
-  { id: 'king_of_loot', group: 'looting', weight: 88, label: 'Rei do Saque', icon: '💰', color: '#b07010',
-    check: e => (e.houses_looted ?? 0) >= 300 },
-  { id: 'looter',       group: 'looting', weight: 58, label: 'Saqueador',    icon: '🏚️', color: '#a06020',
-    check: e => (e.houses_looted ?? 0) >= 80  },
-  { id: 'scavenger',    group: 'looting', weight: 30, label: 'Catador',      icon: '🗑️', color: '#807040',
-    check: e => (e.houses_looted ?? 0) >= 20  },
+  { id: 'scavenger',    group: 'looting', weight: 30, icon: '🗑️', color: '#807040', label: 'Catador',       desc: '20 casas saqueadas',  check: e => (e.houses_looted ?? 0) >= 20  },
+  { id: 'looter',       group: 'looting', weight: 58, icon: '🏚️', color: '#a06020', label: 'Saqueador',     desc: '80 casas saqueadas',  check: e => (e.houses_looted ?? 0) >= 80  },
+  { id: 'king_of_loot', group: 'looting', weight: 88, icon: '💰', color: '#b07010', label: 'Rei do Saque',  desc: '300 casas saqueadas', check: e => (e.houses_looted ?? 0) >= 300 },
 
   // ── Leitura ───────────────────────────────────────────────────────────────
-  { id: 'bibliophile', group: 'reading', weight: 85, label: 'Bibliófilo', icon: '📚', color: '#6020a0',
-    check: e => (e.books_read ?? 0) >= 50 },
-  { id: 'literate',    group: 'reading', weight: 55, label: 'Letrado',    icon: '📖', color: '#8040c0',
-    check: e => (e.books_read ?? 0) >= 15 },
+  { id: 'literate',    group: 'reading', weight: 55, icon: '📖', color: '#8040c0', label: 'Letrado',    desc: '15 livros lidos', check: e => (e.books_read ?? 0) >= 15 },
+  { id: 'bibliophile', group: 'reading', weight: 85, icon: '📚', color: '#6020a0', label: 'Bibliófilo', desc: '50 livros lidos', check: e => (e.books_read ?? 0) >= 50 },
 
   // ── Lenhador ──────────────────────────────────────────────────────────────
-  { id: 'woodsman_master', group: 'woodcutting', weight: 80, label: 'Lenhador Mestre', icon: '🌲', color: '#4a2808',
-    check: e => (e.trees_cut ?? 0) >= 500 },
-  { id: 'woodsman',        group: 'woodcutting', weight: 52, label: 'Lenhador',        icon: '🪵', color: '#6a3810',
-    check: e => (e.trees_cut ?? 0) >= 150 },
+  { id: 'woodsman',        group: 'woodcutting', weight: 52, icon: '🪵', color: '#6a3810', label: 'Lenhador',        desc: '150 árvores',  check: e => (e.trees_cut ?? 0) >= 150 },
+  { id: 'woodsman_master', group: 'woodcutting', weight: 80, icon: '🌲', color: '#4a2808', label: 'Lenhador Mestre', desc: '500 árvores',  check: e => (e.trees_cut ?? 0) >= 500 },
 
   // ── Água ──────────────────────────────────────────────────────────────────
-  { id: 'water_guardian', group: 'water', weight: 72, label: 'Guarda da Água', icon: '💧', color: '#1870b0',
-    check: e => (e.water_collected ?? 0) >= 200 },
+  { id: 'water_guardian', group: 'water', weight: 72, icon: '💧', color: '#1870b0', label: 'Guardião da Água', desc: '200 litros coletados', check: e => (e.water_collected ?? 0) >= 200 },
 
-  // ── Skills: pico ──────────────────────────────────────────────────────────
-  { id: 'skill_master', group: 'skill_peak', weight: 92, label: 'Mestre Absoluto', icon: '🏆', color: '#d4a000',
-    check: (_, sm) => [...sm.values()].some(l => l >= 10) },
-  { id: 'specialist',   group: 'skill_peak', weight: 65, label: 'Especialista',    icon: '🎯', color: '#c08000',
-    check: (_, sm) => [...sm.values()].some(l => l >= 8)  },
+  // ── Maestria em skills ────────────────────────────────────────────────────
+  { id: 'specialist',   group: 'skill_peak', weight: 65, icon: '🎯', color: '#c08000', label: 'Especialista',    desc: 'Qualquer skill ≥ nível 8',  check: (_, sm) => [...sm.values()].some(l => l >= 8)  },
+  { id: 'skill_master', group: 'skill_peak', weight: 92, icon: '🏆', color: '#d4a000', label: 'Mestre Absoluto', desc: 'Qualquer skill ≥ nível 10', check: (_, sm) => [...sm.values()].some(l => l >= 10) },
 
-  // ── Skills: diversidade ────────────────────────────────────────────────────
-  { id: 'generalist',   group: 'versatility', weight: 78, label: 'Generalista', icon: '🎭', color: '#5050a8',
-    check: (_, sm) => [...sm.values()].filter(l => l >= 5).length >= 8  },
-  { id: 'well_rounded', group: 'versatility', weight: 48, label: 'Completo',    icon: '🌀', color: '#7070c0',
-    check: (_, sm) => [...sm.values()].filter(l => l >= 3).length >= 12 },
-
+  // ── Versatilidade ─────────────────────────────────────────────────────────
+  { id: 'well_rounded', group: 'versatility', weight: 48, icon: '🌀', color: '#7070c0', label: 'Completo',    desc: '12+ skills ≥ nível 3', check: (_, sm) => [...sm.values()].filter(l => l >= 3).length >= 12 },
+  { id: 'generalist',   group: 'versatility', weight: 78, icon: '🎭', color: '#5050a8', label: 'Generalista', desc: '8+ skills ≥ nível 5',  check: (_, sm) => [...sm.values()].filter(l => l >= 5).length >= 8  },
 ];
+
+// Agrupamento exportado para a modal de guia
+export const TAG_GROUPS_INFO: TagGroupInfo[] = (() => {
+  const map = new Map<string, TagGroupInfo>();
+  for (const def of TAG_DEFS) {
+    if (!map.has(def.group)) {
+      map.set(def.group, {
+        key:   def.group,
+        label: GROUP_LABELS[def.group] ?? def.group,
+        tiers: [],
+      });
+    }
+    map.get(def.group)!.tiers.push({
+      id: def.id, label: def.label, icon: def.icon,
+      color: def.color, desc: def.desc, weight: def.weight,
+    });
+  }
+  for (const g of map.values()) g.tiers.sort((a, b) => a.weight - b.weight);
+  return [...map.values()];
+})();
 
 // ─── Tag resolver ─────────────────────────────────────────────────────────────
 

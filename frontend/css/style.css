@@ -4,6 +4,7 @@
 /* Base */
 @import './base/tokens.css';
 @import './base/reset.css';
+@import './base/tooltips.css';
 
 /* Layout */
 @import './layout/header.css';

@@ -10,6 +10,7 @@ import { SPIFFOS_RESTAURANTS, BASE_ITEMS, initObjectives } from '../lib/objectiv
 import { ProgressBar } from '../components/ProgressBar';
 import { resolveArchetype } from '../lib/archetype';
 import { AchievementsSection } from '../components/AchievementsSection';
+import { ArchetypeGuideModal } from '../components/ArchetypeGuideModal';
 import type { PlayerProfile, Entry } from '../types';
 import type { Objectives } from '../lib/objectives';
 
@@ -169,7 +170,7 @@ function TraitsSection({ traitsRaw }: { traitsRaw: string | null | undefined }) 
               const def = resolveTrait(id);
               const img = getTraitImageUrl(def);
               return (
-                <span key={id} className="trait-badge trait-positive" title={def.description}>
+                <span key={id} className="trait-badge trait-positive" data-tip={def.description}>
                   {img && <img src={img} alt="" className="trait-img" />}
                   {def.name}
                 </span>
@@ -186,7 +187,7 @@ function TraitsSection({ traitsRaw }: { traitsRaw: string | null | undefined }) 
               const def = resolveTrait(id);
               const img = getTraitImageUrl(def);
               return (
-                <span key={id} className="trait-badge trait-negative" title={def.description}>
+                <span key={id} className="trait-badge trait-negative" data-tip={def.description}>
                   {img && <img src={img} alt="" className="trait-img" />}
                   {def.name}
                 </span>
@@ -227,6 +228,7 @@ function ppDisqTooltip(reason: string | null | undefined): string {
 
 function CharacterCard({ entry, rank }: { entry: Entry; rank: number | null }) {
   const [tab, setTab] = useState<'stats' | 'skills' | 'traits'>('stats');
+  const [showGuide, setShowGuide] = useState(false);
   const isDisqualified = entry.sandbox_ok === false;
 
   return (
@@ -287,12 +289,12 @@ function CharacterCard({ entry, rank }: { entry: Entry; rank: number | null }) {
         entry.crops_harvested != null || entry.items_crafted != null ||
         entry.houses_looted != null || entry.hours_without_sleep != null) && (
         <div className="pp-ext-stats">
-          {entry.animals_killed  != null && <span className="pp-ext-stat" title="Animais abatidos">🏹 {entry.animals_killed.toLocaleString('pt-BR')}</span>}
-          {entry.fish_caught     != null && <span className="pp-ext-stat" title="Peixes capturados">🐟 {entry.fish_caught.toLocaleString('pt-BR')}</span>}
-          {entry.crops_harvested != null && <span className="pp-ext-stat" title="Vegetais colhidos">🌽 {entry.crops_harvested.toLocaleString('pt-BR')}</span>}
-          {entry.items_crafted   != null && <span className="pp-ext-stat" title="Itens fabricados">🔨 {entry.items_crafted.toLocaleString('pt-BR')}</span>}
-          {entry.houses_looted   != null && <span className="pp-ext-stat" title="Casas saqueadas">🏚️ {entry.houses_looted.toLocaleString('pt-BR')}</span>}
-          {entry.hours_without_sleep != null && <span className="pp-ext-stat" title="Horas sem dormir">😴 {entry.hours_without_sleep}h</span>}
+          {entry.animals_killed  != null && <span className="pp-ext-stat" data-tip="Animais abatidos">🏹 {entry.animals_killed.toLocaleString('pt-BR')}</span>}
+          {entry.fish_caught     != null && <span className="pp-ext-stat" data-tip="Peixes capturados">🐟 {entry.fish_caught.toLocaleString('pt-BR')}</span>}
+          {entry.crops_harvested != null && <span className="pp-ext-stat" data-tip="Vegetais colhidos">🌽 {entry.crops_harvested.toLocaleString('pt-BR')}</span>}
+          {entry.items_crafted   != null && <span className="pp-ext-stat" data-tip="Itens fabricados">🔨 {entry.items_crafted.toLocaleString('pt-BR')}</span>}
+          {entry.houses_looted   != null && <span className="pp-ext-stat" data-tip="Casas saqueadas">🏚️ {entry.houses_looted.toLocaleString('pt-BR')}</span>}
+          {entry.hours_without_sleep != null && <span className="pp-ext-stat" data-tip="Horas sem dormir">😴 {entry.hours_without_sleep}h</span>}
         </div>
       )}
 
@@ -305,14 +307,23 @@ function CharacterCard({ entry, rank }: { entry: Entry; rank: number | null }) {
               <span className="pp-arch-icon">{primary.icon}</span>
             </div>
             <div className="pp-arch-info">
-              <span className="pp-arch-eyebrow">Perfil Psicológico</span>
+              <div className="pp-arch-eyebrow-row">
+                <span className="pp-arch-eyebrow">Perfil Psicológico</span>
+                <button
+                  className="pp-arch-guide-btn"
+                  onClick={() => setShowGuide(true)}
+                  data-tip="Ver todos os perfis e como obtê-los"
+                >
+                  <i className="ti ti-info-circle" />
+                </button>
+              </div>
               <div className="pp-arch-names">
                 <span className="pp-arch-name">{primary.name}</span>
                 {secondary && (
                   <span
                     className="pp-arch-secondary"
                     style={{ '--secondary-color': secondary.color } as React.CSSProperties}
-                    title={secondary.desc}
+                    data-tip={secondary.desc}
                   >
                     {secondary.icon} {secondary.name}
                   </span>
@@ -380,6 +391,8 @@ function CharacterCard({ entry, rank }: { entry: Entry; rank: number | null }) {
         {tab === 'skills' && <SkillsSection skillsStr={entry.skills} />}
         {tab === 'traits' && <TraitsSection traitsRaw={entry.traits} />}
       </div>
+
+      {showGuide && <ArchetypeGuideModal onClose={() => setShowGuide(false)} />}
     </div>
   );
 }

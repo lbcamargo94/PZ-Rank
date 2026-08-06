@@ -167,7 +167,8 @@ export function RankRow({ entry, rank, hideStatus, iconOnly }: RankRowProps) {
         {MEDALS[rank] ?? rank}
         <span
           className={`division-badge division-badge--${division.division.toLowerCase()}`}
-          title={`${division.label} · ${division.range}`}
+          data-tip={`${division.label} · ${division.range}`}
+          data-tip-pos="bottom"
         >
           {division.label}
         </span>
@@ -181,15 +182,15 @@ export function RankRow({ entry, rank, hideStatus, iconOnly }: RankRowProps) {
           {entry.sandbox_ok === false
             ? (
               iconOnly
-                ? <span className="status-icon status-disq" title={disqTooltip(entry.disqualification_reason)}><i className="ti ti-ban" /></span>
-                : <span className="alive-badge disqualified" title={disqTooltip(entry.disqualification_reason)}><i className="ti ti-ban" /> Desclassificado</span>
+                ? <span className="status-icon status-disq" data-tip={disqTooltip(entry.disqualification_reason)}><i className="ti ti-ban" /></span>
+                : <span className="alive-badge disqualified" data-tip={disqTooltip(entry.disqualification_reason)}><i className="ti ti-ban" /> Desclassificado</span>
             )
             : entry.is_alive
               ? (iconOnly
-                  ? <span className="status-icon status-alive" title="Vivo"><i className="ti ti-heartbeat" /></span>
+                  ? <span className="status-icon status-alive" data-tip="Vivo"><i className="ti ti-heartbeat" /></span>
                   : <span className="alive-badge alive"><i className="ti ti-heartbeat" /> Vivo</span>)
               : (iconOnly
-                  ? <span className="status-icon status-dead" title="Morto"><i className="ti ti-skull" /></span>
+                  ? <span className="status-icon status-dead" data-tip="Morto"><i className="ti ti-skull" /></span>
                   : <span className="alive-badge dead"><i className="ti ti-skull" /> Morto</span>)
           }
         </td>
