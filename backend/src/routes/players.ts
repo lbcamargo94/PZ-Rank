@@ -288,12 +288,41 @@ router.patch('/:id/status', requireModerator, async (req: ModRequest, res: Respo
       return;
     }
 
-    // Notifica o jogador por email quando aprovado (se tiver email cadastrado)
     const row = data as { id: number; nick: string; email?: string | null; status: string };
-    if (status === 'approved' && row.email) {
-      await sendApprovalEmail(row.email, row.nick).catch(err =>
-        console.error('[PATCH /players/:id/status] Falha ao enviar email de aprovação:', err)
-      );
+
+    if (status === 'approved') {
+      // Notifica o jogador por email
+      if (row.email) {
+        await sendApprovalEmail(row.email, row.nick).catch(err =>
+          console.error('[PATCH /players/:id/status] Falha ao enviar email de aprovação:', err)
+        );
+      }
+
+      // Inscreve no YouTube Pub/Sub se o jogador tem youtube_url cadastrado
+      const { data: playerData } = await supabase
+        .from('players')
+        .select('youtube_url, yt_channel_id')
+        .eq('id', id)
+        .single();
+
+      const ytUrl = (playerData as { youtube_url?: string | null } | null)?.youtube_url;
+      const existingChannelId = (playerData as { yt_channel_id?: string | null } | null)?.yt_channel_id;
+
+      if (ytUrl && !existingChannelId) {
+        const { extractChannelId, subscribePubSub } = await import('../lib/youtube');
+        const channelId = await extractChannelId(ytUrl);
+        if (channelId) {
+          const sub = await subscribePubSub(channelId);
+          await supabase
+            .from('players')
+            .update({
+              yt_channel_id:     channelId,
+              yt_sub_expires_at: sub.ok ? sub.expiresAt : null,
+            })
+            .eq('id', id);
+          if (!sub.ok) console.warn(`[players/status] Falha ao inscrever ${channelId}: ${sub.error}`);
+        }
+      }
     }
 
     res.json(data);

@@ -24,6 +24,8 @@ CREATE TABLE IF NOT EXISTS players (
   gender             TEXT     DEFAULT NULL CHECK (gender IN ('m', 'f')),
   player_token       TEXT     NOT NULL DEFAULT (lower(hex(randomblob(16)))),
   terms_accepted_at  TEXT     DEFAULT NULL,
+  yt_channel_id      TEXT     DEFAULT NULL,
+  yt_sub_expires_at  TEXT     DEFAULT NULL,
   created_at         TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
 );
 

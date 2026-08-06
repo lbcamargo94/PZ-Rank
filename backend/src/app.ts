@@ -18,6 +18,8 @@ import newsRouter        from './routes/news';
 import financesRouter      from './routes/finances';
 import achievementsRouter  from './routes/achievements';
 import heatmapRouter       from './routes/heatmap';
+import webhooksRouter      from './routes/webhooks';
+import cronRouter          from './routes/cron';
 
 // Rate limiters por contexto de uso
 const authLimiter = rateLimit({
@@ -86,6 +88,14 @@ export function createApp() {
     next();
   });
 
+  // Captura body bruto para /webhooks (necessário para validar HMAC do YouTube)
+  app.use('/webhooks', express.raw({ type: 'application/atom+xml', limit: '256kb' }), (req: Request, _res: Response, next: NextFunction) => {
+    if (Buffer.isBuffer(req.body)) {
+      (req as Request & { rawBody?: Buffer }).rawBody = req.body;
+    }
+    next();
+  });
+
   app.use(express.json({ limit: '1mb' }));
 
   app.get('/health', (_req, res) => res.json({ ok: true, ts: Date.now() }));
@@ -119,6 +129,8 @@ export function createApp() {
   app.use('/finances',      financesRouter);
   app.use('/achievements',  achievementsRouter);
   app.use('/heatmap',       heatmapRouter);
+  app.use('/webhooks',      webhooksRouter);
+  app.use('/cron',          cronRouter);
 
   return app;
 }

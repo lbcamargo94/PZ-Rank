@@ -156,16 +156,36 @@ router.patch('/me/links', requirePlayer, async (req: PlayerRequest, res: Respons
     tiktok_url?:  string | null;
   };
 
+  const normalizedYt = normalizeUrl(youtube_url);
+
+  // Extrai channel_id e inscreve no Pub/Sub quando youtube_url muda
+  let ytFields: Record<string, string | null> = {};
+  if (normalizedYt) {
+    const { extractChannelId, subscribePubSub } = await import('../lib/youtube');
+    const channelId = await extractChannelId(normalizedYt);
+    if (channelId) {
+      const sub = await subscribePubSub(channelId);
+      ytFields = {
+        yt_channel_id:     channelId,
+        yt_sub_expires_at: sub.ok ? sub.expiresAt : null,
+      };
+      if (!sub.ok) console.warn(`[account/links] Falha ao inscrever ${channelId}: ${sub.error}`);
+    }
+  } else if (youtube_url === null || youtube_url === '') {
+    ytFields = { yt_channel_id: null, yt_sub_expires_at: null };
+  }
+
   const { data, error } = await supabase
     .from('players')
     .update({
       twitch_url:  normalizeUrl(twitch_url),
-      youtube_url: normalizeUrl(youtube_url),
+      youtube_url: normalizedYt,
       kick_url:    normalizeUrl(kick_url),
       tiktok_url:  normalizeUrl(tiktok_url),
+      ...ytFields,
     })
     .eq('id', req.playerId!)
-    .select('id, twitch_url, youtube_url, kick_url, tiktok_url')
+    .select('id, twitch_url, youtube_url, kick_url, tiktok_url, yt_channel_id')
     .single();
 
   if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }

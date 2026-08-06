@@ -11,5 +11,11 @@
       "src": "/(.*)",
       "dest": "src/api/index.ts"
     }
+  ],
+  "crons": [
+    {
+      "path": "/cron/renew-yt-subs",
+      "schedule": "0 6 * * *"
+    }
   ]
 }
