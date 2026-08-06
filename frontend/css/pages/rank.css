@@ -90,7 +90,7 @@ body.rank-page-active .rank-table tbody tr:hover {
 
 .rank-pagination-info {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-4);
 }
 
@@ -135,7 +135,7 @@ body.rank-page-active .rank-table tbody tr:hover {
   background: transparent;
   color: var(--text-3);
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
   transition: color 0.15s, border-color 0.15s, background 0.15s;
 }
@@ -153,7 +153,7 @@ body.rank-page-active .rank-table tbody tr:hover {
   width: 24px;
   color: var(--text-4);
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 14px;
   cursor: default;
 }
 
@@ -171,7 +171,7 @@ body.rank-page-active .rank-table tbody tr:hover {
   align-items: center;
   gap: 6px;
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 14px;
   color: var(--amber-light);
   padding: 4px 8px;
   background: rgba(200,120,32,0.08);

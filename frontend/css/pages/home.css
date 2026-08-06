@@ -124,7 +124,7 @@
   padding: 4px 10px;
   border-radius: 99px;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 14px;
   border: 1px solid transparent;
   white-space: nowrap;
 }
@@ -197,7 +197,7 @@
 
 .news-lore-label {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 14px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--text-3);
@@ -224,7 +224,7 @@
   border-radius: 4px;
   color: var(--text-2);
   cursor: pointer;
-  font-size: 12px;
+  font-size: 14px;
   padding: 0;
   transition: color 0.15s, border-color 0.15s, background 0.15s;
 }
@@ -237,7 +237,7 @@
 
 .lore-nav-counter {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 14px;
   color: var(--text-3);
   min-width: 28px;
   text-align: center;
@@ -256,7 +256,7 @@
 .news-lore-origin {
   display: block;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 14px;
   letter-spacing: 0.5px;
   color: var(--text-2);
 }
@@ -323,7 +323,7 @@
   border-top: 1px solid var(--border-mid);
   color: var(--amber-light);
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 14px;
   text-decoration: none;
   transition: background 0.15s, color 0.15s;
   flex-shrink: 0;
@@ -358,7 +358,7 @@
 .home-patrocinio .patrocinio-btn {
   color: var(--text-3);
   text-decoration: underline;
-  font-size: 13px;
+  font-size: 14px;
   margin-left: auto;
   transition: color 0.15s;
 }
@@ -371,7 +371,7 @@
 
 .home-quick-nav-title {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 14px;
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--text-3);
@@ -426,7 +426,7 @@
 }
 
 .quick-nav-sub {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-3);
   line-height: 1.3;
 }
@@ -454,6 +454,6 @@
   .quick-nav-grid { gap: 8px; }
   .quick-nav-card { padding: 18px 12px; min-height: 100px; }
   .quick-nav-icon { font-size: 22px; }
-  .quick-nav-label { font-size: 13px; }
+  .quick-nav-label { font-size: 14px; }
   .home-patrocinio .patrocinio-btn { margin-left: 0; }
 }

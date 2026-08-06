@@ -652,7 +652,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 14px;
   border: 2px solid var(--bg-2);
   line-height: 1;
 }
@@ -834,7 +834,7 @@
   gap: 4px;
 }
 .pp-disq-mods {
-  font-size: 11px;
+  font-size: 14px;
   color: #c07020;
   font-family: var(--font-mono);
   max-width: 280px;
@@ -844,7 +844,7 @@
 }
 .pp-disq-mods .ti {
   margin-right: 4px;
-  font-size: 11px;
+  font-size: 14px;
 }
 .pp-char-rank {
   font-family: var(--font-mono);
@@ -930,7 +930,7 @@
 
 .pp-arch-eyebrow {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 14px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--text-3);
@@ -956,7 +956,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 13px;
+  font-size: 14px;
   font-family: var(--font-mono);
   font-weight: 600;
   color: var(--secondary-color, var(--text-2));
@@ -993,7 +993,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 13px;
+  font-size: 14px;
   font-family: var(--font-mono);
   color: var(--text-2);
   width: 110px;
@@ -1045,7 +1045,7 @@
 }
 
 .pp-arch-trait-pct {
-  font-size: 12px;
+  font-size: 14px;
   font-family: var(--font-mono);
   font-weight: 700;
   color: var(--text-3);
@@ -1066,7 +1066,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
+  font-size: 14px;
   font-family: var(--font-mono);
   font-weight: 600;
   color: var(--tag-color, var(--text-2));
@@ -1095,7 +1095,7 @@
   background: color-mix(in srgb, var(--arch-color, var(--green)) 8%, var(--bg-3));
   color: color-mix(in srgb, var(--arch-color, var(--green-light)) 90%, var(--text-1));
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s, border-color 0.2s, box-shadow 0.2s, color 0.2s;
@@ -1111,7 +1111,7 @@
 }
 
 .pp-arch-guide-arrow {
-  font-size: 12px;
+  font-size: 14px;
   transition: transform 0.2s ease;
 }
 .pp-arch-guide-btn:hover .pp-arch-guide-arrow { transform: translateX(3px); }
@@ -1193,7 +1193,7 @@
   border-bottom: 2px solid transparent;
   cursor: pointer;
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 1px;
   color: var(--text-3);
@@ -1266,7 +1266,7 @@
 
 .ag-req-label {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 1px;
   color: var(--text-3);
@@ -1282,7 +1282,7 @@
 }
 
 .ag-req-list li {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-2);
   padding-left: 12px;
   position: relative;
@@ -1302,7 +1302,7 @@
 }
 
 .ag-skill-chip {
-  font-size: 11px;
+  font-size: 14px;
   font-family: var(--font-mono);
   color: color-mix(in srgb, var(--arch-color, var(--green-light)) 90%, var(--text-1));
   background: color-mix(in srgb, var(--arch-color, var(--green)) 10%, var(--bg-2));
@@ -1324,7 +1324,7 @@
 .ag-tag-group-label {
   display: block;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 1.5px;
   color: var(--text-3);
@@ -1353,7 +1353,7 @@
 
 .ag-tag-tier-label {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--tier-color, var(--text-1));
   width: 160px;
@@ -1361,7 +1361,7 @@
 }
 
 .ag-tag-tier-desc {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-3);
 }
 

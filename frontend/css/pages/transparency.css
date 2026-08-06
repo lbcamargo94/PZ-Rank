@@ -130,7 +130,7 @@
 
 .transp-prize-pct {
   padding: 6px 20px 0;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-3);
   font-family: var(--font-mono);
 }
@@ -164,7 +164,7 @@
 }
 
 .transp-entry-cat {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-3);
   font-family: var(--font-mono);
   text-transform: uppercase;
@@ -301,12 +301,12 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-3);
 }
 
 .fm-form-hint {
-  font-size: 11px;
+  font-size: 14px;
   color: var(--text-4);
 }
 
@@ -364,7 +364,7 @@
 }
 
 .fm-entry-category {
-  font-size: 11px;
+  font-size: 14px;
   color: var(--text-4);
   font-family: var(--font-mono);
   text-transform: uppercase;
@@ -377,7 +377,7 @@
 }
 
 .fm-entry-goal {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-3);
   font-family: var(--font-mono);
 }
@@ -435,7 +435,7 @@
 }
 
 .fm-supporter-until {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-3);
   font-family: var(--font-mono);
 }
@@ -476,7 +476,7 @@
 
 .map-season-badge {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-3);
   background: var(--bg-3);
   border: 1px solid var(--border);
@@ -502,7 +502,7 @@
   align-items: center;
   gap: 6px;
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 14px;
   padding: 5px 12px;
   border-radius: 6px;
   border: 1px solid var(--border);
@@ -520,7 +520,7 @@
 .map-filter-count {
   background: var(--bg-4);
   color: var(--text-3);
-  font-size: 11px;
+  font-size: 14px;
   padding: 1px 6px;
   border-radius: 99px;
 }
@@ -564,7 +564,7 @@
   align-items: center;
   gap: 10px;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-3);
 }
 
@@ -579,7 +579,7 @@
 
 .map-legend-note {
   margin-left: auto;
-  font-size: 11px;
+  font-size: 14px;
 }
 
 @media (max-width: 860px) {
@@ -599,7 +599,7 @@
 
 .pp-ext-stat {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-2);
   background: var(--bg-4);
   border: 1px solid var(--border);
@@ -660,7 +660,7 @@
 
 .pp-ach-tier-label {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1.2px;
@@ -678,7 +678,7 @@
 
 .pp-ach-tier-count {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-3);
   margin-left: auto;
 }
@@ -729,14 +729,14 @@
 
 .pp-ach-name {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text-1);
   line-height: 1.2;
 }
 
 .pp-ach-desc {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-3);
   line-height: 1.3;
 }
@@ -758,7 +758,7 @@
 
 .pp-ach-date {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 14px;
   color: var(--text-3);
 }
 
@@ -786,7 +786,7 @@
 
 .pp-ach-progress-label {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 14px;
   color: var(--text-3);
   display: flex;
   gap: 2px;
@@ -797,7 +797,7 @@
 
 .pp-ach-threshold {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 14px;
   color: var(--text-4);
   text-align: center;
 }

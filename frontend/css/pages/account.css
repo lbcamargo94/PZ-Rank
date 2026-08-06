@@ -104,7 +104,7 @@
 .login-password-header .reg-label { margin-bottom: 0; }
 
 .login-forgot-link {
-  font-size: 13px;
+  font-size: 14px;
   font-family: var(--font-mono);
   color: var(--text-3);
   text-decoration: none;
@@ -120,7 +120,7 @@
   margin: 20px 0 16px;
   color: var(--text-4);
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 1px;
   text-transform: uppercase;
 }
@@ -286,7 +286,7 @@
 
 /* Badges (verified / unverified) */
 .account-badge {
-  font-size: 13px;
+  font-size: 14px;
   padding: 2px 8px;
   border-radius: 99px;
   font-weight: 500;
@@ -328,7 +328,7 @@
 }
 
 .account-run-status {
-  font-size: 13px;
+  font-size: 14px;
   padding: 2px 8px;
   border-radius: 99px;
   font-weight: 500;

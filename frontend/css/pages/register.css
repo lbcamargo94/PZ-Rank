@@ -74,7 +74,7 @@
   border: 2px solid var(--border-mid);
   background: var(--bg-3);
   color: var(--text-4);
-  font-size: 13px;
+  font-size: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -93,7 +93,7 @@
 
 .reg-step-label {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 14px;
   letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--text-4);
@@ -218,7 +218,7 @@
 
 .reg-aux-link {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-4);
   text-decoration: none;
   display: inline-flex;
@@ -267,7 +267,7 @@
 }
 
 .reg-gender-optional {
-  font-size: 10px;
+  font-size: 14px;
   font-family: var(--font-mono);
   color: var(--text-4);
   background: var(--bg-3);
@@ -280,7 +280,7 @@
 }
 
 .reg-gender-hint {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-4);
   line-height: 1.4;
   margin: 0;
@@ -349,7 +349,7 @@
   position: absolute;
   top: 8px;
   right: 8px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--green-light);
   background: rgba(94,144,64,0.22);
   border-radius: 50%;
@@ -449,7 +449,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 13px;
+  font-size: 14px;
   font-family: var(--font-mono);
   font-weight: 600;
   color: var(--green-light);
@@ -466,7 +466,7 @@
   background: rgba(94,144,64,0.22);
   border-color: var(--green);
 }
-.reg-terms-link-btn .ti { font-size: 12px; }
+.reg-terms-link-btn .ti { font-size: 14px; }
 
 .reg-terms-checkbox {
   flex-shrink: 0;

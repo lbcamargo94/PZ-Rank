@@ -107,7 +107,7 @@
   display: block;
   text-align: center;
   margin-top: 12px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-4);
   background: none;
   border: none;
@@ -282,7 +282,7 @@
 .status-badge-master    { color: var(--gold); background: rgba(200,168,75,.12); border: 1px solid rgba(200,168,75,.3); padding: 2px 7px; border-radius: 10px; }
 
 .mod-email-display {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-3);
   font-family: var(--font-mono);
   white-space: nowrap;
@@ -411,7 +411,7 @@
   color: var(--green);
   border: 1px solid rgba(74, 222, 128, 0.3);
   display: inline-flex; align-items: center; gap: 4px;
-  padding: 2px 8px; border-radius: 20px; font-size: 13px;
+  padding: 2px 8px; border-radius: 20px; font-size: 14px;
   font-family: var(--font-mono); font-weight: 600;
   text-transform: uppercase; letter-spacing: 0.04em;
 }
@@ -420,7 +420,7 @@
   color: #facc15;
   border: 1px solid rgba(250, 204, 21, 0.3);
   display: inline-flex; align-items: center; gap: 4px;
-  padding: 2px 8px; border-radius: 20px; font-size: 13px;
+  padding: 2px 8px; border-radius: 20px; font-size: 14px;
   font-family: var(--font-mono); font-weight: 600;
   text-transform: uppercase; letter-spacing: 0.04em;
 }
@@ -429,7 +429,7 @@
   color: #888;
   border: 1px solid rgba(120, 120, 120, 0.2);
   display: inline-flex; align-items: center; gap: 4px;
-  padding: 2px 8px; border-radius: 20px; font-size: 13px;
+  padding: 2px 8px; border-radius: 20px; font-size: 14px;
   font-family: var(--font-mono); font-weight: 600;
   text-transform: uppercase; letter-spacing: 0.04em;
 }
@@ -456,12 +456,12 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  font-size: 14px;
   transition: color 0.15s;
 }
 .password-hints .hint-ok  { color: var(--green); }
 .password-hints .hint-err { color: var(--text-2); }
-.password-hints .ti { font-size: 13px; flex-shrink: 0; }
+.password-hints .ti { font-size: 14px; flex-shrink: 0; }
 
 .player-card-email-row {
   display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
@@ -473,7 +473,7 @@
   flex: 1; min-width: 180px;
   background: var(--bg-3); border: 1px solid var(--border-mid);
   color: var(--text-1); border-radius: var(--radius);
-  padding: 4px 10px; font-size: 13px; outline: none;
+  padding: 4px 10px; font-size: 14px; outline: none;
 }
 .player-email-input:focus { border-color: var(--green); }
 
@@ -1071,7 +1071,7 @@
 
 .painel-disq-row--anomaly {
   color: #f59e0b;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .painel-disq-icon {
@@ -1095,14 +1095,14 @@
 }
 
 .painel-disq-desc {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 400;
   color: var(--text-2);
   line-height: 1.4;
 }
 
 .painel-disq-date {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 400;
   color: var(--text-3);
   white-space: nowrap;
@@ -1344,7 +1344,7 @@
   border: 2px solid var(--border);
   background: var(--bg-2);
   color: var(--text-4);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -1356,7 +1356,7 @@
 .reg-step--done   .reg-step-circle { border-color: var(--green); background: var(--green); color: #000; }
 .reg-step-label {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 14px;
   color: var(--text-4);
   letter-spacing: 0.5px;
   text-transform: uppercase;
@@ -1922,7 +1922,7 @@
   width: 100%;
   font-style: italic;
   color: var(--text-4);
-  font-size: 13px;
+  font-size: 14px;
   margin-top: 2px;
 }
 

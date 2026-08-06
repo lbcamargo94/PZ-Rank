@@ -54,7 +54,7 @@
 
 .lu-sub {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 14px;
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--text-3);
@@ -117,7 +117,7 @@
 
 .lu-ver {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 14px;
   color: var(--amber);
   background: var(--amber-dim);
   border: 1px solid var(--amber-border);

@@ -3,7 +3,7 @@
 .division-badge {
   display: inline-block;
   font-family: var(--font-display);
-  font-size: 9px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.4px;
   text-transform: uppercase;
@@ -159,7 +159,7 @@
 
 .cs-desc {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 14px;
   letter-spacing: 0.3px;
   color: var(--text-3);
   white-space: nowrap;
@@ -211,7 +211,7 @@
 
 .stat-label {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 2px;
   color: var(--text-3);
   text-transform: uppercase;

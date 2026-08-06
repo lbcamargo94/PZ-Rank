@@ -201,7 +201,7 @@
 }
 .dc-ext-item > i { font-size: 16px; color: var(--text-3); flex-shrink: 0; }
 .dc-ext-val { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text-1); }
-.dc-ext-lbl { font-family: var(--font-mono); font-size: 13px; color: var(--text-4); }
+.dc-ext-lbl { font-family: var(--font-mono); font-size: 14px; color: var(--text-4); }
 
 /* ── Code metadata footer ── */
 .dc-code-meta {
@@ -217,7 +217,7 @@
   align-items: center;
   gap: 6px;
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-4);
 }
 .dc-meta-item > i { font-size: 14px; }
