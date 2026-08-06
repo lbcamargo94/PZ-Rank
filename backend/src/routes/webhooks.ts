@@ -112,4 +112,91 @@ router.post('/youtube', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+// ── POST /webhooks/youtube/simulate — teste manual do pipeline ───────────────
+// Simula uma notificação do YouTube sem HMAC. Só funciona se ALLOW_WEBHOOK_SIMULATE=true.
+router.post('/youtube/simulate', async (req: Request, res: Response): Promise<void> => {
+  if (process.env.ALLOW_WEBHOOK_SIMULATE !== 'true') {
+    res.status(403).json({ error: 'Simulação desabilitada.' });
+    return;
+  }
+
+  const { channelId, videoId, videoUrl } = req.body as {
+    channelId?: string; videoId?: string; videoUrl?: string;
+  };
+
+  if (!channelId || !videoId) {
+    res.status(400).json({ error: 'channelId e videoId são obrigatórios.' });
+    return;
+  }
+
+  const liveInfo = await checkIsLive(videoId);
+  if (!liveInfo) {
+    res.json({ ok: false, step: 'checkIsLive', reason: 'API retornou null (vídeo não existe ou erro)' });
+    return;
+  }
+  if (!liveInfo.isLive) {
+    res.json({ ok: false, step: 'checkIsLive', reason: 'Vídeo não está ao vivo', title: liveInfo.title });
+    return;
+  }
+
+  const { data: player } = await supabase
+    .from('players')
+    .select('id, nick, yt_channel_id')
+    .eq('yt_channel_id', channelId)
+    .is('deleted_at', null)
+    .single();
+
+  if (!player) {
+    res.json({ ok: false, step: 'findPlayer', reason: 'Nenhum jogador com esse yt_channel_id' });
+    return;
+  }
+
+  const { data: entries } = await supabase
+    .from('entries')
+    .select('score, is_alive, sandbox_ok, player_id')
+    .eq('player_id', player.id)
+    .is('deleted_at', null)
+    .order('score', { ascending: false });
+
+  const bestAlive = (entries ?? []).find((e: { is_alive: boolean; sandbox_ok: boolean }) =>
+    e.sandbox_ok !== false && e.is_alive
+  );
+
+  let rank: number | null = null;
+  if (bestAlive) {
+    const { data: allAlive } = await supabase
+      .from('entries')
+      .select('player_id, score')
+      .eq('is_alive', true)
+      .eq('sandbox_ok', true)
+      .is('deleted_at', null)
+      .order('score', { ascending: false });
+
+    if (allAlive) {
+      const pos = (allAlive as Array<{ player_id: number; score: number }>)
+        .findIndex(e => e.player_id === player.id);
+      if (pos >= 0) rank = pos + 1;
+    }
+  }
+
+  const url = videoUrl ?? `https://www.youtube.com/watch?v=${videoId}`;
+  await sendLiveNotification({
+    nick:      player.nick,
+    title:     liveInfo.title,
+    videoUrl:  url,
+    thumbnail: liveInfo.thumbnail,
+    rank,
+    score:     bestAlive?.score ?? null,
+  });
+
+  res.json({
+    ok:       true,
+    player:   player.nick,
+    title:    liveInfo.title,
+    rank,
+    score:    bestAlive?.score ?? null,
+    discord:  'notificação enviada',
+  });
+});
+
 export default router;
