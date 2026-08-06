@@ -23,46 +23,51 @@ const YT_API_BASE       = 'https://www.googleapis.com/youtube/v3';
 /**
  * Extrai o channel_id (UCxxxx) de uma URL do YouTube.
  * Suporta:
- *   - youtube.com/channel/UCxxxx  → extração direta da URL
- *   - youtube.com/@handle          → YouTube Data API (forHandle)
- *   - youtube.com/user/username    → YouTube Data API (forUsername)
- *   - youtube.com/c/customname     → YouTube Data API (search)
+ *   - UC... em qualquer lugar da URL (ex: https://UCVIjtLxXgL6uSXRU84pTdBQ)
+ *   - youtube.com/channel/UCxxxx
+ *   - youtube.com/@handle  /  @handle sem domínio (ex: https://@simbaproduz)
+ *   - youtube.com/user/username  (legado)
+ *   - youtube.com/c/customname   (legado)
+ *   - youtube.com/NAME           (URL curta sem prefixo)
+ *   - www.youtube/NAME           (domínio sem .com)
  */
 export async function extractChannelId(url: string): Promise<string | null> {
   const normalized = url.trim().replace(/\/$/, '');
 
-  // Formato direto: /channel/UCxxxx — sem chamada de API
-  const directMatch = normalized.match(/youtube\.com\/channel\/(UC[\w-]{20,})/i);
-  if (directMatch) return directMatch[1];
+  // UC... channel ID em qualquer lugar da string (ex: https://UCVIjtLxXgL6uSXRU84pTdBQ)
+  const ucAnywhere = normalized.match(/(UC[\w-]{22})/);
+  if (ucAnywhere) return ucAnywhere[1];
 
   const apiKey = process.env.YOUTUBE_API_KEY;
+  if (!apiKey) return null;
+
+  // @handle sem domínio YouTube (ex: https://@simbaproduz  ou  @simbaproduz)
+  const bareHandle = normalized.match(/^(?:https?:\/\/)?@([\w.-]+)$/i);
+  if (bareHandle) {
+    const byHandle = await resolveChannelByHandle(`@${bareHandle[1]}`, apiKey);
+    if (byHandle) return byHandle;
+    return resolveChannelBySearch(bareHandle[1], apiKey);
+  }
+
+  // Domínio tolerante: youtube.com ou www.youtube (sem .com)
+  const isYoutube = /(?:www\.)?youtube(?:\.com)?\//i.test(normalized);
+  if (!isYoutube) return null;
 
   // @handle → channels.list?forHandle
-  const handleMatch = normalized.match(/youtube\.com\/@([\w.-]+)/i);
-  if (handleMatch) {
-    if (!apiKey) return null;
-    return resolveChannelByHandle(`@${handleMatch[1]}`, apiKey);
-  }
+  const handleMatch = normalized.match(/youtube(?:\.com)?\/+@([\w.-]+)/i);
+  if (handleMatch) return resolveChannelByHandle(`@${handleMatch[1]}`, apiKey);
 
-  // /user/username (legado) → channels.list?forUsername
-  const userMatch = normalized.match(/youtube\.com\/user\/([\w.-]+)/i);
-  if (userMatch) {
-    if (!apiKey) return null;
-    return resolveChannelByUsername(userMatch[1], apiKey);
-  }
+  // /user/username (legado)
+  const userMatch = normalized.match(/youtube(?:\.com)?\/+user\/([\w.-]+)/i);
+  if (userMatch) return resolveChannelByUsername(userMatch[1], apiKey);
 
-  // /c/customname (legado) → search
-  const customMatch = normalized.match(/youtube\.com\/c\/([\w.-]+)/i);
-  if (customMatch) {
-    if (!apiKey) return null;
-    return resolveChannelBySearch(customMatch[1], apiKey);
-  }
+  // /c/customname (legado)
+  const customMatch = normalized.match(/youtube(?:\.com)?\/+c\/([\w.-]+)/i);
+  if (customMatch) return resolveChannelBySearch(customMatch[1], apiKey);
 
-  // youtube.com/NAME (URL curta sem prefixo, ex: youtube.com/BoneYT)
-  // Tenta forHandle(@NAME) primeiro; se falhar, busca pelo nome
-  const bareMatch = normalized.match(/youtube\.com\/([\w.-]+)$/i);
+  // youtube.com/NAME — URL curta sem prefixo (ex: youtube.com/BoneYT)
+  const bareMatch = normalized.match(/youtube(?:\.com)?\/+([\w.-]+)$/i);
   if (bareMatch) {
-    if (!apiKey) return null;
     const name = bareMatch[1];
     const byHandle = await resolveChannelByHandle(`@${name}`, apiKey);
     if (byHandle) return byHandle;
