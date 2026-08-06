@@ -26,9 +26,14 @@ export function OverlayPage() {
       const sorted = [...prof.entries].sort((a, b) => b.score - a.score);
       const best   = sorted[0] ?? null;
       setBestEntry(best);
-      if (best?.id !== undefined) {
-        const pos = all.findIndex(e => e.id === best.id);
+      // Rank = posição entre entries vivos e não-desclassificados (igual ao public rank tab)
+      const publicRank = all.filter(e => e.sandbox_ok !== false && e.is_alive);
+      const bestAlive  = sorted.find(e => e.sandbox_ok !== false && e.is_alive) ?? null;
+      if (bestAlive?.id !== undefined) {
+        const pos = publicRank.findIndex(e => e.id === bestAlive.id);
         setRank(pos >= 0 ? pos + 1 : null);
+      } else {
+        setRank(null);
       }
     } catch {
       setError(true);
