@@ -23,36 +23,72 @@ const YT_API_BASE       = 'https://www.googleapis.com/youtube/v3';
 /**
  * Extrai o channel_id (UCxxxx) de uma URL do YouTube.
  * Suporta:
- *   - youtube.com/channel/UCxxxx
- *   - youtube.com/@handle
- *   - youtube.com/user/username  (legado)
- *   - youtube.com/c/customname   (legado)
+ *   - youtube.com/channel/UCxxxx  → extração direta da URL
+ *   - youtube.com/@handle          → YouTube Data API (forHandle)
+ *   - youtube.com/user/username    → YouTube Data API (forUsername)
+ *   - youtube.com/c/customname     → YouTube Data API (search)
  */
 export async function extractChannelId(url: string): Promise<string | null> {
   const normalized = url.trim().replace(/\/$/, '');
 
-  // Formato direto: /channel/UCxxxx
+  // Formato direto: /channel/UCxxxx — sem chamada de API
   const directMatch = normalized.match(/youtube\.com\/channel\/(UC[\w-]{20,})/i);
   if (directMatch) return directMatch[1];
 
-  // Formato @handle, /user/, /c/ — resolve fazendo fetch da página
-  const isHandle = /youtube\.com\/(@[\w.-]+|user\/[\w.-]+|c\/[\w.-]+)/i.test(normalized);
-  if (!isHandle) return null;
+  const apiKey = process.env.YOUTUBE_API_KEY;
 
-  try {
-    const res = await fetch(normalized, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; PZRankBot/1.0)' },
-      signal: AbortSignal.timeout(8_000),
-    });
-    if (!res.ok) return null;
-    const html = await res.text();
-
-    // YouTube embute o channel_id na página como "channelId":"UCxxxxxx"
-    const match = html.match(/"channelId":"(UC[\w-]{20,})"/);
-    return match ? match[1] : null;
-  } catch {
-    return null;
+  // @handle → channels.list?forHandle
+  const handleMatch = normalized.match(/youtube\.com\/@([\w.-]+)/i);
+  if (handleMatch) {
+    if (!apiKey) return null;
+    return resolveChannelByHandle(`@${handleMatch[1]}`, apiKey);
   }
+
+  // /user/username (legado) → channels.list?forUsername
+  const userMatch = normalized.match(/youtube\.com\/user\/([\w.-]+)/i);
+  if (userMatch) {
+    if (!apiKey) return null;
+    return resolveChannelByUsername(userMatch[1], apiKey);
+  }
+
+  // /c/customname (legado) → search
+  const customMatch = normalized.match(/youtube\.com\/c\/([\w.-]+)/i);
+  if (customMatch) {
+    if (!apiKey) return null;
+    return resolveChannelBySearch(customMatch[1], apiKey);
+  }
+
+  return null;
+}
+
+async function resolveChannelByHandle(handle: string, apiKey: string): Promise<string | null> {
+  try {
+    const url = `${YT_API_BASE}/channels?part=id&forHandle=${encodeURIComponent(handle)}&key=${apiKey}`;
+    const res  = await fetch(url, { signal: AbortSignal.timeout(8_000) });
+    if (!res.ok) return null;
+    const json = await res.json() as { items?: Array<{ id: string }> };
+    return json.items?.[0]?.id ?? null;
+  } catch { return null; }
+}
+
+async function resolveChannelByUsername(username: string, apiKey: string): Promise<string | null> {
+  try {
+    const url = `${YT_API_BASE}/channels?part=id&forUsername=${encodeURIComponent(username)}&key=${apiKey}`;
+    const res  = await fetch(url, { signal: AbortSignal.timeout(8_000) });
+    if (!res.ok) return null;
+    const json = await res.json() as { items?: Array<{ id: string }> };
+    return json.items?.[0]?.id ?? null;
+  } catch { return null; }
+}
+
+async function resolveChannelBySearch(name: string, apiKey: string): Promise<string | null> {
+  try {
+    const url = `${YT_API_BASE}/search?part=snippet&type=channel&q=${encodeURIComponent(name)}&maxResults=1&key=${apiKey}`;
+    const res  = await fetch(url, { signal: AbortSignal.timeout(8_000) });
+    if (!res.ok) return null;
+    const json = await res.json() as { items?: Array<{ snippet: { channelId: string } }> };
+    return json.items?.[0]?.snippet?.channelId ?? null;
+  } catch { return null; }
 }
 
 // ── Pub/Sub subscription ──────────────────────────────────────────────────────
