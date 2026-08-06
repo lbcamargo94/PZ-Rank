@@ -425,38 +425,89 @@
 
 /* ── Progress Bar ───────────────────────────────────────────── */
 .pbar-wrap { width: 100%; }
+
 .pbar-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 4px;
+  gap: 6px;
+  margin-bottom: 5px;
 }
+
 .pbar-label {
   font-size: 14px;
   color: var(--text-2);
   font-family: var(--font-mono);
+  flex: 1;
 }
+
 .pbar-vals {
   font-size: 14px;
   color: var(--text-3);
   font-family: var(--font-mono);
+  margin-left: auto;
 }
-.pbar-vals.pbar-done { color: var(--gold); }
+
+.pbar-pct {
+  font-size: 14px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--green-light);
+  min-width: 36px;
+  text-align: right;
+}
+
+.pbar-vals.pbar-done,
+.pbar-pct.pbar-done { color: var(--gold); }
+
 .pbar-track {
   width: 100%;
-  height: 6px;
-  background: var(--bg-4);
-  border-radius: 3px;
-  overflow: hidden;
+  height: 8px;
+  background: #0a100a;
+  border: 1px solid rgba(255,255,255,0.04);
+  border-radius: 6px;
+  overflow: visible;
+  position: relative;
+  box-shadow: inset 0 1px 4px rgba(0,0,0,0.7);
 }
+
 .pbar-fill {
   height: 100%;
-  background: var(--green);
-  border-radius: 3px;
-  transition: width 0.4s ease;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--pbar-color, var(--green)) 70%, #000),
+    color-mix(in srgb, var(--pbar-color, var(--green)) 100%, #fff 8%)
+  );
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
   min-width: 2px;
+  box-shadow:
+    0 0 6px  color-mix(in srgb, var(--pbar-color, var(--green)) 100%, transparent),
+    0 0 16px color-mix(in srgb, var(--pbar-color, var(--green)) 70%, transparent),
+    0 0 28px color-mix(in srgb, var(--pbar-color, var(--green)) 30%, transparent);
 }
-.pbar-fill.pbar-fill-done { background: var(--gold); }
+
+.pbar-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 50% 0;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 6px 6px 0 0;
+  pointer-events: none;
+}
+
+.pbar-fill.pbar-fill-done {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--gold) 70%, #000),
+    color-mix(in srgb, var(--gold) 100%, #fff 8%)
+  );
+  box-shadow:
+    0 0 6px  color-mix(in srgb, var(--gold) 100%, transparent),
+    0 0 16px color-mix(in srgb, var(--gold) 70%, transparent),
+    0 0 28px color-mix(in srgb, var(--gold) 30%, transparent);
+}
 /* ── Rank Cards (mobile) ────────────────────────────────────── */
 .rank-cards { display: none; flex-direction: column; gap: 10px; }
 

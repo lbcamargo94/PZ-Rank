@@ -284,19 +284,27 @@ function CharacterCard({ entry, rank }: { entry: Entry; rank: number | null }) {
         <span className="pp-stat"><i className="ti ti-sword" />{entry.kills.toLocaleString('pt-BR')}</span>
       </div>
 
-      {/* Extended stats (PZRX3 — only shown when mod reports them) */}
-      {(entry.animals_killed != null || entry.fish_caught != null ||
-        entry.crops_harvested != null || entry.items_crafted != null ||
-        entry.houses_looted != null || entry.hours_without_sleep != null) && (
-        <div className="pp-ext-stats">
-          {entry.animals_killed  != null && <span className="pp-ext-stat" data-tip="Animais abatidos">🏹 {entry.animals_killed.toLocaleString('pt-BR')}</span>}
-          {entry.fish_caught     != null && <span className="pp-ext-stat" data-tip="Peixes capturados">🐟 {entry.fish_caught.toLocaleString('pt-BR')}</span>}
-          {entry.crops_harvested != null && <span className="pp-ext-stat" data-tip="Vegetais colhidos">🌽 {entry.crops_harvested.toLocaleString('pt-BR')}</span>}
-          {entry.items_crafted   != null && <span className="pp-ext-stat" data-tip="Itens fabricados">🔨 {entry.items_crafted.toLocaleString('pt-BR')}</span>}
-          {entry.houses_looted   != null && <span className="pp-ext-stat" data-tip="Casas saqueadas">🏚️ {entry.houses_looted.toLocaleString('pt-BR')}</span>}
-          {entry.hours_without_sleep != null && <span className="pp-ext-stat" data-tip="Horas sem dormir">😴 {entry.hours_without_sleep}h</span>}
-        </div>
-      )}
+      {/* Extended stats (PZRX3 — only shown when mod reports them and value > 0) */}
+      {(() => {
+        const extStats = [
+          { key: 'animals',  tip: 'Animais abatidos',   icon: '🏹', v: entry.animals_killed },
+          { key: 'fish',     tip: 'Peixes capturados',  icon: '🐟', v: entry.fish_caught },
+          { key: 'crops',    tip: 'Vegetais colhidos',  icon: '🌽', v: entry.crops_harvested },
+          { key: 'crafted',  tip: 'Itens fabricados',   icon: '🔨', v: entry.items_crafted },
+          { key: 'looted',   tip: 'Casas saqueadas',    icon: '🏚️', v: entry.houses_looted },
+          { key: 'sleep',    tip: 'Horas sem dormir',   icon: '😴', v: entry.hours_without_sleep, suffix: 'h' },
+        ].filter(s => s.v != null && s.v > 0);
+        if (extStats.length === 0) return null;
+        return (
+          <div className="pp-ext-stats">
+            {extStats.map(s => (
+              <span key={s.key} className="pp-ext-stat" data-tip={s.tip}>
+                {s.icon} {s.v!.toLocaleString('pt-BR')}{s.suffix ?? ''}
+              </span>
+            ))}
+          </div>
+        );
+      })()}
 
       {/* Perfil Psicológico */}
       {(() => {

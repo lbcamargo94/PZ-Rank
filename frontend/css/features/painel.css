@@ -1860,6 +1860,7 @@
 /* ── Pbar ────────────────────────────────────────────────────── */
 .pbar-label            { font-size: 16px; }
 .pbar-vals             { font-size: 16px; }
+.pbar-pct              { font-size: 16px; }
 
 /* ── Modal de confirmação ─────────────────────────────────────── */
 .modal-box--sm { max-width: 380px; }
