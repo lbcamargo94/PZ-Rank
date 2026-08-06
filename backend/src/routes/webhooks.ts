@@ -120,8 +120,9 @@ router.post('/youtube/simulate', async (req: Request, res: Response): Promise<vo
     return;
   }
 
-  const { channelId, videoId, videoUrl } = req.body as {
+  const { channelId, videoId, videoUrl, force, mockTitle, mockScore, mockRank } = req.body as {
     channelId?: string; videoId?: string; videoUrl?: string;
+    force?: boolean; mockTitle?: string; mockScore?: number; mockRank?: number;
   };
 
   if (!channelId || !videoId) {
@@ -129,14 +130,23 @@ router.post('/youtube/simulate', async (req: Request, res: Response): Promise<vo
     return;
   }
 
-  const liveInfo = await checkIsLive(videoId);
-  if (!liveInfo) {
-    res.json({ ok: false, step: 'checkIsLive', reason: 'API retornou null (vídeo não existe ou erro)' });
-    return;
-  }
-  if (!liveInfo.isLive) {
-    res.json({ ok: false, step: 'checkIsLive', reason: 'Vídeo não está ao vivo', title: liveInfo.title });
-    return;
+  let liveInfo = await checkIsLive(videoId);
+  if (force) {
+    // Modo forçado: ignora status de live, usa dados mock se fornecidos
+    liveInfo = {
+      isLive:    true,
+      title:     mockTitle ?? liveInfo?.title ?? `[TESTE] Live simulada`,
+      thumbnail: liveInfo?.thumbnail ?? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+    };
+  } else {
+    if (!liveInfo) {
+      res.json({ ok: false, step: 'checkIsLive', reason: 'API retornou null (vídeo não existe ou erro)' });
+      return;
+    }
+    if (!liveInfo.isLive) {
+      res.json({ ok: false, step: 'checkIsLive', reason: 'Vídeo não está ao vivo', title: liveInfo.title });
+      return;
+    }
   }
 
   const { data: player } = await supabase
@@ -180,21 +190,24 @@ router.post('/youtube/simulate', async (req: Request, res: Response): Promise<vo
   }
 
   const url = videoUrl ?? `https://www.youtube.com/watch?v=${videoId}`;
+  const finalRank  = force && mockRank  != null ? mockRank  : rank;
+  const finalScore = force && mockScore != null ? mockScore : (bestAlive?.score ?? null);
+
   await sendLiveNotification({
     nick:      player.nick,
     title:     liveInfo.title,
     videoUrl:  url,
     thumbnail: liveInfo.thumbnail,
-    rank,
-    score:     bestAlive?.score ?? null,
+    rank:      finalRank,
+    score:     finalScore,
   });
 
   res.json({
     ok:       true,
     player:   player.nick,
     title:    liveInfo.title,
-    rank,
-    score:    bestAlive?.score ?? null,
+    rank:     finalRank,
+    score:    finalScore,
     discord:  'notificação enviada',
   });
 });
