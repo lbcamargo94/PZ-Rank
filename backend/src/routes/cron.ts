@@ -72,7 +72,7 @@ router.get('/backfill-yt-subs', async (req: Request, res: Response): Promise<voi
 router.get('/renew-yt-subs', async (req: Request, res: Response): Promise<void> => {
   if (!requireCronSecret(req, res)) return;
 
-  // Busca jogadores com inscrição expirando nas próximas 48h
+  // Busca jogadores com channel_id mas sem assinatura ativa, OU com assinatura expirando em 48h
   const threshold = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
 
   const { data: players, error } = await supabase
@@ -80,7 +80,7 @@ router.get('/renew-yt-subs', async (req: Request, res: Response): Promise<void> 
     .select('id, nick, yt_channel_id, yt_sub_expires_at')
     .not('yt_channel_id', 'is', null)
     .is('deleted_at', null)
-    .lt('yt_sub_expires_at', threshold);
+    .or(`yt_sub_expires_at.is.null,yt_sub_expires_at.lt.${threshold}`);
 
   if (error) {
     res.status(500).json({ error: 'Erro ao buscar jogadores.' });
