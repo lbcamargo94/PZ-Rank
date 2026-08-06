@@ -37,6 +37,19 @@
   structures_built?:    number | null;
   crops_planted?:       number | null;
   spiffo_visited?:      number | null;
+  // PZRX6 extended stats
+  eggs_collected?:      number | null;
+  milk_produced?:       number | null;
+  stone_structures?:    number | null;
+  ceramic_items?:       number | null;
+  forged_weapons?:      number | null;
+  km_driven?:           number | null;
+  cities_visited?:      number | null;
+  military_visited?:    number | null;
+  meals_cooked?:        number | null;
+  water_collected?:     number | null;
+  materials_crafted?:   number | null;
+  animal_tracks?:       number | null;
 }
 
 export type SortKey = 'days' | 'kills' | 'time' | 'score' | 'skills' | 'updated_at';

@@ -99,6 +99,19 @@ CREATE TABLE IF NOT EXISTS entries (
   structures_built    INTEGER  DEFAULT NULL,
   crops_planted       INTEGER  DEFAULT NULL,
   spiffo_visited      INTEGER  DEFAULT NULL,
+  -- PZRX6
+  eggs_collected      INTEGER  NOT NULL DEFAULT 0,
+  milk_produced       INTEGER  NOT NULL DEFAULT 0,
+  stone_structures    INTEGER  NOT NULL DEFAULT 0,
+  ceramic_items       INTEGER  NOT NULL DEFAULT 0,
+  forged_weapons      INTEGER  NOT NULL DEFAULT 0,
+  km_driven           INTEGER  NOT NULL DEFAULT 0,
+  cities_visited      INTEGER  NOT NULL DEFAULT 0,
+  military_visited    INTEGER  NOT NULL DEFAULT 0,
+  meals_cooked        INTEGER  NOT NULL DEFAULT 0,
+  water_collected     INTEGER  NOT NULL DEFAULT 0,
+  materials_crafted   INTEGER  NOT NULL DEFAULT 0,
+  animal_tracks       INTEGER  NOT NULL DEFAULT 0,
   UNIQUE (player_id, character_name)
 );
 

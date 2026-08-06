@@ -82,6 +82,18 @@ async function main() {
     structuresBuilt:   number;
     cropsPlanted:      number;
     spiffoVisited:     number;
+    eggsCollected:     number;
+    milkProduced:      number;
+    stoneStructures:   number;
+    ceramicItems:      number;
+    forgedWeapons:     number;
+    kmDriven:          number;
+    citiesVisited:     number;
+    militaryVisited:   number;
+    mealsCooked:       number;
+    waterCollected:    number;
+    materialsCrafted:  number;
+    animalTracks:      number;
     skillLevels:       Record<string, number>;
   }
 
@@ -109,6 +121,18 @@ async function main() {
         structuresBuilt:   n('structures_built'),
         cropsPlanted:      n('crops_planted'),
         spiffoVisited:     n('spiffo_visited'),
+        eggsCollected:     n('eggs_collected'),
+        milkProduced:      n('milk_produced'),
+        stoneStructures:   n('stone_structures'),
+        ceramicItems:      n('ceramic_items'),
+        forgedWeapons:     n('forged_weapons'),
+        kmDriven:          n('km_driven'),
+        citiesVisited:     n('cities_visited'),
+        militaryVisited:   n('military_visited'),
+        mealsCooked:       n('meals_cooked'),
+        waterCollected:    n('water_collected'),
+        materialsCrafted:  n('materials_crafted'),
+        animalTracks:      n('animal_tracks'),
         skillLevels,
       });
     } else {
@@ -126,6 +150,18 @@ async function main() {
       cur.structuresBuilt    = Math.max(cur.structuresBuilt,    n('structures_built'));
       cur.cropsPlanted       = Math.max(cur.cropsPlanted,       n('crops_planted'));
       cur.spiffoVisited      = Math.max(cur.spiffoVisited,      n('spiffo_visited'));
+      cur.eggsCollected      = Math.max(cur.eggsCollected,      n('eggs_collected'));
+      cur.milkProduced       = Math.max(cur.milkProduced,       n('milk_produced'));
+      cur.stoneStructures    = Math.max(cur.stoneStructures,    n('stone_structures'));
+      cur.ceramicItems       = Math.max(cur.ceramicItems,       n('ceramic_items'));
+      cur.forgedWeapons      = Math.max(cur.forgedWeapons,      n('forged_weapons'));
+      cur.kmDriven           = Math.max(cur.kmDriven,           n('km_driven'));
+      cur.citiesVisited      = Math.max(cur.citiesVisited,      n('cities_visited'));
+      cur.militaryVisited    = Math.max(cur.militaryVisited,    n('military_visited'));
+      cur.mealsCooked        = Math.max(cur.mealsCooked,        n('meals_cooked'));
+      cur.waterCollected     = Math.max(cur.waterCollected,     n('water_collected'));
+      cur.materialsCrafted   = Math.max(cur.materialsCrafted,   n('materials_crafted'));
+      cur.animalTracks       = Math.max(cur.animalTracks,       n('animal_tracks'));
       for (const [id, level] of Object.entries(skillLevels)) {
         cur.skillLevels[id] = Math.max(cur.skillLevels[id] ?? 0, level);
       }
@@ -152,6 +188,18 @@ async function main() {
         structuresBuilt:   best.structuresBuilt,
         cropsPlanted:      best.cropsPlanted,
         spiffoVisited:     best.spiffoVisited,
+        eggsCollected:     best.eggsCollected,
+        milkProduced:      best.milkProduced,
+        stoneStructures:   best.stoneStructures,
+        ceramicItems:      best.ceramicItems,
+        forgedWeapons:     best.forgedWeapons,
+        kmDriven:          best.kmDriven,
+        citiesVisited:     best.citiesVisited,
+        militaryVisited:   best.militaryVisited,
+        mealsCooked:       best.mealsCooked,
+        waterCollected:    best.waterCollected,
+        materialsCrafted:  best.materialsCrafted,
+        animalTracks:      best.animalTracks,
         skillLevels:       best.skillLevels,
       });
       console.log(`  player ${playerId}: ok (kills=${best.kills}, days=${best.days}, skills=${Object.keys(best.skillLevels).length})`);

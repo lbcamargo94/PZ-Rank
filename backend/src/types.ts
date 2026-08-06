@@ -92,6 +92,19 @@ export interface DecodedCode {
   cropsPlanted:      number;
   // PZRX5 — spiffo visits (0 when absent / PZRX4 code)
   spiffoVisited:     number;
+  // PZRX6 — 12 new stats (0 when absent / PZRX5 code)
+  eggsCollected:     number;
+  milkProduced:      number;
+  stoneStructures:   number;
+  ceramicItems:      number;
+  forgedWeapons:     number;
+  kmDriven:          number;
+  citiesVisited:     number;
+  militaryVisited:   number;
+  mealsCooked:       number;
+  waterCollected:    number;
+  materialsCrafted:  number;
+  animalTracks:      number;
   // Mapa de skill ID em inglês (lowercase) → nível; derivado do campo skills do payload
   skillLevels:       Record<string, number>;
 }

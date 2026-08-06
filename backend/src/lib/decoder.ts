@@ -3,12 +3,14 @@ import { SKILL_NAMES } from './skills';
 
 const XOR_KEY = 'PZRank-Community-2026-Key!';
 // PZRX1 = formato antigo; PZRX2 = atual; PZRX3 = estendido (stats do mod v2.6+); PZRX4 = estendido v2 (mod v2.10+)
-const PZR_PREFIX_RE = /^PZRX[12345]:([\s\S]+)$/;
+const PZR_PREFIX_RE = /^PZRX[123456]:([\s\S]+)$/;
 // Grupos 1-11: nome|prof|kills|tempo|skills|status|sandbox|traits|motivo|ts|modVersion (opcionais a partir do 6º)
 // Grupos 12-17 (PZRX3): animals_killed|fish_caught|crops_harvested|items_crafted|houses_looted|hours_without_sleep
 // Grupos 18-21 (PZRX4): trees_cut|books_read|structures_built|crops_planted
 // Grupo 22 (PZRX5): spiffo_visited
-const PZR_PAYLOAD_RE = /^PZR\|([^|]*)\|([^|]*)\|(\d+)\|(\d+)\|([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?(\d*)\|?([^|]*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)$/;
+// Grupos 23-34 (PZRX6): eggs_collected|milk_produced|stone_structures|ceramic_items|forged_weapons|km_driven|
+//                        cities_visited|military_visited|meals_cooked|water_collected|materials_crafted|animal_tracks
+const PZR_PAYLOAD_RE = /^PZR\|([^|]*)\|([^|]*)\|(\d+)\|(\d+)\|([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?(\d*)\|?([^|]*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)$/;
 
 function xorBuffer(data: Buffer, key: string): Buffer {
   const keyBuf = Buffer.from(key, 'utf8');
@@ -57,7 +59,9 @@ export function parsePzrCode(raw: string): DecodedCode | null {
 
   const [, characterName, profession, kills, timeRaw, skillsRaw, statusRaw, sandboxRaw, traitsRaw, reasonRaw, codeTsRaw, modVersionRaw,
     animalsKilledRaw, fishCaughtRaw, cropsHarvestedRaw, itemsCraftedRaw, housesLootedRaw, hoursWithoutSleepRaw,
-    treesCutRaw, booksReadRaw, structuresBuiltRaw, cropsPlantedRaw, spiffoVisitedRaw] = match;
+    treesCutRaw, booksReadRaw, structuresBuiltRaw, cropsPlantedRaw, spiffoVisitedRaw,
+    eggsCollectedRaw, milkProducedRaw, stoneStructuresRaw, ceramicItemsRaw, forgedWeaponsRaw, kmDrivenRaw,
+    citiesVisitedRaw, militaryVisitedRaw, mealsCookedRaw, waterCollectedRaw, materialsCraftedRaw, animalTracksRaw] = match;
   const timeRawNum = parseInt(timeRaw!, 10);
 
   // Traduz tokens de skill: mod v1.7+ exporta IDs em inglês ("Axe 6"), versões anteriores
@@ -125,6 +129,19 @@ export function parsePzrCode(raw: string): DecodedCode | null {
     structuresBuilt:   parseExt(structuresBuiltRaw),
     cropsPlanted:      parseExt(cropsPlantedRaw),
     spiffoVisited:     parseExt(spiffoVisitedRaw),
+    // PZRX6
+    eggsCollected:     parseExt(eggsCollectedRaw),
+    milkProduced:      parseExt(milkProducedRaw),
+    stoneStructures:   parseExt(stoneStructuresRaw),
+    ceramicItems:      parseExt(ceramicItemsRaw),
+    forgedWeapons:     parseExt(forgedWeaponsRaw),
+    kmDriven:          parseExt(kmDrivenRaw),
+    citiesVisited:     parseExt(citiesVisitedRaw),
+    militaryVisited:   parseExt(militaryVisitedRaw),
+    mealsCooked:       parseExt(mealsCookedRaw),
+    waterCollected:    parseExt(waterCollectedRaw),
+    materialsCrafted:  parseExt(materialsCraftedRaw),
+    animalTracks:      parseExt(animalTracksRaw),
     skillLevels,
   };
 }

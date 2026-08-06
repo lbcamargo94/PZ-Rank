@@ -229,10 +229,11 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     return;
   }
 
-  // Busca entrada existente para preservar objectives, live_url e estado de desclassificação
-  const { data: existing, error: existingError } = await supabase
+  // Busca entrada existente para preservar objectives, live_url e estado de desclassificação.
+  // Inclui deleted_at para detectar entradas soft-deleted (não devem ser atualizadas silenciosamente).
+  const { data: existingRaw, error: existingError } = await supabase
     .from(config.tableName)
-    .select('id, objectives, live_url, sandbox_ok, disqualification_reason, kills, time_raw, days, flagged_reason, flagged_at, updated_at, score, character_name, is_alive')
+    .select('id, objectives, live_url, sandbox_ok, disqualification_reason, kills, time_raw, days, flagged_reason, flagged_at, updated_at, score, character_name, is_alive, deleted_at')
     .eq('player_id', player.id)
     .eq('character_name', decoded.characterName)
     .maybeSingle();
@@ -244,6 +245,15 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     res.status(409).json({ error: 'Entrada duplicada detectada. Sync pausado até limpeza pelo moderador.' });
     return;
   }
+
+  // Entrada soft-deleted: não atualiza silenciosamente — informa o jogador para contatar moderador.
+  // Antes deste fix, o sync atualizava a entrada deletada mas ela nunca aparecia no rank (bug PIGZEIRA).
+  if (existingRaw && (existingRaw as { deleted_at?: string | null }).deleted_at) {
+    res.status(409).json({ error: 'Seu personagem foi removido do rank. Contate um moderador para reativação.' });
+    return;
+  }
+
+  const existing = existingRaw;
 
   type ExistingRow = {
     id: number; kills: number; time_raw: number; days: number;
@@ -378,6 +388,12 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     decoded.treesCut > 0 || decoded.booksRead > 0 ||
     decoded.structuresBuilt > 0 || decoded.cropsPlanted > 0 ||
     decoded.spiffoVisited > 0;
+  const hasExtended6 = decoded.eggsCollected > 0 || decoded.milkProduced > 0 ||
+    decoded.stoneStructures > 0 || decoded.ceramicItems > 0 ||
+    decoded.forgedWeapons > 0 || decoded.kmDriven > 0 ||
+    decoded.citiesVisited > 0 || decoded.militaryVisited > 0 ||
+    decoded.mealsCooked > 0 || decoded.waterCollected > 0 ||
+    decoded.materialsCrafted > 0 || decoded.animalTracks > 0;
 
   const entry = {
     player_id:      player.id,
@@ -412,6 +428,21 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       structures_built:    decoded.structuresBuilt,
       crops_planted:       decoded.cropsPlanted,
       spiffo_visited:      decoded.spiffoVisited,
+    } : {}),
+    // PZRX6: only write when present to avoid overwriting with zeros on PZRX5 syncs
+    ...(hasExtended6 ? {
+      eggs_collected:    decoded.eggsCollected,
+      milk_produced:     decoded.milkProduced,
+      stone_structures:  decoded.stoneStructures,
+      ceramic_items:     decoded.ceramicItems,
+      forged_weapons:    decoded.forgedWeapons,
+      km_driven:         decoded.kmDriven,
+      cities_visited:    decoded.citiesVisited,
+      military_visited:  decoded.militaryVisited,
+      meals_cooked:      decoded.mealsCooked,
+      water_collected:   decoded.waterCollected,
+      materials_crafted: decoded.materialsCrafted,
+      animal_tracks:     decoded.animalTracks,
     } : {}),
   };
 
@@ -454,6 +485,18 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     structuresBuilt:    decoded.structuresBuilt,
     cropsPlanted:       decoded.cropsPlanted,
     spiffoVisited:      decoded.spiffoVisited,
+    eggsCollected:      decoded.eggsCollected,
+    milkProduced:       decoded.milkProduced,
+    stoneStructures:    decoded.stoneStructures,
+    ceramicItems:       decoded.ceramicItems,
+    forgedWeapons:      decoded.forgedWeapons,
+    kmDriven:           decoded.kmDriven,
+    citiesVisited:      decoded.citiesVisited,
+    militaryVisited:    decoded.militaryVisited,
+    mealsCooked:        decoded.mealsCooked,
+    waterCollected:     decoded.waterCollected,
+    materialsCrafted:   decoded.materialsCrafted,
+    animalTracks:       decoded.animalTracks,
     skillLevels:        decoded.skillLevels,
   };
   void (async () => {

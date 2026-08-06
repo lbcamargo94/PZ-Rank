@@ -522,21 +522,41 @@ export function PlayerPage() {
 
         <AchievementsSection
           playerId={profile.player.id}
-          playerStats={entries.reduce((best, e) => ({
-            kills:               Math.max(best.kills,               e.kills               ?? 0),
-            days:                Math.max(best.days,                e.days                ?? 0),
-            hours_without_sleep: Math.max(best.hours_without_sleep, e.hours_without_sleep ?? 0),
-            animals_killed:      Math.max(best.animals_killed,      e.animals_killed      ?? 0),
-            fish_caught:         Math.max(best.fish_caught,         e.fish_caught         ?? 0),
-            crops_harvested:     Math.max(best.crops_harvested,     e.crops_harvested     ?? 0),
-            items_crafted:       Math.max(best.items_crafted,       e.items_crafted       ?? 0),
-            houses_looted:       Math.max(best.houses_looted,       e.houses_looted       ?? 0),
-            trees_cut:           Math.max(best.trees_cut,           e.trees_cut           ?? 0),
-            books_read:          Math.max(best.books_read,          e.books_read          ?? 0),
-            structures_built:    Math.max(best.structures_built,    e.structures_built    ?? 0),
-            crops_planted:       Math.max(best.crops_planted,       e.crops_planted       ?? 0),
-            spiffo_visited:      Math.max(best.spiffo_visited,      e.spiffo_visited      ?? 0),
-          }), { kills: 0, days: 0, hours_without_sleep: 0, animals_killed: 0, fish_caught: 0, crops_harvested: 0, items_crafted: 0, houses_looted: 0, trees_cut: 0, books_read: 0, structures_built: 0, crops_planted: 0, spiffo_visited: 0 })}
+          playerStats={(() => {
+            const base = entries.reduce((best, e) => ({
+              kills:               Math.max(best.kills,               e.kills               ?? 0),
+              days:                Math.max(best.days,                e.days                ?? 0),
+              hours_without_sleep: Math.max(best.hours_without_sleep, e.hours_without_sleep ?? 0),
+              animals_killed:      Math.max(best.animals_killed,      e.animals_killed      ?? 0),
+              fish_caught:         Math.max(best.fish_caught,         e.fish_caught         ?? 0),
+              crops_harvested:     Math.max(best.crops_harvested,     e.crops_harvested     ?? 0),
+              items_crafted:       Math.max(best.items_crafted,       e.items_crafted       ?? 0),
+              houses_looted:       Math.max(best.houses_looted,       e.houses_looted       ?? 0),
+              trees_cut:           Math.max(best.trees_cut,           e.trees_cut           ?? 0),
+              books_read:          Math.max(best.books_read,          e.books_read          ?? 0),
+              structures_built:    Math.max(best.structures_built,    e.structures_built    ?? 0),
+              crops_planted:       Math.max(best.crops_planted,       e.crops_planted       ?? 0),
+              spiffo_visited:      Math.max(best.spiffo_visited,      e.spiffo_visited      ?? 0),
+              eggs_collected:      Math.max(best.eggs_collected,      e.eggs_collected      ?? 0),
+              milk_produced:       Math.max(best.milk_produced,       e.milk_produced       ?? 0),
+              stone_structures:    Math.max(best.stone_structures,    e.stone_structures    ?? 0),
+              ceramic_items:       Math.max(best.ceramic_items,       e.ceramic_items       ?? 0),
+              forged_weapons:      Math.max(best.forged_weapons,      e.forged_weapons      ?? 0),
+              km_driven:           Math.max(best.km_driven,           e.km_driven           ?? 0),
+              cities_visited:      Math.max(best.cities_visited,      e.cities_visited      ?? 0),
+              military_visited:    Math.max(best.military_visited,    e.military_visited    ?? 0),
+              meals_cooked:        Math.max(best.meals_cooked,        e.meals_cooked        ?? 0),
+              water_collected:     Math.max(best.water_collected,     e.water_collected     ?? 0),
+              materials_crafted:   Math.max(best.materials_crafted,   e.materials_crafted   ?? 0),
+              animal_tracks:       Math.max(best.animal_tracks,       e.animal_tracks       ?? 0),
+            }), { kills: 0, days: 0, hours_without_sleep: 0, animals_killed: 0, fish_caught: 0, crops_harvested: 0, items_crafted: 0, houses_looted: 0, trees_cut: 0, books_read: 0, structures_built: 0, crops_planted: 0, spiffo_visited: 0, eggs_collected: 0, milk_produced: 0, stone_structures: 0, ceramic_items: 0, forged_weapons: 0, km_driven: 0, cities_visited: 0, military_visited: 0, meals_cooked: 0, water_collected: 0, materials_crafted: 0, animal_tracks: 0 });
+            return {
+              ...base,
+              spiffo_base_any:  base.spiffo_visited,
+              spiffo_base_five: base.spiffo_visited,
+              all_spiffo_bases: base.spiffo_visited >= 13 ? 1 : 0,
+            };
+          })()}
         />
       </div>
     </div>

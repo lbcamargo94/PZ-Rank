@@ -14,6 +14,19 @@ export interface ExtendedStats {
   structuresBuilt:   number;
   cropsPlanted:      number;
   spiffoVisited:     number;
+  // PZRX6
+  eggsCollected:     number;
+  milkProduced:      number;
+  stoneStructures:   number;
+  ceramicItems:      number;
+  forgedWeapons:     number;
+  kmDriven:          number;
+  citiesVisited:     number;
+  militaryVisited:   number;
+  mealsCooked:       number;
+  waterCollected:    number;
+  materialsCrafted:  number;
+  animalTracks:      number;
   skillLevels:       Record<string, number>;
 }
 
@@ -56,6 +69,19 @@ export async function evaluateAchievements(
     spiffo_base_any:  s.spiffoVisited,          // threshold 1
     spiffo_base_five: s.spiffoVisited,          // threshold 5
     all_spiffo_bases: s.spiffoVisited >= 13 ? 1 : 0,  // threshold 1 = todos 13
+    // PZRX6
+    eggs_collected:    s.eggsCollected,
+    milk_produced:     s.milkProduced,
+    stone_structures:  s.stoneStructures,
+    ceramic_items:     s.ceramicItems,
+    forged_weapons:    s.forgedWeapons,
+    km_driven:         s.kmDriven,
+    cities_visited:    s.citiesVisited,
+    military_visited:  s.militaryVisited,
+    meals_cooked:      s.mealsCooked,
+    water_collected:   s.waterCollected,
+    materials_crafted: s.materialsCrafted,
+    animal_tracks:     s.animalTracks,
   };
 
   // Conquistas individuais de skill: stat key = "skill_<id>" (lowercase English ID)

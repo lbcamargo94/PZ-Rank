@@ -19,6 +19,10 @@ const TRACKED_STATS = new Set([
   'items_crafted', 'houses_looted',
   'trees_cut', 'books_read', 'structures_built', 'crops_planted',
   'spiffo_visited', 'spiffo_base_any', 'spiffo_base_five', 'all_spiffo_bases',
+  // PZRX6
+  'eggs_collected', 'milk_produced', 'stone_structures', 'ceramic_items',
+  'forged_weapons', 'km_driven', 'cities_visited', 'military_visited',
+  'meals_cooked', 'water_collected', 'materials_crafted', 'animal_tracks',
 ]);
 
 const STAT_LABELS: Record<string, string> = {
@@ -38,6 +42,19 @@ const STAT_LABELS: Record<string, string> = {
   spiffo_base_any:     'Spiffos',
   spiffo_base_five:    'Spiffos',
   all_spiffo_bases:    'Spiffos',
+  // PZRX6
+  eggs_collected:      'ovos',
+  milk_produced:       'leites',
+  stone_structures:    'estruturas',
+  ceramic_items:       'itens',
+  forged_weapons:      'armas',
+  km_driven:           'km',
+  cities_visited:      'cidades',
+  military_visited:    'bases',
+  meals_cooked:        'refeições',
+  water_collected:     'litros',
+  materials_crafted:   'materiais',
+  animal_tracks:       'rastros',
 };
 
 type PlayerStats = Record<string, number>;
