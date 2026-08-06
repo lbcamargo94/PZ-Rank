@@ -945,11 +945,80 @@
   line-height: 1.1;
 }
 
+.pp-arch-names {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pp-arch-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--secondary-color, var(--text-2));
+  background: color-mix(in srgb, var(--secondary-color, var(--text-2)) 12%, var(--bg-3));
+  border: 1px solid color-mix(in srgb, var(--secondary-color, var(--text-2)) 30%, transparent);
+  border-radius: 20px;
+  padding: 2px 10px;
+  letter-spacing: 0.3px;
+  cursor: default;
+}
+
 .pp-arch-desc {
   font-size: 16px;
   color: var(--text-2);
   line-height: 1.4;
   margin-top: 2px;
+}
+
+/* Barras de traço */
+.pp-arch-traits {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.pp-arch-trait {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pp-arch-trait-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-family: var(--font-mono);
+  color: var(--text-2);
+  width: 110px;
+  flex-shrink: 0;
+}
+
+.pp-arch-trait-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.pp-arch-trait-track {
+  flex: 1;
+  height: 6px;
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  min-width: 60px;
+}
+
+.pp-arch-trait-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
 }
 
 /* Tabs */

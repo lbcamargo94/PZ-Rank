@@ -298,16 +298,48 @@ function CharacterCard({ entry, rank }: { entry: Entry; rank: number | null }) {
 
       {/* Perfil Psicológico */}
       {(() => {
-        const arch = resolveArchetype(entry);
+        const { primary, secondary, traits } = resolveArchetype(entry);
         return (
-          <div className="pp-archetype" style={{ '--arch-color': arch.color } as React.CSSProperties}>
+          <div className="pp-archetype" style={{ '--arch-color': primary.color } as React.CSSProperties}>
             <div className="pp-arch-badge">
-              <span className="pp-arch-icon">{arch.icon}</span>
+              <span className="pp-arch-icon">{primary.icon}</span>
             </div>
             <div className="pp-arch-info">
               <span className="pp-arch-eyebrow">Perfil Psicológico</span>
-              <span className="pp-arch-name">{arch.name}</span>
-              <span className="pp-arch-desc">{arch.desc}</span>
+              <div className="pp-arch-names">
+                <span className="pp-arch-name">{primary.name}</span>
+                {secondary && (
+                  <span
+                    className="pp-arch-secondary"
+                    style={{ '--secondary-color': secondary.color } as React.CSSProperties}
+                    title={secondary.desc}
+                  >
+                    {secondary.icon} {secondary.name}
+                  </span>
+                )}
+              </div>
+              <span className="pp-arch-desc">{primary.desc}</span>
+              {traits.length > 0 && (
+                <div className="pp-arch-traits">
+                  {traits.map(t => (
+                    <div key={t.key} className="pp-arch-trait">
+                      <span className="pp-arch-trait-label">
+                        <span className="pp-arch-trait-icon">{t.icon}</span>
+                        {t.label}
+                      </span>
+                      <div className="pp-arch-trait-track">
+                        <div
+                          className="pp-arch-trait-fill"
+                          style={{
+                            width: `${Math.round((t.score / t.max) * 100)}%`,
+                            background: t.color,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         );
