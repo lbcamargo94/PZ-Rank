@@ -58,6 +58,17 @@ export async function extractChannelId(url: string): Promise<string | null> {
     return resolveChannelBySearch(customMatch[1], apiKey);
   }
 
+  // youtube.com/NAME (URL curta sem prefixo, ex: youtube.com/BoneYT)
+  // Tenta forHandle(@NAME) primeiro; se falhar, busca pelo nome
+  const bareMatch = normalized.match(/youtube\.com\/([\w.-]+)$/i);
+  if (bareMatch) {
+    if (!apiKey) return null;
+    const name = bareMatch[1];
+    const byHandle = await resolveChannelByHandle(`@${name}`, apiKey);
+    if (byHandle) return byHandle;
+    return resolveChannelBySearch(name, apiKey);
+  }
+
   return null;
 }
 
