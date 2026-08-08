@@ -30,28 +30,29 @@ router.get('/youtube', (req: Request, res: Response): void => {
 // ── POST /webhooks/youtube — notificação de novo conteúdo ────────────────────
 // O corpo chega como Atom/XML. Express precisa receber como raw buffer para
 // validar o HMAC antes de parsear.
+// IMPORTANTE: processamos tudo ANTES de responder 200 — em Vercel serverless,
+// o runtime pode encerrar a função imediatamente após res.send(), abortando
+// qualquer await posterior.
 router.post('/youtube', async (req: Request, res: Response): Promise<void> => {
-  const rawBody  = (req as Request & { rawBody?: Buffer }).rawBody;
+  const rawBody   = (req as Request & { rawBody?: Buffer }).rawBody;
   const signature = req.headers['x-hub-signature'] as string | undefined;
-
-  // Responde 200 imediatamente — o hub não aguarda processamento
-  res.sendStatus(200);
 
   // Valida HMAC (se PUBSUB_SECRET configurado)
   if (rawBody && !verifyHmac(rawBody, signature)) {
     console.warn('[webhook/youtube] HMAC inválido — notificação ignorada');
+    res.sendStatus(200); // sempre 200 para o hub não retentar
     return;
   }
 
   const xml = rawBody ? rawBody.toString('utf-8') : '';
-  if (!xml) return;
+  if (!xml) { res.sendStatus(200); return; }
 
   const entry = parsePubSubAtom(xml);
-  if (!entry) return;
+  if (!entry) { res.sendStatus(200); return; }
 
   // Verifica se o vídeo é uma live ativa
   const liveInfo = await checkIsLive(entry.videoId);
-  if (!liveInfo?.isLive) return;
+  if (!liveInfo?.isLive) { res.sendStatus(200); return; }
 
   // Busca o jogador pelo yt_channel_id
   const { data: player } = await supabase
@@ -61,7 +62,7 @@ router.post('/youtube', async (req: Request, res: Response): Promise<void> => {
     .is('deleted_at', null)
     .single();
 
-  if (!player) return;
+  if (!player) { res.sendStatus(200); return; }
 
   // Busca a melhor entry viva para rank e score
   const { data: entries } = await supabase
@@ -110,6 +111,10 @@ router.post('/youtube', async (req: Request, res: Response): Promise<void> => {
       .update({ yt_sub_expires_at: renewed.expiresAt })
       .eq('id', player.id);
   }
+
+  // Responde 200 APÓS todo o processamento — evita que o Vercel encerre
+  // a função antes dos awaits acima completarem
+  res.sendStatus(200);
 });
 
 // ── POST /webhooks/youtube/simulate — teste manual do pipeline ───────────────
