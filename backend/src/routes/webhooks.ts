@@ -36,6 +36,14 @@ router.get('/youtube', (req: Request, res: Response): void => {
 router.post('/youtube', async (req: Request, res: Response): Promise<void> => {
   const rawBody   = (req as Request & { rawBody?: Buffer }).rawBody;
   const signature = req.headers['x-hub-signature'] as string | undefined;
+  const ct        = req.headers['content-type'];
+
+  console.log('[webhook/youtube POST]', {
+    contentType: ct,
+    hasRawBody:  !!rawBody,
+    bodyBytes:   rawBody?.length ?? 0,
+    hasSig:      !!signature,
+  });
 
   // Valida HMAC (se PUBSUB_SECRET configurado)
   if (rawBody && !verifyHmac(rawBody, signature)) {
@@ -45,14 +53,25 @@ router.post('/youtube', async (req: Request, res: Response): Promise<void> => {
   }
 
   const xml = rawBody ? rawBody.toString('utf-8') : '';
-  if (!xml) { res.sendStatus(200); return; }
+  if (!xml) {
+    console.warn('[webhook/youtube] body vazio (content-type provavelmente não é atom+xml)');
+    res.sendStatus(200); return;
+  }
 
   const entry = parsePubSubAtom(xml);
-  if (!entry) { res.sendStatus(200); return; }
+  if (!entry) {
+    console.warn('[webhook/youtube] parse do Atom falhou');
+    res.sendStatus(200); return;
+  }
+
+  console.log('[webhook/youtube] entrada recebida:', { videoId: entry.videoId, channelId: entry.channelId });
 
   // Verifica se o vídeo é uma live ativa
   const liveInfo = await checkIsLive(entry.videoId);
-  if (!liveInfo?.isLive) { res.sendStatus(200); return; }
+  if (!liveInfo?.isLive) {
+    console.log('[webhook/youtube] não é live — ignorando');
+    res.sendStatus(200); return;
+  }
 
   // Busca o jogador pelo yt_channel_id
   const { data: player } = await supabase
@@ -62,7 +81,13 @@ router.post('/youtube', async (req: Request, res: Response): Promise<void> => {
     .is('deleted_at', null)
     .single();
 
-  if (!player) { res.sendStatus(200); return; }
+  if (!player) {
+    console.warn('[webhook/youtube] nenhum jogador com yt_channel_id:', entry.channelId);
+    res.sendStatus(200); return;
+  }
+
+  console.log('[webhook/youtube] jogador encontrado:', player.nick);
+  console.log('[webhook/youtube] enviando Discord:', { nick: player.nick });
 
   // Busca a melhor entry viva para rank e score
   const { data: entries } = await supabase

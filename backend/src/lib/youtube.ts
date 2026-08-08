@@ -206,27 +206,42 @@ export async function checkIsLive(videoId: string): Promise<LiveInfo | null> {
   try {
     const url = `${YT_API_BASE}/videos?part=snippet,liveStreamingDetails&id=${videoId}&key=${apiKey}`;
     const res  = await fetch(url, { signal: AbortSignal.timeout(8_000) });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.warn('[checkIsLive] YouTube API erro:', res.status);
+      return null;
+    }
 
     const json = await res.json() as {
       items?: Array<{
-        snippet: { title: string; thumbnails: { maxres?: { url: string }; high?: { url: string } } };
+        snippet: {
+          title: string;
+          liveBroadcastContent: string;
+          thumbnails: { maxres?: { url: string }; high?: { url: string } };
+        };
         liveStreamingDetails?: { actualStartTime?: string; actualEndTime?: string };
       }>;
     };
 
     const item = json.items?.[0];
-    if (!item) return null;
+    if (!item) {
+      console.warn('[checkIsLive] vídeo não encontrado:', videoId);
+      return null;
+    }
 
-    const details   = item.liveStreamingDetails;
-    const isLive    = !!details?.actualStartTime && !details?.actualEndTime;
+    const details = item.liveStreamingDetails;
+    // liveBroadcastContent === 'live' é o sinal mais confiável — atualizado antes de actualStartTime
+    const isLive = item.snippet.liveBroadcastContent === 'live'
+                || (!!details?.actualStartTime && !details?.actualEndTime);
+
     const title     = item.snippet.title;
     const thumbnail = item.snippet.thumbnails.maxres?.url
                    ?? item.snippet.thumbnails.high?.url
                    ?? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
 
+    console.log('[checkIsLive]', { videoId, liveBroadcastContent: item.snippet.liveBroadcastContent, isLive });
     return { isLive, title, thumbnail };
-  } catch {
+  } catch (err) {
+    console.error('[checkIsLive] erro:', err);
     return null;
   }
 }
