@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { supabase } from '../supabase';
-import { translateSupabaseError } from '../lib/errors';
+
 import { validatePassword } from '../lib/password';
 import { sendModPasswordResetEmail } from '../lib/email';
 import { config } from '../config';
@@ -153,5 +153,4 @@ router.post('/mod/reset-password', async (req: Request, res: Response): Promise<
   }
 });
 
-export { translateSupabaseError };
 export default router;

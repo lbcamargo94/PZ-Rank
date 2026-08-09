@@ -206,8 +206,6 @@ router.get('/scan-lives', async (req: Request, res: Response): Promise<void> => 
 router.get('/test-discord', async (req: Request, res: Response): Promise<void> => {
   if (!requireCronSecret(req, res)) return;
 
-  const { sendLiveNotification } = await import('../lib/discord');
-
   const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
   if (!webhookUrl) {
     res.status(500).json({ ok: false, error: 'DISCORD_WEBHOOK_URL não configurada no Vercel.' });
