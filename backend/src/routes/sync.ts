@@ -664,11 +664,14 @@ router.post('/sandbox', sandboxLimiter, async (req: Request, res: Response): Pro
 // POST /sync/heartbeat — público, autenticado por player_token
 // Enviado pelo Companion quando o PZ está rodando mas o mod não gera arquivos há 20min.
 // Se no_mod_detected=true, desclassifica a entrada ativa do personagem informado.
+// Se session_end=true ou live_check=true, verifica se a live do YouTube encerrou.
 router.post('/heartbeat', syncLimiter, async (req: Request, res: Response): Promise<void> => {
-  const { player_token, character_name, no_mod_detected } = req.body as {
+  const { player_token, character_name, no_mod_detected, session_end, live_check } = req.body as {
     player_token?:    string;
     character_name?:  string;
     no_mod_detected?: boolean;
+    session_end?:     boolean;
+    live_check?:      boolean;
   };
 
   if (!player_token) {
@@ -678,13 +681,51 @@ router.post('/heartbeat', syncLimiter, async (req: Request, res: Response): Prom
 
   const { data: player, error: playerError } = await supabase
     .from('players')
-    .select('id, status, blocked')
+    .select('id, nick, status, blocked, yt_channel_id, yt_last_live_video_id')
     .eq('player_token', player_token)
     .maybeSingle();
 
   if (playerError || !player) { res.status(401).json({ error: 'Token inválido.' }); return; }
   if (player.status !== 'approved') { res.status(403).json({ error: 'Jogador aguardando aprovação.' }); return; }
   if (player.blocked) { res.status(403).json({ error: 'Jogador bloqueado.' }); return; }
+
+  // Quando o app fecha ou o jogo encerra: verifica se a live do jogador acabou
+  if (session_end || live_check) {
+    type HbPlayer = { id: number; nick: string; yt_channel_id: string | null; yt_last_live_video_id: string | null };
+    const p = player as unknown as HbPlayer;
+    if (p.yt_channel_id && p.yt_last_live_video_id) {
+      void (async () => {
+        try {
+          const { checkIsLive } = await import('../lib/youtube');
+          const { sendLiveEndedNotification } = await import('../lib/discord');
+          const liveInfo = await checkIsLive(p.yt_last_live_video_id!);
+          if (!liveInfo?.isLive) {
+            const { data: aliveEntries } = await supabase
+              .from(config.tableName)
+              .select('player_id, score')
+              .eq('is_alive', true)
+              .eq('sandbox_ok', true)
+              .is('deleted_at', null)
+              .order('score', { ascending: false });
+            const pos   = (aliveEntries ?? []).findIndex((e: { player_id: number }) => e.player_id === p.id);
+            const rank  = pos >= 0 ? pos + 1 : null;
+            const score = (aliveEntries ?? []).find((e: { player_id: number; score: number }) => e.player_id === p.id)?.score ?? null;
+            await sendLiveEndedNotification({
+              nick:     p.nick,
+              videoUrl: `https://www.youtube.com/watch?v=${p.yt_last_live_video_id}`,
+              rank,
+              score,
+            });
+            await supabase.from('players').update({ yt_last_live_video_id: null }).eq('id', p.id);
+          }
+        } catch (e) {
+          console.error('[heartbeat-live-check]', e);
+        }
+      })();
+    }
+    res.status(200).json({ success: true });
+    return;
+  }
 
   if (!no_mod_detected) {
     res.status(200).json({ success: true });
