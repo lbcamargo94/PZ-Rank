@@ -107,6 +107,47 @@ async function resolveChannelBySearch(name: string, apiKey: string): Promise<str
   } catch { return null; }
 }
 
+// ── Verificação manual de live por canal ─────────────────────────────────────
+
+export interface ChannelLiveResult {
+  videoId:  string;
+  videoUrl: string;
+  title:    string;
+  thumbnail: string;
+}
+
+/**
+ * Verifica se um canal está ao vivo agora.
+ * Estratégia sem quota: busca o vídeo mais recente via RSS (gratuito),
+ * depois confirma se está ao vivo via videos.list (1 unidade de quota).
+ */
+export async function getChannelCurrentLive(channelId: string): Promise<ChannelLiveResult | null> {
+  const apiKey = process.env.YOUTUBE_API_KEY;
+  if (!apiKey) return null;
+
+  try {
+    const feedUrl = `${FEED_BASE}${channelId}`;
+    const feedRes = await fetch(feedUrl, { signal: AbortSignal.timeout(5_000) });
+    if (!feedRes.ok) return null;
+
+    const xml     = await feedRes.text();
+    const videoId = xml.match(/<yt:videoId>([^<]+)<\/yt:videoId>/)?.[1];
+    if (!videoId) return null;
+
+    const liveInfo = await checkIsLive(videoId);
+    if (!liveInfo?.isLive) return null;
+
+    return {
+      videoId,
+      videoUrl:  `https://www.youtube.com/watch?v=${videoId}`,
+      title:     liveInfo.title,
+      thumbnail: liveInfo.thumbnail,
+    };
+  } catch {
+    return null;
+  }
+}
+
 // ── Pub/Sub subscription ──────────────────────────────────────────────────────
 
 export interface SubscribeResult {

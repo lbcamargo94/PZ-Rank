@@ -10,7 +10,8 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
 import { supabase } from '../supabase';
-import { subscribePubSub } from '../lib/youtube';
+import { subscribePubSub, getChannelCurrentLive } from '../lib/youtube';
+import { sendLiveNotification } from '../lib/discord';
 
 const router = Router();
 
@@ -102,6 +103,62 @@ router.get('/renew-yt-subs', async (req: Request, res: Response): Promise<void> 
   }
 
   res.json({ renewed: results.length, results });
+});
+
+// GET /cron/scan-lives — verifica quem está ao vivo agora e notifica o Discord
+router.get('/scan-lives', async (req: Request, res: Response): Promise<void> => {
+  if (!requireCronSecret(req, res)) return;
+
+  const { data: players, error } = await supabase
+    .from('players')
+    .select('id, nick, yt_channel_id')
+    .eq('status', 'approved')
+    .not('yt_channel_id', 'is', null)
+    .is('deleted_at', null);
+
+  if (error) {
+    res.status(500).json({ error: 'Erro ao buscar jogadores.' });
+    return;
+  }
+
+  // Busca ranking global uma única vez
+  const { data: allAlive } = await supabase
+    .from('entries')
+    .select('player_id, score')
+    .eq('is_alive', true)
+    .eq('sandbox_ok', true)
+    .is('deleted_at', null)
+    .order('score', { ascending: false });
+
+  const playerList = (players ?? []) as Array<{ id: number; nick: string; yt_channel_id: string }>;
+  const liveNow: string[] = [];
+  const BATCH = 10; // máximo de checagens simultâneas para não sobrecarregar a API
+
+  for (let i = 0; i < playerList.length; i += BATCH) {
+    const batch = playerList.slice(i, i + BATCH);
+
+    await Promise.allSettled(batch.map(async (player) => {
+      const live = await getChannelCurrentLive(player.yt_channel_id);
+      if (!live) return;
+
+      const pos   = (allAlive ?? []).findIndex((e: { player_id: number }) => e.player_id === player.id);
+      const rank  = pos >= 0 ? pos + 1 : null;
+      const score = (allAlive ?? []).find((e: { player_id: number; score: number }) => e.player_id === player.id)?.score ?? null;
+
+      await sendLiveNotification({
+        nick:      player.nick,
+        title:     live.title,
+        videoUrl:  live.videoUrl,
+        thumbnail: live.thumbnail,
+        rank,
+        score,
+      });
+
+      liveNow.push(player.nick);
+    }));
+  }
+
+  res.json({ checked: playerList.length, liveCount: liveNow.length, live: liveNow });
 });
 
 export default router;
