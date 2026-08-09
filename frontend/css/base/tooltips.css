@@ -43,7 +43,7 @@
   font-family: var(--font-mono);
   font-size: 14px;
   font-weight: 500;
-  color: #d8d0b8;
+  color: var(--text-1);
   white-space: normal;
   max-width: 220px;
   text-align: center;

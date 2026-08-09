@@ -3,11 +3,11 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg-0: rgba(8,11,6,0.70);
-  --bg-1: rgba(12,17,10,0.72);
-  --bg-2: rgba(18,23,16,0.74);
-  --bg-3: rgba(24,30,20,0.78);
-  --bg-4: rgba(30,38,24,0.84);
+  --bg-0: rgba(8,11,6,0.90);
+  --bg-1: rgba(12,17,10,0.92);
+  --bg-2: rgba(18,23,16,0.94);
+  --bg-3: rgba(24,30,20,0.96);
+  --bg-4: rgba(30,38,24,0.98);
   --green: #5E9040;
   --green-light: #7EC255;
   --green-dim: #1e3a12;
@@ -16,9 +16,9 @@
   --amber-light: #E89830;
   --amber-dim: #281808;
   --text-1: #F5F5F5;
-  --text-2: #C2C2C2;
-  --text-3: #848484;
-  --text-4: #484848;
+  --text-2: #E0E0E0;
+  --text-3: #C0C0C0;
+  --text-4: #8C8C8C;
   --red: #e04040;
   --blue-light: #7ab8e0;
   --blue-dim: #0d2233;

@@ -2,6 +2,23 @@
 
 .legends-page {
   padding: 32px 0;
+  position: relative;
+  min-height: 100vh;
+}
+
+.legends-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    linear-gradient(to bottom,
+      rgba(4,8,3,0.82) 0%,
+      rgba(4,8,3,0.68) 40%,
+      rgba(4,8,3,0.82) 100%
+    ),
+    url('/images/lendas-bg.jpg') center center / cover no-repeat;
+  z-index: -1;
+  pointer-events: none;
 }
 
 .legends-header {
@@ -117,8 +134,8 @@
 
 /* Legend card */
 .legend-card {
-  background: linear-gradient(145deg, var(--bg-2) 0%, var(--bg-1) 100%);
-  border: 1px solid var(--border);
+  background: linear-gradient(145deg, rgba(20,28,16,0.97) 0%, rgba(10,15,8,0.97) 100%);
+  border: 1px solid var(--border-mid);
   border-radius: var(--radius-lg);
   padding: 24px;
   position: relative;
@@ -126,13 +143,26 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.04);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .legend-top-bar {
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 3px;
+  height: 4px;
   background: var(--legend-color, var(--green));
+  box-shadow: 0 0 12px var(--legend-color, var(--green));
+}
+
+.legend-card--hero .legend-top-bar {
+  height: 4px;
+  box-shadow: 0 0 20px var(--legend-color, var(--green));
+}
+
+.legend-card--hero {
+  box-shadow: 0 6px 32px rgba(0,0,0,0.65), 0 0 0 1px rgba(200,168,75,0.2), inset 0 1px 0 rgba(255,255,255,0.05);
 }
 
 .legend-icon {
@@ -145,7 +175,9 @@
   font-size: 14px;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: var(--legend-color, var(--text-3));
+  color: var(--legend-color, var(--text-2));
+  text-shadow: 0 0 12px var(--legend-color, transparent);
+  opacity: 0.9;
 }
 
 .legend-player-block {

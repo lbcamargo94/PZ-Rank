@@ -426,7 +426,7 @@
 }
 .status-badge-email-none {
   background: rgba(120, 120, 120, 0.1);
-  color: #888;
+  color: var(--text-3);
   border: 1px solid rgba(120, 120, 120, 0.2);
   display: inline-flex; align-items: center; gap: 4px;
   padding: 2px 8px; border-radius: 20px; font-size: 14px;
@@ -628,7 +628,7 @@
 
 .status-badge-deleted {
   background: rgba(120, 120, 120, 0.12);
-  color: #a0a0a0;
+  color: var(--text-3);
   border: 1px solid rgba(120, 120, 120, 0.3);
   display: inline-flex;
   align-items: center;
@@ -642,8 +642,8 @@
   letter-spacing: 0.04em;
 }
 
-.filter-deleted { color: #a0a0a0 !important; }
-.filter-deleted.active { border-color: #888 !important; background: rgba(120,120,120,0.12) !important; }
+.filter-deleted { color: var(--text-3) !important; }
+.filter-deleted.active { border-color: var(--text-4) !important; background: rgba(120,120,120,0.12) !important; }
 
 .btn-warning {
   background: rgba(200, 168, 75, 0.15);
