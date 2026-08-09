@@ -150,9 +150,9 @@ router.post('/youtube/simulate', async (req: Request, res: Response): Promise<vo
     return;
   }
 
-  const { channelId, videoId, videoUrl, force, mockTitle, mockScore, mockRank } = req.body as {
+  const { channelId, videoId, videoUrl, force, mockTitle, mockScore, mockRank, mockNick } = req.body as {
     channelId?: string; videoId?: string; videoUrl?: string;
-    force?: boolean; mockTitle?: string; mockScore?: number; mockRank?: number;
+    force?: boolean; mockTitle?: string; mockScore?: number; mockRank?: number; mockNick?: string;
   };
 
   if (!channelId || !videoId) {
@@ -179,52 +179,64 @@ router.post('/youtube/simulate', async (req: Request, res: Response): Promise<vo
     }
   }
 
-  const { data: player } = await supabase
-    .from('players')
-    .select('id, nick, yt_channel_id')
-    .eq('yt_channel_id', channelId)
-    .is('deleted_at', null)
-    .single();
+  // mockNick permite testar sem player no DB — Discord irá receber o aviso com dados mock
+  let playerNick: string;
+  let finalRank: number | null  = mockRank  ?? null;
+  let finalScore: number | null = mockScore ?? null;
 
-  if (!player) {
-    res.json({ ok: false, step: 'findPlayer', reason: 'Nenhum jogador com esse yt_channel_id' });
-    return;
-  }
-
-  const { data: entries } = await supabase
-    .from('entries')
-    .select('score, is_alive, sandbox_ok, player_id')
-    .eq('player_id', player.id)
-    .is('deleted_at', null)
-    .order('score', { ascending: false });
-
-  const bestAlive = (entries ?? []).find((e: { is_alive: boolean; sandbox_ok: boolean }) =>
-    e.sandbox_ok !== false && e.is_alive
-  );
-
-  let rank: number | null = null;
-  if (bestAlive) {
-    const { data: allAlive } = await supabase
-      .from('entries')
-      .select('player_id, score')
-      .eq('is_alive', true)
-      .eq('sandbox_ok', true)
+  if (mockNick) {
+    playerNick = mockNick;
+  } else {
+    const { data: player } = await supabase
+      .from('players')
+      .select('id, nick, yt_channel_id')
+      .eq('yt_channel_id', channelId)
       .is('deleted_at', null)
-      .order('score', { ascending: false });
+      .single();
 
-    if (allAlive) {
-      const pos = (allAlive as Array<{ player_id: number; score: number }>)
-        .findIndex(e => e.player_id === player.id);
-      if (pos >= 0) rank = pos + 1;
+    if (!player) {
+      res.json({ ok: false, step: 'findPlayer', reason: 'Nenhum jogador com esse yt_channel_id' });
+      return;
+    }
+
+    playerNick = player.nick;
+
+    if (mockRank == null || mockScore == null) {
+      const { data: entries } = await supabase
+        .from('entries')
+        .select('score, is_alive, sandbox_ok, player_id')
+        .eq('player_id', player.id)
+        .is('deleted_at', null)
+        .order('score', { ascending: false });
+
+      const bestAlive = (entries ?? []).find((e: { is_alive: boolean; sandbox_ok: boolean }) =>
+        e.sandbox_ok !== false && e.is_alive
+      );
+
+      if (bestAlive && mockScore == null) finalScore = bestAlive.score;
+
+      if (bestAlive && mockRank == null) {
+        const { data: allAlive } = await supabase
+          .from('entries')
+          .select('player_id, score')
+          .eq('is_alive', true)
+          .eq('sandbox_ok', true)
+          .is('deleted_at', null)
+          .order('score', { ascending: false });
+
+        if (allAlive) {
+          const pos = (allAlive as Array<{ player_id: number; score: number }>)
+            .findIndex(e => e.player_id === player.id);
+          if (pos >= 0) finalRank = pos + 1;
+        }
+      }
     }
   }
 
   const url = videoUrl ?? `https://www.youtube.com/watch?v=${videoId}`;
-  const finalRank  = force && mockRank  != null ? mockRank  : rank;
-  const finalScore = force && mockScore != null ? mockScore : (bestAlive?.score ?? null);
 
   await sendLiveNotification({
-    nick:      player.nick,
+    nick:      playerNick,
     title:     liveInfo.title,
     videoUrl:  url,
     thumbnail: liveInfo.thumbnail,
@@ -234,7 +246,7 @@ router.post('/youtube/simulate', async (req: Request, res: Response): Promise<vo
 
   res.json({
     ok:       true,
-    player:   player.nick,
+    player:   playerNick,
     title:    liveInfo.title,
     rank:     finalRank,
     score:    finalScore,
