@@ -77,9 +77,8 @@ function RankCard({ entry, rank, onPlayerClick, hideStatus }: {
 }) {
   const objCount = entry.objectives
     ? [
-        entry.objectives.kills_800k,
-        entry.objectives.all_skills_10,
-        entry.objectives.spiffo_statue,
+        entry.objectives.spiffo_hq,
+        entry.objectives.spiffo_relic,
         entry.objectives.military_base,
         ...Object.values(entry.objectives.bases ?? {}).map(b => b.has_base),
       ].filter(Boolean).length

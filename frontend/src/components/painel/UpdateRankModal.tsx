@@ -3,7 +3,7 @@ import { apiGetPlayers, apiCreateEntry } from '../../lib/api';
 import { parsePzrCode } from '../../lib/decoder';
 import {
   SPIFFOS_RESTAURANTS, BASE_ITEMS,
-  initObjectives, computeScore, SCORE_KILLS_MAX,
+  initObjectives, computeScore,
 } from '../../lib/objectives';
 import type { Objectives } from '../../lib/objectives';
 import type { Player } from '../../types';
@@ -24,9 +24,8 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
   const [loading,      setLoading]     = useState(false);
 
   const decoded = parsePzrCode(code.trim());
-  const previewScore = decoded
-    ? computeScore(decoded.kills, objectives)
-    : 0;
+  const skills10Count = decoded ? Object.values(decoded.skillLevels).filter(l => l === 10).length : 0;
+  const previewScore  = decoded ? computeScore(decoded.kills, skills10Count, objectives) : 0;
 
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -41,14 +40,6 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
       .then(data => setPlayers(data.filter(p => !p.blocked)))
       .catch(err => showToast((err as Error).message, 'error'));
   }, [token, showToast]);
-
-  useEffect(() => {
-    const d = parsePzrCode(code.trim());
-    if (!d) return;
-    if (d.kills >= SCORE_KILLS_MAX) {
-      setObjectives(prev => ({ ...prev, kills_800k: true }));
-    }
-  }, [code]);
 
   function toggleBase(restaurantId: string, checked: boolean) {
     setObjectives(prev => ({
@@ -72,7 +63,7 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
     }));
   }
 
-  function toggleGlobal(field: 'spiffo_statue' | 'military_base' | 'kills_800k' | 'all_skills_10', checked: boolean) {
+  function toggleGlobal(field: 'spiffo_hq' | 'spiffo_relic' | 'military_base', checked: boolean) {
     setObjectives(prev => ({ ...prev, [field]: checked }));
   }
 
@@ -221,31 +212,24 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
             <div className="objectives-group">
               <p className="objectives-group-title"><i className="ti ti-star" /> Objetivos Especiais</p>
               <label className="obj-checkbox-label special">
-                <input type="checkbox" checked={objectives.spiffo_statue}
-                  onChange={e => toggleGlobal('spiffo_statue', e.target.checked)} />
+                <input type="checkbox" checked={objectives.spiffo_hq}
+                  onChange={e => toggleGlobal('spiffo_hq', e.target.checked)} />
                 <span className="obj-check-text">
-                  <i className="ti ti-trophy" /> Dominou a Sede Spiffo's em Louisville e pegou a Estátua do Spiffo
+                  <i className="ti ti-building-store" /> Conquistou a Sede do Spiffo's (Louisville HQ)
+                </span>
+              </label>
+              <label className="obj-checkbox-label special">
+                <input type="checkbox" checked={objectives.spiffo_relic}
+                  onChange={e => toggleGlobal('spiffo_relic', e.target.checked)} />
+                <span className="obj-check-text">
+                  <i className="ti ti-trophy" /> Coletou a Relíquia do Spiffo
                 </span>
               </label>
               <label className="obj-checkbox-label special">
                 <input type="checkbox" checked={objectives.military_base}
                   onChange={e => toggleGlobal('military_base', e.target.checked)} />
                 <span className="obj-check-text">
-                  <i className="ti ti-sword" /> Limpou a base militar secreta de Rosewood
-                </span>
-              </label>
-              <label className="obj-checkbox-label special">
-                <input type="checkbox" checked={objectives.kills_800k}
-                  onChange={e => toggleGlobal('kills_800k', e.target.checked)} />
-                <span className="obj-check-text">
-                  <i className="ti ti-skull" /> Atingiu 800.000 zumbis abatidos
-                </span>
-              </label>
-              <label className="obj-checkbox-label special">
-                <input type="checkbox" checked={objectives.all_skills_10}
-                  onChange={e => toggleGlobal('all_skills_10', e.target.checked)} />
-                <span className="obj-check-text">
-                  <i className="ti ti-star" /> Maximizou todas as habilidades (nível 10)
+                  <i className="ti ti-sword" /> Conquistou a Base Militar de Rosewood
                 </span>
               </label>
             </div>

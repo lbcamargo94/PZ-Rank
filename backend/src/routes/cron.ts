@@ -12,6 +12,8 @@ import type { Request, Response } from 'express';
 import { supabase } from '../supabase';
 import { subscribePubSub, getChannelCurrentLive } from '../lib/youtube';
 import { sendLiveNotification } from '../lib/discord';
+import { computeScore, countSkills10 } from '../lib/scoring';
+import type { Objectives, BaseObjectives } from '../types';
 
 const router = Router();
 
@@ -159,6 +161,99 @@ router.get('/scan-lives', async (req: Request, res: Response): Promise<void> => 
   }
 
   res.json({ checked: playerList.length, liveCount: liveNow.length, live: liveNow });
+});
+
+// POST /cron/recalculate-scores — migra objetivos antigos e recalcula todos os scores
+// Mapeamento: spiffo_statue → spiffo_hq + spiffo_relic; remove kills_800k, all_skills_10
+router.post('/recalculate-scores', async (req: Request, res: Response): Promise<void> => {
+  if (!requireCronSecret(req, res)) return;
+
+  const { data: entries, error } = await supabase
+    .from('entries')
+    .select('id, kills, skills, objectives, sandbox_ok')
+    .is('deleted_at', null);
+
+  if (error) {
+    res.status(500).json({ error: 'Erro ao buscar entradas.' });
+    return;
+  }
+
+  type RawEntry = {
+    id: number;
+    kills: number;
+    skills: string | null;
+    objectives: Record<string, unknown> | null;
+    sandbox_ok: boolean;
+  };
+
+  const rows = (entries ?? []) as RawEntry[];
+  const results: Array<{ id: number; old_score?: number; new_score: number; migrated: boolean }> = [];
+
+  for (const row of rows) {
+    // Migra objetivos: converte formato antigo → novo
+    let migratedObj: Objectives | null = null;
+    let migrated = false;
+
+    if (row.objectives) {
+      const raw = row.objectives as Record<string, unknown>;
+
+      // Detecta campos antigos
+      const hasOldFields = 'kills_800k' in raw || 'all_skills_10' in raw || 'spiffo_statue' in raw;
+
+      // Constrói bases migrado
+      const rawBases = (raw.bases ?? {}) as Record<string, Record<string, unknown>>;
+      const bases: Record<string, BaseObjectives> = {};
+      for (const [k, v] of Object.entries(rawBases)) {
+        bases[k] = {
+          has_base: Boolean(v.has_base),
+          bed:      Boolean(v.bed),
+          windows:  Boolean(v.windows),
+          sink:     Boolean(v.sink),
+          power:    Boolean(v.power),
+          food:     Boolean(v.food),
+          vehicle:  Boolean(v.vehicle),
+          arsenal:  Boolean(v.arsenal),
+        };
+      }
+
+      // Se tinha spiffo_statue=true → marca HQ e relic como conquistados
+      const spiffoStatue = Boolean(raw.spiffo_statue);
+      const spiffoHq     = Boolean(raw.spiffo_hq) || spiffoStatue;
+      const spiffoRelic  = Boolean(raw.spiffo_relic) || spiffoStatue;
+
+      migratedObj = {
+        bases,
+        military_base: Boolean(raw.military_base),
+        spiffo_hq:     spiffoHq,
+        spiffo_relic:  spiffoRelic,
+      };
+
+      migrated = hasOldFields;
+    }
+
+    const skills10 = countSkills10(row.skills);
+    const newScore = row.sandbox_ok ? computeScore(row.kills, skills10, migratedObj) : 0;
+
+    const patch: Record<string, unknown> = { score: newScore, updated_at: new Date().toISOString() };
+    if (migrated && migratedObj) patch.objectives = migratedObj;
+
+    const { error: upErr } = await supabase
+      .from('entries')
+      .update(patch)
+      .eq('id', row.id);
+
+    results.push({ id: row.id, new_score: newScore, migrated });
+
+    if (upErr) {
+      console.error(`recalculate-scores: erro ao atualizar entry ${row.id}:`, upErr.message);
+    }
+  }
+
+  res.json({
+    processed: results.length,
+    migrated:  results.filter(r => r.migrated).length,
+    results,
+  });
 });
 
 export default router;

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { apiUpdateEntryObjectives } from '../../lib/api';
 import {
   SPIFFOS_RESTAURANTS, BASE_ITEMS,
-  initObjectives, computeScore,
+  initObjectives, computeScore, countSkills10,
 } from '../../lib/objectives';
 import type { Objectives } from '../../lib/objectives';
 import type { Entry } from '../../types';
@@ -20,7 +20,7 @@ export function EditObjectivesModal({ token, entry, onClose, onSuccess, showToas
   const [expandedBase, setExpandedBase] = useState<string | null>(null);
   const [loading,      setLoading]     = useState(false);
 
-  const previewScore = computeScore(entry.kills, objectives);
+  const previewScore = computeScore(entry.kills, countSkills10(entry.skills), objectives);
 
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -46,7 +46,7 @@ export function EditObjectivesModal({ token, entry, onClose, onSuccess, showToas
     }));
   }
 
-  function toggleGlobal(field: 'spiffo_statue' | 'military_base' | 'kills_800k' | 'all_skills_10', checked: boolean) {
+  function toggleGlobal(field: 'spiffo_hq' | 'spiffo_relic' | 'military_base', checked: boolean) {
     setObjectives(prev => ({ ...prev, [field]: checked }));
   }
 
@@ -130,24 +130,19 @@ export function EditObjectivesModal({ token, entry, onClose, onSuccess, showToas
             <div className="objectives-group">
               <p className="objectives-group-title"><i className="ti ti-star" /> Objetivos Especiais</p>
               <label className="obj-checkbox-label special">
-                <input type="checkbox" checked={objectives.spiffo_statue}
-                  onChange={e => toggleGlobal('spiffo_statue', e.target.checked)} />
-                <span className="obj-check-text"><i className="ti ti-trophy" /> Dominou a Sede Spiffo's e pegou a Estátua</span>
+                <input type="checkbox" checked={objectives.spiffo_hq}
+                  onChange={e => toggleGlobal('spiffo_hq', e.target.checked)} />
+                <span className="obj-check-text"><i className="ti ti-building-store" /> Conquistou a Sede do Spiffo's (Louisville HQ)</span>
+              </label>
+              <label className="obj-checkbox-label special">
+                <input type="checkbox" checked={objectives.spiffo_relic}
+                  onChange={e => toggleGlobal('spiffo_relic', e.target.checked)} />
+                <span className="obj-check-text"><i className="ti ti-trophy" /> Coletou a Relíquia do Spiffo</span>
               </label>
               <label className="obj-checkbox-label special">
                 <input type="checkbox" checked={objectives.military_base}
                   onChange={e => toggleGlobal('military_base', e.target.checked)} />
-                <span className="obj-check-text"><i className="ti ti-sword" /> Limpou a base militar de Rosewood</span>
-              </label>
-              <label className="obj-checkbox-label special">
-                <input type="checkbox" checked={objectives.kills_800k}
-                  onChange={e => toggleGlobal('kills_800k', e.target.checked)} />
-                <span className="obj-check-text"><i className="ti ti-skull" /> Atingiu 800.000 zumbis abatidos</span>
-              </label>
-              <label className="obj-checkbox-label special">
-                <input type="checkbox" checked={objectives.all_skills_10}
-                  onChange={e => toggleGlobal('all_skills_10', e.target.checked)} />
-                <span className="obj-check-text"><i className="ti ti-star" /> Maximizou todas as habilidades (nível 10)</span>
+                <span className="obj-check-text"><i className="ti ti-sword" /> Conquistou a Base Militar de Rosewood</span>
               </label>
             </div>
           </div>

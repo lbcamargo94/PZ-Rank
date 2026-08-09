@@ -46,8 +46,8 @@ function ObjectivesSection({ objectives, kills }: { objectives: Objectives | nul
         <h4 className="pp-obj-group-title"><i className="ti ti-star" /> Objetivos Especiais</h4>
 
         <div className="pp-obj-item">
-          <div className={`pp-obj-badge ${obj.kills_800k ? 'pp-obj-done' : ''}`}>
-            {obj.kills_800k ? <i className="ti ti-check" /> : <i className="ti ti-clock" />}
+          <div className={`pp-obj-badge ${kills >= 800_000 ? 'pp-obj-done' : ''}`}>
+            {kills >= 800_000 ? <i className="ti ti-check" /> : <i className="ti ti-clock" />}
           </div>
           <div className="pp-obj-body">
             <span className="pp-obj-name">800.000 Zumbis Abatidos</span>
@@ -56,21 +56,20 @@ function ObjectivesSection({ objectives, kills }: { objectives: Objectives | nul
         </div>
 
         <div className="pp-obj-item">
-          <div className={`pp-obj-badge ${obj.all_skills_10 ? 'pp-obj-done' : ''}`}>
-            {obj.all_skills_10 ? <i className="ti ti-check" /> : <i className="ti ti-clock" />}
+          <div className={`pp-obj-badge ${obj.spiffo_hq ? 'pp-obj-done' : ''}`}>
+            {obj.spiffo_hq ? <i className="ti ti-check" /> : <i className="ti ti-clock" />}
           </div>
           <div className="pp-obj-body">
-            <span className="pp-obj-name">Todas as Habilidades no Nível 10</span>
-            <span className="pp-obj-note">Registrado pelo mod no momento da sincronização</span>
+            <span className="pp-obj-name">Sede do Spiffo's Conquistada (Louisville HQ)</span>
           </div>
         </div>
 
         <div className="pp-obj-item">
-          <div className={`pp-obj-badge ${obj.spiffo_statue ? 'pp-obj-done' : ''}`}>
-            {obj.spiffo_statue ? <i className="ti ti-check" /> : <i className="ti ti-clock" />}
+          <div className={`pp-obj-badge ${obj.spiffo_relic ? 'pp-obj-done' : ''}`}>
+            {obj.spiffo_relic ? <i className="ti ti-check" /> : <i className="ti ti-clock" />}
           </div>
           <div className="pp-obj-body">
-            <span className="pp-obj-name">Estátua do Spiffo (Louisville)</span>
+            <span className="pp-obj-name">Relíquia do Spiffo Coletada</span>
           </div>
         </div>
 
@@ -79,7 +78,7 @@ function ObjectivesSection({ objectives, kills }: { objectives: Objectives | nul
             {obj.military_base ? <i className="ti ti-check" /> : <i className="ti ti-clock" />}
           </div>
           <div className="pp-obj-body">
-            <span className="pp-obj-name">Base Militar de Rosewood Limpa</span>
+            <span className="pp-obj-name">Base Militar de Rosewood Conquistada</span>
           </div>
         </div>
       </div>

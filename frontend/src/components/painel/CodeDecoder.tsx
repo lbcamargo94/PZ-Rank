@@ -126,13 +126,12 @@ export function CodeDecoder() {
     return () => window.removeEventListener('keydown', onKey);
   });
 
-  const v     = result ? verdict(result) : null;
-  const score = result ? computeScore(result.kills, null) : 0;
+  const v           = result ? verdict(result) : null;
+  const maxedSkills = result?.skills.filter(s => parseSkillRaw(s).level >= 10).length ?? 0;
+  const score       = result ? computeScore(result.kills, maxedSkills) : 0;
 
   const positiveTraits = result?.traits.filter(t => resolveTrait(t).type === 'positive') ?? [];
   const negativeTraits = result?.traits.filter(t => resolveTrait(t).type === 'negative') ?? [];
-
-  const maxedSkills = result?.skills.filter(s => parseSkillRaw(s).level >= 10).length ?? 0;
 
   return (
     <div className="painel-section dc-page">

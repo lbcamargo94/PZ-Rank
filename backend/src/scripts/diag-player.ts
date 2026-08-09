@@ -1,5 +1,5 @@
 import { supabase } from '../supabase';
-import { computeScore } from '../lib/scoring';
+import { computeScore, countSkills10 } from '../lib/scoring';
 import type { Objectives } from '../types';
 
 async function main() {
@@ -29,7 +29,7 @@ async function main() {
         if (e['score'] === 0 && e['sandbox_ok'] === true && !e['disqualification_reason']) {
           const kills = (e['kills'] as number) ?? 0;
           const objectives = (e['objectives'] as Objectives | null) ?? null;
-          const correctScore = computeScore(kills, objectives);
+          const correctScore = computeScore(kills, countSkills10(e['skills'] as string | null), objectives);
 
           const { error } = await supabase
             .from('entries')

@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { supabase } from '../supabase';
 import { parsePzrCode } from '../lib/decoder';
 import { dbError } from '../lib/errors';
-import { computeScore } from '../lib/scoring';
+import { computeScore, countSkills10 } from '../lib/scoring';
 import { requireModerator } from '../middleware/moderator';
 import type { ModRequest } from '../middleware/moderator';
 import { config } from '../config';
@@ -165,7 +165,7 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
     sandbox_ok:              decoded.sandboxOk,
     traits:                  decoded.traits.join(',') || null,
     objectives:              safeObjectives,
-    score:                   decoded.sandboxOk ? computeScore(decoded.kills, safeObjectives) : 0,
+    score:                   decoded.sandboxOk ? computeScore(decoded.kills, Object.values(decoded.skillLevels).filter(l => l === 10).length, safeObjectives) : 0,
     disqualification_reason: !decoded.sandboxOk
       ? (decoded.disqualificationReason ?? 'sandbox')
       : null,
@@ -206,13 +206,13 @@ router.patch('/:id/status', requireModerator, async (req: ModRequest, res: Respo
 
   const { data: existing, error: fetchError } = await supabase
     .from(config.tableName)
-    .select('id, score, kills, objectives, disqualified_at')
+    .select('id, score, kills, skills, objectives, disqualified_at')
     .eq('id', id)
     .single();
 
   if (fetchError || !existing) { res.status(404).json({ error: 'Entrada não encontrada.' }); return; }
 
-  const row = existing as { id: number; score: number; kills: number; objectives: Objectives | null; disqualified_at?: string | null };
+  const row = existing as { id: number; score: number; kills: number; skills: string | null; objectives: Objectives | null; disqualified_at?: string | null };
   const patch: Record<string, unknown> = {};
   if (is_alive  !== undefined) patch.is_alive  = is_alive;
   if (sandbox_ok !== undefined) {
@@ -226,7 +226,7 @@ router.patch('/:id/status', requireModerator, async (req: ModRequest, res: Respo
       patch.disqualification_reason = null;
     }
     // Ao desclassificar manualmente: zera score. Ao reclassificar: recalcula.
-    patch.score = sandbox_ok ? computeScore(row.kills, row.objectives) : 0;
+    patch.score = sandbox_ok ? computeScore(row.kills, countSkills10(row.skills), row.objectives) : 0;
   }
   patch.updated_at = new Date().toISOString();
 
@@ -253,14 +253,14 @@ router.patch('/:id/objectives', requireModerator, async (req: ModRequest, res: R
 
   const { data: existing, error: fetchError } = await supabase
     .from(config.tableName)
-    .select('id, kills, sandbox_ok')
+    .select('id, kills, skills, sandbox_ok')
     .eq('id', id)
     .single();
 
   if (fetchError || !existing) { res.status(404).json({ error: 'Entrada não encontrada.' }); return; }
 
-  const row = existing as { id: number; kills: number; sandbox_ok: boolean };
-  const newScore = row.sandbox_ok !== false ? computeScore(row.kills, objectives) : 0;
+  const row = existing as { id: number; kills: number; skills: string | null; sandbox_ok: boolean };
+  const newScore = row.sandbox_ok !== false ? computeScore(row.kills, countSkills10(row.skills), objectives) : 0;
 
   const { data, error } = await supabase
     .from(config.tableName)

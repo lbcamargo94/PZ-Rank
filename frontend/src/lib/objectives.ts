@@ -10,11 +10,10 @@ export interface BaseObjectives {
 }
 
 export interface Objectives {
-  bases:          Record<string, BaseObjectives>;
-  kills_800k:     boolean;
-  all_skills_10:  boolean;
-  spiffo_statue:  boolean;
-  military_base:  boolean;
+  bases:         Record<string, BaseObjectives>;
+  military_base: boolean;
+  spiffo_hq:     boolean;
+  spiffo_relic:  boolean;
 }
 
 export const SPIFFOS_RESTAURANTS = [
@@ -51,52 +50,58 @@ const EMPTY_BASE: BaseObjectives = {
 export function initObjectives(): Objectives {
   const bases: Record<string, BaseObjectives> = {};
   for (const r of SPIFFOS_RESTAURANTS) bases[r.id] = { ...EMPTY_BASE };
-  return { bases, kills_800k: false, all_skills_10: false, spiffo_statue: false, military_base: false };
+  return { bases, military_base: false, spiffo_hq: false, spiffo_relic: false };
 }
 
 // ── Pontuação ───────────────────────────────────────────────
-export const SCORE_KILLS       = 1;        // pts por zumbi abatido
-export const SCORE_KILLS_MAX   = 800_000;  // máximo de kills contabilizados
-export const SCORE_BASE        = 50;  // pts por base estabelecida
-export const SCORE_BASE_ITEM   = 10;  // pts por item da base
-export const SCORE_KILLS_500K  = 500; // pts por atingir o objetivo de 800k kills (nome mantido por compat.)
-export const SCORE_ALL_SKILLS  = 500; // pts por maxar todas as habilidades
-export const SCORE_STATUE      = 300; // pts pela Estátua do Spiffo
-export const SCORE_MILITARY    = 300; // pts por limpar a base militar
+export const SCORE_KILLS_PER_KILL = 0.1;      // pts por zumbi abatido
+export const SCORE_KILLS_MAX      = 800_000;  // máximo de kills contabilizados
+export const SCORE_SKILL_10       = 1_000;    // pts por habilidade nível 10
+export const SCORE_SPIFFO_DONE    = 1_000;    // pts por Spiffo's com base estabelecida
+export const SCORE_MILITARY       = 5_000;    // pts por base militar conquistada
+export const SCORE_SPIFFO_HQ      = 5_000;    // pts por Sede do Spiffo's conquistada
+export const SCORE_SPIFFO_RELIC   = 3_000;    // pts pela Relíquia do Spiffo
 
-const BASE_ITEM_COUNT = 7; // bed, windows, sink, power, food, vehicle, arsenal
+const N_SKILLS = 35; // habilidades do jogo
 
 export const MAX_POSSIBLE_SCORE =
-  SCORE_KILLS_MAX +
-  SPIFFOS_RESTAURANTS.length * (SCORE_BASE + BASE_ITEM_COUNT * SCORE_BASE_ITEM) +
-  SCORE_KILLS_500K +
-  SCORE_ALL_SKILLS +
-  SCORE_STATUE +
-  SCORE_MILITARY;
+  Math.round(SCORE_KILLS_MAX * SCORE_KILLS_PER_KILL) +
+  N_SKILLS * SCORE_SKILL_10 +
+  SPIFFOS_RESTAURANTS.length * SCORE_SPIFFO_DONE +
+  SCORE_MILITARY +
+  SCORE_SPIFFO_HQ +
+  SCORE_SPIFFO_RELIC;
+
+/** Conta skills no nível 10 a partir da string da coluna `skills` do banco.
+ *  Formato: "Machado 10, Força 8, Vigilância 10, ..." */
+export function countSkills10(skillsStr: string | null | undefined): number {
+  if (!skillsStr) return 0;
+  let count = 0;
+  for (const part of skillsStr.split(',')) {
+    const t = part.trim();
+    const lastSpace = t.lastIndexOf(' ');
+    if (lastSpace >= 0 && t.slice(lastSpace + 1) === '10') count++;
+  }
+  return count;
+}
 
 export function computeScore(
-  kills: number,
-  objectives?: Partial<Objectives> | null,
+  kills:         number,
+  skills10Count: number,
+  objectives?:   Partial<Objectives> | null,
 ): number {
-  let score = Math.min(kills, SCORE_KILLS_MAX) * SCORE_KILLS;
+  let score = Math.round(Math.min(kills, SCORE_KILLS_MAX) * SCORE_KILLS_PER_KILL);
+
+  score += skills10Count * SCORE_SKILL_10;
 
   if (objectives?.bases) {
     for (const base of Object.values(objectives.bases)) {
-      if (!base.has_base) continue;
-      score += SCORE_BASE;
-      if (base.bed)     score += SCORE_BASE_ITEM;
-      if (base.windows) score += SCORE_BASE_ITEM;
-      if (base.sink)    score += SCORE_BASE_ITEM;
-      if (base.power)   score += SCORE_BASE_ITEM;
-      if (base.food)    score += SCORE_BASE_ITEM;
-      if (base.vehicle) score += SCORE_BASE_ITEM;
-      if (base.arsenal) score += SCORE_BASE_ITEM;
+      if (base.has_base) score += SCORE_SPIFFO_DONE;
     }
   }
-  if (objectives?.kills_800k)    score += SCORE_KILLS_500K;
-  if (objectives?.all_skills_10) score += SCORE_ALL_SKILLS;
-  if (objectives?.spiffo_statue) score += SCORE_STATUE;
   if (objectives?.military_base) score += SCORE_MILITARY;
+  if (objectives?.spiffo_hq)     score += SCORE_SPIFFO_HQ;
+  if (objectives?.spiffo_relic)  score += SCORE_SPIFFO_RELIC;
 
   return score;
 }

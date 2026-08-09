@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   SPIFFOS_RESTAURANTS, BASE_ITEMS,
-  SCORE_KILLS, SCORE_KILLS_MAX, SCORE_BASE, SCORE_BASE_ITEM,
-  SCORE_KILLS_500K, SCORE_ALL_SKILLS, SCORE_STATUE, SCORE_MILITARY,
+  SCORE_KILLS_PER_KILL, SCORE_KILLS_MAX,
+  SCORE_SKILL_10, SCORE_SPIFFO_DONE, SCORE_MILITARY,
+  SCORE_SPIFFO_HQ, SCORE_SPIFFO_RELIC, MAX_POSSIBLE_SCORE,
 } from '../lib/objectives';
 import regrasBg from '../../assets/background/tela-de-regras.webp';
 import './regras.css';
@@ -16,11 +17,6 @@ const SECTIONS: { id: Section; icon: string; label: string }[] = [
   { id: 'sandbox',    icon: 'ti-settings',        label: 'Config. do Sandbox'     },
   { id: 'conduta',    icon: 'ti-shield-check',    label: 'Regras de Conduta'      },
 ];
-
-const MAX_SCORE =
-  SCORE_KILLS_MAX * SCORE_KILLS +
-  SPIFFOS_RESTAURANTS.length * (SCORE_BASE + BASE_ITEMS.length * SCORE_BASE_ITEM) +
-  SCORE_STATUE + SCORE_MILITARY + SCORE_KILLS_500K + SCORE_ALL_SKILLS;
 
 const SANDBOX_GROUPS = [
   {
@@ -375,48 +371,48 @@ export function RegrasPage() {
                   <div className="rg-obj-icon"><i className="ti ti-skull" /></div>
                   <div className="rg-obj-body">
                     <span className="rg-obj-title">Extermínio Total</span>
-                    <span className="rg-obj-desc">Elimine <strong>800.000 zumbis</strong> ao longo de uma única campanha. Cada zumbi vale +{SCORE_KILLS} pt (máx. {SCORE_KILLS_MAX.toLocaleString('pt-BR')}).</span>
-                    <span className="rg-pts-badge">até +{SCORE_KILLS_MAX.toLocaleString('pt-BR')} pts</span>
+                    <span className="rg-obj-desc">Cada zumbi abatido vale <strong>+{SCORE_KILLS_PER_KILL} pt</strong>. Máximo contabilizado: {SCORE_KILLS_MAX.toLocaleString('pt-BR')} zumbis.</span>
+                    <span className="rg-pts-badge">até +{Math.round(SCORE_KILLS_MAX * SCORE_KILLS_PER_KILL).toLocaleString('pt-BR')} pts</span>
                   </div>
                 </div>
                 <div className="rg-obj-card">
                   <div className="rg-obj-icon"><i className="ti ti-star" /></div>
                   <div className="rg-obj-body">
                     <span className="rg-obj-title">Mestre da Sobrevivência</span>
-                    <span className="rg-obj-desc">Alcance o nível 10 em todas as 35 habilidades do Project Zomboid.</span>
-                    <span className="rg-pts-badge">+{SCORE_ALL_SKILLS.toLocaleString('pt-BR')} pts</span>
-                  </div>
-                </div>
-                <div className="rg-obj-card">
-                  <div className="rg-obj-icon"><i className="ti ti-building-store" /></div>
-                  <div className="rg-obj-body">
-                    <span className="rg-obj-title">Domínio da Sede do Spiffo's</span>
-                    <span className="rg-obj-desc">Conquiste a Sede do Spiffo's em Louisville, eliminando completamente toda a ameaça zumbi na região.</span>
-                    <span className="rg-pts-badge">Pré-req. da Relíquia</span>
-                  </div>
-                </div>
-                <div className="rg-obj-card">
-                  <div className="rg-obj-icon"><i className="ti ti-trophy" /></div>
-                  <div className="rg-obj-body">
-                    <span className="rg-obj-title">Relíquia do Spiffo</span>
-                    <span className="rg-obj-desc">Após conquistar a Sede do Spiffo's, localize e colete a Estátua do Spiffo — símbolo máximo da sobrevivência.</span>
-                    <span className="rg-pts-badge">+{SCORE_STATUE.toLocaleString('pt-BR')} pts</span>
-                  </div>
-                </div>
-                <div className="rg-obj-card">
-                  <div className="rg-obj-icon"><i className="ti ti-sword" /></div>
-                  <div className="rg-obj-body">
-                    <span className="rg-obj-title">Operação Base Militar</span>
-                    <span className="rg-obj-desc">Domine a Base Militar Secreta ao norte de Rosewood, eliminando completamente os zumbis da instalação.</span>
-                    <span className="rg-pts-badge">+{SCORE_MILITARY.toLocaleString('pt-BR')} pts</span>
+                    <span className="rg-obj-desc">Cada habilidade maximizada ao nível 10 vale <strong>+{SCORE_SKILL_10.toLocaleString('pt-BR')} pts</strong>. O jogo possui 35 habilidades.</span>
+                    <span className="rg-pts-badge">até +{(35 * SCORE_SKILL_10).toLocaleString('pt-BR')} pts</span>
                   </div>
                 </div>
                 <div className="rg-obj-card">
                   <div className="rg-obj-icon"><i className="ti ti-home" /></div>
                   <div className="rg-obj-body">
                     <span className="rg-obj-title">Reconstrução de Kentucky</span>
-                    <span className="rg-obj-desc">Construa uma base em cada um dos {SPIFFOS_RESTAURANTS.length} restaurantes Spiffo's. Cada base vale +{SCORE_BASE} pts e pode ter até {BASE_ITEMS.length} requisitos (+{SCORE_BASE_ITEM} pts cada).</span>
-                    <span className="rg-pts-badge">até +{(SPIFFOS_RESTAURANTS.length * (SCORE_BASE + BASE_ITEMS.length * SCORE_BASE_ITEM)).toLocaleString('pt-BR')} pts</span>
+                    <span className="rg-obj-desc">Estabeleça uma base em cada um dos {SPIFFOS_RESTAURANTS.length} restaurantes Spiffo's. Cada base estabelecida vale <strong>+{SCORE_SPIFFO_DONE.toLocaleString('pt-BR')} pts</strong>.</span>
+                    <span className="rg-pts-badge">até +{(SPIFFOS_RESTAURANTS.length * SCORE_SPIFFO_DONE).toLocaleString('pt-BR')} pts</span>
+                  </div>
+                </div>
+                <div className="rg-obj-card">
+                  <div className="rg-obj-icon"><i className="ti ti-building-store" /></div>
+                  <div className="rg-obj-body">
+                    <span className="rg-obj-title">Sede do Spiffo's (Louisville HQ)</span>
+                    <span className="rg-obj-desc">Conquiste a Sede do Spiffo's em Louisville, eliminando toda a ameaça zumbi na região.</span>
+                    <span className="rg-pts-badge">+{SCORE_SPIFFO_HQ.toLocaleString('pt-BR')} pts</span>
+                  </div>
+                </div>
+                <div className="rg-obj-card">
+                  <div className="rg-obj-icon"><i className="ti ti-trophy" /></div>
+                  <div className="rg-obj-body">
+                    <span className="rg-obj-title">Relíquia do Spiffo</span>
+                    <span className="rg-obj-desc">Localize e colete a lendária Relíquia do Spiffo — símbolo máximo da sobrevivência.</span>
+                    <span className="rg-pts-badge">+{SCORE_SPIFFO_RELIC.toLocaleString('pt-BR')} pts</span>
+                  </div>
+                </div>
+                <div className="rg-obj-card">
+                  <div className="rg-obj-icon"><i className="ti ti-sword" /></div>
+                  <div className="rg-obj-body">
+                    <span className="rg-obj-title">Operação Base Militar</span>
+                    <span className="rg-obj-desc">Conquiste a Base Militar Secreta ao norte de Rosewood, eliminando completamente os zumbis da instalação.</span>
+                    <span className="rg-pts-badge">+{SCORE_MILITARY.toLocaleString('pt-BR')} pts</span>
                   </div>
                 </div>
               </div>
@@ -424,11 +420,11 @@ export function RegrasPage() {
               {/* Pontuação resumo */}
               <div className="rg-max-score">
                 <span className="rg-max-label">Pontuação máxima possível</span>
-                <span className="rg-max-value">{MAX_SCORE.toLocaleString('pt-BR')} pts</span>
+                <span className="rg-max-value">{MAX_POSSIBLE_SCORE.toLocaleString('pt-BR')} pts</span>
               </div>
 
               {/* Spiffo's Bases */}
-              <h3 className="rg-sub-title">Locais Obrigatórios — Reconstrução de Kentucky</h3>
+              <h3 className="rg-sub-title">Locais — Reconstrução de Kentucky</h3>
               <div className="rg-restaurants-grid">
                 {SPIFFOS_RESTAURANTS.map(r => (
                   <div key={r.id} className="rg-restaurant-chip">
@@ -446,7 +442,6 @@ export function RegrasPage() {
                   <div key={item.id} className="rg-base-item-row">
                     <i className="ti ti-check" />
                     <span>{item.label}</span>
-                    <span className="rg-pts-badge-sm">+{SCORE_BASE_ITEM} pts</span>
                   </div>
                 ))}
               </div>

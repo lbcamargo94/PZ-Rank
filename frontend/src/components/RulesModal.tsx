@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import {
   SPIFFOS_RESTAURANTS, BASE_ITEMS,
-  SCORE_KILLS, SCORE_KILLS_MAX, SCORE_BASE, SCORE_BASE_ITEM,
-  SCORE_KILLS_500K, SCORE_ALL_SKILLS, SCORE_STATUE, SCORE_MILITARY,
+  SCORE_KILLS_PER_KILL, SCORE_KILLS_MAX,
+  SCORE_SKILL_10, SCORE_SPIFFO_DONE, SCORE_MILITARY,
+  SCORE_SPIFFO_HQ, SCORE_SPIFFO_RELIC, MAX_POSSIBLE_SCORE,
 } from '../lib/objectives';
 
 interface Props {
@@ -10,11 +11,6 @@ interface Props {
 }
 
 type Tab = 'objectives' | 'bases' | 'score';
-
-const MAX_SCORE =
-  SCORE_KILLS_MAX * SCORE_KILLS +
-  SPIFFOS_RESTAURANTS.length * (SCORE_BASE + BASE_ITEMS.length * SCORE_BASE_ITEM) +
-  SCORE_STATUE + SCORE_MILITARY + SCORE_KILLS_500K + SCORE_ALL_SKILLS;
 
 export function RulesModal({ onClose }: Props) {
   const [tab, setTab] = useState<Tab>('objectives');
@@ -65,40 +61,24 @@ export function RulesModal({ onClose }: Props) {
               <div className="rules-obj-card">
                 <div className="rules-obj-icon"><i className="ti ti-skull" /></div>
                 <div className="rules-obj-content">
-                  <span className="rules-obj-title">800.000 Zumbis Abatidos</span>
-                  <span className="rules-obj-desc">Abata 800 mil zumbis ao longo da sua sobrevivência.</span>
-                  <span className="rules-pts-badge">+{SCORE_KILLS_500K.toLocaleString('pt-BR')} pts</span>
+                  <span className="rules-obj-title">Zumbis Abatidos</span>
+                  <span className="rules-obj-desc">
+                    Cada zumbi abatido vale <strong>{SCORE_KILLS_PER_KILL} pt</strong>.
+                    Máximo contabilizado: {SCORE_KILLS_MAX.toLocaleString('pt-BR')} zumbis.
+                  </span>
+                  <span className="rules-pts-badge">até {Math.round(SCORE_KILLS_MAX * SCORE_KILLS_PER_KILL).toLocaleString('pt-BR')} pts</span>
                 </div>
               </div>
 
               <div className="rules-obj-card">
                 <div className="rules-obj-icon"><i className="ti ti-star" /></div>
                 <div className="rules-obj-content">
-                  <span className="rules-obj-title">Todas as Habilidades no Nível 10</span>
-                  <span className="rules-obj-desc">Maximize todas as habilidades do personagem ao nível 10.</span>
-                  <span className="rules-pts-badge">+{SCORE_ALL_SKILLS.toLocaleString('pt-BR')} pts</span>
-                </div>
-              </div>
-
-              <div className="rules-obj-card">
-                <div className="rules-obj-icon"><i className="ti ti-trophy" /></div>
-                <div className="rules-obj-content">
-                  <span className="rules-obj-title">Estátua do Spiffo</span>
+                  <span className="rules-obj-title">Habilidades no Nível 10</span>
                   <span className="rules-obj-desc">
-                    Domine a Sede do Spiffo's em Louisville e colete a Estátua do Spiffo.
+                    Cada habilidade maximizada ao nível 10 vale <strong>+{SCORE_SKILL_10.toLocaleString('pt-BR')} pts</strong>.
+                    O jogo conta com 35 habilidades no total.
                   </span>
-                  <span className="rules-pts-badge">+{SCORE_STATUE.toLocaleString('pt-BR')} pts</span>
-                </div>
-              </div>
-
-              <div className="rules-obj-card">
-                <div className="rules-obj-icon"><i className="ti ti-sword" /></div>
-                <div className="rules-obj-content">
-                  <span className="rules-obj-title">Base Militar de Rosewood</span>
-                  <span className="rules-obj-desc">
-                    Limpe completamente a base militar secreta de Rosewood.
-                  </span>
-                  <span className="rules-pts-badge">+{SCORE_MILITARY.toLocaleString('pt-BR')} pts</span>
+                  <span className="rules-pts-badge">até {(35 * SCORE_SKILL_10).toLocaleString('pt-BR')} pts</span>
                 </div>
               </div>
 
@@ -108,12 +88,44 @@ export function RulesModal({ onClose }: Props) {
                   <span className="rules-obj-title">Bases nos Restaurantes Spiffo's</span>
                   <span className="rules-obj-desc">
                     Estabeleça uma base em cada um dos {SPIFFOS_RESTAURANTS.length} restaurantes Spiffo's no mapa.
-                    Cada base vale <strong>+{SCORE_BASE} pts</strong> e pode ter até {BASE_ITEMS.length} itens completados
-                    (<strong>+{SCORE_BASE_ITEM} pts cada</strong>).
+                    Cada base estabelecida vale <strong>+{SCORE_SPIFFO_DONE.toLocaleString('pt-BR')} pts</strong>.
                   </span>
                   <button className="rules-tab-link" onClick={() => setTab('bases')}>
                     Ver todos os restaurantes <i className="ti ti-arrow-right" />
                   </button>
+                </div>
+              </div>
+
+              <div className="rules-obj-card">
+                <div className="rules-obj-icon"><i className="ti ti-building-store" /></div>
+                <div className="rules-obj-content">
+                  <span className="rules-obj-title">Sede do Spiffo's (Louisville HQ)</span>
+                  <span className="rules-obj-desc">
+                    Conquiste a sede central do Spiffo's em Louisville.
+                  </span>
+                  <span className="rules-pts-badge">+{SCORE_SPIFFO_HQ.toLocaleString('pt-BR')} pts</span>
+                </div>
+              </div>
+
+              <div className="rules-obj-card">
+                <div className="rules-obj-icon"><i className="ti ti-trophy" /></div>
+                <div className="rules-obj-content">
+                  <span className="rules-obj-title">Relíquia do Spiffo</span>
+                  <span className="rules-obj-desc">
+                    Encontre e colete a lendária Relíquia do Spiffo.
+                  </span>
+                  <span className="rules-pts-badge">+{SCORE_SPIFFO_RELIC.toLocaleString('pt-BR')} pts</span>
+                </div>
+              </div>
+
+              <div className="rules-obj-card">
+                <div className="rules-obj-icon"><i className="ti ti-sword" /></div>
+                <div className="rules-obj-content">
+                  <span className="rules-obj-title">Base Militar de Rosewood</span>
+                  <span className="rules-obj-desc">
+                    Conquiste completamente a base militar secreta de Rosewood.
+                  </span>
+                  <span className="rules-pts-badge">+{SCORE_MILITARY.toLocaleString('pt-BR')} pts</span>
                 </div>
               </div>
 
@@ -124,7 +136,8 @@ export function RulesModal({ onClose }: Props) {
           {tab === 'bases' && (
             <div className="rules-bases-section">
               <p className="rules-bases-intro">
-                Estabeleça uma base em cada restaurante com os itens abaixo para maximizar sua pontuação:
+                Estabeleça uma base em cada restaurante. Cada base estabelecida vale{' '}
+                <strong>+{SCORE_SPIFFO_DONE.toLocaleString('pt-BR')} pts</strong>. Os itens abaixo são os requisitos para validar a base:
               </p>
 
               <div className="rules-base-items-list">
@@ -132,7 +145,6 @@ export function RulesModal({ onClose }: Props) {
                   <div key={item.id} className="rules-base-item-row">
                     <i className="ti ti-check" />
                     <span>{item.label}</span>
-                    <span className="rules-pts-badge-sm">+{SCORE_BASE_ITEM} pts</span>
                   </div>
                 ))}
               </div>
@@ -154,41 +166,37 @@ export function RulesModal({ onClose }: Props) {
                 <tbody>
                   <tr>
                     <td><i className="ti ti-skull" /> Cada zumbi abatido</td>
-                    <td className="pts-col">+{SCORE_KILLS} pt</td>
+                    <td className="pts-col">+{SCORE_KILLS_PER_KILL} pt</td>
                   </tr>
                   <tr className="score-table-note">
-                    <td colSpan={2}>Máximo contabilizado: {SCORE_KILLS_MAX.toLocaleString('pt-BR')} zumbis</td>
+                    <td colSpan={2}>Máximo contabilizado: {SCORE_KILLS_MAX.toLocaleString('pt-BR')} zumbis ({Math.round(SCORE_KILLS_MAX * SCORE_KILLS_PER_KILL).toLocaleString('pt-BR')} pts)</td>
                   </tr>
                   <tr>
-                    <td><i className="ti ti-building-store" /> Base em um Spiffo's</td>
-                    <td className="pts-col">+{SCORE_BASE} pts</td>
+                    <td><i className="ti ti-star" /> Cada habilidade no nível 10</td>
+                    <td className="pts-col">+{SCORE_SKILL_10.toLocaleString('pt-BR')} pts</td>
                   </tr>
                   <tr>
-                    <td><i className="ti ti-check" /> Item completo da base (×{BASE_ITEMS.length} por restaurante)</td>
-                    <td className="pts-col">+{SCORE_BASE_ITEM} pts</td>
+                    <td><i className="ti ti-building-store" /> Base estabelecida em um Spiffo's</td>
+                    <td className="pts-col">+{SCORE_SPIFFO_DONE.toLocaleString('pt-BR')} pts</td>
                   </tr>
                   <tr>
-                    <td><i className="ti ti-trophy" /> Estátua do Spiffo</td>
-                    <td className="pts-col">+{SCORE_STATUE} pts</td>
+                    <td><i className="ti ti-building-store" /> Sede do Spiffo's conquistada (Louisville HQ)</td>
+                    <td className="pts-col">+{SCORE_SPIFFO_HQ.toLocaleString('pt-BR')} pts</td>
                   </tr>
                   <tr>
-                    <td><i className="ti ti-sword" /> Base militar de Rosewood limpa</td>
-                    <td className="pts-col">+{SCORE_MILITARY} pts</td>
+                    <td><i className="ti ti-trophy" /> Relíquia do Spiffo coletada</td>
+                    <td className="pts-col">+{SCORE_SPIFFO_RELIC.toLocaleString('pt-BR')} pts</td>
                   </tr>
                   <tr>
-                    <td><i className="ti ti-skull" /> 800.000 zumbis abatidos</td>
-                    <td className="pts-col">+{SCORE_KILLS_500K} pts</td>
-                  </tr>
-                  <tr>
-                    <td><i className="ti ti-star" /> Todas as habilidades nível 10</td>
-                    <td className="pts-col">+{SCORE_ALL_SKILLS} pts</td>
+                    <td><i className="ti ti-sword" /> Base Militar de Rosewood conquistada</td>
+                    <td className="pts-col">+{SCORE_MILITARY.toLocaleString('pt-BR')} pts</td>
                   </tr>
                 </tbody>
               </table>
 
               <div className="rules-max-score">
                 <span className="rules-max-label">Pontuação máxima possível</span>
-                <span className="rules-max-value">{MAX_SCORE.toLocaleString('pt-BR')} pts</span>
+                <span className="rules-max-value">{MAX_POSSIBLE_SCORE.toLocaleString('pt-BR')} pts</span>
               </div>
             </div>
           )}

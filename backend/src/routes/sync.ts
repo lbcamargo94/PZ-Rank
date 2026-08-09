@@ -380,7 +380,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     return;
   }
 
-  const score = computeScore(decoded.kills, existingObjectives);
+  const score = computeScore(decoded.kills, Object.values(decoded.skillLevels).filter(l => l === 10).length, existingObjectives);
 
   const hasExtended = decoded.animalsKilled > 0 || decoded.fishCaught > 0 ||
     decoded.cropsHarvested > 0 || decoded.itemsCrafted > 0 ||
