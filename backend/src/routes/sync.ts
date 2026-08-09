@@ -126,7 +126,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // Valida token
   const { data: player, error: playerError } = await supabase
     .from('players')
-    .select('id, nick, status, blocked, youtube_url')
+    .select('id, nick, status, blocked, youtube_url, yt_channel_id, yt_last_live_video_id')
     .eq('player_token', player_token)
     .maybeSingle();
 
@@ -519,6 +519,58 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       }
     })();
   }
+
+  // Fire-and-forget: verifica live do YouTube a cada sync para detectar streams
+  // naturalmente sem cron externo — se o jogador está sincronizando, está jogando.
+  void (async () => {
+    try {
+      type SyncPlayer = { id: number; nick: string; yt_channel_id: string | null; yt_last_live_video_id: string | null };
+      const p = player as unknown as SyncPlayer;
+      if (!p.yt_channel_id) return;
+
+      const { getChannelCurrentLive, checkIsLive } = await import('../lib/youtube');
+      const { sendLiveNotification, sendLiveEndedNotification } = await import('../lib/discord');
+
+      const { data: aliveEntries } = await supabase
+        .from(config.tableName)
+        .select('player_id, score')
+        .eq('is_alive', true)
+        .eq('sandbox_ok', true)
+        .is('deleted_at', null)
+        .order('score', { ascending: false });
+
+      const pos   = (aliveEntries ?? []).findIndex((e: { player_id: number }) => e.player_id === p.id);
+      const rank  = pos >= 0 ? pos + 1 : null;
+      const score = (aliveEntries ?? []).find((e: { player_id: number; score: number }) => e.player_id === p.id)?.score ?? null;
+
+      if (p.yt_last_live_video_id) {
+        const liveInfo = await checkIsLive(p.yt_last_live_video_id);
+        if (!liveInfo?.isLive) {
+          await sendLiveEndedNotification({
+            nick:     p.nick,
+            videoUrl: `https://www.youtube.com/watch?v=${p.yt_last_live_video_id}`,
+            rank,
+            score,
+          });
+          await supabase.from('players').update({ yt_last_live_video_id: null }).eq('id', p.id);
+        }
+      } else {
+        const live = await getChannelCurrentLive(p.yt_channel_id);
+        if (!live) return;
+        await sendLiveNotification({
+          nick:      p.nick,
+          title:     live.title,
+          videoUrl:  live.videoUrl,
+          thumbnail: live.thumbnail,
+          rank,
+          score,
+        });
+        await supabase.from('players').update({ yt_last_live_video_id: live.videoId }).eq('id', p.id);
+      }
+    } catch (e) {
+      console.error('[sync-live-check]', e);
+    }
+  })();
 
   // Posição no ranking: contagem de entradas com score mais alto (best-effort)
   const { count: rankCount, error: rankError } = await supabase
