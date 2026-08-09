@@ -113,7 +113,7 @@ router.get('/scan-lives', async (req: Request, res: Response): Promise<void> => 
 
   const { data: players, error } = await supabase
     .from('players')
-    .select('id, nick, yt_channel_id')
+    .select('id, nick, yt_channel_id, yt_last_live_video_id')
     .eq('status', 'approved')
     .not('yt_channel_id', 'is', null)
     .is('deleted_at', null);
@@ -132,9 +132,11 @@ router.get('/scan-lives', async (req: Request, res: Response): Promise<void> => 
     .is('deleted_at', null)
     .order('score', { ascending: false });
 
-  const playerList = (players ?? []) as Array<{ id: number; nick: string; yt_channel_id: string }>;
-  const liveNow: string[] = [];
-  const BATCH = 10; // máximo de checagens simultâneas para não sobrecarregar a API
+  type PlayerRow = { id: number; nick: string; yt_channel_id: string; yt_last_live_video_id: string | null };
+  const playerList = (players ?? []) as PlayerRow[];
+  const liveNow:     string[] = [];
+  const alreadyLive: string[] = [];
+  const BATCH = 10;
 
   for (let i = 0; i < playerList.length; i += BATCH) {
     const batch = playerList.slice(i, i + BATCH);
@@ -142,6 +144,12 @@ router.get('/scan-lives', async (req: Request, res: Response): Promise<void> => 
     await Promise.allSettled(batch.map(async (player) => {
       const live = await getChannelCurrentLive(player.yt_channel_id);
       if (!live) return;
+
+      // Deduplicação: só notifica se o videoId é diferente do último notificado
+      if (live.videoId === player.yt_last_live_video_id) {
+        alreadyLive.push(player.nick);
+        return;
+      }
 
       const pos   = (allAlive ?? []).findIndex((e: { player_id: number }) => e.player_id === player.id);
       const rank  = pos >= 0 ? pos + 1 : null;
@@ -156,11 +164,17 @@ router.get('/scan-lives', async (req: Request, res: Response): Promise<void> => 
         score,
       });
 
+      // Persiste o videoId notificado para evitar duplicatas nas próximas execuções
+      await supabase
+        .from('players')
+        .update({ yt_last_live_video_id: live.videoId })
+        .eq('id', player.id);
+
       liveNow.push(player.nick);
     }));
   }
 
-  res.json({ checked: playerList.length, liveCount: liveNow.length, live: liveNow });
+  res.json({ checked: playerList.length, liveCount: liveNow.length, live: liveNow, alreadyLive });
 });
 
 // POST /cron/recalculate-scores — migra objetivos antigos e recalcula todos os scores

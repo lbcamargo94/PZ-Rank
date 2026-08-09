@@ -16,7 +16,10 @@ export interface LiveNotificationPayload {
 
 export async function sendLiveNotification(payload: LiveNotificationPayload): Promise<void> {
   const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
-  if (!webhookUrl) return;
+  if (!webhookUrl) {
+    console.warn('[discord] DISCORD_WEBHOOK_URL não configurada — notificação descartada para:', payload.nick);
+    return;
+  }
 
   const { nick, title, videoUrl, thumbnail, rank, score } = payload;
 
@@ -40,12 +43,17 @@ export async function sendLiveNotification(payload: LiveNotificationPayload): Pr
   };
 
   try {
-    await fetch(webhookUrl, {
+    const res = await fetch(webhookUrl, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify(body),
       signal:  AbortSignal.timeout(8_000),
     });
+    if (res.ok) {
+      console.log('[discord] Notificação enviada com sucesso para:', payload.nick);
+    } else {
+      console.error('[discord] Webhook retornou', res.status, 'para:', payload.nick);
+    }
   } catch (err) {
     console.error('[discord] Falha ao enviar notificação:', err);
   }
