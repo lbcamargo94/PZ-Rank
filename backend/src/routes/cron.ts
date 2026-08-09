@@ -10,8 +10,8 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
 import { supabase } from '../supabase';
-import { subscribePubSub, getChannelCurrentLive } from '../lib/youtube';
-import { sendLiveNotification } from '../lib/discord';
+import { subscribePubSub, getChannelCurrentLive, checkIsLive } from '../lib/youtube';
+import { sendLiveNotification, sendLiveEndedNotification } from '../lib/discord';
 import { computeScore, countSkills10 } from '../lib/scoring';
 import type { Objectives, BaseObjectives } from '../types';
 
@@ -134,47 +134,72 @@ router.get('/scan-lives', async (req: Request, res: Response): Promise<void> => 
 
   type PlayerRow = { id: number; nick: string; yt_channel_id: string; yt_last_live_video_id: string | null };
   const playerList = (players ?? []) as PlayerRow[];
-  const liveNow:     string[] = [];
-  const alreadyLive: string[] = [];
+
+  const liveStarted: string[] = [];
+  const liveEnded:   string[] = [];
+  const liveOngoing: string[] = [];
   const BATCH = 10;
 
   for (let i = 0; i < playerList.length; i += BATCH) {
     const batch = playerList.slice(i, i + BATCH);
 
     await Promise.allSettled(batch.map(async (player) => {
-      const live = await getChannelCurrentLive(player.yt_channel_id);
-      if (!live) return;
-
-      // Deduplicação: só notifica se o videoId é diferente do último notificado
-      if (live.videoId === player.yt_last_live_video_id) {
-        alreadyLive.push(player.nick);
-        return;
-      }
-
       const pos   = (allAlive ?? []).findIndex((e: { player_id: number }) => e.player_id === player.id);
       const rank  = pos >= 0 ? pos + 1 : null;
       const score = (allAlive ?? []).find((e: { player_id: number; score: number }) => e.player_id === player.id)?.score ?? null;
 
-      await sendLiveNotification({
-        nick:      player.nick,
-        title:     live.title,
-        videoUrl:  live.videoUrl,
-        thumbnail: live.thumbnail,
-        rank,
-        score,
-      });
+      if (player.yt_last_live_video_id) {
+        // Jogador estava ao vivo na última verificação — confirma se ainda está
+        const liveInfo = await checkIsLive(player.yt_last_live_video_id);
 
-      // Persiste o videoId notificado para evitar duplicatas nas próximas execuções
-      await supabase
-        .from('players')
-        .update({ yt_last_live_video_id: live.videoId })
-        .eq('id', player.id);
+        if (!liveInfo?.isLive) {
+          // Live encerrou
+          await sendLiveEndedNotification({
+            nick:     player.nick,
+            videoUrl: `https://www.youtube.com/watch?v=${player.yt_last_live_video_id}`,
+            rank,
+            score,
+          });
+          await supabase
+            .from('players')
+            .update({ yt_last_live_video_id: null })
+            .eq('id', player.id);
+          liveEnded.push(player.nick);
+        } else {
+          // Ainda ao vivo — sem nova notificação
+          liveOngoing.push(player.nick);
+        }
+      } else {
+        // Jogador não estava ao vivo — verifica se iniciou agora
+        const live = await getChannelCurrentLive(player.yt_channel_id);
+        if (!live) return;
 
-      liveNow.push(player.nick);
+        await sendLiveNotification({
+          nick:      player.nick,
+          title:     live.title,
+          videoUrl:  live.videoUrl,
+          thumbnail: live.thumbnail,
+          rank,
+          score,
+        });
+        await supabase
+          .from('players')
+          .update({ yt_last_live_video_id: live.videoId })
+          .eq('id', player.id);
+        liveStarted.push(player.nick);
+      }
     }));
   }
 
-  res.json({ checked: playerList.length, liveCount: liveNow.length, live: liveNow, alreadyLive });
+  res.json({
+    checked:     playerList.length,
+    liveStarted: liveStarted.length,
+    liveEnded:   liveEnded.length,
+    liveOngoing: liveOngoing.length,
+    started:     liveStarted,
+    ended:       liveEnded,
+    ongoing:     liveOngoing,
+  });
 });
 
 // POST /cron/recalculate-scores — migra objetivos antigos e recalcula todos os scores
