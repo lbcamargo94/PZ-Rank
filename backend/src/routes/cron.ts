@@ -154,16 +154,16 @@ router.get('/scan-lives', async (req: Request, res: Response): Promise<void> => 
 
         if (!liveInfo?.isLive) {
           // Live encerrou
+          await supabase
+            .from('players')
+            .update({ yt_last_live_video_id: null })
+            .eq('id', player.id);
           await sendLiveEndedNotification({
             nick:     player.nick,
             videoUrl: `https://www.youtube.com/watch?v=${player.yt_last_live_video_id}`,
             rank,
             score,
           });
-          await supabase
-            .from('players')
-            .update({ yt_last_live_video_id: null })
-            .eq('id', player.id);
           liveEnded.push(player.nick);
         } else {
           // Ainda ao vivo — sem nova notificação
@@ -174,6 +174,10 @@ router.get('/scan-lives', async (req: Request, res: Response): Promise<void> => 
         const live = await getChannelCurrentLive(player.yt_channel_id);
         if (!live) return;
 
+        await supabase
+          .from('players')
+          .update({ yt_last_live_video_id: live.videoId })
+          .eq('id', player.id);
         await sendLiveNotification({
           nick:      player.nick,
           title:     live.title,
@@ -182,10 +186,6 @@ router.get('/scan-lives', async (req: Request, res: Response): Promise<void> => 
           rank,
           score,
         });
-        await supabase
-          .from('players')
-          .update({ yt_last_live_video_id: live.videoId })
-          .eq('id', player.id);
         liveStarted.push(player.nick);
       }
     }));

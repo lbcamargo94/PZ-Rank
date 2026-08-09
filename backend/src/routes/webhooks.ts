@@ -119,6 +119,13 @@ router.post('/youtube', async (req: Request, res: Response): Promise<void> => {
     }
   }
 
+  // Grava antes de notificar: se a função for cortada após a notificação,
+  // a deduplicação já está garantida no próximo ciclo.
+  await supabase
+    .from('players')
+    .update({ yt_last_live_video_id: entry.videoId })
+    .eq('id', player.id);
+
   await sendLiveNotification({
     nick:      player.nick,
     title:     liveInfo.title,
@@ -127,12 +134,6 @@ router.post('/youtube', async (req: Request, res: Response): Promise<void> => {
     rank,
     score:     bestAlive?.score ?? null,
   });
-
-  // Marca o vídeo notificado para evitar duplicata no próximo ciclo do scan-lives
-  await supabase
-    .from('players')
-    .update({ yt_last_live_video_id: entry.videoId })
-    .eq('id', player.id);
 
   // Renova inscrição automaticamente ao receber notificação
   const renewed = await subscribePubSub(entry.channelId);

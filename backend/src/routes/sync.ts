@@ -546,17 +546,18 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       if (p.yt_last_live_video_id) {
         const liveInfo = await checkIsLive(p.yt_last_live_video_id);
         if (!liveInfo?.isLive) {
+          await supabase.from('players').update({ yt_last_live_video_id: null }).eq('id', p.id);
           await sendLiveEndedNotification({
             nick:     p.nick,
             videoUrl: `https://www.youtube.com/watch?v=${p.yt_last_live_video_id}`,
             rank,
             score,
           });
-          await supabase.from('players').update({ yt_last_live_video_id: null }).eq('id', p.id);
         }
       } else {
         const live = await getChannelCurrentLive(p.yt_channel_id);
         if (!live) return;
+        await supabase.from('players').update({ yt_last_live_video_id: live.videoId }).eq('id', p.id);
         await sendLiveNotification({
           nick:      p.nick,
           title:     live.title,
@@ -565,7 +566,6 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
           rank,
           score,
         });
-        await supabase.from('players').update({ yt_last_live_video_id: live.videoId }).eq('id', p.id);
       }
     } catch (e) {
       console.error('[sync-live-check]', e);
@@ -710,13 +710,13 @@ router.post('/heartbeat', syncLimiter, async (req: Request, res: Response): Prom
             const pos   = (aliveEntries ?? []).findIndex((e: { player_id: number }) => e.player_id === p.id);
             const rank  = pos >= 0 ? pos + 1 : null;
             const score = (aliveEntries ?? []).find((e: { player_id: number; score: number }) => e.player_id === p.id)?.score ?? null;
+            await supabase.from('players').update({ yt_last_live_video_id: null }).eq('id', p.id);
             await sendLiveEndedNotification({
               nick:     p.nick,
               videoUrl: `https://www.youtube.com/watch?v=${p.yt_last_live_video_id}`,
               rank,
               score,
             });
-            await supabase.from('players').update({ yt_last_live_video_id: null }).eq('id', p.id);
           }
         } catch (e) {
           console.error('[heartbeat-live-check]', e);
