@@ -357,7 +357,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
             </button>
           )}
         </div>
-        <button className="btn-primary" onClick={() => setShowUpdateRank(true)}>
+        <button className="btn-primary" onClick={() => { fetchEntries(); setShowUpdateRank(true); }}>
           <i className="ti ti-trophy" /> Atualizar Rank
         </button>
       </div>
@@ -535,6 +535,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
       {showUpdateRank && (
         <UpdateRankModal
           token={session.token}
+          entries={entries}
           onClose={() => setShowUpdateRank(false)}
           onSuccess={fetchEntries}
           showToast={showToast}

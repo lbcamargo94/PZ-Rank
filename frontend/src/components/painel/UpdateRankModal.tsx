@@ -6,21 +6,36 @@ import {
   initObjectives, computeScore,
 } from '../../lib/objectives';
 import type { Objectives } from '../../lib/objectives';
-import type { Player } from '../../types';
+import type { Player, Entry } from '../../types';
+
+// Mescla objetivos existentes com o template fresco para garantir que
+// todos os restaurantes e campos estejam presentes (inclusive novos adicionados depois).
+function mergeObjectives(existing: Objectives | null | undefined): Objectives {
+  const fresh = initObjectives();
+  if (!existing) return fresh;
+  return {
+    bases:         { ...fresh.bases, ...existing.bases },
+    military_base: existing.military_base ?? false,
+    spiffo_hq:     existing.spiffo_hq     ?? false,
+    spiffo_relic:  existing.spiffo_relic  ?? false,
+  };
+}
 
 interface Props {
   token:     string;
+  entries?:  Entry[];
   onClose:   () => void;
   onSuccess: () => void;
   showToast: (msg: string, type?: string) => void;
 }
 
-export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props) {
+export function UpdateRankModal({ token, entries, onClose, onSuccess, showToast }: Props) {
   const [players,      setPlayers]     = useState<Player[]>([]);
   const [playerId,     setPlayerId]    = useState<number | ''>('');
   const [code,         setCode]        = useState('');
   const [objectives,   setObjectives]  = useState<Objectives>(initObjectives);
   const [expandedBase, setExpandedBase] = useState<string | null>(null);
+  const [preloaded,    setPreloaded]   = useState(false);
   const [loading,      setLoading]     = useState(false);
 
   const decoded = parsePzrCode(code.trim());
@@ -40,6 +55,25 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
       .then(data => setPlayers(data.filter(p => !p.blocked)))
       .catch(err => showToast((err as Error).message, 'error'));
   }, [token, showToast]);
+
+  // Ao trocar de jogador: pré-carrega objetivos da entrada atual (alive, maior score)
+  useEffect(() => {
+    if (!playerId) {
+      setObjectives(initObjectives());
+      setPreloaded(false);
+      setExpandedBase(null);
+      return;
+    }
+    const pid = Number(playerId);
+    const playerEntries = (entries ?? [])
+      .filter(e => e.player_id === pid && !e.deleted_at)
+      .sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+    const current = playerEntries.find(e => e.is_alive) ?? playerEntries[0] ?? null;
+    const hasObj  = !!(current?.objectives);
+    setObjectives(mergeObjectives(current?.objectives));
+    setPreloaded(hasObj);
+    setExpandedBase(null);
+  }, [playerId, entries]);
 
   function toggleBase(restaurantId: string, checked: boolean) {
     setObjectives(prev => ({
@@ -164,6 +198,11 @@ export function UpdateRankModal({ token, onClose, onSuccess, showToast }: Props)
                 </span>
               )}
             </div>
+            {preloaded && (
+              <p className="form-info">
+                <i className="ti ti-history" /> Objetivos pré-carregados do registro atual do jogador. Ajuste se necessário.
+              </p>
+            )}
 
             {/* Bases Spiffo's */}
             <div className="objectives-group">

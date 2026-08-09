@@ -60,6 +60,13 @@
   color: var(--amber);
   margin-top: -4px;
 }
+.form-info {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-3);
+  margin-top: -4px;
+  margin-bottom: 4px;
+}
 
 .decoded-preview {
   background: var(--green-dim);
