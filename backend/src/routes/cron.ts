@@ -202,6 +202,57 @@ router.get('/scan-lives', async (req: Request, res: Response): Promise<void> => 
   });
 });
 
+// GET /cron/player-yt-status?nick=XXX — diagnóstico do estado YouTube de um jogador
+router.get('/player-yt-status', async (req: Request, res: Response): Promise<void> => {
+  if (!requireCronSecret(req, res)) return;
+
+  const nick = String(req.query['nick'] ?? '').trim();
+  if (!nick) {
+    res.status(400).json({ error: 'Parâmetro nick obrigatório.' });
+    return;
+  }
+
+  const { data: player } = await supabase
+    .from('players')
+    .select('id, nick, youtube_url, yt_channel_id, yt_sub_expires_at, yt_last_live_video_id')
+    .ilike('nick', nick)
+    .is('deleted_at', null)
+    .single();
+
+  if (!player) {
+    res.status(404).json({ error: `Jogador "${nick}" não encontrado.` });
+    return;
+  }
+
+  type PlayerYt = {
+    id: number; nick: string;
+    youtube_url: string | null; yt_channel_id: string | null;
+    yt_sub_expires_at: string | null; yt_last_live_video_id: string | null;
+  };
+  const p = player as PlayerYt;
+
+  let isCurrentlyLive: boolean | null = null;
+  let rssLiveVideoId:   string | null = null;
+
+  if (p.yt_channel_id) {
+    const { getChannelCurrentLive } = await import('../lib/youtube');
+    const live = await getChannelCurrentLive(p.yt_channel_id);
+    isCurrentlyLive = live !== null;
+    rssLiveVideoId  = live?.videoId ?? null;
+  }
+
+  res.json({
+    nick:                  p.nick,
+    youtube_url:           p.youtube_url,
+    yt_channel_id:         p.yt_channel_id,
+    yt_sub_expires_at:     p.yt_sub_expires_at,
+    yt_last_live_video_id: p.yt_last_live_video_id,
+    sub_expired: p.yt_sub_expires_at ? new Date(p.yt_sub_expires_at) < new Date() : null,
+    isCurrentlyLive,
+    rssLiveVideoId,
+  });
+});
+
 // POST /cron/recalculate-scores — migra objetivos antigos e recalcula todos os scores
 // Mapeamento: spiffo_statue → spiffo_hq + spiffo_relic; remove kills_800k, all_skills_10
 router.post('/recalculate-scores', async (req: Request, res: Response): Promise<void> => {

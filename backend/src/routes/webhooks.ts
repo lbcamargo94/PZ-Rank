@@ -128,6 +128,12 @@ router.post('/youtube', async (req: Request, res: Response): Promise<void> => {
     score:     bestAlive?.score ?? null,
   });
 
+  // Marca o vídeo notificado para evitar duplicata no próximo ciclo do scan-lives
+  await supabase
+    .from('players')
+    .update({ yt_last_live_video_id: entry.videoId })
+    .eq('id', player.id);
+
   // Renova inscrição automaticamente ao receber notificação
   const renewed = await subscribePubSub(entry.channelId);
   if (renewed.ok) {
