@@ -202,6 +202,33 @@ router.get('/scan-lives', async (req: Request, res: Response): Promise<void> => 
   });
 });
 
+// GET /cron/test-discord — envia uma notificação de teste ao Discord (verifica se o webhook está funcional)
+router.get('/test-discord', async (req: Request, res: Response): Promise<void> => {
+  if (!requireCronSecret(req, res)) return;
+
+  const { sendLiveNotification } = await import('../lib/discord');
+
+  const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
+  if (!webhookUrl) {
+    res.status(500).json({ ok: false, error: 'DISCORD_WEBHOOK_URL não configurada no Vercel.' });
+    return;
+  }
+
+  try {
+    await sendLiveNotification({
+      nick:      '🔧 Teste de Pipeline',
+      title:     'Esta é uma notificação de teste — pipeline PZ-Rank funcionando',
+      videoUrl:  'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+      thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
+      rank:      1,
+      score:     141000,
+    });
+    res.json({ ok: true, discordUrl: webhookUrl.slice(0, 50) + '…', message: 'Notificação enviada — verifique o Discord.' });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: String(err) });
+  }
+});
+
 // GET /cron/player-yt-status?nick=XXX — diagnóstico do estado YouTube de um jogador
 router.get('/player-yt-status', async (req: Request, res: Response): Promise<void> => {
   if (!requireCronSecret(req, res)) return;
