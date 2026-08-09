@@ -1,0 +1,2595 @@
+﻿{
+    "meta":  {
+                 "total":  258,
+                 "source":  "production API — https://pz-rank-backend.vercel.app/achievements",
+                 "by_tier":  {
+                                 "bronze":  61,
+                                 "silver":  91,
+                                 "gold":  57,
+                                 "platinum":  48,
+                                 "legendary":  1
+                             }
+             },
+    "achievements":  [
+                         {
+                             "id":  48,
+                             "slug":  "tracker",
+                             "name":  "Rastreador",
+                             "description":  "Siga 50 rastros de animais",
+                             "icon":  "🐾",
+                             "tier":  "bronze",
+                             "stat":  "animal_tracks",
+                             "threshold":  50
+                         },
+                         {
+                             "id":  8,
+                             "slug":  "hunter",
+                             "name":  "Caçador",
+                             "description":  "Abata 50 animais",
+                             "icon":  "🍖",
+                             "tier":  "bronze",
+                             "stat":  "animals_killed",
+                             "threshold":  50
+                         },
+                         {
+                             "id":  38,
+                             "slug":  "potter",
+                             "name":  "Oleiro",
+                             "description":  "Produza 20 itens de cerâmica",
+                             "icon":  "🏺",
+                             "tier":  "bronze",
+                             "stat":  "ceramic_items",
+                             "threshold":  20
+                         },
+                         {
+                             "id":  41,
+                             "slug":  "explorer",
+                             "name":  "Explorador",
+                             "description":  "Visite 5 cidades",
+                             "icon":  "🗺️",
+                             "tier":  "bronze",
+                             "stat":  "cities_visited",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  12,
+                             "slug":  "farmer",
+                             "name":  "Fazendeiro",
+                             "description":  "Colha 50 vegetais",
+                             "icon":  "🌽",
+                             "tier":  "bronze",
+                             "stat":  "crops_harvested",
+                             "threshold":  50
+                         },
+                         {
+                             "id":  32,
+                             "slug":  "big-harvest",
+                             "name":  "Colheita Farta",
+                             "description":  "Colha 200 vegetais",
+                             "icon":  "🥔",
+                             "tier":  "bronze",
+                             "stat":  "crops_harvested",
+                             "threshold":  200
+                         },
+                         {
+                             "id":  35,
+                             "slug":  "gardener",
+                             "name":  "Mãos à Terra",
+                             "description":  "Plante 100 culturas",
+                             "icon":  "🌱",
+                             "tier":  "bronze",
+                             "stat":  "crops_planted",
+                             "threshold":  100
+                         },
+                         {
+                             "id":  4,
+                             "slug":  "marathon",
+                             "name":  "Maratonista",
+                             "description":  "Sobreviva 30 dias",
+                             "icon":  "🏃",
+                             "tier":  "bronze",
+                             "stat":  "days",
+                             "threshold":  30
+                         },
+                         {
+                             "id":  33,
+                             "slug":  "egg-collector",
+                             "name":  "Primeiros Ovos",
+                             "description":  "Colete 30 ovos",
+                             "icon":  "🥚",
+                             "tier":  "bronze",
+                             "stat":  "eggs_collected",
+                             "threshold":  30
+                         },
+                         {
+                             "id":  10,
+                             "slug":  "fisherman",
+                             "name":  "Pescador",
+                             "description":  "Pesque 30 peixes",
+                             "icon":  "🐟",
+                             "tier":  "bronze",
+                             "stat":  "fish_caught",
+                             "threshold":  30
+                         },
+                         {
+                             "id":  39,
+                             "slug":  "smith-novice",
+                             "name":  "Ferreiro Iniciante",
+                             "description":  "Produza sua 1ª arma forjada",
+                             "icon":  "🔥",
+                             "tier":  "bronze",
+                             "stat":  "forged_weapons",
+                             "threshold":  1
+                         },
+                         {
+                             "id":  18,
+                             "slug":  "insomniac",
+                             "name":  "Insone",
+                             "description":  "48h sem dormir",
+                             "icon":  "😴",
+                             "tier":  "bronze",
+                             "stat":  "hours_without_sleep",
+                             "threshold":  48
+                         },
+                         {
+                             "id":  16,
+                             "slug":  "looter",
+                             "name":  "Saqueador",
+                             "description":  "Saqueie 20 casas",
+                             "icon":  "🏚️",
+                             "tier":  "bronze",
+                             "stat":  "houses_looted",
+                             "threshold":  20
+                         },
+                         {
+                             "id":  14,
+                             "slug":  "builder",
+                             "name":  "Construtor",
+                             "description":  "Fabrique 50 itens",
+                             "icon":  "🔨",
+                             "tier":  "bronze",
+                             "stat":  "items_crafted",
+                             "threshold":  50
+                         },
+                         {
+                             "id":  1,
+                             "slug":  "first-blood",
+                             "name":  "Primeiro Sangue",
+                             "description":  "Mate 100 zumbis",
+                             "icon":  "🩸",
+                             "tier":  "bronze",
+                             "stat":  "kills",
+                             "threshold":  100
+                         },
+                         {
+                             "id":  163,
+                             "slug":  "kill-500",
+                             "name":  "Batismo de Sangue",
+                             "description":  "500 zumbis mortos",
+                             "icon":  "🩸",
+                             "tier":  "bronze",
+                             "stat":  "kills",
+                             "threshold":  500
+                         },
+                         {
+                             "id":  40,
+                             "slug":  "driver",
+                             "name":  "Motorista",
+                             "description":  "Percorra 500 km",
+                             "icon":  "🚗",
+                             "tier":  "bronze",
+                             "stat":  "km_driven",
+                             "threshold":  500
+                         },
+                         {
+                             "id":  47,
+                             "slug":  "craftsman",
+                             "name":  "Artesão",
+                             "description":  "Produza 500 materiais",
+                             "icon":  "⚒️",
+                             "tier":  "bronze",
+                             "stat":  "materials_crafted",
+                             "threshold":  500
+                         },
+                         {
+                             "id":  44,
+                             "slug":  "cook",
+                             "name":  "Cozinheiro",
+                             "description":  "Prepare 100 refeições",
+                             "icon":  "🍳",
+                             "tier":  "bronze",
+                             "stat":  "meals_cooked",
+                             "threshold":  100
+                         },
+                         {
+                             "id":  43,
+                             "slug":  "recruit",
+                             "name":  "Recruta",
+                             "description":  "Entre na Base Militar",
+                             "icon":  "🪖",
+                             "tier":  "bronze",
+                             "stat":  "military_visited",
+                             "threshold":  1
+                         },
+                         {
+                             "id":  34,
+                             "slug":  "milkman",
+                             "name":  "Ordenhador",
+                             "description":  "Produza leite pela 1ª vez",
+                             "icon":  "🥛",
+                             "tier":  "bronze",
+                             "stat":  "milk_produced",
+                             "threshold":  1
+                         },
+                         {
+                             "id":  307,
+                             "slug":  "sk-aiming-3",
+                             "name":  "Mira Nível 3",
+                             "description":  "Mira nível 3",
+                             "icon":  "🎯",
+                             "tier":  "bronze",
+                             "stat":  "skill_aiming",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  279,
+                             "slug":  "sk-axe-3",
+                             "name":  "Machado Nível 3",
+                             "description":  "Machado nível 3",
+                             "icon":  "🪓",
+                             "tier":  "bronze",
+                             "stat":  "skill_axe",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  375,
+                             "slug":  "sk-blacksmith-3",
+                             "name":  "Forja Nível 3",
+                             "description":  "Forja nível 3",
+                             "icon":  "🔥",
+                             "tier":  "bronze",
+                             "stat":  "skill_blacksmith",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  283,
+                             "slug":  "sk-blunt-3",
+                             "name":  "Contundente Nível 3",
+                             "description":  "Contundente Longo nível 3",
+                             "icon":  "🔨",
+                             "tier":  "bronze",
+                             "stat":  "skill_blunt",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  387,
+                             "slug":  "sk-butchering-3",
+                             "name":  "Abate Nível 3",
+                             "description":  "Abate nível 3",
+                             "icon":  "🥩",
+                             "tier":  "bronze",
+                             "stat":  "skill_butchering",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  363,
+                             "slug":  "sk-carving-3",
+                             "name":  "Entalhamento Nível 3",
+                             "description":  "Entalhamento nível 3",
+                             "icon":  "🔪",
+                             "tier":  "bronze",
+                             "stat":  "skill_carving",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  335,
+                             "slug":  "sk-cooking-3",
+                             "name":  "Culinária Nível 3",
+                             "description":  "Culinária nível 3",
+                             "icon":  "🍳",
+                             "tier":  "bronze",
+                             "stat":  "skill_cooking",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  343,
+                             "slug":  "sk-doctor-3",
+                             "name":  "Primeiros Socorros Nível 3",
+                             "description":  "Primeiros Socorros nível 3",
+                             "icon":  "🩺",
+                             "tier":  "bronze",
+                             "stat":  "skill_doctor",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  319,
+                             "slug":  "sk-electricity-3",
+                             "name":  "Eletricidade Nível 3",
+                             "description":  "Eletricidade nível 3",
+                             "icon":  "⚡",
+                             "tier":  "bronze",
+                             "stat":  "skill_electricity",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  339,
+                             "slug":  "sk-farming-3",
+                             "name":  "Agricultura Nível 3",
+                             "description":  "Agricultura nível 3",
+                             "icon":  "🌾",
+                             "tier":  "bronze",
+                             "stat":  "skill_farming",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  347,
+                             "slug":  "sk-fishing-3",
+                             "name":  "Pescaria Nível 3",
+                             "description":  "Pescaria nível 3",
+                             "icon":  "🎣",
+                             "tier":  "bronze",
+                             "stat":  "skill_fishing",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  271,
+                             "slug":  "sk-fitness-3",
+                             "name":  "Aptidão Física Nível 3",
+                             "description":  "Aptidão Física nível 3",
+                             "icon":  "💪",
+                             "tier":  "bronze",
+                             "stat":  "skill_fitness",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  359,
+                             "slug":  "sk-flintknapping-3",
+                             "name":  "Lascamento Nível 3",
+                             "description":  "Lascamento nível 3",
+                             "icon":  "🪨",
+                             "tier":  "bronze",
+                             "stat":  "skill_flintknapping",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  379,
+                             "slug":  "sk-glassmaking-3",
+                             "name":  "Vidraria Nível 3",
+                             "description":  "Vidraria nível 3",
+                             "icon":  "🫙",
+                             "tier":  "bronze",
+                             "stat":  "skill_glassmaking",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  383,
+                             "slug":  "sk-husbandry-3",
+                             "name":  "Pecuária Nível 3",
+                             "description":  "Pecuária nível 3",
+                             "icon":  "🐄",
+                             "tier":  "bronze",
+                             "stat":  "skill_husbandry",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  259,
+                             "slug":  "sk-lightfoot-3",
+                             "name":  "Pés Leves Nível 3",
+                             "description":  "Pés Leves nível 3",
+                             "icon":  "🌫️",
+                             "tier":  "bronze",
+                             "stat":  "skill_lightfoot",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  291,
+                             "slug":  "sk-longblade-3",
+                             "name":  "Lâmina Longa Nível 3",
+                             "description":  "Lâmina Longa nível 3",
+                             "icon":  "⚔️",
+                             "tier":  "bronze",
+                             "stat":  "skill_longblade",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  303,
+                             "slug":  "sk-maintenance-3",
+                             "name":  "Manutenção Nível 3",
+                             "description":  "Manutenção nível 3",
+                             "icon":  "🔧",
+                             "tier":  "bronze",
+                             "stat":  "skill_maintenance",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  367,
+                             "slug":  "sk-masonry-3",
+                             "name":  "Alvenaria Nível 3",
+                             "description":  "Alvenaria nível 3",
+                             "icon":  "🧱",
+                             "tier":  "bronze",
+                             "stat":  "skill_masonry",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  327,
+                             "slug":  "sk-mechanics-3",
+                             "name":  "Mecânica Nível 3",
+                             "description":  "Mecânica nível 3",
+                             "icon":  "⚙️",
+                             "tier":  "bronze",
+                             "stat":  "skill_mechanics",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  323,
+                             "slug":  "sk-metalwelding-3",
+                             "name":  "Soldagem Nível 3",
+                             "description":  "Soldagem nível 3",
+                             "icon":  "🔩",
+                             "tier":  "bronze",
+                             "stat":  "skill_metalwelding",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  263,
+                             "slug":  "sk-nimble-3",
+                             "name":  "Agilidade Nível 3",
+                             "description":  "Agilidade nível 3",
+                             "icon":  "💨",
+                             "tier":  "bronze",
+                             "stat":  "skill_nimble",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  355,
+                             "slug":  "sk-plantscavenging-3",
+                             "name":  "Coleta Nível 3",
+                             "description":  "Coleta nível 3",
+                             "icon":  "🌿",
+                             "tier":  "bronze",
+                             "stat":  "skill_plantscavenging",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  371,
+                             "slug":  "sk-pottery-3",
+                             "name":  "Cerâmica Nível 3",
+                             "description":  "Cerâmica nível 3",
+                             "icon":  "🏺",
+                             "tier":  "bronze",
+                             "stat":  "skill_pottery",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  311,
+                             "slug":  "sk-reloading-3",
+                             "name":  "Recarga Nível 3",
+                             "description":  "Recarga nível 3",
+                             "icon":  "🔫",
+                             "tier":  "bronze",
+                             "stat":  "skill_reloading",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  295,
+                             "slug":  "sk-smallblade-3",
+                             "name":  "Lâmina Curta Nível 3",
+                             "description":  "Lâmina Curta nível 3",
+                             "icon":  "🗡️",
+                             "tier":  "bronze",
+                             "stat":  "skill_smallblade",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  287,
+                             "slug":  "sk-smallblunt-3",
+                             "name":  "Cont. Curto Nível 3",
+                             "description":  "Contundente Curto nível 3",
+                             "icon":  "🪃",
+                             "tier":  "bronze",
+                             "stat":  "skill_smallblunt",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  267,
+                             "slug":  "sk-sneak-3",
+                             "name":  "Furtividade Nível 3",
+                             "description":  "Furtividade nível 3",
+                             "icon":  "🥷",
+                             "tier":  "bronze",
+                             "stat":  "skill_sneak",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  299,
+                             "slug":  "sk-spear-3",
+                             "name":  "Lança Nível 3",
+                             "description":  "Lança nível 3",
+                             "icon":  "🏹",
+                             "tier":  "bronze",
+                             "stat":  "skill_spear",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  255,
+                             "slug":  "sk-sprinting-3",
+                             "name":  "Corrida Nível 3",
+                             "description":  "Corrida nível 3",
+                             "icon":  "🏃",
+                             "tier":  "bronze",
+                             "stat":  "skill_sprinting",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  275,
+                             "slug":  "sk-strength-3",
+                             "name":  "Força Nível 3",
+                             "description":  "Força nível 3",
+                             "icon":  "🏋️",
+                             "tier":  "bronze",
+                             "stat":  "skill_strength",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  331,
+                             "slug":  "sk-tailoring-3",
+                             "name":  "Costura Nível 3",
+                             "description":  "Costura nível 3",
+                             "icon":  "🧵",
+                             "tier":  "bronze",
+                             "stat":  "skill_tailoring",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  391,
+                             "slug":  "sk-tracking-3",
+                             "name":  "Rastreamento Nível 3",
+                             "description":  "Rastreamento nível 3",
+                             "icon":  "🐾",
+                             "tier":  "bronze",
+                             "stat":  "skill_tracking",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  351,
+                             "slug":  "sk-trapping-3",
+                             "name":  "Armadilhas Nível 3",
+                             "description":  "Armadilhas nível 3",
+                             "icon":  "🪤",
+                             "tier":  "bronze",
+                             "stat":  "skill_trapping",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  315,
+                             "slug":  "sk-woodwork-3",
+                             "name":  "Marcenaria Nível 3",
+                             "description":  "Marcenaria nível 3",
+                             "icon":  "🪵",
+                             "tier":  "bronze",
+                             "stat":  "skill_woodwork",
+                             "threshold":  3
+                         },
+                         {
+                             "id":  42,
+                             "slug":  "spiffo-customer",
+                             "name":  "Cliente do Spiffo",
+                             "description":  "Visite um restaurante Spiffo",
+                             "icon":  "🦝",
+                             "tier":  "bronze",
+                             "stat":  "spiffo_visited",
+                             "threshold":  1
+                         },
+                         {
+                             "id":  37,
+                             "slug":  "mason",
+                             "name":  "Pedreiro",
+                             "description":  "Construa 50 estruturas de pedra",
+                             "icon":  "🧱",
+                             "tier":  "bronze",
+                             "stat":  "stone_structures",
+                             "threshold":  50
+                         },
+                         {
+                             "id":  36,
+                             "slug":  "carpenter",
+                             "name":  "Carpinteiro",
+                             "description":  "Construa 100 estruturas",
+                             "icon":  "🪓",
+                             "tier":  "bronze",
+                             "stat":  "structures_built",
+                             "threshold":  100
+                         },
+                         {
+                             "id":  46,
+                             "slug":  "lumberjack",
+                             "name":  "Lenhador",
+                             "description":  "Corte 500 árvores",
+                             "icon":  "🪵",
+                             "tier":  "bronze",
+                             "stat":  "trees_cut",
+                             "threshold":  500
+                         },
+                         {
+                             "id":  45,
+                             "slug":  "water-collector",
+                             "name":  "Sobrevivente",
+                             "description":  "Colete 500 litros de água",
+                             "icon":  "💧",
+                             "tier":  "bronze",
+                             "stat":  "water_collected",
+                             "threshold":  500
+                         },
+                         {
+                             "id":  75,
+                             "slug":  "scientist",
+                             "name":  "Cientista",
+                             "description":  "Use todas as bancadas",
+                             "icon":  "🔬",
+                             "tier":  "gold",
+                             "stat":  "all_benches_used",
+                             "threshold":  1
+                         },
+                         {
+                             "id":  73,
+                             "slug":  "traveler",
+                             "name":  "Viajante",
+                             "description":  "Visite todas as regiões do mapa",
+                             "icon":  "🚂",
+                             "tier":  "gold",
+                             "stat":  "all_regions_visited",
+                             "threshold":  1
+                         },
+                         {
+                             "id":  71,
+                             "slug":  "livestock-king",
+                             "name":  "Pecuarista",
+                             "description":  "50 animais vivos",
+                             "icon":  "🐄",
+                             "tier":  "gold",
+                             "stat":  "animals_alive",
+                             "threshold":  50
+                         },
+                         {
+                             "id":  76,
+                             "slug":  "arsenal",
+                             "name":  "Arsenal",
+                             "description":  "100 armas de cada categoria",
+                             "icon":  "🛡️",
+                             "tier":  "gold",
+                             "stat":  "arsenal_complete",
+                             "threshold":  1
+                         },
+                         {
+                             "id":  67,
+                             "slug":  "calorie-hoarder",
+                             "name":  "Acumulador",
+                             "description":  "Armazene 100.000 calorias",
+                             "icon":  "📦",
+                             "tier":  "gold",
+                             "stat":  "calories_stored",
+                             "threshold":  100000
+                         },
+                         {
+                             "id":  69,
+                             "slug":  "master-tailor",
+                             "name":  "Alfaiate Mestre",
+                             "description":  "500 roupas produzidas",
+                             "icon":  "🧵",
+                             "tier":  "gold",
+                             "stat":  "clothes_crafted",
+                             "threshold":  500
+                         },
+                         {
+                             "id":  6,
+                             "slug":  "legend",
+                             "name":  "Lenda",
+                             "description":  "100 dias sobrevividos",
+                             "icon":  "👑",
+                             "tier":  "gold",
+                             "stat":  "days",
+                             "threshold":  100
+                         },
+                         {
+                             "id":  7,
+                             "slug":  "immortal",
+                             "name":  "Imortal",
+                             "description":  "365 dias sobrevividos",
+                             "icon":  "🌟",
+                             "tier":  "gold",
+                             "stat":  "days",
+                             "threshold":  365
+                         },
+                         {
+                             "id":  72,
+                             "slug":  "self-sufficient",
+                             "name":  "Autossuficiente",
+                             "description":  "180 dias sem enlatados",
+                             "icon":  "🌾",
+                             "tier":  "gold",
+                             "stat":  "days_no_canned",
+                             "threshold":  180
+                         },
+                         {
+                             "id":  70,
+                             "slug":  "master-woodworker",
+                             "name":  "Marceneiro Mestre",
+                             "description":  "500 móveis produzidos",
+                             "icon":  "🪑",
+                             "tier":  "gold",
+                             "stat":  "furniture_crafted",
+                             "threshold":  500
+                         },
+                         {
+                             "id":  19,
+                             "slug":  "no-sleep",
+                             "name":  "Sem Sono",
+                             "description":  "96h sem dormir",
+                             "icon":  "👁️",
+                             "tier":  "gold",
+                             "stat":  "hours_without_sleep",
+                             "threshold":  96
+                         },
+                         {
+                             "id":  3,
+                             "slug":  "zombie-god",
+                             "name":  "Deus da Morte",
+                             "description":  "10.000 zumbis mortos",
+                             "icon":  "💀",
+                             "tier":  "gold",
+                             "stat":  "kills",
+                             "threshold":  10000
+                         },
+                         {
+                             "id":  165,
+                             "slug":  "kill-25k",
+                             "name":  "Implacável",
+                             "description":  "25.000 zumbis mortos",
+                             "icon":  "💀",
+                             "tier":  "gold",
+                             "stat":  "kills",
+                             "threshold":  25000
+                         },
+                         {
+                             "id":  166,
+                             "slug":  "kill-50k",
+                             "name":  "Destruidor",
+                             "description":  "50.000 zumbis mortos",
+                             "icon":  "☠️",
+                             "tier":  "gold",
+                             "stat":  "kills",
+                             "threshold":  50000
+                         },
+                         {
+                             "id":  65,
+                             "slug":  "conqueror",
+                             "name":  "Conquistador",
+                             "description":  "Limpe Louisville",
+                             "icon":  "🏙️",
+                             "tier":  "gold",
+                             "stat":  "louisville_cleared",
+                             "threshold":  1
+                         },
+                         {
+                             "id":  62,
+                             "slug":  "fortress",
+                             "name":  "Fortaleza",
+                             "description":  "Construa uma mega base",
+                             "icon":  "🏰",
+                             "tier":  "gold",
+                             "stat":  "mega_base",
+                             "threshold":  1
+                         },
+                         {
+                             "id":  66,
+                             "slug":  "military-op",
+                             "name":  "Operação Militar",
+                             "description":  "Limpe a Base Militar",
+                             "icon":  "🪖",
+                             "tier":  "gold",
+                             "stat":  "military_cleared",
+                             "threshold":  1
+                         },
+                         {
+                             "id":  77,
+                             "slug":  "electrician",
+                             "name":  "Eletricista",
+                             "description":  "Energize 10 bases",
+                             "icon":  "⚡",
+                             "tier":  "gold",
+                             "stat":  "powered_bases",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  309,
+                             "slug":  "sk-aiming-7",
+                             "name":  "Mira Nível 7",
+                             "description":  "Mira nível 7",
+                             "icon":  "🎯",
+                             "tier":  "gold",
+                             "stat":  "skill_aiming",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  281,
+                             "slug":  "sk-axe-7",
+                             "name":  "Machado Nível 7",
+                             "description":  "Machado nível 7",
+                             "icon":  "🪓",
+                             "tier":  "gold",
+                             "stat":  "skill_axe",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  377,
+                             "slug":  "sk-blacksmith-7",
+                             "name":  "Forja Nível 7",
+                             "description":  "Forja nível 7",
+                             "icon":  "🔥",
+                             "tier":  "gold",
+                             "stat":  "skill_blacksmith",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  285,
+                             "slug":  "sk-blunt-7",
+                             "name":  "Contundente Nível 7",
+                             "description":  "Contundente Longo nível 7",
+                             "icon":  "🔨",
+                             "tier":  "gold",
+                             "stat":  "skill_blunt",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  389,
+                             "slug":  "sk-butchering-7",
+                             "name":  "Abate Nível 7",
+                             "description":  "Abate nível 7",
+                             "icon":  "🥩",
+                             "tier":  "gold",
+                             "stat":  "skill_butchering",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  365,
+                             "slug":  "sk-carving-7",
+                             "name":  "Entalhamento Nível 7",
+                             "description":  "Entalhamento nível 7",
+                             "icon":  "🔪",
+                             "tier":  "gold",
+                             "stat":  "skill_carving",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  337,
+                             "slug":  "sk-cooking-7",
+                             "name":  "Culinária Nível 7",
+                             "description":  "Culinária nível 7",
+                             "icon":  "🍳",
+                             "tier":  "gold",
+                             "stat":  "skill_cooking",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  345,
+                             "slug":  "sk-doctor-7",
+                             "name":  "Primeiros Socorros Nível 7",
+                             "description":  "Primeiros Socorros nível 7",
+                             "icon":  "🩺",
+                             "tier":  "gold",
+                             "stat":  "skill_doctor",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  321,
+                             "slug":  "sk-electricity-7",
+                             "name":  "Eletricidade Nível 7",
+                             "description":  "Eletricidade nível 7",
+                             "icon":  "⚡",
+                             "tier":  "gold",
+                             "stat":  "skill_electricity",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  341,
+                             "slug":  "sk-farming-7",
+                             "name":  "Agricultura Nível 7",
+                             "description":  "Agricultura nível 7",
+                             "icon":  "🌾",
+                             "tier":  "gold",
+                             "stat":  "skill_farming",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  349,
+                             "slug":  "sk-fishing-7",
+                             "name":  "Pescaria Nível 7",
+                             "description":  "Pescaria nível 7",
+                             "icon":  "🎣",
+                             "tier":  "gold",
+                             "stat":  "skill_fishing",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  273,
+                             "slug":  "sk-fitness-7",
+                             "name":  "Aptidão Física Nível 7",
+                             "description":  "Aptidão Física nível 7",
+                             "icon":  "💪",
+                             "tier":  "gold",
+                             "stat":  "skill_fitness",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  361,
+                             "slug":  "sk-flintknapping-7",
+                             "name":  "Lascamento Nível 7",
+                             "description":  "Lascamento nível 7",
+                             "icon":  "🪨",
+                             "tier":  "gold",
+                             "stat":  "skill_flintknapping",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  381,
+                             "slug":  "sk-glassmaking-7",
+                             "name":  "Vidraria Nível 7",
+                             "description":  "Vidraria nível 7",
+                             "icon":  "🫙",
+                             "tier":  "gold",
+                             "stat":  "skill_glassmaking",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  385,
+                             "slug":  "sk-husbandry-7",
+                             "name":  "Pecuária Nível 7",
+                             "description":  "Pecuária nível 7",
+                             "icon":  "🐄",
+                             "tier":  "gold",
+                             "stat":  "skill_husbandry",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  261,
+                             "slug":  "sk-lightfoot-7",
+                             "name":  "Pés Leves Nível 7",
+                             "description":  "Pés Leves nível 7",
+                             "icon":  "🌫️",
+                             "tier":  "gold",
+                             "stat":  "skill_lightfoot",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  293,
+                             "slug":  "sk-longblade-7",
+                             "name":  "Lâmina Longa Nível 7",
+                             "description":  "Lâmina Longa nível 7",
+                             "icon":  "⚔️",
+                             "tier":  "gold",
+                             "stat":  "skill_longblade",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  305,
+                             "slug":  "sk-maintenance-7",
+                             "name":  "Manutenção Nível 7",
+                             "description":  "Manutenção nível 7",
+                             "icon":  "🔧",
+                             "tier":  "gold",
+                             "stat":  "skill_maintenance",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  369,
+                             "slug":  "sk-masonry-7",
+                             "name":  "Alvenaria Nível 7",
+                             "description":  "Alvenaria nível 7",
+                             "icon":  "🧱",
+                             "tier":  "gold",
+                             "stat":  "skill_masonry",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  329,
+                             "slug":  "sk-mechanics-7",
+                             "name":  "Mecânica Nível 7",
+                             "description":  "Mecânica nível 7",
+                             "icon":  "⚙️",
+                             "tier":  "gold",
+                             "stat":  "skill_mechanics",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  325,
+                             "slug":  "sk-metalwelding-7",
+                             "name":  "Soldagem Nível 7",
+                             "description":  "Soldagem nível 7",
+                             "icon":  "🔩",
+                             "tier":  "gold",
+                             "stat":  "skill_metalwelding",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  265,
+                             "slug":  "sk-nimble-7",
+                             "name":  "Agilidade Nível 7",
+                             "description":  "Agilidade nível 7",
+                             "icon":  "💨",
+                             "tier":  "gold",
+                             "stat":  "skill_nimble",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  357,
+                             "slug":  "sk-plantscavenging-7",
+                             "name":  "Coleta Nível 7",
+                             "description":  "Coleta nível 7",
+                             "icon":  "🌿",
+                             "tier":  "gold",
+                             "stat":  "skill_plantscavenging",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  373,
+                             "slug":  "sk-pottery-7",
+                             "name":  "Cerâmica Nível 7",
+                             "description":  "Cerâmica nível 7",
+                             "icon":  "🏺",
+                             "tier":  "gold",
+                             "stat":  "skill_pottery",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  313,
+                             "slug":  "sk-reloading-7",
+                             "name":  "Recarga Nível 7",
+                             "description":  "Recarga nível 7",
+                             "icon":  "🔫",
+                             "tier":  "gold",
+                             "stat":  "skill_reloading",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  297,
+                             "slug":  "sk-smallblade-7",
+                             "name":  "Lâmina Curta Nível 7",
+                             "description":  "Lâmina Curta nível 7",
+                             "icon":  "🗡️",
+                             "tier":  "gold",
+                             "stat":  "skill_smallblade",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  289,
+                             "slug":  "sk-smallblunt-7",
+                             "name":  "Cont. Curto Nível 7",
+                             "description":  "Contundente Curto nível 7",
+                             "icon":  "🪃",
+                             "tier":  "gold",
+                             "stat":  "skill_smallblunt",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  269,
+                             "slug":  "sk-sneak-7",
+                             "name":  "Furtividade Nível 7",
+                             "description":  "Furtividade nível 7",
+                             "icon":  "🥷",
+                             "tier":  "gold",
+                             "stat":  "skill_sneak",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  301,
+                             "slug":  "sk-spear-7",
+                             "name":  "Lança Nível 7",
+                             "description":  "Lança nível 7",
+                             "icon":  "🏹",
+                             "tier":  "gold",
+                             "stat":  "skill_spear",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  257,
+                             "slug":  "sk-sprinting-7",
+                             "name":  "Corrida Nível 7",
+                             "description":  "Corrida nível 7",
+                             "icon":  "🏃",
+                             "tier":  "gold",
+                             "stat":  "skill_sprinting",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  277,
+                             "slug":  "sk-strength-7",
+                             "name":  "Força Nível 7",
+                             "description":  "Força nível 7",
+                             "icon":  "🏋️",
+                             "tier":  "gold",
+                             "stat":  "skill_strength",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  333,
+                             "slug":  "sk-tailoring-7",
+                             "name":  "Costura Nível 7",
+                             "description":  "Costura nível 7",
+                             "icon":  "🧵",
+                             "tier":  "gold",
+                             "stat":  "skill_tailoring",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  393,
+                             "slug":  "sk-tracking-7",
+                             "name":  "Rastreamento Nível 7",
+                             "description":  "Rastreamento nível 7",
+                             "icon":  "🐾",
+                             "tier":  "gold",
+                             "stat":  "skill_tracking",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  353,
+                             "slug":  "sk-trapping-7",
+                             "name":  "Armadilhas Nível 7",
+                             "description":  "Armadilhas nível 7",
+                             "icon":  "🪤",
+                             "tier":  "gold",
+                             "stat":  "skill_trapping",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  317,
+                             "slug":  "sk-woodwork-7",
+                             "name":  "Marcenaria Nível 7",
+                             "description":  "Marcenaria nível 7",
+                             "icon":  "🪵",
+                             "tier":  "gold",
+                             "stat":  "skill_woodwork",
+                             "threshold":  7
+                         },
+                         {
+                             "id":  63,
+                             "slug":  "spiffo-base",
+                             "name":  "Dono do Spiffo",
+                             "description":  "Base em um restaurante Spiffo",
+                             "icon":  "🍔",
+                             "tier":  "gold",
+                             "stat":  "spiffo_base_any",
+                             "threshold":  1
+                         },
+                         {
+                             "id":  64,
+                             "slug":  "spiffo-franchise",
+                             "name":  "Franqueado",
+                             "description":  "Bases em 5 restaurantes Spiffo",
+                             "icon":  "🦝",
+                             "tier":  "gold",
+                             "stat":  "spiffo_base_five",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  74,
+                             "slug":  "spiffo-collector",
+                             "name":  "Colecionador",
+                             "description":  "Colete todas as estátuas Spiffo",
+                             "icon":  "🏛️",
+                             "tier":  "gold",
+                             "stat":  "spiffo_statues",
+                             "threshold":  1
+                         },
+                         {
+                             "id":  68,
+                             "slug":  "master-smith",
+                             "name":  "Mestre Ferreiro",
+                             "description":  "500 armas produzidas",
+                             "icon":  "⚙️",
+                             "tier":  "gold",
+                             "stat":  "weapons_crafted",
+                             "threshold":  500
+                         },
+                         {
+                             "id":  254,
+                             "slug":  "kill-800k",
+                             "name":  "Exterminador Lendário",
+                             "description":  "800.000 zumbis mortos — objetivo máximo do campeonato",
+                             "icon":  "👑",
+                             "tier":  "legendary",
+                             "stat":  "kills",
+                             "threshold":  800000
+                         },
+                         {
+                             "id":  82,
+                             "slug":  "supreme-hunter",
+                             "name":  "Caçador Supremo",
+                             "description":  "Abata todas as espécies de animais",
+                             "icon":  "🏹",
+                             "tier":  "platinum",
+                             "stat":  "all_animal_species",
+                             "threshold":  1
+                         },
+                         {
+                             "id":  83,
+                             "slug":  "magnate",
+                             "name":  "Magnata",
+                             "description":  "Tenha todas as bases totalmente equipadas",
+                             "icon":  "🏆",
+                             "tier":  "platinum",
+                             "stat":  "all_bases_equipped",
+                             "threshold":  1
+                         },
+                         {
+                             "id":  87,
+                             "slug":  "completionist",
+                             "name":  "Completionista",
+                             "description":  "Obtenha todas as conquistas Ouro",
+                             "icon":  "💯",
+                             "tier":  "platinum",
+                             "stat":  "all_gold_achievements",
+                             "threshold":  1
+                         },
+                         {
+                             "id":  85,
+                             "slug":  "supreme-survivor",
+                             "name":  "Sobrevivente Supremo",
+                             "description":  "Complete todos os objetivos do campeonato",
+                             "icon":  "👑",
+                             "tier":  "platinum",
+                             "stat":  "all_objectives_complete",
+                             "threshold":  1
+                         },
+                         {
+                             "id":  81,
+                             "slug":  "master-skills",
+                             "name":  "Mestre das Habilidades",
+                             "description":  "Nível máximo em todas as habilidades",
+                             "icon":  "🧬",
+                             "tier":  "platinum",
+                             "stat":  "all_skills_10",
+                             "threshold":  1
+                         },
+                         {
+                             "id":  79,
+                             "slug":  "spiffo-guardian",
+                             "name":  "Guardião do Spiffo",
+                             "description":  "Domine todos os restaurantes Spiffo",
+                             "icon":  "🏅",
+                             "tier":  "platinum",
+                             "stat":  "all_spiffo_bases",
+                             "threshold":  1
+                         },
+                         {
+                             "id":  84,
+                             "slug":  "rebuilder",
+                             "name":  "Reconstrutor",
+                             "description":  "Reconstrua todas as cidades com bases",
+                             "icon":  "🧱",
+                             "tier":  "platinum",
+                             "stat":  "cities_rebuilt",
+                             "threshold":  1
+                         },
+                         {
+                             "id":  80,
+                             "slug":  "full-map",
+                             "name":  "Kentucky Inteiro",
+                             "description":  "Revele todo o mapa",
+                             "icon":  "🗺️",
+                             "tier":  "platinum",
+                             "stat":  "full_map_revealed",
+                             "threshold":  1
+                         },
+                         {
+                             "id":  86,
+                             "slug":  "master-industry",
+                             "name":  "Mestre da Indústria",
+                             "description":  "50.000 itens produzidos",
+                             "icon":  "⚒️",
+                             "tier":  "platinum",
+                             "stat":  "items_crafted",
+                             "threshold":  50000
+                         },
+                         {
+                             "id":  167,
+                             "slug":  "kill-100k",
+                             "name":  "Genocida",
+                             "description":  "100.000 zumbis mortos",
+                             "icon":  "💣",
+                             "tier":  "platinum",
+                             "stat":  "kills",
+                             "threshold":  100000
+                         },
+                         {
+                             "id":  168,
+                             "slug":  "kill-250k",
+                             "name":  "Flagelo dos Mortos",
+                             "description":  "250.000 zumbis mortos",
+                             "icon":  "🔥",
+                             "tier":  "platinum",
+                             "stat":  "kills",
+                             "threshold":  250000
+                         },
+                         {
+                             "id":  169,
+                             "slug":  "kill-500k",
+                             "name":  "Aniquilador",
+                             "description":  "500.000 zumbis mortos",
+                             "icon":  "☠️",
+                             "tier":  "platinum",
+                             "stat":  "kills",
+                             "threshold":  500000
+                         },
+                         {
+                             "id":  78,
+                             "slug":  "season-01",
+                             "name":  "O Início do Fim",
+                             "description":  "Complete a Temporada 01",
+                             "icon":  "☣️",
+                             "tier":  "platinum",
+                             "stat":  "season_01_complete",
+                             "threshold":  1
+                         },
+                         {
+                             "id":  310,
+                             "slug":  "sk-aiming-10",
+                             "name":  "Franco-Atirador",
+                             "description":  "Mira nível 10",
+                             "icon":  "🎯",
+                             "tier":  "platinum",
+                             "stat":  "skill_aiming",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  282,
+                             "slug":  "sk-axe-10",
+                             "name":  "Mestre do Machado",
+                             "description":  "Machado nível 10",
+                             "icon":  "🪓",
+                             "tier":  "platinum",
+                             "stat":  "skill_axe",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  378,
+                             "slug":  "sk-blacksmith-10",
+                             "name":  "Grande Ferreiro",
+                             "description":  "Forja nível 10",
+                             "icon":  "🔥",
+                             "tier":  "platinum",
+                             "stat":  "skill_blacksmith",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  286,
+                             "slug":  "sk-blunt-10",
+                             "name":  "Esmagador",
+                             "description":  "Contundente Longo nível 10",
+                             "icon":  "🔨",
+                             "tier":  "platinum",
+                             "stat":  "skill_blunt",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  390,
+                             "slug":  "sk-butchering-10",
+                             "name":  "Mestre do Abate",
+                             "description":  "Abate nível 10",
+                             "icon":  "🥩",
+                             "tier":  "platinum",
+                             "stat":  "skill_butchering",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  366,
+                             "slug":  "sk-carving-10",
+                             "name":  "Entalhador",
+                             "description":  "Entalhamento nível 10",
+                             "icon":  "🔪",
+                             "tier":  "platinum",
+                             "stat":  "skill_carving",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  338,
+                             "slug":  "sk-cooking-10",
+                             "name":  "Chefe de Cozinha",
+                             "description":  "Culinária nível 10",
+                             "icon":  "🍳",
+                             "tier":  "platinum",
+                             "stat":  "skill_cooking",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  346,
+                             "slug":  "sk-doctor-10",
+                             "name":  "Médico de Campo",
+                             "description":  "Primeiros Socorros nível 10",
+                             "icon":  "🩺",
+                             "tier":  "platinum",
+                             "stat":  "skill_doctor",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  322,
+                             "slug":  "sk-electricity-10",
+                             "name":  "Técnico Elétrico",
+                             "description":  "Eletricidade nível 10",
+                             "icon":  "⚡",
+                             "tier":  "platinum",
+                             "stat":  "skill_electricity",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  342,
+                             "slug":  "sk-farming-10",
+                             "name":  "Mestre da Lavoura",
+                             "description":  "Agricultura nível 10",
+                             "icon":  "🌾",
+                             "tier":  "platinum",
+                             "stat":  "skill_farming",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  350,
+                             "slug":  "sk-fishing-10",
+                             "name":  "Grande Pescador",
+                             "description":  "Pescaria nível 10",
+                             "icon":  "🎣",
+                             "tier":  "platinum",
+                             "stat":  "skill_fishing",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  274,
+                             "slug":  "sk-fitness-10",
+                             "name":  "Condicionado",
+                             "description":  "Aptidão Física nível 10",
+                             "icon":  "💪",
+                             "tier":  "platinum",
+                             "stat":  "skill_fitness",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  362,
+                             "slug":  "sk-flintknapping-10",
+                             "name":  "Lascador",
+                             "description":  "Lascamento nível 10",
+                             "icon":  "🪨",
+                             "tier":  "platinum",
+                             "stat":  "skill_flintknapping",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  382,
+                             "slug":  "sk-glassmaking-10",
+                             "name":  "Vidreiro",
+                             "description":  "Vidraria nível 10",
+                             "icon":  "🫙",
+                             "tier":  "platinum",
+                             "stat":  "skill_glassmaking",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  386,
+                             "slug":  "sk-husbandry-10",
+                             "name":  "Mestre da Pecuária",
+                             "description":  "Pecuária nível 10",
+                             "icon":  "🐄",
+                             "tier":  "platinum",
+                             "stat":  "skill_husbandry",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  262,
+                             "slug":  "sk-lightfoot-10",
+                             "name":  "Passo Silencioso",
+                             "description":  "Pés Leves nível 10",
+                             "icon":  "🌫️",
+                             "tier":  "platinum",
+                             "stat":  "skill_lightfoot",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  294,
+                             "slug":  "sk-longblade-10",
+                             "name":  "Espadachim",
+                             "description":  "Lâmina Longa nível 10",
+                             "icon":  "⚔️",
+                             "tier":  "platinum",
+                             "stat":  "skill_longblade",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  306,
+                             "slug":  "sk-maintenance-10",
+                             "name":  "Zelador",
+                             "description":  "Manutenção nível 10",
+                             "icon":  "🔧",
+                             "tier":  "platinum",
+                             "stat":  "skill_maintenance",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  370,
+                             "slug":  "sk-masonry-10",
+                             "name":  "Mestre da Alvenaria",
+                             "description":  "Alvenaria nível 10",
+                             "icon":  "🧱",
+                             "tier":  "platinum",
+                             "stat":  "skill_masonry",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  330,
+                             "slug":  "sk-mechanics-10",
+                             "name":  "Mecânico",
+                             "description":  "Mecânica nível 10",
+                             "icon":  "⚙️",
+                             "tier":  "platinum",
+                             "stat":  "skill_mechanics",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  326,
+                             "slug":  "sk-metalwelding-10",
+                             "name":  "Soldador Mestre",
+                             "description":  "Soldagem nível 10",
+                             "icon":  "🔩",
+                             "tier":  "platinum",
+                             "stat":  "skill_metalwelding",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  266,
+                             "slug":  "sk-nimble-10",
+                             "name":  "Esquivo",
+                             "description":  "Agilidade nível 10",
+                             "icon":  "💨",
+                             "tier":  "platinum",
+                             "stat":  "skill_nimble",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  358,
+                             "slug":  "sk-plantscavenging-10",
+                             "name":  "Mestre da Coleta",
+                             "description":  "Coleta nível 10",
+                             "icon":  "🌿",
+                             "tier":  "platinum",
+                             "stat":  "skill_plantscavenging",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  374,
+                             "slug":  "sk-pottery-10",
+                             "name":  "Ceramista",
+                             "description":  "Cerâmica nível 10",
+                             "icon":  "🏺",
+                             "tier":  "platinum",
+                             "stat":  "skill_pottery",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  314,
+                             "slug":  "sk-reloading-10",
+                             "name":  "Armeiro",
+                             "description":  "Recarga nível 10",
+                             "icon":  "🔫",
+                             "tier":  "platinum",
+                             "stat":  "skill_reloading",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  298,
+                             "slug":  "sk-smallblade-10",
+                             "name":  "Lâmina Veloz",
+                             "description":  "Lâmina Curta nível 10",
+                             "icon":  "🗡️",
+                             "tier":  "platinum",
+                             "stat":  "skill_smallblade",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  290,
+                             "slug":  "sk-smallblunt-10",
+                             "name":  "Golpe Preciso",
+                             "description":  "Contundente Curto nível 10",
+                             "icon":  "🪃",
+                             "tier":  "platinum",
+                             "stat":  "skill_smallblunt",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  270,
+                             "slug":  "sk-sneak-10",
+                             "name":  "Sombra",
+                             "description":  "Furtividade nível 10",
+                             "icon":  "🥷",
+                             "tier":  "platinum",
+                             "stat":  "skill_sneak",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  302,
+                             "slug":  "sk-spear-10",
+                             "name":  "Lanceiro",
+                             "description":  "Lança nível 10",
+                             "icon":  "🏹",
+                             "tier":  "platinum",
+                             "stat":  "skill_spear",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  258,
+                             "slug":  "sk-sprinting-10",
+                             "name":  "Pernas de Aço",
+                             "description":  "Corrida nível 10",
+                             "icon":  "🏃",
+                             "tier":  "platinum",
+                             "stat":  "skill_sprinting",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  278,
+                             "slug":  "sk-strength-10",
+                             "name":  "Colosso",
+                             "description":  "Força nível 10",
+                             "icon":  "🏋️",
+                             "tier":  "platinum",
+                             "stat":  "skill_strength",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  334,
+                             "slug":  "sk-tailoring-10",
+                             "name":  "Costureiro",
+                             "description":  "Costura nível 10",
+                             "icon":  "🧵",
+                             "tier":  "platinum",
+                             "stat":  "skill_tailoring",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  394,
+                             "slug":  "sk-tracking-10",
+                             "name":  "Mestre do Rastreio",
+                             "description":  "Rastreamento nível 10",
+                             "icon":  "🐾",
+                             "tier":  "platinum",
+                             "stat":  "skill_tracking",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  354,
+                             "slug":  "sk-trapping-10",
+                             "name":  "Mestre das Armadilhas",
+                             "description":  "Armadilhas nível 10",
+                             "icon":  "🪤",
+                             "tier":  "platinum",
+                             "stat":  "skill_trapping",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  318,
+                             "slug":  "sk-woodwork-10",
+                             "name":  "Mestre da Madeira",
+                             "description":  "Marcenaria nível 10",
+                             "icon":  "🪵",
+                             "tier":  "platinum",
+                             "stat":  "skill_woodwork",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  56,
+                             "slug":  "kentucky-explorer",
+                             "name":  "Explorador de Kentucky",
+                             "description":  "Visite todas as cidades",
+                             "icon":  "🧭",
+                             "tier":  "silver",
+                             "stat":  "all_cities_visited",
+                             "threshold":  1
+                         },
+                         {
+                             "id":  60,
+                             "slug":  "industrialist",
+                             "name":  "Industrial",
+                             "description":  "Utilize todas as estações",
+                             "icon":  "🏭",
+                             "tier":  "silver",
+                             "stat":  "all_stations_used",
+                             "threshold":  1
+                         },
+                         {
+                             "id":  54,
+                             "slug":  "breeder",
+                             "name":  "Criador",
+                             "description":  "4 espécies de animais",
+                             "icon":  "🐑",
+                             "tier":  "silver",
+                             "stat":  "animal_species",
+                             "threshold":  4
+                         },
+                         {
+                             "id":  9,
+                             "slug":  "big-game",
+                             "name":  "Caça Grossa",
+                             "description":  "200 animais abatidos",
+                             "icon":  "🦌",
+                             "tier":  "silver",
+                             "stat":  "animals_killed",
+                             "threshold":  200
+                         },
+                         {
+                             "id":  61,
+                             "slug":  "scout",
+                             "name":  "Escoteiro",
+                             "description":  "Explore 100 porões",
+                             "icon":  "🔦",
+                             "tier":  "silver",
+                             "stat":  "basements_explored",
+                             "threshold":  100
+                         },
+                         {
+                             "id":  49,
+                             "slug":  "colonizer",
+                             "name":  "Colonizador",
+                             "description":  "Construa 5 bases",
+                             "icon":  "🏠",
+                             "tier":  "silver",
+                             "stat":  "bases_built",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  57,
+                             "slug":  "scholar",
+                             "name":  "Estudioso",
+                             "description":  "Leia 100 livros",
+                             "icon":  "📚",
+                             "tier":  "silver",
+                             "stat":  "books_read",
+                             "threshold":  100
+                         },
+                         {
+                             "id":  52,
+                             "slug":  "cheesemaker",
+                             "name":  "Fazendeiro Rural",
+                             "description":  "Produza queijo",
+                             "icon":  "🧀",
+                             "tier":  "silver",
+                             "stat":  "cheese_produced",
+                             "threshold":  1
+                         },
+                         {
+                             "id":  13,
+                             "slug":  "agronomist",
+                             "name":  "Agrônomo",
+                             "description":  "500 colheitas",
+                             "icon":  "🚜",
+                             "tier":  "silver",
+                             "stat":  "crops_harvested",
+                             "threshold":  500
+                         },
+                         {
+                             "id":  5,
+                             "slug":  "veteran",
+                             "name":  "Veterano",
+                             "description":  "60 dias sobrevividos",
+                             "icon":  "🎖️",
+                             "tier":  "silver",
+                             "stat":  "days",
+                             "threshold":  60
+                         },
+                         {
+                             "id":  59,
+                             "slug":  "door-breaker",
+                             "name":  "Arrombador",
+                             "description":  "Abra 500 portas",
+                             "icon":  "🚪",
+                             "tier":  "silver",
+                             "stat":  "doors_opened",
+                             "threshold":  500
+                         },
+                         {
+                             "id":  11,
+                             "slug":  "master-angler",
+                             "name":  "Mestre da Pesca",
+                             "description":  "100 peixes capturados",
+                             "icon":  "🎣",
+                             "tier":  "silver",
+                             "stat":  "fish_caught",
+                             "threshold":  100
+                         },
+                         {
+                             "id":  17,
+                             "slug":  "raider",
+                             "name":  "Pilhador",
+                             "description":  "100 casas saqueadas",
+                             "icon":  "🗝️",
+                             "tier":  "silver",
+                             "stat":  "houses_looted",
+                             "threshold":  100
+                         },
+                         {
+                             "id":  15,
+                             "slug":  "engineer",
+                             "name":  "Engenheiro",
+                             "description":  "500 itens fabricados",
+                             "icon":  "🏗️",
+                             "tier":  "silver",
+                             "stat":  "items_crafted",
+                             "threshold":  500
+                         },
+                         {
+                             "id":  58,
+                             "slug":  "master-craftsman",
+                             "name":  "Mestre Artesão",
+                             "description":  "5.000 itens fabricados",
+                             "icon":  "🛠️",
+                             "tier":  "silver",
+                             "stat":  "items_crafted",
+                             "threshold":  5000
+                         },
+                         {
+                             "id":  2,
+                             "slug":  "zombie-slayer",
+                             "name":  "Exterminador",
+                             "description":  "1.000 zumbis mortos",
+                             "icon":  "⚔️",
+                             "tier":  "silver",
+                             "stat":  "kills",
+                             "threshold":  1000
+                         },
+                         {
+                             "id":  164,
+                             "slug":  "kill-5k",
+                             "name":  "Caçador de Elite",
+                             "description":  "5.000 zumbis mortos",
+                             "icon":  "⚔️",
+                             "tier":  "silver",
+                             "stat":  "kills",
+                             "threshold":  5000
+                         },
+                         {
+                             "id":  50,
+                             "slug":  "trucker",
+                             "name":  "Caminhoneiro",
+                             "description":  "Percorra 2.000 km",
+                             "icon":  "🚛",
+                             "tier":  "silver",
+                             "stat":  "km_driven",
+                             "threshold":  2000
+                         },
+                         {
+                             "id":  53,
+                             "slug":  "butcher",
+                             "name":  "Açougueiro",
+                             "description":  "200 animais abatidos p/ carne",
+                             "icon":  "🥩",
+                             "tier":  "silver",
+                             "stat":  "meat_butchered",
+                             "threshold":  200
+                         },
+                         {
+                             "id":  308,
+                             "slug":  "sk-aiming-5",
+                             "name":  "Mira Nível 5",
+                             "description":  "Mira nível 5",
+                             "icon":  "🎯",
+                             "tier":  "silver",
+                             "stat":  "skill_aiming",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  183,
+                             "slug":  "sk-aiming",
+                             "name":  "Franco-Atirador",
+                             "description":  "Mira nível 10",
+                             "icon":  "🎯",
+                             "tier":  "silver",
+                             "stat":  "skill_aiming",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  280,
+                             "slug":  "sk-axe-5",
+                             "name":  "Machado Nível 5",
+                             "description":  "Machado nível 5",
+                             "icon":  "🪓",
+                             "tier":  "silver",
+                             "stat":  "skill_axe",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  176,
+                             "slug":  "sk-axe",
+                             "name":  "Mestre do Machado",
+                             "description":  "Machado nível 10",
+                             "icon":  "🪓",
+                             "tier":  "silver",
+                             "stat":  "skill_axe",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  376,
+                             "slug":  "sk-blacksmith-5",
+                             "name":  "Forja Nível 5",
+                             "description":  "Forja nível 5",
+                             "icon":  "🔥",
+                             "tier":  "silver",
+                             "stat":  "skill_blacksmith",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  200,
+                             "slug":  "sk-blacksmith",
+                             "name":  "Grande Ferreiro",
+                             "description":  "Forja nível 10",
+                             "icon":  "🔥",
+                             "tier":  "silver",
+                             "stat":  "skill_blacksmith",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  284,
+                             "slug":  "sk-blunt-5",
+                             "name":  "Contundente Nível 5",
+                             "description":  "Contundente Longo nível 5",
+                             "icon":  "🔨",
+                             "tier":  "silver",
+                             "stat":  "skill_blunt",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  177,
+                             "slug":  "sk-blunt",
+                             "name":  "Esmagador",
+                             "description":  "Contundente Longo nível 10",
+                             "icon":  "🔨",
+                             "tier":  "silver",
+                             "stat":  "skill_blunt",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  388,
+                             "slug":  "sk-butchering-5",
+                             "name":  "Abate Nível 5",
+                             "description":  "Abate nível 5",
+                             "icon":  "🥩",
+                             "tier":  "silver",
+                             "stat":  "skill_butchering",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  203,
+                             "slug":  "sk-butchering",
+                             "name":  "Mestre do Abate",
+                             "description":  "Abate nível 10",
+                             "icon":  "🥩",
+                             "tier":  "silver",
+                             "stat":  "skill_butchering",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  364,
+                             "slug":  "sk-carving-5",
+                             "name":  "Entalhamento Nível 5",
+                             "description":  "Entalhamento nível 5",
+                             "icon":  "🔪",
+                             "tier":  "silver",
+                             "stat":  "skill_carving",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  197,
+                             "slug":  "sk-carving",
+                             "name":  "Entalhador",
+                             "description":  "Entalhamento nível 10",
+                             "icon":  "🔪",
+                             "tier":  "silver",
+                             "stat":  "skill_carving",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  336,
+                             "slug":  "sk-cooking-5",
+                             "name":  "Culinária Nível 5",
+                             "description":  "Culinária nível 5",
+                             "icon":  "🍳",
+                             "tier":  "silver",
+                             "stat":  "skill_cooking",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  190,
+                             "slug":  "sk-cooking",
+                             "name":  "Chefe de Cozinha",
+                             "description":  "Culinária nível 10",
+                             "icon":  "🍳",
+                             "tier":  "silver",
+                             "stat":  "skill_cooking",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  344,
+                             "slug":  "sk-doctor-5",
+                             "name":  "Primeiros Socorros Nível 5",
+                             "description":  "Primeiros Socorros nível 5",
+                             "icon":  "🩺",
+                             "tier":  "silver",
+                             "stat":  "skill_doctor",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  192,
+                             "slug":  "sk-doctor",
+                             "name":  "Médico de Campo",
+                             "description":  "Primeiros Socorros nível 10",
+                             "icon":  "🩺",
+                             "tier":  "silver",
+                             "stat":  "skill_doctor",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  320,
+                             "slug":  "sk-electricity-5",
+                             "name":  "Eletricidade Nível 5",
+                             "description":  "Eletricidade nível 5",
+                             "icon":  "⚡",
+                             "tier":  "silver",
+                             "stat":  "skill_electricity",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  186,
+                             "slug":  "sk-electricity",
+                             "name":  "Técnico Elétrico",
+                             "description":  "Eletricidade nível 10",
+                             "icon":  "⚡",
+                             "tier":  "silver",
+                             "stat":  "skill_electricity",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  340,
+                             "slug":  "sk-farming-5",
+                             "name":  "Agricultura Nível 5",
+                             "description":  "Agricultura nível 5",
+                             "icon":  "🌾",
+                             "tier":  "silver",
+                             "stat":  "skill_farming",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  191,
+                             "slug":  "sk-farming",
+                             "name":  "Mestre da Lavoura",
+                             "description":  "Agricultura nível 10",
+                             "icon":  "🌾",
+                             "tier":  "silver",
+                             "stat":  "skill_farming",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  348,
+                             "slug":  "sk-fishing-5",
+                             "name":  "Pescaria Nível 5",
+                             "description":  "Pescaria nível 5",
+                             "icon":  "🎣",
+                             "tier":  "silver",
+                             "stat":  "skill_fishing",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  193,
+                             "slug":  "sk-fishing",
+                             "name":  "Grande Pescador",
+                             "description":  "Pescaria nível 10",
+                             "icon":  "🎣",
+                             "tier":  "silver",
+                             "stat":  "skill_fishing",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  272,
+                             "slug":  "sk-fitness-5",
+                             "name":  "Aptidão Física Nível 5",
+                             "description":  "Aptidão Física nível 5",
+                             "icon":  "💪",
+                             "tier":  "silver",
+                             "stat":  "skill_fitness",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  174,
+                             "slug":  "sk-fitness",
+                             "name":  "Condicionado",
+                             "description":  "Aptidão Física nível 10",
+                             "icon":  "💪",
+                             "tier":  "silver",
+                             "stat":  "skill_fitness",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  360,
+                             "slug":  "sk-flintknapping-5",
+                             "name":  "Lascamento Nível 5",
+                             "description":  "Lascamento nível 5",
+                             "icon":  "🪨",
+                             "tier":  "silver",
+                             "stat":  "skill_flintknapping",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  196,
+                             "slug":  "sk-flintknapping",
+                             "name":  "Lascador",
+                             "description":  "Lascamento nível 10",
+                             "icon":  "🪨",
+                             "tier":  "silver",
+                             "stat":  "skill_flintknapping",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  380,
+                             "slug":  "sk-glassmaking-5",
+                             "name":  "Vidraria Nível 5",
+                             "description":  "Vidraria nível 5",
+                             "icon":  "🫙",
+                             "tier":  "silver",
+                             "stat":  "skill_glassmaking",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  201,
+                             "slug":  "sk-glassmaking",
+                             "name":  "Vidreiro",
+                             "description":  "Vidraria nível 10",
+                             "icon":  "🫙",
+                             "tier":  "silver",
+                             "stat":  "skill_glassmaking",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  384,
+                             "slug":  "sk-husbandry-5",
+                             "name":  "Pecuária Nível 5",
+                             "description":  "Pecuária nível 5",
+                             "icon":  "🐄",
+                             "tier":  "silver",
+                             "stat":  "skill_husbandry",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  202,
+                             "slug":  "sk-husbandry",
+                             "name":  "Mestre da Pecuária",
+                             "description":  "Pecuária nível 10",
+                             "icon":  "🐄",
+                             "tier":  "silver",
+                             "stat":  "skill_husbandry",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  260,
+                             "slug":  "sk-lightfoot-5",
+                             "name":  "Pés Leves Nível 5",
+                             "description":  "Pés Leves nível 5",
+                             "icon":  "🌫️",
+                             "tier":  "silver",
+                             "stat":  "skill_lightfoot",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  171,
+                             "slug":  "sk-lightfoot",
+                             "name":  "Passo Silencioso",
+                             "description":  "Pés Leves nível 10",
+                             "icon":  "🌫️",
+                             "tier":  "silver",
+                             "stat":  "skill_lightfoot",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  292,
+                             "slug":  "sk-longblade-5",
+                             "name":  "Lâmina Longa Nível 5",
+                             "description":  "Lâmina Longa nível 5",
+                             "icon":  "⚔️",
+                             "tier":  "silver",
+                             "stat":  "skill_longblade",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  179,
+                             "slug":  "sk-longblade",
+                             "name":  "Espadachim",
+                             "description":  "Lâmina Longa nível 10",
+                             "icon":  "⚔️",
+                             "tier":  "silver",
+                             "stat":  "skill_longblade",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  304,
+                             "slug":  "sk-maintenance-5",
+                             "name":  "Manutenção Nível 5",
+                             "description":  "Manutenção nível 5",
+                             "icon":  "🔧",
+                             "tier":  "silver",
+                             "stat":  "skill_maintenance",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  182,
+                             "slug":  "sk-maintenance",
+                             "name":  "Zelador",
+                             "description":  "Manutenção nível 10",
+                             "icon":  "🔧",
+                             "tier":  "silver",
+                             "stat":  "skill_maintenance",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  368,
+                             "slug":  "sk-masonry-5",
+                             "name":  "Alvenaria Nível 5",
+                             "description":  "Alvenaria nível 5",
+                             "icon":  "🧱",
+                             "tier":  "silver",
+                             "stat":  "skill_masonry",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  198,
+                             "slug":  "sk-masonry",
+                             "name":  "Mestre da Alvenaria",
+                             "description":  "Alvenaria nível 10",
+                             "icon":  "🧱",
+                             "tier":  "silver",
+                             "stat":  "skill_masonry",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  328,
+                             "slug":  "sk-mechanics-5",
+                             "name":  "Mecânica Nível 5",
+                             "description":  "Mecânica nível 5",
+                             "icon":  "⚙️",
+                             "tier":  "silver",
+                             "stat":  "skill_mechanics",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  188,
+                             "slug":  "sk-mechanics",
+                             "name":  "Mecânico",
+                             "description":  "Mecânica nível 10",
+                             "icon":  "⚙️",
+                             "tier":  "silver",
+                             "stat":  "skill_mechanics",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  324,
+                             "slug":  "sk-metalwelding-5",
+                             "name":  "Soldagem Nível 5",
+                             "description":  "Soldagem nível 5",
+                             "icon":  "🔩",
+                             "tier":  "silver",
+                             "stat":  "skill_metalwelding",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  187,
+                             "slug":  "sk-metalwelding",
+                             "name":  "Soldador Mestre",
+                             "description":  "Soldagem nível 10",
+                             "icon":  "🔩",
+                             "tier":  "silver",
+                             "stat":  "skill_metalwelding",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  264,
+                             "slug":  "sk-nimble-5",
+                             "name":  "Agilidade Nível 5",
+                             "description":  "Agilidade nível 5",
+                             "icon":  "💨",
+                             "tier":  "silver",
+                             "stat":  "skill_nimble",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  172,
+                             "slug":  "sk-nimble",
+                             "name":  "Esquivo",
+                             "description":  "Agilidade nível 10",
+                             "icon":  "💨",
+                             "tier":  "silver",
+                             "stat":  "skill_nimble",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  356,
+                             "slug":  "sk-plantscavenging-5",
+                             "name":  "Coleta Nível 5",
+                             "description":  "Coleta nível 5",
+                             "icon":  "🌿",
+                             "tier":  "silver",
+                             "stat":  "skill_plantscavenging",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  195,
+                             "slug":  "sk-plantscavenging",
+                             "name":  "Mestre da Coleta",
+                             "description":  "Coleta nível 10",
+                             "icon":  "🌿",
+                             "tier":  "silver",
+                             "stat":  "skill_plantscavenging",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  372,
+                             "slug":  "sk-pottery-5",
+                             "name":  "Cerâmica Nível 5",
+                             "description":  "Cerâmica nível 5",
+                             "icon":  "🏺",
+                             "tier":  "silver",
+                             "stat":  "skill_pottery",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  199,
+                             "slug":  "sk-pottery",
+                             "name":  "Ceramista",
+                             "description":  "Cerâmica nível 10",
+                             "icon":  "🏺",
+                             "tier":  "silver",
+                             "stat":  "skill_pottery",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  312,
+                             "slug":  "sk-reloading-5",
+                             "name":  "Recarga Nível 5",
+                             "description":  "Recarga nível 5",
+                             "icon":  "🔫",
+                             "tier":  "silver",
+                             "stat":  "skill_reloading",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  184,
+                             "slug":  "sk-reloading",
+                             "name":  "Armeiro",
+                             "description":  "Recarga nível 10",
+                             "icon":  "🔫",
+                             "tier":  "silver",
+                             "stat":  "skill_reloading",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  296,
+                             "slug":  "sk-smallblade-5",
+                             "name":  "Lâmina Curta Nível 5",
+                             "description":  "Lâmina Curta nível 5",
+                             "icon":  "🗡️",
+                             "tier":  "silver",
+                             "stat":  "skill_smallblade",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  180,
+                             "slug":  "sk-smallblade",
+                             "name":  "Lâmina Veloz",
+                             "description":  "Lâmina Curta nível 10",
+                             "icon":  "🗡️",
+                             "tier":  "silver",
+                             "stat":  "skill_smallblade",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  288,
+                             "slug":  "sk-smallblunt-5",
+                             "name":  "Cont. Curto Nível 5",
+                             "description":  "Contundente Curto nível 5",
+                             "icon":  "🪃",
+                             "tier":  "silver",
+                             "stat":  "skill_smallblunt",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  178,
+                             "slug":  "sk-smallblunt",
+                             "name":  "Golpe Preciso",
+                             "description":  "Contundente Curto nível 10",
+                             "icon":  "🪃",
+                             "tier":  "silver",
+                             "stat":  "skill_smallblunt",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  268,
+                             "slug":  "sk-sneak-5",
+                             "name":  "Furtividade Nível 5",
+                             "description":  "Furtividade nível 5",
+                             "icon":  "🥷",
+                             "tier":  "silver",
+                             "stat":  "skill_sneak",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  173,
+                             "slug":  "sk-sneak",
+                             "name":  "Sombra",
+                             "description":  "Furtividade nível 10",
+                             "icon":  "🥷",
+                             "tier":  "silver",
+                             "stat":  "skill_sneak",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  300,
+                             "slug":  "sk-spear-5",
+                             "name":  "Lança Nível 5",
+                             "description":  "Lança nível 5",
+                             "icon":  "🏹",
+                             "tier":  "silver",
+                             "stat":  "skill_spear",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  181,
+                             "slug":  "sk-spear",
+                             "name":  "Lanceiro",
+                             "description":  "Lança nível 10",
+                             "icon":  "🏹",
+                             "tier":  "silver",
+                             "stat":  "skill_spear",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  256,
+                             "slug":  "sk-sprinting-5",
+                             "name":  "Corrida Nível 5",
+                             "description":  "Corrida nível 5",
+                             "icon":  "🏃",
+                             "tier":  "silver",
+                             "stat":  "skill_sprinting",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  170,
+                             "slug":  "sk-sprinting",
+                             "name":  "Pernas de Aço",
+                             "description":  "Corrida nível 10",
+                             "icon":  "🏃",
+                             "tier":  "silver",
+                             "stat":  "skill_sprinting",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  276,
+                             "slug":  "sk-strength-5",
+                             "name":  "Força Nível 5",
+                             "description":  "Força nível 5",
+                             "icon":  "🏋️",
+                             "tier":  "silver",
+                             "stat":  "skill_strength",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  175,
+                             "slug":  "sk-strength",
+                             "name":  "Colosso",
+                             "description":  "Força nível 10",
+                             "icon":  "🏋️",
+                             "tier":  "silver",
+                             "stat":  "skill_strength",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  332,
+                             "slug":  "sk-tailoring-5",
+                             "name":  "Costura Nível 5",
+                             "description":  "Costura nível 5",
+                             "icon":  "🧵",
+                             "tier":  "silver",
+                             "stat":  "skill_tailoring",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  189,
+                             "slug":  "sk-tailoring",
+                             "name":  "Costureiro",
+                             "description":  "Costura nível 10",
+                             "icon":  "🧵",
+                             "tier":  "silver",
+                             "stat":  "skill_tailoring",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  392,
+                             "slug":  "sk-tracking-5",
+                             "name":  "Rastreamento Nível 5",
+                             "description":  "Rastreamento nível 5",
+                             "icon":  "🐾",
+                             "tier":  "silver",
+                             "stat":  "skill_tracking",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  204,
+                             "slug":  "sk-tracking",
+                             "name":  "Mestre do Rastreio",
+                             "description":  "Rastreamento nível 10",
+                             "icon":  "🐾",
+                             "tier":  "silver",
+                             "stat":  "skill_tracking",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  352,
+                             "slug":  "sk-trapping-5",
+                             "name":  "Armadilhas Nível 5",
+                             "description":  "Armadilhas nível 5",
+                             "icon":  "🪤",
+                             "tier":  "silver",
+                             "stat":  "skill_trapping",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  194,
+                             "slug":  "sk-trapping",
+                             "name":  "Mestre das Armadilhas",
+                             "description":  "Armadilhas nível 10",
+                             "icon":  "🪤",
+                             "tier":  "silver",
+                             "stat":  "skill_trapping",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  316,
+                             "slug":  "sk-woodwork-5",
+                             "name":  "Marcenaria Nível 5",
+                             "description":  "Marcenaria nível 5",
+                             "icon":  "🪵",
+                             "tier":  "silver",
+                             "stat":  "skill_woodwork",
+                             "threshold":  5
+                         },
+                         {
+                             "id":  185,
+                             "slug":  "sk-woodwork",
+                             "name":  "Mestre da Madeira",
+                             "description":  "Marcenaria nível 10",
+                             "icon":  "🪵",
+                             "tier":  "silver",
+                             "stat":  "skill_woodwork",
+                             "threshold":  10
+                         },
+                         {
+                             "id":  55,
+                             "slug":  "nomad",
+                             "name":  "Nômade",
+                             "description":  "Durma em 30 locais diferentes",
+                             "icon":  "🏕️",
+                             "tier":  "silver",
+                             "stat":  "sleep_locations",
+                             "threshold":  30
+                         },
+                         {
+                             "id":  51,
+                             "slug":  "master-lumberjack",
+                             "name":  "Lenhador Mestre",
+                             "description":  "Corte 5.000 árvores",
+                             "icon":  "🌲",
+                             "tier":  "silver",
+                             "stat":  "trees_cut",
+                             "threshold":  5000
+                         }
+                     ]
+}

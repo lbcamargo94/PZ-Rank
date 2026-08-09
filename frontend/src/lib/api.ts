@@ -320,11 +320,33 @@ export interface LegendEntry {
   score:          number;
 }
 
+export interface HofEntry {
+  entry_name:     string;
+  character_name: string | null;
+  player_id:      number | null;
+  kills:          number;
+  days:           number;
+  score:          number;
+  season_id:      number;
+  position:       number;
+}
+
+export interface HofSeason {
+  season_id:   number;
+  season_name: string | null;
+  podium:      HofEntry[];
+}
+
 export interface Legends {
-  most_kills:     LegendEntry | null;
-  most_days:      LegendEntry | null;
-  highest_score:  LegendEntry | null;
-  first_champion: (LegendEntry & { entry_name?: string; season_name: string | null }) | null;
+  current_leader:       LegendEntry | null;
+  most_kills:           LegendEntry | null;
+  most_days:            LegendEntry | null;
+  highest_score:        LegendEntry | null;
+  most_skills_10:       (LegendEntry & { skills10_count: number }) | null;
+  most_spiffo_bases:    (LegendEntry & { spiffo_count: number }) | null;
+  military_base_holder: LegendEntry | null;
+  first_champion:       (LegendEntry & { entry_name?: string; season_name: string | null }) | null;
+  hall_of_fame:         HofSeason[];
 }
 
 export function apiGetLegends(): Promise<Legends> {

@@ -51,10 +51,68 @@
 
 .legends-error { color: var(--red); }
 
+/* ── Seções ───────────────────────────────────────────────────── */
+.legends-section {
+  margin-bottom: 48px;
+}
+
+.legends-section-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.legends-section-title {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+.legends-section-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ── Grids ────────────────────────────────────────────────────── */
 .legends-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 16px;
+}
+
+.legends-grid--season {
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: auto auto;
+}
+
+.legends-grid--season .legend-card--hero {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  align-items: center;
+  gap: 24px;
+}
+
+.legends-grid--season .legend-card--hero .legend-icon {
+  font-size: 48px;
+  flex-shrink: 0;
+}
+
+.legends-grid--season .legend-card--hero .legend-stat-block {
+  flex-direction: row;
+  align-items: baseline;
+}
+
+.legends-grid--season .legend-card--hero .legend-stat-value {
+  font-size: 44px;
+}
+
+.legends-grid--season .legend-card--hero .legend-secondary {
+  margin-top: auto;
 }
 
 /* Legend card */
@@ -182,9 +240,138 @@
 .legend-pending .ti { font-size: 24px; }
 .legend-pending span { font-size: 16px; line-height: 1.4; }
 
+/* ── Pending (estado vazio do HoF) ───────────────────────────── */
+.legends-pending--hof {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 32px 24px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  color: var(--text-4);
+}
+
+.legends-pending--hof .ti { font-size: 24px; margin-bottom: 4px; }
+.legends-pending--hof p  { font-size: 16px; margin: 0; line-height: 1.5; }
+
+/* ── Hall da Fama ────────────────────────────────────────────── */
+.hof-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.hof-season-block {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.hof-season-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gold);
+  background: linear-gradient(90deg, rgba(200,168,75,0.08) 0%, transparent 100%);
+  border-bottom: 1px solid var(--border);
+}
+
+.hof-season-name .ti { color: var(--gold); }
+
+.hof-podium {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--border);
+}
+
+.hof-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  background: var(--bg-1);
+  transition: background 0.12s;
+}
+.hof-row:hover { background: var(--bg-2); }
+
+.hof-position {
+  font-size: 22px;
+  flex-shrink: 0;
+  width: 28px;
+  text-align: center;
+}
+
+.hof-names {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.hof-char {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hof-nick {
+  font-size: 14px;
+  color: var(--text-3);
+}
+
+.hof-stats {
+  display: flex;
+  gap: 16px;
+  font-size: 16px;
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+
+.hof-stats .ti { margin-right: 3px; }
+
+.hof-link {
+  color: var(--text-4);
+  text-decoration: none;
+  font-size: 18px;
+  flex-shrink: 0;
+  transition: color 0.12s;
+}
+.hof-link:hover { color: var(--text-1); }
+
+/* ── Responsivo ───────────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .legends-grid--season {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .legends-grid--season .legend-card--hero {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .legends-grid--season .legend-card--hero .legend-stat-value { font-size: 36px; }
+}
+
 @media (max-width: 680px) {
-  .legends-grid { grid-template-columns: 1fr; }
+  .legends-grid,
+  .legends-grid--season { grid-template-columns: 1fr; }
   .legends-title { font-size: 26px; }
+  .hof-stats { display: none; }
+}
+
+@media (max-width: 460px) {
+  .legends-grid--season .legend-card--hero .legend-icon { font-size: 36px; }
 }
 
 /* ── Jornal do Apocalipse — botão trigger ──────────────────── */
