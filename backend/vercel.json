@@ -14,10 +14,6 @@
   ],
   "crons": [
     {
-      "path": "/cron/scan-lives",
-      "schedule": "*/5 * * * *"
-    },
-    {
       "path": "/cron/renew-yt-subs",
       "schedule": "0 6 * * *"
     }
