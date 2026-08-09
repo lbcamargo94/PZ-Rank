@@ -25,14 +25,6 @@ function requireCronSecret(req: Request, res: Response): boolean {
   return false;
 }
 
-// GET /cron/debug-pubsub — mostra configuração atual do Pub/Sub (apenas primeiros chars)
-router.get('/debug-pubsub', (_req: Request, res: Response): void => {
-  const cb     = process.env.PUBSUB_CALLBACK_URL ?? '(não definido)';
-  const secret = process.env.PUBSUB_SECRET ? `${process.env.PUBSUB_SECRET.substring(0, 6)}...` : '(não definido)';
-  const ytKey  = process.env.YOUTUBE_API_KEY ? `${process.env.YOUTUBE_API_KEY.substring(0, 8)}...` : '(não definido)';
-  res.json({ callback_url: cb, secret_prefix: secret, yt_api_key_prefix: ytKey });
-});
-
 // GET /cron/backfill-yt-subs — inscreve jogadores aprovados que ainda não têm inscrição
 // Chamar uma única vez após configurar as env vars
 router.get('/backfill-yt-subs', async (req: Request, res: Response): Promise<void> => {
