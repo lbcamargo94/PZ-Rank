@@ -317,26 +317,23 @@
 
 .rank-table tbody tr.rank-top:hover { filter: brightness(1.12); }
 
-/* Moderador de Teste — gradiente animado esquerda→direita */
+/* Moderador de Teste — brilho verde que oscila suavemente (alternate evita corte) */
 @keyframes test-mod-sweep {
-  0%   { background-position: -100% 0; }
-  100% { background-position: 200% 0; }
+  from { background-position: 0% 0; }
+  to   { background-position: 100% 0; }
 }
 
 .rank-table tbody tr.rank-test-mod {
   border-left: 3px solid #5a8a4a;
   background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(42, 62, 36, 0.20) 20%,
-    rgba(90, 138, 74, 0.55) 45%,
-    rgba(52, 76, 44, 0.30) 65%,
-    transparent 100%
+    rgba(42, 62, 36, 0.22) 0%,
+    rgba(42, 62, 36, 0.22) 15%,
+    rgba(90, 138, 74, 0.52) 50%,
+    rgba(42, 62, 36, 0.22) 85%,
+    rgba(42, 62, 36, 0.22) 100%
   );
-  background-size: 200% 100%;
-  animation: test-mod-sweep 3s linear infinite;
-}
-.rank-table tbody tr.rank-test-mod:hover {
-  animation-duration: 1.6s;
+  background-size: 300% 100%;
+  animation: test-mod-sweep 2.8s ease-in-out infinite alternate;
 }
 .test-mod-badge {
   display: inline-flex;
