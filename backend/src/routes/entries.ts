@@ -118,15 +118,13 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
     return;
   }
 
-  // Sandbox inválido: salva a entrada marcada como desclassificada (score=0, sandbox_ok=false)
-  // para que o rank exiba o badge "Desclassificado". Não rejeita — o bloqueio de progresso
-  // ocorre via score 0 e via exibição pública do status.
-  const safeObjectives = decoded.sandboxOk ? (objectives ?? null) : null;
-
-  // Busca entrada existente para preservar disqualified_at original no upsert
+  // Busca entrada existente para preservar objectives, disqualified_at e live_url no upsert.
+  // objectives são gerenciados exclusivamente via PATCH /entries/:id/objectives e nunca
+  // sobrescritos por este endpoint — isso evita que uma atualização de código apague bases
+  // confirmadas pelo moderador, mesmo em caso de race condition no carregamento do painel.
   const { data: existing, error: existingError } = await supabase
     .from(config.tableName)
-    .select('id, disqualified_at')
+    .select('id, disqualified_at, objectives, live_url')
     .eq('player_id', player_id)
     .eq('character_name', decoded.characterName)
     .maybeSingle();
@@ -138,7 +136,13 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
     return;
   }
 
-  const existingRow = existing as { id: number; disqualified_at?: string | null } | null;
+  const existingRow = existing as { id: number; disqualified_at?: string | null; objectives?: Objectives | null; live_url?: string | null } | null;
+
+  // Para entradas existentes: preserva os objectives do DB (nunca sobrescreve com o form).
+  // Para entradas novas: usa os objectives enviados pelo frontend (pode ser null).
+  const preservedObjectives = decoded.sandboxOk
+    ? (existingRow ? (existingRow.objectives as Objectives | null) : (objectives ?? null))
+    : null;
 
   // Determina disqualified_at:
   // - Se sandbox_ok: limpa (null)
@@ -160,12 +164,12 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
     time_str:                decoded.timeStr,
     kills:                   decoded.kills,
     skills:                  decoded.skills.join(', ') || null,
-    live_url:                live_url?.trim() || null,
+    live_url:                live_url?.trim() || existingRow?.live_url || null,
     is_alive:                decoded.isAlive,
     sandbox_ok:              decoded.sandboxOk,
     traits:                  decoded.traits.join(',') || null,
-    objectives:              safeObjectives,
-    score:                   decoded.sandboxOk ? computeScore(decoded.kills, Object.values(decoded.skillLevels).filter(l => l === 10).length, safeObjectives) : 0,
+    objectives:              preservedObjectives,
+    score:                   decoded.sandboxOk ? computeScore(decoded.kills, Object.values(decoded.skillLevels).filter(l => l === 10).length, preservedObjectives) : 0,
     disqualification_reason: !decoded.sandboxOk
       ? (decoded.disqualificationReason ?? 'sandbox')
       : null,

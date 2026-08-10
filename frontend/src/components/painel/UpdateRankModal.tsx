@@ -42,6 +42,14 @@ export function UpdateRankModal({ token, entries, onClose, onSuccess, showToast 
   const skills10Count = decoded ? Object.values(decoded.skillLevels).filter(l => l === 10).length : 0;
   const previewScore  = decoded ? computeScore(decoded.kills, skills10Count, objectives) : 0;
 
+  // Detecta se o personagem decodificado já existe no rank para este jogador.
+  // Quando true, o backend preserva os objectives do DB e ignora os do form.
+  const isExistingCharacter = !!(decoded && playerId && (entries ?? []).some(
+    e => e.player_id === Number(playerId) &&
+         e.character_name === decoded.characterName &&
+         !e.deleted_at,
+  ));
+
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -198,11 +206,15 @@ export function UpdateRankModal({ token, entries, onClose, onSuccess, showToast 
                 </span>
               )}
             </div>
-            {preloaded && (
+            {isExistingCharacter ? (
+              <p className="form-info">
+                <i className="ti ti-lock" /> Personagem já registrado — objetivos preservados do banco. Use o botão <strong>Obj.</strong> na lista de entradas para editar.
+              </p>
+            ) : preloaded ? (
               <p className="form-info">
                 <i className="ti ti-history" /> Objetivos pré-carregados do registro atual do jogador. Ajuste se necessário.
               </p>
-            )}
+            ) : null}
 
             {/* Bases Spiffo's */}
             <div className="objectives-group">
@@ -212,11 +224,11 @@ export function UpdateRankModal({ token, entries, onClose, onSuccess, showToast 
                 const isExpanded = expandedBase === r.id;
                 const completedItems = BASE_ITEMS.filter(i => base[i.id]).length;
                 return (
-                  <div key={r.id} className={`base-item${base.has_base ? ' base-active' : ''}`}>
+                  <div key={r.id} className={`base-item${base.has_base ? ' base-active' : ''}${isExistingCharacter ? ' base-readonly' : ''}`}>
                     <div className="base-item-header">
                       <label className="obj-checkbox-label">
-                        <input type="checkbox" checked={base.has_base}
-                          onChange={e => toggleBase(r.id, e.target.checked)} />
+                        <input type="checkbox" checked={base.has_base} disabled={isExistingCharacter}
+                          onChange={e => !isExistingCharacter && toggleBase(r.id, e.target.checked)} />
                         <span className="obj-check-text">{r.name}</span>
                         {base.has_base && (
                           <span className="base-item-count">{completedItems}/{BASE_ITEMS.length}</span>
@@ -234,9 +246,9 @@ export function UpdateRankModal({ token, entries, onClose, onSuccess, showToast 
                       <div className="base-subitems">
                         {BASE_ITEMS.map(item => (
                           <label key={item.id} className="obj-checkbox-label sub">
-                            <input type="checkbox"
+                            <input type="checkbox" disabled={isExistingCharacter}
                               checked={base[item.id]}
-                              onChange={e => toggleBaseItem(r.id, item.id, e.target.checked)} />
+                              onChange={e => !isExistingCharacter && toggleBaseItem(r.id, item.id, e.target.checked)} />
                             <span className="obj-check-text">{item.label}</span>
                           </label>
                         ))}
@@ -251,22 +263,22 @@ export function UpdateRankModal({ token, entries, onClose, onSuccess, showToast 
             <div className="objectives-group">
               <p className="objectives-group-title"><i className="ti ti-star" /> Objetivos Especiais</p>
               <label className="obj-checkbox-label special">
-                <input type="checkbox" checked={objectives.spiffo_hq}
-                  onChange={e => toggleGlobal('spiffo_hq', e.target.checked)} />
+                <input type="checkbox" checked={objectives.spiffo_hq} disabled={isExistingCharacter}
+                  onChange={e => !isExistingCharacter && toggleGlobal('spiffo_hq', e.target.checked)} />
                 <span className="obj-check-text">
                   <i className="ti ti-building-store" /> Conquistou a Sede do Spiffo's (Louisville HQ)
                 </span>
               </label>
               <label className="obj-checkbox-label special">
-                <input type="checkbox" checked={objectives.spiffo_relic}
-                  onChange={e => toggleGlobal('spiffo_relic', e.target.checked)} />
+                <input type="checkbox" checked={objectives.spiffo_relic} disabled={isExistingCharacter}
+                  onChange={e => !isExistingCharacter && toggleGlobal('spiffo_relic', e.target.checked)} />
                 <span className="obj-check-text">
                   <i className="ti ti-trophy" /> Coletou a Relíquia do Spiffo
                 </span>
               </label>
               <label className="obj-checkbox-label special">
-                <input type="checkbox" checked={objectives.military_base}
-                  onChange={e => toggleGlobal('military_base', e.target.checked)} />
+                <input type="checkbox" checked={objectives.military_base} disabled={isExistingCharacter}
+                  onChange={e => !isExistingCharacter && toggleGlobal('military_base', e.target.checked)} />
                 <span className="obj-check-text">
                   <i className="ti ti-sword" /> Conquistou a Base Militar de Rosewood
                 </span>
