@@ -93,7 +93,10 @@ function RankCard({ entry, rank, onPlayerClick, hideStatus }: {
     >
       {/* Top row */}
       <div className="rc-top">
-        <span className="rc-rank">{MEDALS[rank] ?? `#${rank}`}</span>
+        {entry.is_test_mod
+          ? <span className="test-mod-badge rc-rank" title="Participante com tag de Moderador de Teste"><i className="ti ti-microscope" /> Mod. Teste</span>
+          : <span className="rc-rank">{MEDALS[rank] ?? `#${rank}`}</span>
+        }
         <div className="rc-identity">
           <span className="rc-char-name">{entry.character_name || entry.name}</span>
           {entry.profession && <span className="profession-badge">{entry.profession}</span>}

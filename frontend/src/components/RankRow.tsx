@@ -167,23 +167,23 @@ export function RankRow({ entry, rank, hideStatus, iconOnly }: RankRowProps) {
   return (
     <tr className={trClass}>
       <td className="rank-pos">
-        {rank === 0 ? '0' : (MEDALS[rank] ?? rank)}
-        <span
-          className={`division-badge division-badge--${division.division.toLowerCase()}`}
-          data-tip={`${division.label} · ${division.range}`}
-          data-tip-pos="bottom"
-        >
-          {division.label}
-        </span>
+        {isTestMod
+          ? <span className="test-mod-badge" title="Participante com tag de Moderador de Teste"><i className="ti ti-microscope" /> Mod. Teste</span>
+          : <>
+              {MEDALS[rank] ?? rank}
+              <span
+                className={`division-badge division-badge--${division.division.toLowerCase()}`}
+                data-tip={`${division.label} · ${division.range}`}
+                data-tip-pos="bottom"
+              >
+                {division.label}
+              </span>
+            </>
+        }
       </td>
       <td className="rank-name">
         <span className="char-name">{entry.character_name || entry.name}</span>
         <span className="player-alias">{entry.name}</span>
-        {isTestMod && (
-          <span className="test-mod-badge" title="Participante com tag de Moderador de Teste">
-            <i className="ti ti-microscope" /> Mod. Teste
-          </span>
-        )}
       </td>
       {!hideStatus && (
         <td className="rank-alive">
