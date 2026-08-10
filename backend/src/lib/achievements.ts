@@ -27,6 +27,18 @@ export interface ExtendedStats {
   waterCollected:    number;
   materialsCrafted:  number;
   animalTracks:      number;
+  // PZRX7
+  weaponsCrafted:    number;
+  // PZRX8
+  furnitureCrafted:  number;
+  clothesCrafted:    number;
+  cheeseProduced:    number;
+  doorsOpened:       number;
+  sleepLocations:    number;
+  basementsExplored: number;
+  stationsUsed:      number;
+  animalSpecies:     number;
+  daysNoCanned:      number;
   skillLevels:       Record<string, number>;
 }
 
@@ -82,6 +94,18 @@ export async function evaluateAchievements(
     water_collected:   s.waterCollected,
     materials_crafted: s.materialsCrafted,
     animal_tracks:     s.animalTracks,
+    // PZRX7
+    weapons_crafted:   s.weaponsCrafted,
+    // PZRX8
+    furniture_crafted:  s.furnitureCrafted,
+    clothes_crafted:    s.clothesCrafted,
+    cheese_produced:    s.cheeseProduced,
+    doors_opened:       s.doorsOpened,
+    sleep_locations:    s.sleepLocations,
+    basements_explored: s.basementsExplored,
+    all_stations_used:  s.stationsUsed,
+    animal_species:     s.animalSpecies,
+    days_no_canned:     s.daysNoCanned,
   };
 
   // Conquistas individuais de skill: stat key = "skill_<id>" (lowercase English ID)

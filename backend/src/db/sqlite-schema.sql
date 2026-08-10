@@ -115,6 +115,18 @@ CREATE TABLE IF NOT EXISTS entries (
   water_collected     INTEGER  NOT NULL DEFAULT 0,
   materials_crafted   INTEGER  NOT NULL DEFAULT 0,
   animal_tracks       INTEGER  NOT NULL DEFAULT 0,
+  -- PZRX7
+  weapons_crafted     INTEGER  NOT NULL DEFAULT 0,
+  -- PZRX8
+  furniture_crafted   INTEGER  NOT NULL DEFAULT 0,
+  clothes_crafted     INTEGER  NOT NULL DEFAULT 0,
+  cheese_produced     INTEGER  NOT NULL DEFAULT 0,
+  doors_opened        INTEGER  NOT NULL DEFAULT 0,
+  sleep_locations     INTEGER  NOT NULL DEFAULT 0,
+  basements_explored  INTEGER  NOT NULL DEFAULT 0,
+  stations_used       INTEGER  NOT NULL DEFAULT 0,
+  animal_species      INTEGER  NOT NULL DEFAULT 0,
+  days_no_canned      INTEGER  NOT NULL DEFAULT 0,
   UNIQUE (player_id, character_name)
 );
 

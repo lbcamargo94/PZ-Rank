@@ -394,6 +394,11 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     decoded.citiesVisited > 0 || decoded.militaryVisited > 0 ||
     decoded.mealsCooked > 0 || decoded.waterCollected > 0 ||
     decoded.materialsCrafted > 0 || decoded.animalTracks > 0;
+  const hasExtended7 = decoded.weaponsCrafted > 0;
+  const hasExtended8 = decoded.furnitureCrafted > 0 || decoded.clothesCrafted > 0 ||
+    decoded.cheeseProduced > 0 || decoded.doorsOpened > 0 || decoded.sleepLocations > 0 ||
+    decoded.basementsExplored > 0 || decoded.stationsUsed > 0 ||
+    decoded.animalSpecies > 0 || decoded.daysNoCanned > 0;
 
   const entry = {
     player_id:      player.id,
@@ -443,6 +448,22 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       water_collected:   decoded.waterCollected,
       materials_crafted: decoded.materialsCrafted,
       animal_tracks:     decoded.animalTracks,
+    } : {}),
+    // PZRX7: only write when present to avoid overwriting with zeros on PZRX6 syncs
+    ...(hasExtended7 ? {
+      weapons_crafted: decoded.weaponsCrafted,
+    } : {}),
+    // PZRX8: only write when present to avoid overwriting with zeros on older syncs
+    ...(hasExtended8 ? {
+      furniture_crafted:  decoded.furnitureCrafted,
+      clothes_crafted:    decoded.clothesCrafted,
+      cheese_produced:    decoded.cheeseProduced,
+      doors_opened:       decoded.doorsOpened,
+      sleep_locations:    decoded.sleepLocations,
+      basements_explored: decoded.basementsExplored,
+      stations_used:      decoded.stationsUsed,
+      animal_species:     decoded.animalSpecies,
+      days_no_canned:     decoded.daysNoCanned,
     } : {}),
   };
 
@@ -497,6 +518,18 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     waterCollected:     decoded.waterCollected,
     materialsCrafted:   decoded.materialsCrafted,
     animalTracks:       decoded.animalTracks,
+    // PZRX7
+    weaponsCrafted:     decoded.weaponsCrafted,
+    // PZRX8
+    furnitureCrafted:   decoded.furnitureCrafted,
+    clothesCrafted:     decoded.clothesCrafted,
+    cheeseProduced:     decoded.cheeseProduced,
+    doorsOpened:        decoded.doorsOpened,
+    sleepLocations:     decoded.sleepLocations,
+    basementsExplored:  decoded.basementsExplored,
+    stationsUsed:       decoded.stationsUsed,
+    animalSpecies:      decoded.animalSpecies,
+    daysNoCanned:       decoded.daysNoCanned,
     skillLevels:        decoded.skillLevels,
   };
   void (async () => {

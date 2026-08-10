@@ -200,6 +200,16 @@ async function main() {
         waterCollected:    best.waterCollected,
         materialsCrafted:  best.materialsCrafted,
         animalTracks:      best.animalTracks,
+        weaponsCrafted:    0,
+        furnitureCrafted:  0,
+        clothesCrafted:    0,
+        cheeseProduced:    0,
+        doorsOpened:       0,
+        sleepLocations:    0,
+        basementsExplored: 0,
+        stationsUsed:      0,
+        animalSpecies:     0,
+        daysNoCanned:      0,
         skillLevels:       best.skillLevels,
       });
       console.log(`  player ${playerId}: ok (kills=${best.kills}, days=${best.days}, skills=${Object.keys(best.skillLevels).length})`);

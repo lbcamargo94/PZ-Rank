@@ -104,6 +104,18 @@ export interface DecodedCode {
   waterCollected:    number;
   materialsCrafted:  number;
   animalTracks:      number;
+  // PZRX7 — weapons crafted (0 when absent / PZRX6 code)
+  weaponsCrafted:    number;
+  // PZRX8 — 9 new stats (0 when absent / PZRX7 code)
+  furnitureCrafted:  number;
+  clothesCrafted:    number;
+  cheeseProduced:    number;
+  doorsOpened:       number;
+  sleepLocations:    number;
+  basementsExplored: number;
+  stationsUsed:      number;
+  animalSpecies:     number;
+  daysNoCanned:      number;
   // Mapa de skill ID em inglês (lowercase) → nível; derivado do campo skills do payload
   skillLevels:       Record<string, number>;
 }
