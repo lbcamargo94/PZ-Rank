@@ -181,7 +181,7 @@ export function RankRow({ entry, rank, hideStatus, iconOnly }: RankRowProps) {
         <span className="player-alias">{entry.name}</span>
         {isTestMod && (
           <span className="test-mod-badge" title="Participante com tag de Moderador de Teste">
-            <i className="ti ti-microscope" /> Moderador de Teste
+            <i className="ti ti-microscope" /> Mod. Teste
           </span>
         )}
       </td>
