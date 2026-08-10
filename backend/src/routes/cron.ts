@@ -152,7 +152,8 @@ router.get('/scan-lives', async (req: Request, res: Response): Promise<void> => 
         // Jogador estava ao vivo na última verificação — confirma se ainda está
         const liveInfo = await checkIsLive(player.yt_last_live_video_id);
 
-        if (!liveInfo?.isLive) {
+        // null = API falhou — não tratar como live encerrada
+        if (liveInfo !== null && !liveInfo.isLive) {
           // Live encerrou
           await supabase
             .from('players')

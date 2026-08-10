@@ -545,7 +545,8 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
 
       if (p.yt_last_live_video_id) {
         const liveInfo = await checkIsLive(p.yt_last_live_video_id);
-        if (!liveInfo?.isLive) {
+        // null = API falhou (erro, quota, timeout) — não tratar como live encerrada
+        if (liveInfo !== null && !liveInfo.isLive) {
           await supabase.from('players').update({ yt_last_live_video_id: null }).eq('id', p.id);
           await sendLiveEndedNotification({
             nick:     p.nick,
@@ -699,7 +700,8 @@ router.post('/heartbeat', syncLimiter, async (req: Request, res: Response): Prom
           const { checkIsLive } = await import('../lib/youtube');
           const { sendLiveEndedNotification } = await import('../lib/discord');
           const liveInfo = await checkIsLive(p.yt_last_live_video_id!);
-          if (!liveInfo?.isLive) {
+          // null = API falhou — não tratar como live encerrada
+          if (liveInfo !== null && !liveInfo.isLive) {
             const { data: aliveEntries } = await supabase
               .from(config.tableName)
               .select('player_id, score')
