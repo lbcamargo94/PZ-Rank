@@ -348,7 +348,7 @@ export function RegrasPage() {
 
               <div className="rg-callout rg-callout--info">
                 <i className="ti ti-info-circle" />
-                <span>O mod exige versão mínima <strong>v2.9.0</strong>. Mantenha sempre o mod e o Companion atualizados para evitar bloqueio de sync.</span>
+                <span>O mod exige versão mínima <strong>v2.13.0</strong>. Mantenha sempre o mod e o Companion atualizados para evitar bloqueio de sync.</span>
               </div>
             </div>
           )}
