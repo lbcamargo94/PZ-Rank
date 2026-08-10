@@ -495,6 +495,33 @@ router.patch('/:id/restore', requireModerator, async (req: ModRequest, res: Resp
   }
 });
 
+// PATCH /players/:id/test-mod — moderador: define/remove tag de moderador de teste no rank
+router.patch('/:id/test-mod', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
+  const id = parseInt(String(req.params.id), 10);
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
+
+  const { is_test_mod } = req.body as { is_test_mod?: boolean };
+  if (typeof is_test_mod !== 'boolean') {
+    res.status(400).json({ error: 'is_test_mod deve ser true ou false.' });
+    return;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('players')
+      .update({ is_test_mod })
+      .eq('id', id)
+      .select('id, nick, is_test_mod')
+      .single();
+
+    if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
+    res.json(data);
+  } catch (err) {
+    console.error('[PATCH /players/:id/test-mod] Erro inesperado:', err);
+    res.status(500).json({ error: 'Erro interno ao atualizar moderador de teste.' });
+  }
+});
+
 // PATCH /players/:id/supporter — master: marca/desmarca apoiador
 router.patch('/:id/supporter', requireMaster, async (req: ModRequest, res: Response): Promise<void> => {
   const id = parseInt(String(req.params.id), 10);

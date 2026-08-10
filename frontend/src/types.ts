@@ -25,6 +25,7 @@
   updated_at?:                string | null;
   sandbox_config?:            Record<string, unknown> | null;
   sandbox_config_updated_at?: string | null;
+  is_test_mod?:         boolean;
   // PZRX3 extended stats (null = not yet reported)
   animals_killed?:      number | null;
   fish_caught?:         number | null;
@@ -107,6 +108,7 @@ export interface Player {
   blocked_note?:      string | null;
   is_supporter:       boolean;
   supporter_until:    string | null;
+  is_test_mod?:       boolean;
   deleted_at?:        string | null;
   created_at:         string;
 }

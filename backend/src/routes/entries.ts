@@ -44,27 +44,40 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
   const cols     = isModRequest(req) ? '*' : PUBLIC_ENTRY_COLUMNS;
 
   if (allParam) {
-    const { data, error } = await supabase
-      .from(config.tableName)
-      .select(cols)
-      .order(col, { ascending: false });
-    if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
+    const [entriesRes, playersRes] = await Promise.all([
+      supabase.from(config.tableName).select(cols).order(col, { ascending: false }),
+      supabase.from('players').select('id, is_test_mod'),
+    ]);
+    if (entriesRes.error) { const e = dbError(entriesRes.error); res.status(e.httpStatus).json({ error: e.message }); return; }
+    const testModIds = new Set(((playersRes.data ?? []) as { id: number; is_test_mod: boolean | number }[])
+      .filter(p => p.is_test_mod).map(p => p.id));
+    const all = (entriesRes.data ?? []).map((e: { player_id: number | null }) => ({
+      ...e,
+      is_test_mod: e.player_id != null && testModIds.has(e.player_id),
+    }));
     res.setHeader('Cache-Control', 'no-store');
-    res.json(data ?? []);
+    res.json(all);
     return;
   }
 
-  const [entriesRes, deletedRes] = await Promise.all([
+  const [entriesRes, playersRes] = await Promise.all([
     supabase.from(config.tableName).select(cols).is('deleted_at', null).order(col, { ascending: false }),
-    supabase.from('players').select('id').not('deleted_at', 'is', null),
+    supabase.from('players').select('id, deleted_at, is_test_mod'),
   ]);
 
   if (entriesRes.error) { const e = dbError(entriesRes.error); res.status(e.httpStatus).json({ error: e.message }); return; }
 
-  const deletedIds = new Set(((deletedRes.data ?? []) as { id: number }[]).map(p => p.id));
-  const visible = (entriesRes.data ?? []).filter((e: { player_id: number | null }) =>
-    !e.player_id || !deletedIds.has(e.player_id),
-  );
+  type PlayerRow = { id: number; deleted_at: string | null; is_test_mod: boolean | number };
+  const players = (playersRes.data ?? []) as PlayerRow[];
+  const deletedIds = new Set(players.filter(p => p.deleted_at != null).map(p => p.id));
+  const testModIds = new Set(players.filter(p => p.is_test_mod).map(p => p.id));
+
+  const visible = (entriesRes.data ?? [])
+    .filter((e: { player_id: number | null }) => !e.player_id || !deletedIds.has(e.player_id))
+    .map((e: { player_id: number | null }) => ({
+      ...e,
+      is_test_mod: e.player_id != null && testModIds.has(e.player_id),
+    }));
 
   res.setHeader('Cache-Control', 'no-store');
   res.json(visible);

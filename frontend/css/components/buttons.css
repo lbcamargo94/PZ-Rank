@@ -106,5 +106,22 @@ a.btn-primary { text-decoration: none; }
 .btn-success:hover { background: #2a4d1a; }
 .btn-success:disabled { opacity: 0.4; cursor: not-allowed; }
 
+.btn-test-mod-active {
+  background: rgba(60, 92, 48, 0.5);
+  border: 1px solid #5a8a4a;
+  color: #7db86a;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.15s;
+}
+.btn-test-mod-active:hover { background: rgba(60, 92, 48, 0.75); }
+.btn-test-mod-active:disabled { opacity: 0.4; cursor: not-allowed; }
+
 .btn-block { width: 100%; justify-content: center; }
 

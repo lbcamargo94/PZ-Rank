@@ -159,12 +159,15 @@ function MiniBar({ value, max, done }: { value: number; max: number; done?: bool
 export function RankRow({ entry, rank, hideStatus, iconOnly }: RankRowProps) {
   const score     = entry.score ?? 0;
   const killsDone = entry.kills >= KILLS_TARGET;
-  const division  = getDivision(rank);
+  const division  = getDivision(rank > 0 ? rank : 1);
+  const isTestMod = entry.is_test_mod === true;
+
+  let trClass = isTestMod ? 'rank-test-mod' : (rank <= 3 ? `rank-top rank-${rank}` : '');
 
   return (
-    <tr className={rank <= 3 ? `rank-top rank-${rank}` : ''}>
+    <tr className={trClass}>
       <td className="rank-pos">
-        {MEDALS[rank] ?? rank}
+        {rank === 0 ? '0' : (MEDALS[rank] ?? rank)}
         <span
           className={`division-badge division-badge--${division.division.toLowerCase()}`}
           data-tip={`${division.label} · ${division.range}`}
@@ -176,6 +179,11 @@ export function RankRow({ entry, rank, hideStatus, iconOnly }: RankRowProps) {
       <td className="rank-name">
         <span className="char-name">{entry.character_name || entry.name}</span>
         <span className="player-alias">{entry.name}</span>
+        {isTestMod && (
+          <span className="test-mod-badge" title="Participante com tag de Moderador de Teste">
+            <i className="ti ti-microscope" /> Moderador de Teste
+          </span>
+        )}
       </td>
       {!hideStatus && (
         <td className="rank-alive">

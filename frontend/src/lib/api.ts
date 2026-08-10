@@ -514,6 +514,14 @@ export function apiSetSupporter(
   return request(`/players/${playerId}/supporter`, { method: 'PATCH', ...json(token, data) });
 }
 
+export function apiSetTestMod(
+  token: string,
+  playerId: number,
+  is_test_mod: boolean,
+): Promise<{ id: number; nick: string; is_test_mod: boolean }> {
+  return request(`/players/${playerId}/test-mod`, { method: 'PATCH', ...json(token, { is_test_mod }) });
+}
+
 export function apiGetAchievements(): Promise<{ achievements: Achievement[] }> {
   return request<{ achievements: Achievement[] }>('/achievements');
 }

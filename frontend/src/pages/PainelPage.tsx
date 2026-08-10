@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { apiLogout, apiDeleteEntry, apiGetEntries, apiUpdateEntryStatus } from '../lib/api';
+import { apiLogout, apiDeleteEntry, apiGetEntries, apiUpdateEntryStatus, apiSetTestMod } from '../lib/api';
 import type { Entry, SortKey } from '../types';
 import type { ModSession } from '../types';
 import { useToast } from '../hooks/useToast';
@@ -198,6 +198,20 @@ export function PainelPage({ session, onSession, onBack }: Props) {
     }
   }
 
+  async function handleToggleTestMod(entry: Entry) {
+    if (!session || !entry.player_id) return;
+    const next = !entry.is_test_mod;
+    try {
+      await apiSetTestMod(session.token, entry.player_id, next);
+      setEntries(prev => prev.map(e =>
+        e.player_id === entry.player_id ? { ...e, is_test_mod: next } : e,
+      ));
+      showToast(next ? 'Moderador de Teste definido.' : 'Tag de Moderador de Teste removida.', 'success');
+    } catch (err) {
+      showToast((err as Error).message, 'error');
+    }
+  }
+
   async function handleLogout() {
     if (!session) return;
     try { await apiLogout(session.token); } catch { /* ignora */ }
@@ -279,6 +293,14 @@ export function PainelPage({ session, onSession, onBack }: Props) {
           >
             <i className="ti ti-adjustments" />
             {entry.sandbox_config ? '' : <span className="sbx-btn-missing" title="Sandbox não enviado"> !</span>}
+          </button>
+          <button
+            className={`btn-sm${entry.is_test_mod ? ' btn-test-mod-active' : ' btn-secondary'}`}
+            disabled={busy || !entry.player_id}
+            title={entry.is_test_mod ? 'Remover tag de Moderador de Teste' : 'Definir como Moderador de Teste'}
+            onClick={() => handleToggleTestMod(entry)}
+          >
+            <i className="ti ti-microscope" /> Mod Teste
           </button>
           <button
             className="btn-ghost btn-sm"
