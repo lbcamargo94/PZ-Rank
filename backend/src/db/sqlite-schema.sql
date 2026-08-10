@@ -276,10 +276,10 @@ INSERT OR IGNORE INTO achievements (slug, name, description, icon, tier, stat, t
   ('door-breaker',     'Arrombador',           'Abra 500 portas',               '🚪', 'silver', 'doors_opened',        500),
   ('industrialist',    'Industrial',           'Utilize todas as estações',     '🏭', 'silver', 'all_stations_used',     1),
   ('scout',            'Escoteiro',            'Explore 100 porões',            '🔦', 'silver', 'basements_explored',  100),
-  -- ── OURO (20) ────────────────────────────────────────
+  -- ── OURO (19) — immortal promovido para Platina ─────
   ('zombie-god',       'Deus da Morte',        '10.000 zumbis mortos',          '💀', 'gold', 'kills',              10000),
   ('legend',           'Lenda',                '100 dias sobrevividos',         '👑', 'gold', 'days',                 100),
-  ('immortal',         'Imortal',              '365 dias sobrevividos',         '🌟', 'gold', 'days',                 365),
+  ('immortal',         'Imortal',              'Sobreviva 365 dias',            '🌟', 'platinum', 'days',             365),
   ('no-sleep',         'Sem Sono',             '96h sem dormir',                '👁️', 'gold', 'hours_without_sleep',   96),
   ('fortress',         'Fortaleza',            'Construa uma mega base',        '🏰', 'gold', 'mega_base',              1),
   ('spiffo-base',      'Dono do Spiffo',       'Base em um restaurante Spiffo', '🍔', 'gold', 'spiffo_base_any',        1),
@@ -297,7 +297,7 @@ INSERT OR IGNORE INTO achievements (slug, name, description, icon, tier, stat, t
   ('scientist',        'Cientista',            'Use todas as bancadas',         '🔬', 'gold', 'all_benches_used',      1),
   ('arsenal',          'Arsenal',              '100 armas de cada categoria',   '🛡️', 'gold', 'arsenal_complete',      1),
   ('electrician',      'Eletricista',          'Energize 10 bases',             '⚡', 'gold', 'powered_bases',        10),
-  -- ── PLATINA (10) ─────────────────────────────────────
+  -- ── PLATINA (9) — completionist/supreme-survivor promovidos para Lendária ──
   ('season-01',        'O Início do Fim',      'Complete a Temporada 01',                      '☣️', 'platinum', 'season_01_complete',    1),
   ('spiffo-guardian',  'Guardião do Spiffo',   'Domine todos os restaurantes Spiffo',          '🏅', 'platinum', 'all_spiffo_bases',       1),
   ('full-map',         'Kentucky Inteiro',     'Revele todo o mapa',                           '🗺️', 'platinum', 'full_map_revealed',      1),
@@ -305,9 +305,9 @@ INSERT OR IGNORE INTO achievements (slug, name, description, icon, tier, stat, t
   ('supreme-hunter',   'Caçador Supremo',      'Abata todas as espécies de animais',           '🏹', 'platinum', 'all_animal_species',     1),
   ('magnate',          'Magnata',              'Tenha todas as bases totalmente equipadas',    '🏆', 'platinum', 'all_bases_equipped',     1),
   ('rebuilder',        'Reconstrutor',         'Reconstrua todas as cidades com bases',        '🧱', 'platinum', 'cities_rebuilt',         1),
-  ('supreme-survivor', 'Sobrevivente Supremo', 'Complete todos os objetivos do campeonato',   '👑', 'platinum', 'all_objectives_complete',1),
+  ('supreme-survivor', 'Sobrevivente Supremo', 'Complete todos os objetivos do campeonato',   '👑', 'legendary', 'all_objectives_complete',1),
   ('master-industry',  'Mestre da Indústria',  '50.000 itens produzidos',                     '⚒️', 'platinum', 'items_crafted',      50000),
-  ('completionist',    'Completionista',       'Obtenha todas as conquistas Ouro',             '💯', 'platinum', 'all_gold_achievements',  1);
+  ('completionist',    'Completionista',       'Obtenha todas as conquistas Ouro',             '💯', 'legendary', 'all_gold_achievements', 1);
 
 -- Corrige tiers de conquistas existentes (migrações de dados)
 UPDATE achievements SET tier = 'bronze', icon = '🍖' WHERE slug = 'hunter'     AND tier != 'bronze';
@@ -316,6 +316,13 @@ UPDATE achievements SET tier = 'silver'               WHERE slug = 'engineer'   
 UPDATE achievements SET tier = 'bronze'               WHERE slug = 'insomniac'  AND tier != 'bronze';
 UPDATE achievements SET threshold = 500, description = '500 colheitas'
   WHERE slug = 'agronomist' AND threshold != 500;
+-- Migration 011 (agosto/2026): ajustes de tier
+UPDATE achievements SET tier = 'platinum', description = 'Sobreviva 365 dias'
+  WHERE slug = 'immortal' AND tier != 'platinum';
+UPDATE achievements SET tier = 'legendary'
+  WHERE slug = 'completionist' AND tier != 'legendary';
+UPDATE achievements SET tier = 'legendary'
+  WHERE slug = 'supreme-survivor' AND tier != 'legendary';
 
 -- Seed: jogador aprovado para testar sync
 INSERT OR IGNORE INTO players (nick, status, twitch_url, player_token) VALUES (
