@@ -177,8 +177,12 @@ export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, ic
     ? entries
     : entries.slice((page - 1) * numPageSize, page * numPageSize);
 
-  // Offset de rank: para mostrar posição global correta mesmo em páginas além da 1
-  const rankOffset = (page - 1) * numPageSize;
+  // Pré-computa ranks ignorando entradas de Mod. Teste (não consomem posição)
+  const displayRanks: number[] = (() => {
+    let counter = 0;
+    return entries.map(e => (e.is_test_mod ? 0 : ++counter));
+  })();
+  const pageOffset = (page - 1) * numPageSize;
 
   function handlePlayerClick(playerId: number) {
     navigate(`/player/${playerId}`);
@@ -241,13 +245,9 @@ export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, ic
                 </tr>
               </thead>
               <tbody>
-                {visibleEntries.map((entry, i) => {
-                  const globalIdx = rankOffset + i;
-                  const displayRank = entry.is_test_mod
-                    ? (globalIdx === 0 ? 0 : globalIdx)
-                    : globalIdx + 1;
-                  return <RankRow key={entry.id} entry={entry} rank={displayRank} hideStatus={hideStatus} iconOnly={iconOnly} />;
-                })}
+                {visibleEntries.map((entry, i) => (
+                  <RankRow key={entry.id} entry={entry} rank={displayRanks[pageOffset + i]} hideStatus={hideStatus} iconOnly={iconOnly} />
+                ))}
               </tbody>
             </table>
 
@@ -295,21 +295,15 @@ export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, ic
 
           {/* Mobile cards */}
           <div className={`rank-cards${loading ? ' table-loading' : ''}`}>
-            {visibleEntries.map((entry, i) => {
-              const globalIdx = rankOffset + i;
-              const displayRank = entry.is_test_mod
-                ? (globalIdx === 0 ? 0 : globalIdx)
-                : globalIdx + 1;
-              return (
-                <RankCard
-                  key={entry.id}
-                  entry={entry}
-                  rank={displayRank}
-                  onPlayerClick={handlePlayerClick}
-                  hideStatus={hideStatus}
-                />
-              );
-            })}
+            {visibleEntries.map((entry, i) => (
+              <RankCard
+                key={entry.id}
+                entry={entry}
+                rank={displayRanks[pageOffset + i]}
+                onPlayerClick={handlePlayerClick}
+                hideStatus={hideStatus}
+              />
+            ))}
             {entries.length > 0 && pageSize !== 'all' && (
               <div className="rank-pagination">
                 <span className="rank-pagination-info">{start}–{end} de {entries.length}</span>
