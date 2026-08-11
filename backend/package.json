@@ -2,6 +2,7 @@
   "name": "pz-rank-backend",
   "version": "1.0.0",
   "description": "PZ Community Rank — API backend",
+  "license": "SEE LICENSE IN LICENSE",
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "dev:local": "tsx watch --env-file=.env.local src/index.ts",

@@ -132,3 +132,30 @@ pz-rank/
 ## Dúvidas
 
 Se o site aparecer em branco ou o status mostrar "sem conexão", abra o console do navegador (F12 → Console) e veja a mensagem de erro. Geralmente é a URL ou chave do Supabase incorretas — confira o `.env` localmente ou as Environment Variables no painel do Vercel. Atenção: `VITE_SUPABASE_URL` deve ser só a raiz do projeto (`https://SEU-PROJETO.supabase.co`), sem `/rest/v1/` no final — o `supabase-js` adiciona esse caminho internamente.
+
+---
+
+## License
+
+This project is proprietary software.
+
+Copyright (c) 2026 Lucas Buneo de Camargo / PZ Community.
+All Rights Reserved.
+
+Source code may be publicly available for transparency, development, discussion,
+or collaboration, but public visibility does not grant permission to copy, modify,
+distribute, sublicense, or create derivative works.
+
+See [LICENSE](LICENSE) for complete terms.
+
+### Legal Documents
+
+| Document | Description |
+| --- | --- |
+| [LICENSE](LICENSE) | PZ Community Proprietary License v1.0 |
+| [TERMS_OF_USE.md](TERMS_OF_USE.md) | Terms of use for all services |
+| [PRIVACY.md](PRIVACY.md) | Privacy policy and data practices |
+| [COMPETITION_TERMS.md](COMPETITION_TERMS.md) | Brasileirão PZ competition rules |
+| [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md) | Third-party component licenses |
+| [docs/LICENSING.md](docs/LICENSING.md) | Component licensing matrix |
+| [docs/IP_PROTECTION.md](docs/IP_PROTECTION.md) | IP protection checklist |

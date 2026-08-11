@@ -1,0 +1,146 @@
+PZ Community Proprietary License v1.0
+
+Copyright (c) 2026 Lucas Buneo de Camargo / PZ Community
+
+All Rights Reserved.
+
+────────────────────────────────────────────────────────────────────────────────
+
+1. DEFINITIONS
+
+   "Software" refers to all components of the PZ Community ecosystem covered
+   by this License, including but not limited to: PZ Community Rank (frontend,
+   backend, and API), PZ Rank Companion, official mods, proprietary assets,
+   documentation, database structure, and competition systems.
+
+   "Official Channels" means the authorized distribution points designated by
+   the copyright holder, including the official GitHub repositories, Steam
+   Workshop pages, and official download links.
+
+────────────────────────────────────────────────────────────────────────────────
+
+2. AUTHORIZED USES
+
+   Subject to the terms and conditions of this License, the copyright holder
+   grants you a limited, non-exclusive, non-transferable, revocable license to:
+
+     (a) download the Software through Official Channels;
+     (b) install the Software on your personal devices;
+     (c) execute the Software for personal, non-commercial use;
+     (d) use the Software to participate in the Brasileirão PZ competition;
+     (e) use the official mods within the Project Zomboid game;
+     (f) make personal backup copies to the extent permitted by applicable law.
+
+────────────────────────────────────────────────────────────────────────────────
+
+3. RESTRICTIONS
+
+   Without prior written authorization from the copyright holder, you may NOT:
+
+     (a) redistribute the Software or any portion thereof;
+     (b) republish the Software through any channel not designated as Official;
+     (c) create unauthorized mirrors or third-party distribution points;
+     (d) sell, rent, lease, or otherwise transfer the Software;
+     (e) sublicense the Software or any rights under this License;
+     (f) incorporate the Software or its source code into another product;
+     (g) create public forks or derivative works;
+     (h) distribute modified versions of the Software;
+     (i) remove, alter, or obscure copyright notices, credits, or attributions;
+     (j) reuse proprietary source code in another project;
+     (k) reuse proprietary assets, artwork, or visual identity in another project;
+     (l) use the backend, API, or infrastructure to create a competing service;
+     (m) use the Software as a basis for a competing product or service;
+     (n) redistribute modified versions of the official mods;
+     (o) republish the mods outside of Official Channels without authorization;
+     (p) use the official visual identity, logos, or branding to suggest
+         unauthorized affiliation with PZ Community.
+
+────────────────────────────────────────────────────────────────────────────────
+
+4. PUBLIC AVAILABILITY
+
+   The source code of this project may be publicly accessible on platforms such
+   as GitHub for purposes of transparency, review, collaboration, or development
+   discussion. Public availability of the source code does not constitute a
+   grant of rights to copy, modify, distribute, sublicense, or create
+   derivative works.
+
+────────────────────────────────────────────────────────────────────────────────
+
+5. INTELLECTUAL PROPERTY
+
+   All intellectual property rights in the Software — including but not limited
+   to source code, compiled binaries, documentation, artwork, visual identity,
+   branding, database structure and schema, competition rules, scoring systems,
+   and proprietary algorithms — remain exclusively with the copyright holder.
+
+   The names "PZ Community", "PZ Community Rank", and "Brasileirão PZ" are
+   brand identifiers of this project.
+
+   TODO: REVIEW TRADEMARK REGISTRATION STATUS WITH BRAZILIAN IP ATTORNEY
+
+────────────────────────────────────────────────────────────────────────────────
+
+6. THIRD-PARTY COMPONENTS
+
+   This Software includes third-party components subject to their own separate
+   licenses. Those components are not covered by this License. See
+   THIRD_PARTY_LICENSES.md for the complete list.
+
+────────────────────────────────────────────────────────────────────────────────
+
+7. STEAM WORKSHOP
+
+   For mods distributed through the Steam Workshop, this License applies in
+   addition to — and not in substitution of — the Steam Subscriber Agreement
+   and Steam Workshop Terms of Service. Authorization to download and use a mod
+   through the Steam Workshop does not grant rights beyond those described in
+   Section 2 of this License.
+
+────────────────────────────────────────────────────────────────────────────────
+
+8. DISCLAIMER OF WARRANTIES
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. THE COPYRIGHT
+   HOLDER MAKES NO WARRANTY THAT THE SOFTWARE WILL BE ERROR-FREE OR
+   UNINTERRUPTED.
+
+────────────────────────────────────────────────────────────────────────────────
+
+9. LIMITATION OF LIABILITY
+
+   TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL THE
+   COPYRIGHT HOLDER BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+   OR CONSEQUENTIAL DAMAGES ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+   INABILITY TO USE THE SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+   DAMAGES.
+
+────────────────────────────────────────────────────────────────────────────────
+
+10. RESERVED LEGAL RIGHTS
+
+    Nothing in this License is intended to limit rights that cannot be excluded
+    under applicable law.
+
+────────────────────────────────────────────────────────────────────────────────
+
+11. GOVERNING LAW
+
+    This License shall be governed by and construed in accordance with the laws
+    of Brazil. Any disputes arising under this License shall be subject to the
+    exclusive jurisdiction of the courts of Brazil.
+
+────────────────────────────────────────────────────────────────────────────────
+
+12. CONTACT AND PERMISSIONS
+
+    For licensing inquiries, permission requests, or to report violations,
+    please contact:
+
+    lb.camargo94@gmail.com
+
+────────────────────────────────────────────────────────────────────────────────
+
+PZ Community Proprietary License v1.0 — Effective 2026
