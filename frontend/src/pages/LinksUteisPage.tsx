@@ -2,10 +2,10 @@ import { Link } from 'react-router-dom';
 import linksBg from '../../assets/background/tela-de-links-uteis.webp';
 
 const DISCORD_URL         = 'https://discord.gg/ebhts347WJ';
-const COMPANION_WIN_URL   = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.9.0/PZ.Rank.Companion.Setup.1.9.0.exe';
-const COMPANION_MAC_ARM   = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.9.0/PZ.Rank.Companion.1.9.0.Mac.arm64.dmg';
-const COMPANION_MAC_X64   = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.9.0/PZ.Rank.Companion.1.9.0.Mac.x64.dmg';
-const COMPANION_VER       = 'v1.9.0';
+const COMPANION_WIN_URL   = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.9.1/PZ.Rank.Companion.Setup.1.9.1.exe';
+const COMPANION_MAC_ARM   = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.9.1/PZ.Rank.Companion.1.9.1.Mac.arm64.dmg';
+const COMPANION_MAC_X64   = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.9.1/PZ.Rank.Companion.1.9.1.Mac.x64.dmg';
+const COMPANION_VER       = 'v1.9.1';
 
 export function LinksUteisPage() {
   return (

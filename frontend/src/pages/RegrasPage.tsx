@@ -180,7 +180,7 @@ const PARTICIPATE_STEPS = [
     icon: 'ti-download',
     title: 'Instale o PZ Rank Companion',
     desc: 'O Companion monitora sua pasta de saves e sincroniza automaticamente com o ranking. Necessário para que suas corridas apareçam no site.',
-    action: { label: 'Baixar Companion v1.9.0', to: 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/latest', external: true },
+    action: { label: 'Baixar Companion v1.9.1', to: 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/latest', external: true },
   },
   {
     n: '04',
