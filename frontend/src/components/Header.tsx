@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import pzrankLogo from '../../assets/logo/pzrank-logo.png';
 
-const COMPANION_URL = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.8.5/PZ.Rank.Companion.Setup.1.8.5.exe';
-const COMPANION_VER = 'v1.8.5';
+const COMPANION_URL = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.9.0/PZ.Rank.Companion.Setup.1.9.0.exe';
+const COMPANION_VER = 'v1.9.0';
 
 interface HeaderProps {
   onPainel: () => void;
