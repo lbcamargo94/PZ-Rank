@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
 import linksBg from '../../assets/background/tela-de-links-uteis.webp';
 
-const DISCORD_URL     = 'https://discord.gg/ebhts347WJ';
-const COMPANION_URL   = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.9.0/PZ.Rank.Companion.Setup.1.9.0.exe';
-const COMPANION_VER   = 'v1.9.0';
+const DISCORD_URL         = 'https://discord.gg/ebhts347WJ';
+const COMPANION_WIN_URL   = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.9.0/PZ.Rank.Companion.Setup.1.9.0.exe';
+const COMPANION_MAC_ARM   = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.9.0/PZ.Rank.Companion.1.9.0.Mac.arm64.dmg';
+const COMPANION_MAC_X64   = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.9.0/PZ.Rank.Companion.1.9.0.Mac.x64.dmg';
+const COMPANION_VER       = 'v1.9.0';
 
 export function LinksUteisPage() {
   return (
@@ -43,25 +45,35 @@ export function LinksUteisPage() {
           </div>
 
           {/* Companion */}
-          <div className="lu-card">
+          <div className="lu-card lu-card--multi">
             <div className="lu-card-icon lu-card-icon--companion">
               <i className="ti ti-device-desktop-analytics" aria-hidden="true" />
             </div>
             <div className="lu-card-body">
               <h2 className="lu-card-title">PZ Rank Companion <span className="lu-ver">{COMPANION_VER}</span></h2>
               <p className="lu-card-desc">
-                Aplicativo para Windows que detecta automaticamente suas runs e
-                envia os dados ao ranking. Necessário para participar do campeonato.
+                Aplicativo que detecta automaticamente suas runs e envia os dados
+                ao ranking. Necessário para participar do campeonato.
               </p>
             </div>
-            <a
-              href={COMPANION_URL}
-              className="btn-lu btn-lu--companion"
-              download
-            >
-              <i className="ti ti-download" aria-hidden="true" />
-              Baixar para Windows
-            </a>
+            <div className="lu-card-actions">
+              <a href={COMPANION_WIN_URL} className="btn-lu btn-lu--companion" download>
+                <i className="ti ti-brand-windows" aria-hidden="true" />
+                Windows
+              </a>
+              <a href={COMPANION_MAC_ARM} className="btn-lu btn-lu--companion-mac" download>
+                <i className="ti ti-brand-apple" aria-hidden="true" />
+                macOS Apple Silicon
+              </a>
+              <a href={COMPANION_MAC_X64} className="btn-lu btn-lu--companion-mac" download>
+                <i className="ti ti-brand-apple" aria-hidden="true" />
+                macOS Intel
+              </a>
+              <p className="lu-mac-note">
+                <i className="ti ti-info-circle" aria-hidden="true" />
+                Mac: clique direito no app → Abrir
+              </p>
+            </div>
           </div>
 
         </div>
