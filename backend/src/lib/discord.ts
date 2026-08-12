@@ -15,21 +15,23 @@ export interface DeathNotificationPayload {
   kills:       number;
   score:       number;
   rank:        number | null;
+  deathCause:  string | null;
 }
 
 export async function sendDeathNotification(payload: DeathNotificationPayload): Promise<void> {
   const webhookUrl = process.env.DISCORD_DEATH_WEBHOOK_URL || process.env.DISCORD_WEBHOOK_URL;
   if (!webhookUrl) return;
 
-  const { nick, characterName, profession, days, timeStr, kills, score, rank } = payload;
+  const { nick, characterName, profession, days, timeStr, kills, score, rank, deathCause } = payload;
 
   const fields: { name: string; value: string; inline: boolean }[] = [
     { name: 'Sobrevivência', value: timeStr || `${days}d`,                         inline: true },
     { name: 'Zumbis mortos', value: kills.toLocaleString('pt-BR'),                  inline: true },
     { name: 'Pontuação',     value: score.toLocaleString('pt-BR') + ' pts',         inline: true },
   ];
-  if (rank !== null) fields.push({ name: 'Posição no rank', value: `#${rank}`, inline: true });
-  if (profession)    fields.push({ name: 'Profissão',       value: profession,   inline: true });
+  if (rank !== null)  fields.push({ name: 'Posição no rank', value: `#${rank}`,   inline: true });
+  if (profession)     fields.push({ name: 'Profissão',        value: profession,   inline: true });
+  if (deathCause)     fields.push({ name: 'Causa da morte',   value: deathCause,   inline: false });
 
   const body = {
     embeds: [{

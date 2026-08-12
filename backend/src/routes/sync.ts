@@ -569,6 +569,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
           kills:         decoded.kills,
           score:         finalScore,
           rank,
+          deathCause:    decoded.deathCause,
         });
       } catch (e) {
         console.error('[discord] death notification error:', e);

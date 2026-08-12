@@ -116,6 +116,8 @@ export interface DecodedCode {
   stationsUsed:      number;
   animalSpecies:     number;
   daysNoCanned:      number;
+  // PZRX9 — causa da morte (null quando ausente / código anterior)
+  deathCause:        string | null;
   // Mapa de skill ID em inglês (lowercase) → nível; derivado do campo skills do payload
   skillLevels:       Record<string, number>;
 }
