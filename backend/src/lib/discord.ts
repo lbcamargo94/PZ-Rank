@@ -1,9 +1,60 @@
 /**
- * Discord webhook — notificações de live (início e encerramento)
+ * Discord webhook — notificações de live (início e encerramento) e morte de jogador
  *
  * Env vars:
- *   DISCORD_WEBHOOK_URL — URL completa do webhook do canal do Discord
+ *   DISCORD_WEBHOOK_URL       — webhook do canal de lives
+ *   DISCORD_DEATH_WEBHOOK_URL — webhook do canal de mortes (usa DISCORD_WEBHOOK_URL se não definida)
  */
+
+export interface DeathNotificationPayload {
+  nick:        string;
+  characterName: string;
+  profession:  string | null;
+  days:        number;
+  timeStr:     string;
+  kills:       number;
+  score:       number;
+  rank:        number | null;
+}
+
+export async function sendDeathNotification(payload: DeathNotificationPayload): Promise<void> {
+  const webhookUrl = process.env.DISCORD_DEATH_WEBHOOK_URL || process.env.DISCORD_WEBHOOK_URL;
+  if (!webhookUrl) return;
+
+  const { nick, characterName, profession, days, timeStr, kills, score, rank } = payload;
+
+  const fields: { name: string; value: string; inline: boolean }[] = [
+    { name: 'Sobrevivência', value: timeStr || `${days}d`,                         inline: true },
+    { name: 'Zumbis mortos', value: kills.toLocaleString('pt-BR'),                  inline: true },
+    { name: 'Pontuação',     value: score.toLocaleString('pt-BR') + ' pts',         inline: true },
+  ];
+  if (rank !== null) fields.push({ name: 'Posição no rank', value: `#${rank}`, inline: true });
+  if (profession)    fields.push({ name: 'Profissão',       value: profession,   inline: true });
+
+  const body = {
+    embeds: [{
+      title:       `💀  ${nick} morreu!`,
+      description: `**${characterName}** não sobreviveu ao apocalipse.`,
+      color:       0x2C2F33,
+      fields,
+      footer:      { text: 'PZ Rank • Brasileirão de Sobrevivência' },
+      timestamp:   new Date().toISOString(),
+    }],
+  };
+
+  try {
+    const res = await fetch(webhookUrl, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(body),
+      signal:  AbortSignal.timeout(8_000),
+    });
+    if (!res.ok) console.error('[discord] death webhook retornou', res.status, 'para:', nick);
+    else console.log('[discord] notificação de morte enviada para:', nick);
+  } catch (err) {
+    console.error('[discord] falha ao enviar notificação de morte:', err);
+  }
+}
 
 export interface LiveNotificationPayload {
   nick:      string;

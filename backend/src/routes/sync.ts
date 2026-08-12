@@ -541,6 +541,41 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     }
   })().catch(e => console.error('[achievements]', e));
 
+  // Notificação de morte no Discord: dispara quando is_alive muda de true → false.
+  // Ignora a primeira entrada (prev === null) e entradas desclassificadas (sandbox_ok = false).
+  if (prev?.is_alive === true && !decoded.isAlive && prev.sandbox_ok !== false) {
+    void (async () => {
+      try {
+        const { sendDeathNotification } = await import('../lib/discord');
+
+        // Calcula posição final no rank (entre entradas vivas e qualificadas)
+        const { data: aliveEntries } = await supabase
+          .from(config.tableName)
+          .select('player_id, score')
+          .eq('is_alive', true)
+          .eq('sandbox_ok', true)
+          .is('deleted_at', null)
+          .order('score', { ascending: false });
+
+        const pos  = (aliveEntries ?? []).findIndex((e: { player_id: number }) => e.player_id === player.id);
+        const rank = pos >= 0 ? pos + 1 : null;
+
+        await sendDeathNotification({
+          nick:          player.nick,
+          characterName: decoded.characterName,
+          profession:    decoded.profession || null,
+          days:          decoded.days,
+          timeStr:       decoded.timeStr,
+          kills:         decoded.kills,
+          score:         finalScore,
+          rank,
+        });
+      } catch (e) {
+        console.error('[discord] death notification error:', e);
+      }
+    })();
+  }
+
   // Heatmap: aceita delta opcional do Companion; obtém season ativa para o UPSERT
   if (heatmap_delta && Array.isArray(heatmap_delta) && heatmap_delta.length > 0) {
     void (async () => {
