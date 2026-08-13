@@ -168,6 +168,13 @@
 }
 .btn-lu--companion-mac:hover { background: rgba(180,180,180,0.16); }
 
+.btn-lu--companion-linux {
+  background: rgba(230,100,40,0.08);
+  border: 1px solid rgba(230,100,40,0.22);
+  color: var(--text-2);
+}
+.btn-lu--companion-linux:hover { background: rgba(230,100,40,0.18); }
+
 .lu-card--multi {
   align-items: flex-start;
 }

@@ -1,11 +1,13 @@
 import { Link } from 'react-router-dom';
 import linksBg from '../../assets/background/tela-de-links-uteis.webp';
 
-const DISCORD_URL         = 'https://discord.gg/ebhts347WJ';
-const COMPANION_WIN_URL   = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.9.6/PZ.Rank.Companion.Setup.1.9.6.exe';
-const COMPANION_MAC_ARM   = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.9.6/PZ.Rank.Companion.1.9.6.Mac.arm64.dmg';
-const COMPANION_MAC_X64   = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.9.6/PZ.Rank.Companion.1.9.6.Mac.x64.dmg';
-const COMPANION_VER       = 'v1.9.6';
+const DISCORD_URL              = 'https://discord.gg/ebhts347WJ';
+const COMPANION_WIN_URL        = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.9.9/PZ.Rank.Companion.Setup.1.9.8.exe';
+const COMPANION_MAC_ARM        = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.9.9/PZ.Rank.Companion.1.9.8.Mac.arm64.dmg';
+const COMPANION_MAC_X64        = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.9.9/PZ.Rank.Companion.1.9.8.Mac.x64.dmg';
+const COMPANION_LINUX_APPIMAGE = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.9.9/PZ.Rank.Companion.1.9.8.AppImage';
+const COMPANION_LINUX_DEB      = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.9.9/PZ.Rank.Companion.1.9.8.deb';
+const COMPANION_VER            = 'v1.9.9';
 
 export function LinksUteisPage() {
   return (
@@ -69,9 +71,21 @@ export function LinksUteisPage() {
                 <i className="ti ti-brand-apple" aria-hidden="true" />
                 macOS Intel
               </a>
+              <a href={COMPANION_LINUX_APPIMAGE} className="btn-lu btn-lu--companion-linux" download>
+                <i className="ti ti-brand-linux" aria-hidden="true" />
+                Linux AppImage
+              </a>
+              <a href={COMPANION_LINUX_DEB} className="btn-lu btn-lu--companion-linux" download>
+                <i className="ti ti-brand-linux" aria-hidden="true" />
+                Linux DEB
+              </a>
               <p className="lu-mac-note">
                 <i className="ti ti-info-circle" aria-hidden="true" />
                 Mac: clique direito no app → Abrir
+              </p>
+              <p className="lu-mac-note">
+                <i className="ti ti-info-circle" aria-hidden="true" />
+                Linux AppImage: dê permissão de execução antes de abrir
               </p>
             </div>
           </div>
