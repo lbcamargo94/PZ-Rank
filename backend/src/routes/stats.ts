@@ -42,6 +42,7 @@ router.get('/global', async (_req: Request, res: Response) => {
 
   const active_count = activeRes.count ?? 0;
 
+  res.setHeader('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=60');
   res.json({ total_kills, total_days, alive_count, dead_count, player_count, active_count });
 });
 
@@ -51,6 +52,7 @@ let _steamCache: { count: number; at: number } | null = null;
 
 router.get('/steam-players', async (_req: Request, res: Response) => {
   if (_steamCache && Date.now() - _steamCache.at < 5 * 60 * 1000) {
+    res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=60');
     return res.json({ player_count: _steamCache.count });
   }
 
@@ -64,9 +66,13 @@ router.get('/steam-players', async (_req: Request, res: Response) => {
     const json = await r.json() as { response: { player_count: number; result: number } };
     if (json.response.result !== 1) throw new Error('Steam API error');
     _steamCache = { count: json.response.player_count, at: Date.now() };
+    res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=60');
     res.json({ player_count: json.response.player_count });
   } catch {
-    if (_steamCache) return res.json({ player_count: _steamCache.count });
+    if (_steamCache) {
+      res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=60');
+      return res.json({ player_count: _steamCache.count });
+    }
     res.status(503).json({ error: 'Steam API indisponível' });
   } finally {
     clearTimeout(timer);
@@ -171,6 +177,7 @@ router.get('/legends', async (_req: Request, res: Response) => {
     firstChampion = { ...(hofFirstRes.data as Record<string, unknown>), season_name: seasonMap.get(sid) ?? null };
   }
 
+  res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=120');
   res.json({
     current_leader:       leaderRes.data,
     most_kills:           killsRes.data,

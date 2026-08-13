@@ -16,6 +16,7 @@ router.get('/', async (_req: Request, res: Response): Promise<void> => {
     .order('threshold', { ascending: true });
 
   if (error) { res.status(500).json({ error: dbError(error).message }); return; }
+  res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=300');
   res.json({ achievements: data ?? [] });
 });
 
@@ -49,6 +50,7 @@ router.get('/player/:id', async (req: Request, res: Response): Promise<void> => 
     entry_id:    u.entry_id ?? null,
   }));
 
+  res.setHeader('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=60');
   res.json({ achievements: result });
 });
 

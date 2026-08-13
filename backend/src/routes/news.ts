@@ -70,6 +70,7 @@ router.get('/latest', async (_req, res) => {
 
     if (existing) {
       const r = existing as Record<string, unknown>;
+      res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=60');
       return res.json({ ...r, stats: parseStats(r.stats) });
     }
 

@@ -25,6 +25,7 @@ router.get('/current', async (_req: Request, res: Response): Promise<void> => {
 
   if (error) { res.status(500).json({ error: dbError(error).message }); return; }
 
+  res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=120');
   res.json({
     points:  data ?? [],
     season:  season,

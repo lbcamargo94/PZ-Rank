@@ -25,6 +25,13 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
   const id = parseInt(String(req.params.id), 10);
   if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
 
+  const PLAYER_ENTRY_COLUMNS = [
+    'id', 'player_id', 'name', 'character_name', 'profession',
+    'days', 'time_raw', 'time_str', 'kills', 'skills', 'live_url',
+    'is_alive', 'sandbox_ok', 'traits', 'objectives', 'score',
+    'disqualification_reason', 'disqualified_at', 'deleted_at', 'updated_at',
+  ].join(', ');
+
   const [playerRes, entriesRes] = await Promise.all([
     supabase
       .from('players')
@@ -33,7 +40,7 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
       .single(),
     supabase
       .from('entries')
-      .select('*')
+      .select(PLAYER_ENTRY_COLUMNS)
       .eq('player_id', id)
       .order('score', { ascending: false }),
   ]);
@@ -52,6 +59,7 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
+  res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120');
   res.json({ player: playerRes.data, entries: entriesRes.data ?? [] });
 });
 

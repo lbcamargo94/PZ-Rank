@@ -41,7 +41,8 @@ const SORT_COLS: Record<string, string> = {
 router.get('/', async (req: Request, res: Response): Promise<void> => {
   const col      = SORT_COLS[typeof req.query.sort === 'string' ? req.query.sort : ''] ?? 'score';
   const allParam = req.query.all === 'true';
-  const cols     = isModRequest(req) ? '*' : PUBLIC_ENTRY_COLUMNS;
+  const isMod    = isModRequest(req);
+  const cols     = isMod ? '*' : PUBLIC_ENTRY_COLUMNS;
 
   if (allParam) {
     const [entriesRes, playersRes] = await Promise.all([
@@ -79,7 +80,11 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
       is_test_mod: e.player_id != null && testModIds.has(e.player_id),
     }));
 
-  res.setHeader('Cache-Control', 'no-store');
+  if (isMod) {
+    res.setHeader('Cache-Control', 'no-store');
+  } else {
+    res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120');
+  }
   res.json(visible);
 });
 
