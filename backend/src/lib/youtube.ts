@@ -42,7 +42,8 @@ export async function extractChannelId(url: string): Promise<string | null> {
   if (!apiKey) return null;
 
   // @handle sem domínio YouTube (ex: https://@simbaproduz  ou  @simbaproduz)
-  const bareHandle = normalized.match(/^(?:https?:\/\/)?@([\w.-]+)$/i);
+  // [^/?&#\s]+ captura handles com caracteres Unicode (ex: @carniçagames666, @vídeos)
+  const bareHandle = normalized.match(/^(?:https?:\/\/)?@([^/?&#\s]+)$/i);
   if (bareHandle) {
     const byHandle = await resolveChannelByHandle(`@${bareHandle[1]}`, apiKey);
     if (byHandle) return byHandle;
@@ -54,19 +55,19 @@ export async function extractChannelId(url: string): Promise<string | null> {
   if (!isYoutube) return null;
 
   // @handle → channels.list?forHandle
-  const handleMatch = normalized.match(/youtube(?:\.com)?\/+@([\w.-]+)/i);
+  const handleMatch = normalized.match(/youtube(?:\.com)?\/+@([^/?&#\s]+)/i);
   if (handleMatch) return resolveChannelByHandle(`@${handleMatch[1]}`, apiKey);
 
   // /user/username (legado)
-  const userMatch = normalized.match(/youtube(?:\.com)?\/+user\/([\w.-]+)/i);
+  const userMatch = normalized.match(/youtube(?:\.com)?\/+user\/([^/?&#\s]+)/i);
   if (userMatch) return resolveChannelByUsername(userMatch[1], apiKey);
 
   // /c/customname (legado)
-  const customMatch = normalized.match(/youtube(?:\.com)?\/+c\/([\w.-]+)/i);
+  const customMatch = normalized.match(/youtube(?:\.com)?\/+c\/([^/?&#\s]+)/i);
   if (customMatch) return resolveChannelBySearch(customMatch[1], apiKey);
 
   // youtube.com/NAME — URL curta sem prefixo (ex: youtube.com/BoneYT)
-  const bareMatch = normalized.match(/youtube(?:\.com)?\/+([\w.-]+)$/i);
+  const bareMatch = normalized.match(/youtube(?:\.com)?\/+([^@/?&#\s]+)$/i);
   if (bareMatch) {
     const name = bareMatch[1];
     const byHandle = await resolveChannelByHandle(`@${name}`, apiKey);
