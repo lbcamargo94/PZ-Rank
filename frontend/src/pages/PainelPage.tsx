@@ -17,7 +17,6 @@ import { ModManagement }        from '../components/painel/ModManagement';
 import { SeasonManager }        from '../components/painel/SeasonManager';
 import { NewsManager }          from '../components/painel/NewsManager';
 import { FinancesManager }      from '../components/painel/FinancesManager';
-import { DiscordAnnounce }      from '../components/painel/DiscordAnnounce';
 
 const DEAD_ZONE_DAYS = 15;
 
@@ -41,7 +40,7 @@ function fmtEntryDate(iso: string | null | undefined): string {
   );
 }
 
-type Tab         = 'players' | 'entries' | 'moderators' | 'mods' | 'decoder' | 'seasons' | 'jornal' | 'financas' | 'comunicado';
+type Tab         = 'players' | 'entries' | 'moderators' | 'mods' | 'decoder' | 'seasons' | 'jornal' | 'financas';
 type EntryFilter = 'all' | 'alive' | 'dead' | 'disqualified';
 
 const ENTRY_FILTER_CONFIG: { key: EntryFilter; label: string; icon: string }[] = [
@@ -379,12 +378,6 @@ export function PainelPage({ session, onSession, onBack }: Props) {
               <i className="ti ti-cash" /> Finanças
             </button>
           )}
-          {session.role === 'master' && (
-            <button className={`painel-tab${tab === 'comunicado' ? ' active' : ''}`}
-              onClick={() => setTab('comunicado')}>
-              <i className="ti ti-brand-discord" /> Comunicado
-            </button>
-          )}
         </div>
         <button className="btn-primary" onClick={() => { fetchEntries(); setShowUpdateRank(true); }}>
           <i className="ti ti-trophy" /> Atualizar Rank
@@ -413,10 +406,6 @@ export function PainelPage({ session, onSession, onBack }: Props) {
 
         {tab === 'financas' && session.role === 'master' && (
           <FinancesManager token={session.token} showToast={showToast} />
-        )}
-
-        {tab === 'comunicado' && session.role === 'master' && (
-          <DiscordAnnounce token={session.token} showToast={showToast} />
         )}
 
         {tab === 'moderators' && (

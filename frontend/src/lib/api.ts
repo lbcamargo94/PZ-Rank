@@ -547,10 +547,3 @@ export function apiRevokeAchievement(token: string, playerId: number, slug: stri
 export function apiGetHeatmap(): Promise<{ points: HeatmapPoint[]; season: { id: number; name: string } | null }> {
   return request<{ points: HeatmapPoint[]; season: { id: number; name: string } | null }>('/heatmap/current');
 }
-
-export function apiSendAnnouncement(
-  token: string,
-  data:  { title: string; message: string; color: string },
-): Promise<{ ok: boolean }> {
-  return request<{ ok: boolean }>('/moderators/announce', { method: 'POST', ...json(token, data) });
-}
