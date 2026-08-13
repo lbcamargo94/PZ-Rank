@@ -2060,3 +2060,99 @@
   .reg-modal-box .modal-form { padding: 16px; }
   .reg-header { padding: 20px 16px 16px; }
 }
+
+/* ── Discord Announce ────────────────────────────────────────── */
+.announce-help {
+  color: var(--text-2);
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+.announce-help code {
+  background: var(--surface-2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+.announce-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.announce-colors {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.announce-color-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.announce-color-btn:hover { border-color: var(--ac, #3B82F6); }
+.announce-color-btn.active {
+  border-color: var(--ac, #3B82F6);
+  background: color-mix(in srgb, var(--ac, #3B82F6) 12%, transparent);
+  color: var(--text);
+}
+.announce-color-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--ac, #3B82F6);
+  flex-shrink: 0;
+}
+.announce-textarea {
+  resize: vertical;
+  min-height: 120px;
+  font-family: inherit;
+}
+.announce-char-count {
+  font-size: 12px;
+  color: var(--text-3);
+  text-align: right;
+}
+.announce-preview {
+  display: flex;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  max-width: 520px;
+  background: #2f3136;
+}
+.announce-preview-bar {
+  width: 4px;
+  background: var(--ac, #3B82F6);
+  flex-shrink: 0;
+}
+.announce-preview-body {
+  padding: 12px 14px;
+  flex: 1;
+}
+.announce-preview-title {
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 6px;
+  font-size: 15px;
+  word-break: break-word;
+}
+.announce-preview-msg {
+  color: #dcddde;
+  font-size: 14px;
+  margin: 0 0 8px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.announce-preview-footer {
+  font-size: 12px;
+  color: #72767d;
+  margin: 0;
+}

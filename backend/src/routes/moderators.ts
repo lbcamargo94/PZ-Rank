@@ -354,4 +354,57 @@ router.delete('/:id', requireMaster, async (req: ModRequest, res: Response): Pro
   }
 });
 
+// POST /moderators/announce — master: envia comunicado manual para o Discord
+router.post('/announce', requireMaster, async (req: ModRequest, res: Response): Promise<void> => {
+  const { title, message, color } = req.body as {
+    title?:   string;
+    message?: string;
+    color?:   string;
+  };
+
+  if (!title?.trim())   { res.status(400).json({ error: 'Título é obrigatório.' });   return; }
+  if (!message?.trim()) { res.status(400).json({ error: 'Mensagem é obrigatória.' }); return; }
+
+  const webhookUrl = process.env.DISCORD_ANNOUNCE_WEBHOOK_URL || process.env.DISCORD_WEBHOOK_URL;
+  if (!webhookUrl) {
+    res.status(503).json({ error: 'Webhook do Discord não configurado. Defina DISCORD_ANNOUNCE_WEBHOOK_URL ou DISCORD_WEBHOOK_URL.' });
+    return;
+  }
+
+  const colorMap: Record<string, number> = {
+    blue:   0x3B82F6,
+    green:  0x22C55E,
+    yellow: 0xF59E0B,
+    red:    0xEF4444,
+  };
+  const embedColor = colorMap[color ?? 'blue'] ?? colorMap['blue']!;
+
+  const body = {
+    embeds: [{
+      title:       title.trim(),
+      description: message.trim(),
+      color:       embedColor,
+      footer:      { text: 'PZ Rank • Brasileirão de Sobrevivência' },
+      timestamp:   new Date().toISOString(),
+    }],
+  };
+
+  try {
+    const r = await fetch(webhookUrl, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(body),
+      signal:  AbortSignal.timeout(8_000),
+    });
+    if (!r.ok) {
+      res.status(502).json({ error: `Discord retornou status ${r.status}.` });
+      return;
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[POST /moderators/announce] Falha ao enviar para o Discord:', err);
+    res.status(503).json({ error: 'Falha ao conectar com o Discord. Tente novamente.' });
+  }
+});
+
 export default router;
