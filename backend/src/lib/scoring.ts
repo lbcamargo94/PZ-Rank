@@ -8,6 +8,13 @@ const SCORE_MILITARY       = 5_000;
 const SCORE_SPIFFO_HQ      = 5_000;
 const SCORE_SPIFFO_RELIC   = 3_000;
 
+export const OFFICIAL_BASE_IDS = new Set([
+  'riverside', 'rosewood', 'irvington', 'ekron',
+  'muldraugh', 'muldraugh_cross', 'west_point',
+  'louisville_w', 'louisville_hq', 'louisville_e', 'louisville_c',
+  'brandenburg',
+]);
+
 /** Conta quantas skills estão no nível 10 a partir da coluna `skills` armazenada no banco.
  *  Formato: "Machado 10, Força 8, Vigilância 10, ..." (nome traduzido + nível). */
 export function countSkills10(skillsStr: string | null | undefined): number {
@@ -31,8 +38,8 @@ export function computeScore(
   score += skills10Count * SCORE_SKILL_10;
 
   if (objectives?.bases) {
-    for (const base of Object.values(objectives.bases)) {
-      if (base.has_base) score += SCORE_SPIFFO_DONE;
+    for (const [id, base] of Object.entries(objectives.bases)) {
+      if (OFFICIAL_BASE_IDS.has(id) && base.has_base) score += SCORE_SPIFFO_DONE;
     }
   }
   if (objectives?.military_base) score += SCORE_MILITARY;

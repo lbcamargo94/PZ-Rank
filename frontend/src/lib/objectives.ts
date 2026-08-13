@@ -31,6 +31,8 @@ export const SPIFFOS_RESTAURANTS = [
   { id: 'brandenburg',     name: 'Brandenburg'                    },
 ] as const;
 
+export const OFFICIAL_BASE_IDS: Set<string> = new Set(SPIFFOS_RESTAURANTS.map(r => r.id));
+
 export const BASE_ITEMS: { id: keyof Omit<BaseObjectives, 'has_base'>; label: string }[] = [
   { id: 'bed',     label: 'Cama de boa qualidade'                          },
   { id: 'windows', label: 'Todas as janelas barricadas no nível máximo'    },
@@ -50,6 +52,25 @@ export function initObjectives(): Objectives {
   const bases: Record<string, BaseObjectives> = {};
   for (const r of SPIFFOS_RESTAURANTS) bases[r.id] = { ...EMPTY_BASE };
   return { bases, military_base: false, spiffo_hq: false, spiffo_relic: false };
+}
+
+/** Mescla objetivos existentes com o template fresco:
+ *  - mantém dados das bases oficiais atuais
+ *  - descarta bases obsoletas (ex: march_ridge, valley_station)
+ *  - adiciona bases novas ausentes (ex: muldraugh_cross) */
+export function mergeObjectives(existing: Objectives | null | undefined): Objectives {
+  const fresh = initObjectives();
+  if (!existing) return fresh;
+  const bases: Record<string, BaseObjectives> = { ...fresh.bases };
+  for (const id of Object.keys(bases)) {
+    if (existing.bases?.[id]) bases[id] = existing.bases[id];
+  }
+  return {
+    bases,
+    military_base: existing.military_base ?? false,
+    spiffo_hq:     existing.spiffo_hq     ?? false,
+    spiffo_relic:  existing.spiffo_relic  ?? false,
+  };
 }
 
 // ── Pontuação ───────────────────────────────────────────────
@@ -94,8 +115,8 @@ export function computeScore(
   score += skills10Count * SCORE_SKILL_10;
 
   if (objectives?.bases) {
-    for (const base of Object.values(objectives.bases)) {
-      if (base.has_base) score += SCORE_SPIFFO_DONE;
+    for (const [id, base] of Object.entries(objectives.bases)) {
+      if (OFFICIAL_BASE_IDS.has(id) && base.has_base) score += SCORE_SPIFFO_DONE;
     }
   }
   if (objectives?.military_base) score += SCORE_MILITARY;

@@ -12,7 +12,7 @@ import type { Request, Response } from 'express';
 import { supabase } from '../supabase';
 import { subscribePubSub, getChannelCurrentLive, checkIsLive } from '../lib/youtube';
 import { sendLiveNotification, sendLiveEndedNotification } from '../lib/discord';
-import { computeScore, countSkills10 } from '../lib/scoring';
+import { computeScore, countSkills10, OFFICIAL_BASE_IDS } from '../lib/scoring';
 import type { Objectives, BaseObjectives } from '../types';
 
 const router = Router();
@@ -304,6 +304,10 @@ router.post('/recalculate-scores', async (req: Request, res: Response): Promise<
 
   const rows = (entries ?? []) as RawEntry[];
   const results: Array<{ id: number; old_score?: number; new_score: number; migrated: boolean }> = [];
+  const EMPTY_BASE: BaseObjectives = {
+    has_base: false, bed: false, windows: false,
+    sink: false, power: false, food: false, vehicle: false, arsenal: false,
+  };
 
   for (const row of rows) {
     // Migra objetivos: converte formato antigo → novo
@@ -332,6 +336,18 @@ router.post('/recalculate-scores', async (req: Request, res: Response): Promise<
         };
       }
 
+      // Remove bases obsoletas (ex: march_ridge, valley_station)
+      const hadObsoleteBase = Object.keys(bases).some(k => !OFFICIAL_BASE_IDS.has(k));
+      for (const k of Object.keys(bases)) {
+        if (!OFFICIAL_BASE_IDS.has(k)) delete bases[k];
+      }
+
+      // Adiciona bases novas que ainda não existem no registro (ex: muldraugh_cross)
+      const hadMissingBase = [...OFFICIAL_BASE_IDS].some(id => !(id in bases));
+      for (const id of OFFICIAL_BASE_IDS) {
+        if (!(id in bases)) bases[id] = { ...EMPTY_BASE };
+      }
+
       // Se tinha spiffo_statue=true → marca HQ e relic como conquistados
       const spiffoStatue = Boolean(raw.spiffo_statue);
       const spiffoHq     = Boolean(raw.spiffo_hq) || spiffoStatue;
@@ -344,7 +360,7 @@ router.post('/recalculate-scores', async (req: Request, res: Response): Promise<
         spiffo_relic:  spiffoRelic,
       };
 
-      migrated = hasOldFields;
+      migrated = hasOldFields || hadObsoleteBase || hadMissingBase;
     }
 
     const skills10 = countSkills10(row.skills);

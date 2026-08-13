@@ -3,23 +3,11 @@ import { apiGetPlayers, apiCreateEntry } from '../../lib/api';
 import { parsePzrCode } from '../../lib/decoder';
 import {
   SPIFFOS_RESTAURANTS, BASE_ITEMS,
-  initObjectives, computeScore,
+  initObjectives, mergeObjectives, computeScore,
 } from '../../lib/objectives';
 import type { Objectives } from '../../lib/objectives';
 import type { Player, Entry } from '../../types';
 
-// Mescla objetivos existentes com o template fresco para garantir que
-// todos os restaurantes e campos estejam presentes (inclusive novos adicionados depois).
-function mergeObjectives(existing: Objectives | null | undefined): Objectives {
-  const fresh = initObjectives();
-  if (!existing) return fresh;
-  return {
-    bases:         { ...fresh.bases, ...existing.bases },
-    military_base: existing.military_base ?? false,
-    spiffo_hq:     existing.spiffo_hq     ?? false,
-    spiffo_relic:  existing.spiffo_relic  ?? false,
-  };
-}
 
 interface Props {
   token:     string;

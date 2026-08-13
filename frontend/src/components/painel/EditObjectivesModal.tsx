@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { apiUpdateEntryObjectives } from '../../lib/api';
 import {
   SPIFFOS_RESTAURANTS, BASE_ITEMS,
-  initObjectives, computeScore, countSkills10,
+  mergeObjectives, computeScore, countSkills10,
 } from '../../lib/objectives';
 import type { Objectives } from '../../lib/objectives';
 import type { Entry } from '../../types';
@@ -16,7 +16,7 @@ interface Props {
 }
 
 export function EditObjectivesModal({ token, entry, onClose, onSuccess, showToast }: Props) {
-  const [objectives,   setObjectives]  = useState<Objectives>(() => entry.objectives ?? initObjectives());
+  const [objectives,   setObjectives]  = useState<Objectives>(() => mergeObjectives(entry.objectives));
   const [expandedBase, setExpandedBase] = useState<string | null>(null);
   const [loading,      setLoading]     = useState(false);
 
