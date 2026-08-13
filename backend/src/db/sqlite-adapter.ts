@@ -398,6 +398,21 @@ function runMigrations(db: Database): void {
     }
   }
 
+  // PZRX7
+  if (!entryCols.includes('weapons_crafted')) {
+    db.exec('ALTER TABLE entries ADD COLUMN weapons_crafted INTEGER NOT NULL DEFAULT 0');
+    console.log('[SQLite] migração: coluna weapons_crafted adicionada em entries');
+  }
+
+  // PZRX8
+  const pzrx8Cols = ['furniture_crafted', 'clothes_crafted', 'cheese_produced', 'doors_opened', 'sleep_locations', 'basements_explored', 'stations_used', 'animal_species', 'days_no_canned'] as const;
+  for (const col of pzrx8Cols) {
+    if (!entryCols.includes(col)) {
+      db.exec(`ALTER TABLE entries ADD COLUMN ${col} INTEGER NOT NULL DEFAULT 0`);
+      console.log(`[SQLite] migração: coluna ${col} adicionada em entries`);
+    }
+  }
+
   const hasSeasons = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='seasons'").get();
   if (!hasSeasons) {
     db.exec(`CREATE TABLE seasons (
