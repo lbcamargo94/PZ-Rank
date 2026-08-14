@@ -132,9 +132,6 @@
   margin-top: auto;
 }
 
-.legends-grid--survival {
-  grid-template-columns: repeat(5, 1fr);
-}
 
 /* Legend card */
 .legend-card {
@@ -397,20 +394,17 @@
     gap: 10px;
   }
   .legends-grid--season .legend-card--hero .legend-stat-value { font-size: 36px; }
-  .legends-grid--survival { grid-template-columns: repeat(3, 1fr); }
 }
 
 @media (max-width: 680px) {
   .legends-grid,
   .legends-grid--season { grid-template-columns: 1fr; }
-  .legends-grid--survival { grid-template-columns: repeat(2, 1fr); }
   .legends-title { font-size: 26px; }
   .hof-stats { display: none; }
 }
 
 @media (max-width: 460px) {
   .legends-grid--season .legend-card--hero .legend-icon { font-size: 36px; }
-  .legends-grid--survival { grid-template-columns: 1fr; }
 }
 
 /* ── Jornal do Apocalipse — botão trigger ──────────────────── */

@@ -347,16 +347,6 @@ export interface Legends {
   military_base_holder: LegendEntry | null;
   first_champion:       (LegendEntry & { entry_name?: string; season_name: string | null }) | null;
   hall_of_fame:         HofSeason[];
-  most_fish:            (LegendEntry & { fish_caught: number }) | null;
-  most_animals:         (LegendEntry & { animals_killed: number }) | null;
-  most_eggs:            (LegendEntry & { eggs_collected: number }) | null;
-  most_milk:            (LegendEntry & { milk_produced: number }) | null;
-  most_sleepless:       (LegendEntry & { hours_without_sleep: number }) | null;
-  most_km_driven:       (LegendEntry & { km_driven: number }) | null;
-  most_materials:       (LegendEntry & { materials_crafted: number }) | null;
-  most_meals:           (LegendEntry & { meals_cooked: number }) | null;
-  most_trees:           (LegendEntry & { trees_cut: number }) | null;
-  most_structures:      (LegendEntry & { structures_built: number }) | null;
 }
 
 export function apiGetLegends(): Promise<Legends> {

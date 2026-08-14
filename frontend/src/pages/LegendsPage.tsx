@@ -119,99 +119,6 @@ type CardDef = {
   pending:   string;
 };
 
-const SURVIVAL_CARDS: CardDef[] = [
-  {
-    icon:      '🎣',
-    category:  'Maior Pescador',
-    color:     '#4c8aff',
-    key:       'most_fish',
-    statLabel: 'peixes capturados',
-    statValue: e => fmt(e['fish_caught'] as number ?? 0),
-    pending:   'Ninguém pescou ainda.',
-  },
-  {
-    icon:      '🍖',
-    category:  'Maior Caçador',
-    color:     '#c06030',
-    key:       'most_animals',
-    statLabel: 'animais abatidos',
-    statValue: e => fmt(e['animals_killed'] as number ?? 0),
-    pending:   'Ninguém caçou ainda.',
-  },
-  {
-    icon:      '🥚',
-    category:  'Coletor de Ovos',
-    color:     '#e8c84a',
-    key:       'most_eggs',
-    statLabel: 'ovos coletados',
-    statValue: e => fmt(e['eggs_collected'] as number ?? 0),
-    pending:   'Ninguém coletou ovos ainda.',
-  },
-  {
-    icon:      '🥛',
-    category:  'Maior Leiteiro',
-    color:     '#b0b8c0',
-    key:       'most_milk',
-    statLabel: 'leite produzido',
-    statValue: e => fmt(e['milk_produced'] as number ?? 0),
-    pending:   'Ninguém produziu leite ainda.',
-  },
-  {
-    icon:      '😴',
-    category:  'Mais Insone',
-    color:     '#9b59b6',
-    key:       'most_sleepless',
-    statLabel: 'horas sem dormir',
-    statValue: e => `${fmt(e['hours_without_sleep'] as number ?? 0)}h`,
-    pending:   'Ninguém ficou sem dormir por muito tempo ainda.',
-  },
-  {
-    icon:      '🚗',
-    category:  'Maior Motorista',
-    color:     '#e67e22',
-    key:       'most_km_driven',
-    statLabel: 'km percorridos de carro',
-    statValue: e => `${fmt(e['km_driven'] as number ?? 0)} km`,
-    pending:   'Ninguém percorreu km de carro ainda.',
-  },
-  {
-    icon:      '⚒️',
-    category:  'Maior Produtor',
-    color:     '#7f8c8d',
-    key:       'most_materials',
-    statLabel: 'materiais produzidos',
-    statValue: e => fmt(e['materials_crafted'] as number ?? 0),
-    pending:   'Ninguém produziu materiais ainda.',
-  },
-  {
-    icon:      '🍳',
-    category:  'Maior Cozinheiro',
-    color:     '#e74c3c',
-    key:       'most_meals',
-    statLabel: 'refeições preparadas',
-    statValue: e => fmt(e['meals_cooked'] as number ?? 0),
-    pending:   'Ninguém cozinhou ainda.',
-  },
-  {
-    icon:      '🪵',
-    category:  'Maior Lenhador',
-    color:     '#8b6540',
-    key:       'most_trees',
-    statLabel: 'árvores cortadas',
-    statValue: e => fmt(e['trees_cut'] as number ?? 0),
-    pending:   'Ninguém cortou árvores ainda.',
-  },
-  {
-    icon:      '🏗️',
-    category:  'Maior Construtor',
-    color:     '#3498db',
-    key:       'most_structures',
-    statLabel: 'estruturas construídas',
-    statValue: e => fmt(e['structures_built'] as number ?? 0),
-    pending:   'Ninguém construiu estruturas ainda.',
-  },
-];
-
 const SEASON_CARDS: CardDef[] = [
   {
     icon:      '👑',
@@ -335,27 +242,6 @@ export function LegendsPage() {
                     category={card.category}
                     color={card.color}
                     hero={card.hero}
-                    entry={legends[card.key] as (LegendEntry & Record<string, unknown>) | null}
-                    statLabel={card.statLabel}
-                    statValue={card.statValue}
-                    pending={card.pending}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div className="legends-section">
-              <div className="legends-section-head">
-                <span className="legends-section-title">Recordes de Sobrevivência</span>
-                <div className="legends-section-line" />
-              </div>
-              <div className="legends-grid legends-grid--survival">
-                {SURVIVAL_CARDS.map(card => (
-                  <LegendCard
-                    key={card.key}
-                    icon={card.icon}
-                    category={card.category}
-                    color={card.color}
                     entry={legends[card.key] as (LegendEntry & Record<string, unknown>) | null}
                     statLabel={card.statLabel}
                     statValue={card.statValue}

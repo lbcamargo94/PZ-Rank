@@ -92,9 +92,6 @@ router.get('/legends', async (_req: Request, res: Response) => {
     killsRes, daysRes, scoreRes, leaderRes,
     richRes,
     hofFirstRes, hofAllRes, seasonsRes,
-    fishRes, animalsRes, eggsRes, milkRes,
-    sleepRes, kmRes, materialsRes, mealsRes,
-    treesRes, structuresRes,
   ] = await Promise.all([
     ef(supabase.from('entries').select(entrySelect))
       .order('kills', { ascending: false }).order('created_at', { ascending: true })
@@ -125,65 +122,11 @@ router.get('/legends', async (_req: Request, res: Response) => {
       .order('season_id', { ascending: false }).order('position', { ascending: true }),
 
     supabase.from('seasons').select('id, name').order('id', { ascending: false }),
-
-    // Recordes de sobrevivência — 10 novas categorias
-    ef(supabase.from('entries').select(`${entrySelect}, fish_caught`))
-      .gt('fish_caught', 0)
-      .order('fish_caught', { ascending: false }).order('created_at', { ascending: true })
-      .limit(1).maybeSingle(),
-
-    ef(supabase.from('entries').select(`${entrySelect}, animals_killed`))
-      .gt('animals_killed', 0)
-      .order('animals_killed', { ascending: false }).order('created_at', { ascending: true })
-      .limit(1).maybeSingle(),
-
-    ef(supabase.from('entries').select(`${entrySelect}, eggs_collected`))
-      .gt('eggs_collected', 0)
-      .order('eggs_collected', { ascending: false }).order('created_at', { ascending: true })
-      .limit(1).maybeSingle(),
-
-    ef(supabase.from('entries').select(`${entrySelect}, milk_produced`))
-      .gt('milk_produced', 0)
-      .order('milk_produced', { ascending: false }).order('created_at', { ascending: true })
-      .limit(1).maybeSingle(),
-
-    ef(supabase.from('entries').select(`${entrySelect}, hours_without_sleep`))
-      .gt('hours_without_sleep', 0)
-      .order('hours_without_sleep', { ascending: false }).order('created_at', { ascending: true })
-      .limit(1).maybeSingle(),
-
-    ef(supabase.from('entries').select(`${entrySelect}, km_driven`))
-      .gt('km_driven', 0)
-      .order('km_driven', { ascending: false }).order('created_at', { ascending: true })
-      .limit(1).maybeSingle(),
-
-    ef(supabase.from('entries').select(`${entrySelect}, materials_crafted`))
-      .gt('materials_crafted', 0)
-      .order('materials_crafted', { ascending: false }).order('created_at', { ascending: true })
-      .limit(1).maybeSingle(),
-
-    ef(supabase.from('entries').select(`${entrySelect}, meals_cooked`))
-      .gt('meals_cooked', 0)
-      .order('meals_cooked', { ascending: false }).order('created_at', { ascending: true })
-      .limit(1).maybeSingle(),
-
-    ef(supabase.from('entries').select(`${entrySelect}, trees_cut`))
-      .gt('trees_cut', 0)
-      .order('trees_cut', { ascending: false }).order('created_at', { ascending: true })
-      .limit(1).maybeSingle(),
-
-    ef(supabase.from('entries').select(`${entrySelect}, structures_built`))
-      .gt('structures_built', 0)
-      .order('structures_built', { ascending: false }).order('created_at', { ascending: true })
-      .limit(1).maybeSingle(),
   ]);
 
   const firstErr = [
     killsRes.error, daysRes.error, scoreRes.error, leaderRes.error,
     richRes.error, hofFirstRes.error, hofAllRes.error, seasonsRes.error,
-    fishRes.error, animalsRes.error, eggsRes.error, milkRes.error,
-    sleepRes.error, kmRes.error, materialsRes.error, mealsRes.error,
-    treesRes.error, structuresRes.error,
   ].find(Boolean);
   if (firstErr) { const e = dbError(firstErr); return res.status(e.httpStatus).json({ error: e.message }); }
 
@@ -258,16 +201,6 @@ router.get('/legends', async (_req: Request, res: Response) => {
     military_base_holder: militaryHolder,
     first_champion:       firstChampion,
     hall_of_fame:         hallOfFame,
-    most_fish:            fishRes.data,
-    most_animals:         animalsRes.data,
-    most_eggs:            eggsRes.data,
-    most_milk:            milkRes.data,
-    most_sleepless:       sleepRes.data,
-    most_km_driven:       kmRes.data,
-    most_materials:       materialsRes.data,
-    most_meals:           mealsRes.data,
-    most_trees:           treesRes.data,
-    most_structures:      structuresRes.data,
   });
 });
 
