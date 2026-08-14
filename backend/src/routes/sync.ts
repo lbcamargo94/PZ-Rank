@@ -212,6 +212,39 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     return;
   }
 
+  // ── Gate: só grava no rank se o jogador estiver em live confirmada ─────────
+  // yt_last_live_video_id NOT NULL → live ativa detectada → prosseguir.
+  // NULL + yt_channel_id configurado → sem live; descarta sync sem gravar no banco.
+  // Fire-and-forget verifica YouTube para detectar início de live — próximo sync passa.
+  // Companion recebe 200 com waiting_for_live:true e descarta (sem retry).
+  if (player.yt_channel_id && !player.yt_last_live_video_id) {
+    void (async () => {
+      try {
+        type GatePlayer = { id: number; nick: string; yt_channel_id: string };
+        const p = player as unknown as GatePlayer;
+        const { getChannelCurrentLive } = await import('../lib/youtube');
+        const { sendLiveNotification }  = await import('../lib/discord');
+        const live = await getChannelCurrentLive(p.yt_channel_id);
+        if (!live) return;
+        await supabase.from('players').update({ yt_last_live_video_id: live.videoId }).eq('id', p.id);
+        const { data: aliveEntries } = await supabase
+          .from(config.tableName)
+          .select('player_id, score')
+          .eq('is_alive', true).eq('sandbox_ok', true).is('deleted_at', null)
+          .order('score', { ascending: false });
+        const pos   = (aliveEntries ?? []).findIndex((e: { player_id: number }) => e.player_id === p.id);
+        const rank  = pos >= 0 ? pos + 1 : null;
+        const score = (aliveEntries ?? [])
+          .find((e: { player_id: number; score: number }) => e.player_id === p.id)?.score ?? null;
+        await sendLiveNotification({ nick: p.nick, title: live.title, videoUrl: live.videoUrl, thumbnail: live.thumbnail, rank, score });
+      } catch (e) {
+        console.error('[live-gate]', e);
+      }
+    })();
+    res.status(200).json({ success: true, waiting_for_live: true });
+    return;
+  }
+
   // Verifica se há outro personagem vivo vinculado a esta conta (apenas um personagem permitido)
   const { data: conflictEntries } = await supabase
     .from(config.tableName)
