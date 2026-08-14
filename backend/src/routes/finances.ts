@@ -9,6 +9,7 @@ const router = Router();
 
 type FinanceCategory = 'hosting' | 'prize' | 'domain' | 'adsense' | 'supporters' | 'sponsor' | 'other';
 const VALID_CATEGORIES: FinanceCategory[] = ['hosting', 'prize', 'domain', 'adsense', 'supporters', 'sponsor', 'other'];
+const FINANCE_COLS = 'id, season_id, category, label, amount_brl, goal_brl, updated_at, created_at';
 
 // GET /finances/current — público: finanças da temporada ativa
 router.get('/current', async (_req: Request, res: Response): Promise<void> => {
@@ -24,11 +25,12 @@ router.get('/current', async (_req: Request, res: Response): Promise<void> => {
 
     const { data, error } = await supabase
       .from('season_finances')
-      .select('*')
+      .select(FINANCE_COLS)
       .eq('season_id', (season as { id: number }).id)
       .order('category', { ascending: true });
 
     if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
+    res.setHeader('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=60');
     res.json(data ?? []);
   } catch (err) {
     console.error('[GET /finances/current]', err);
@@ -44,11 +46,12 @@ router.get('/season/:id', async (req: Request, res: Response): Promise<void> => 
   try {
     const { data, error } = await supabase
       .from('season_finances')
-      .select('*')
+      .select(FINANCE_COLS)
       .eq('season_id', id)
       .order('category', { ascending: true });
 
     if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
+    res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=120');
     res.json(data ?? []);
   } catch (err) {
     console.error('[GET /finances/season/:id]', err);

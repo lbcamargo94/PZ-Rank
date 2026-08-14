@@ -87,6 +87,7 @@ router.get('/latest', async (_req, res) => {
     }
 
     const r = inserted as Record<string, unknown>;
+    res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=60');
     return res.json({ ...r, stats: parseStats(r.stats) ?? stats });
   } catch (err) {
     return res.status(500).json({ error: (err as Error).message });

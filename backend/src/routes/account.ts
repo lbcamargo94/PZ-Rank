@@ -33,12 +33,13 @@ router.get('/me', requirePlayer, async (req: PlayerRequest, res: Response): Prom
 router.get('/me/entries', requirePlayer, async (req: PlayerRequest, res: Response): Promise<void> => {
   const { data, error } = await supabase
     .from('entries')
-    .select('*')
+    .select('id, character_name, profession, days, time_str, kills, skills, is_alive, sandbox_ok, traits, objectives, score, disqualification_reason, created_at, updated_at')
     .eq('player_id', req.playerId!)
     .is('deleted_at', null)
     .order('score', { ascending: false });
 
   if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
+  res.setHeader('Cache-Control', 'no-store');
   res.json(data ?? []);
 });
 

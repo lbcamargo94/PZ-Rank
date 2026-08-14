@@ -919,4 +919,25 @@ router.get('/allowed-mods', async (_req: Request, res: Response): Promise<void> 
   res.json({ mods: data ?? [] });
 });
 
+// GET /sync/rank-summary — público, para o Companion
+// Retorna apenas os campos necessários para gerar pz_rank_rank.log.
+// Substitui o poll de GET /entries no Companion — payload ~80% menor.
+router.get('/rank-summary', async (_req: Request, res: Response): Promise<void> => {
+  const { data, error } = await supabase
+    .from(config.tableName)
+    .select('name, character_name, profession, time_str, kills, score')
+    .is('deleted_at', null)
+    .eq('is_alive', true)
+    .eq('sandbox_ok', true)
+    .order('score', { ascending: false });
+
+  if (error) {
+    res.status(500).json({ error: dbError(error).message });
+    return;
+  }
+
+  res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120');
+  res.json(data ?? []);
+});
+
 export default router;

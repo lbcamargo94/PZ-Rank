@@ -7,14 +7,18 @@ import type { ModRequest } from '../middleware/moderator';
 
 const router = Router();
 
+const SEASON_COLS     = 'id, name, theme_slug, is_active, started_at, ended_at, created_at';
+const HOF_COLS        = 'id, season_id, player_id, entry_name, character_name, position, days, kills, score, created_at';
+
 // GET /seasons — lista todas as temporadas (público)
 router.get('/', async (_req: Request, res: Response) => {
   const { data, error } = await supabase
     .from('seasons')
-    .select('*')
+    .select(SEASON_COLS)
     .order('started_at', { ascending: false });
 
   if (error) { const e = dbError(error); return res.status(e.httpStatus).json({ error: e.message }); }
+  res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=120');
   res.json(data ?? []);
 });
 
@@ -22,11 +26,12 @@ router.get('/', async (_req: Request, res: Response) => {
 router.get('/active', async (_req: Request, res: Response) => {
   const { data, error } = await supabase
     .from('seasons')
-    .select('*')
+    .select(SEASON_COLS)
     .eq('is_active', true)
     .maybeSingle();
 
   if (error) { const e = dbError(error); return res.status(e.httpStatus).json({ error: e.message }); }
+  res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=120');
   res.json(data ?? null);
 });
 
@@ -34,10 +39,11 @@ router.get('/active', async (_req: Request, res: Response) => {
 router.get('/hall-of-fame', async (_req: Request, res: Response) => {
   const { data, error } = await supabase
     .from('hall_of_fame')
-    .select('*')
+    .select(HOF_COLS)
     .order('season_id', { ascending: false });
 
   if (error) { const e = dbError(error); return res.status(e.httpStatus).json({ error: e.message }); }
+  res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=120');
   res.json(data ?? []);
 });
 
