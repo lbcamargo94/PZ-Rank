@@ -51,10 +51,10 @@ const ALLOWED_COLS: Record<string, Set<string>> = {
   mods:             new Set(['id','name','mod_id','workshop_url','status','is_required','image_url','created_at','updated_at']),
   mod_dependencies: new Set(['mod_id','depends_on_id']),
   player_tokens:    new Set(['id','player_id','token','type','expires_at','used_at','created_at']),
-  seasons:          new Set(['id','name','theme_slug','started_at','ended_at','is_active']),
-  hall_of_fame:     new Set(['id','season_id','player_id','entry_name','character_name','position','days','kills','score']),
-  daily_news:       new Set(['id','date','headline','stats']),
-  season_finances:     new Set(['id','season_id','category','label','amount_brl','goal_brl','updated_at']),
+  seasons:          new Set(['id','name','theme_slug','started_at','ended_at','is_active','created_at']),
+  hall_of_fame:     new Set(['id','season_id','player_id','entry_name','character_name','position','days','kills','score','created_at']),
+  daily_news:       new Set(['id','date','headline','stats','created_at']),
+  season_finances:     new Set(['id','season_id','category','label','amount_brl','goal_brl','updated_at','created_at']),
   achievements:        new Set(['id','slug','name','description','icon','tier','stat','threshold']),
   player_achievements: new Set(['id','player_id','achievement_id','entry_id','unlocked_at']),
   heatmap_events:      new Set(['id','season_id','event_type','grid_x','grid_y','count']),
@@ -105,7 +105,7 @@ function toDb(table: string, row: Record<string, unknown>): Record<string, unkno
 
 // ── Query builder ────────────────────────────────────────────────────────────
 
-type DbResult<T> = { data: T | null; error: { message: string } | null };
+type DbResult<T> = { data: T | null; count?: number | null; error: { message: string } | null };
 
 class SqliteQueryBuilder {
   private readonly db:    Database;
@@ -114,6 +114,7 @@ class SqliteQueryBuilder {
   private selectCols = '*';
   private returnCols = '*';
   private hasReturn  = false;
+  private countMode  = false;
   private conditions: { col: string; op: string; val: unknown }[] = [];
   private orderBy:    { col: string; asc: boolean }[] = [];
   private limitN:     number | null = null;
@@ -127,9 +128,10 @@ class SqliteQueryBuilder {
     this.table = table;
   }
 
-  select(cols?: string): this {
+  select(cols?: string, opts?: { count?: string; head?: boolean }): this {
     if (this.mode === 'select') {
       this.selectCols = cols || '*';
+      if (opts?.head) this.countMode = true;
     } else {
       this.returnCols = cols || '*';
       this.hasReturn  = true;
@@ -170,6 +172,21 @@ class SqliteQueryBuilder {
 
   gt(col: string, val: unknown): this {
     this.conditions.push({ col, op: '>', val });
+    return this;
+  }
+
+  gte(col: string, val: unknown): this {
+    this.conditions.push({ col, op: '>=', val });
+    return this;
+  }
+
+  lt(col: string, val: unknown): this {
+    this.conditions.push({ col, op: '<', val });
+    return this;
+  }
+
+  lte(col: string, val: unknown): this {
+    this.conditions.push({ col, op: '<=', val });
     return this;
   }
 
@@ -227,6 +244,11 @@ class SqliteQueryBuilder {
       const { sql: wSql, params: wP } = this.where();
 
       if (this.mode === 'select') {
+        if (this.countMode) {
+          const sql = `SELECT COUNT(*) AS c FROM ${this.table}${wSql}`;
+          const row = this.db.prepare(sql).get(...wP) as { c: number };
+          return { data: null, count: row?.c ?? 0, error: null };
+        }
         let sql = `SELECT ${this.selectCols} FROM ${this.table}${wSql}`;
         if (this.orderBy.length > 0) {
           sql += ' ORDER BY ' + this.orderBy.map(o => `${o.col} ${o.asc ? 'ASC' : 'DESC'}`).join(', ');
