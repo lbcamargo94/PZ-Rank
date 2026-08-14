@@ -166,7 +166,8 @@ CREATE TABLE IF NOT EXISTS seasons (
   theme_slug  TEXT     DEFAULT NULL,
   started_at  TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
   ended_at    TEXT     DEFAULT NULL,
-  is_active   INTEGER  NOT NULL DEFAULT 1
+  is_active   INTEGER  NOT NULL DEFAULT 1,
+  created_at  TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
 );
 
 CREATE TABLE IF NOT EXISTS hall_of_fame (
@@ -178,7 +179,8 @@ CREATE TABLE IF NOT EXISTS hall_of_fame (
   position       INTEGER  NOT NULL,
   days           INTEGER  DEFAULT 0,
   kills          INTEGER  DEFAULT 0,
-  score          INTEGER  DEFAULT 0
+  score          INTEGER  DEFAULT 0,
+  created_at     TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
 );
 
 CREATE TABLE IF NOT EXISTS daily_news (

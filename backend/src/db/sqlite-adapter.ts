@@ -44,7 +44,7 @@ const UUID_DEFAULTS: Record<string, string[]> = {
 const ALLOWED_TABLES = new Set(['players', 'moderators', 'moderator_tokens', 'entries', 'mods', 'mod_dependencies', 'player_tokens', 'seasons', 'hall_of_fame', 'daily_news', 'season_finances', 'achievements', 'player_achievements', 'heatmap_events']);
 
 const ALLOWED_COLS: Record<string, Set<string>> = {
-  players:          new Set(['id','nick','email','password_hash','email_verified_at','twitch_url','youtube_url','kick_url','tiktok_url','status','blocked','is_supporter','supporter_until','player_token','created_at','deleted_at','gender','yt_channel_id','yt_sub_expires_at']),
+  players:          new Set(['id','nick','email','password_hash','email_verified_at','twitch_url','youtube_url','kick_url','tiktok_url','status','blocked','is_supporter','supporter_until','player_token','created_at','deleted_at','gender','yt_channel_id','yt_sub_expires_at','yt_last_live_video_id']),
   moderators:       new Set(['id','login','email','email_verified_at','role','password_hash','created_at']),
   moderator_tokens: new Set(['id','email','token','type','expires_at','used_at','created_at']),
   entries:          new Set(['id','player_id','moderator_id','name','character_name','profession','days','time_raw','time_str','kills','skills','live_url','is_alive','sandbox_ok','traits','objectives','score','created_at','updated_at','sandbox_config','sandbox_config_updated_at','disqualified_at','disqualification_reason','flagged_reason','flagged_at','deleted_at','season_id','animals_killed','fish_caught','crops_harvested','items_crafted','houses_looted','hours_without_sleep','trees_cut','books_read','structures_built','crops_planted','spiffo_visited','eggs_collected','milk_produced','stone_structures','ceramic_items','forged_weapons','km_driven','cities_visited','military_visited','meals_cooked','water_collected','materials_crafted','animal_tracks','weapons_crafted','furniture_crafted','clothes_crafted','cheese_produced','doors_opened','sleep_locations','basements_explored','stations_used','animal_species','days_no_canned']),
@@ -306,9 +306,19 @@ class SqliteQueryBuilder {
 // ── Fábrica ──────────────────────────────────────────────────────────────────
 
 function runMigrations(db: Database): void {
-  const entryCols  = (db.prepare('PRAGMA table_info(entries)').all()  as { name: string }[]).map(c => c.name);
-  const playerCols = (db.prepare('PRAGMA table_info(players)').all()  as { name: string }[]).map(c => c.name);
-  const modsCols   = (db.prepare('PRAGMA table_info(mods)').all()     as { name: string }[]).map(c => c.name);
+  const entryCols  = (db.prepare('PRAGMA table_info(entries)').all()    as { name: string }[]).map(c => c.name);
+  const playerCols = (db.prepare('PRAGMA table_info(players)').all()    as { name: string }[]).map(c => c.name);
+  const modsCols   = (db.prepare('PRAGMA table_info(mods)').all()       as { name: string }[]).map(c => c.name);
+  const moderCols  = (db.prepare('PRAGMA table_info(moderators)').all() as { name: string }[]).map(c => c.name);
+
+  if (!moderCols.includes('email')) {
+    db.exec('ALTER TABLE moderators ADD COLUMN email TEXT UNIQUE');
+    console.log('[SQLite] migração: coluna email adicionada em moderators');
+  }
+  if (!moderCols.includes('email_verified_at')) {
+    db.exec('ALTER TABLE moderators ADD COLUMN email_verified_at TEXT DEFAULT NULL');
+    console.log('[SQLite] migração: coluna email_verified_at adicionada em moderators');
+  }
 
   if (!modsCols.includes('image_url')) {
     db.exec('ALTER TABLE mods ADD COLUMN image_url TEXT DEFAULT NULL');
@@ -428,9 +438,16 @@ function runMigrations(db: Database): void {
       theme_slug TEXT     DEFAULT NULL,
       started_at TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
       ended_at   TEXT     DEFAULT NULL,
-      is_active  INTEGER  NOT NULL DEFAULT 1
+      is_active  INTEGER  NOT NULL DEFAULT 1,
+      created_at TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
     )`);
     console.log('[SQLite] migração: tabela seasons criada');
+  } else {
+    const seasonCols = (db.prepare('PRAGMA table_info(seasons)').all() as { name: string }[]).map(c => c.name);
+    if (!seasonCols.includes('created_at')) {
+      db.exec("ALTER TABLE seasons ADD COLUMN created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))");
+      console.log('[SQLite] migração: coluna created_at adicionada em seasons');
+    }
   }
 
   const hasHoF = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='hall_of_fame'").get();
@@ -444,9 +461,16 @@ function runMigrations(db: Database): void {
       position       INTEGER  NOT NULL,
       days           INTEGER  DEFAULT 0,
       kills          INTEGER  DEFAULT 0,
-      score          INTEGER  DEFAULT 0
+      score          INTEGER  DEFAULT 0,
+      created_at     TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
     )`);
     console.log('[SQLite] migração: tabela hall_of_fame criada');
+  } else {
+    const hofCols = (db.prepare('PRAGMA table_info(hall_of_fame)').all() as { name: string }[]).map(c => c.name);
+    if (!hofCols.includes('created_at')) {
+      db.exec("ALTER TABLE hall_of_fame ADD COLUMN created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))");
+      console.log('[SQLite] migração: coluna created_at adicionada em hall_of_fame');
+    }
   }
 
   const hasNews = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='daily_news'").get();
