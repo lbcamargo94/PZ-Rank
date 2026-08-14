@@ -19,7 +19,8 @@ router.get('/global', async (_req: Request, res: Response) => {
       .from('entries')
       .select('id', { count: 'exact', head: true })
       .is('deleted_at', null)
-      .neq('sandbox_ok', false)
+      .eq('sandbox_ok', true)
+      .eq('is_alive', true)
       .gte('updated_at', since24h),
   ]);
 

@@ -290,6 +290,21 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     }
   }
 
+  // Personagem já morto no banco e o novo código também diz morto, sem nova run
+  // (timeRaw não regrediu = mesma partida). Nada mudou de relevante — pula o write
+  // para evitar egress desnecessário no Supabase.
+  if (prev && prev.is_alive === false && !decoded.isAlive && !justReactivated) {
+    if (decoded.timeRaw >= prev.time_raw) {
+      res.status(200).json({
+        success:        true,
+        character_name: decoded.characterName,
+        score:          prev.score,
+        is_alive:       false,
+      });
+      return;
+    }
+  }
+
   const existingObjectives = (existing?.objectives as Objectives | null) ?? null;
 
   // ── Detecção de anomalias estatísticas ─────────────────────────────────────
