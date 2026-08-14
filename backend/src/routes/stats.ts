@@ -81,25 +81,39 @@ router.get('/steam-players', async (_req: Request, res: Response) => {
 
 // GET /stats/legends — recordes da temporada + hall da fama
 router.get('/legends', async (_req: Request, res: Response) => {
-  const entrySelect = 'name, character_name, player_id, kills, days, score';
+  // created_at incluído para tiebreak: quem alcançou o marco PRIMEIRO mantém o posto
+  const entrySelect = 'name, character_name, player_id, kills, days, score, created_at';
   const ef          = (q: ReturnType<typeof supabase.from>) =>
     (q as ReturnType<typeof supabase.from> & { is: Function; neq: Function })
       .is('deleted_at', null).neq('sandbox_ok', false);
 
-  const [killsRes, daysRes, scoreRes, leaderRes, richRes, hofFirstRes, hofAllRes, seasonsRes] = await Promise.all([
+  const [
+    killsRes, daysRes, scoreRes, leaderRes,
+    richRes,
+    hofFirstRes, hofAllRes, seasonsRes,
+    fishRes, animalsRes, eggsRes, milkRes,
+    sleepRes, kmRes, materialsRes, mealsRes,
+    treesRes, structuresRes,
+  ] = await Promise.all([
     ef(supabase.from('entries').select(entrySelect))
-      .order('kills', { ascending: false }).limit(1).maybeSingle(),
+      .order('kills', { ascending: false }).order('created_at', { ascending: true })
+      .limit(1).maybeSingle(),
 
     ef(supabase.from('entries').select(entrySelect))
-      .order('days', { ascending: false }).limit(1).maybeSingle(),
+      .order('days', { ascending: false }).order('created_at', { ascending: true })
+      .limit(1).maybeSingle(),
 
     ef(supabase.from('entries').select(entrySelect))
-      .order('score', { ascending: false }).limit(1).maybeSingle(),
+      .order('score', { ascending: false }).order('created_at', { ascending: true })
+      .limit(1).maybeSingle(),
 
     ef(supabase.from('entries').select(entrySelect).eq('is_alive', true))
-      .order('score', { ascending: false }).limit(1).maybeSingle(),
+      .order('score', { ascending: false }).order('created_at', { ascending: true })
+      .limit(1).maybeSingle(),
 
-    ef(supabase.from('entries').select(`${entrySelect}, skills, objectives, updated_at`)),
+    // richRes ordenado por created_at para tiebreak em skills10 / spiffo / base militar
+    ef(supabase.from('entries').select(`${entrySelect}, skills, objectives`))
+      .order('created_at', { ascending: true }),
 
     supabase.from('hall_of_fame')
       .select('entry_name, character_name, player_id, kills, days, score, season_id')
@@ -110,48 +124,103 @@ router.get('/legends', async (_req: Request, res: Response) => {
       .order('season_id', { ascending: false }).order('position', { ascending: true }),
 
     supabase.from('seasons').select('id, name').order('id', { ascending: false }),
+
+    // Recordes de sobrevivência — 10 novas categorias
+    ef(supabase.from('entries').select(`${entrySelect}, fish_caught`))
+      .gt('fish_caught', 0)
+      .order('fish_caught', { ascending: false }).order('created_at', { ascending: true })
+      .limit(1).maybeSingle(),
+
+    ef(supabase.from('entries').select(`${entrySelect}, animals_killed`))
+      .gt('animals_killed', 0)
+      .order('animals_killed', { ascending: false }).order('created_at', { ascending: true })
+      .limit(1).maybeSingle(),
+
+    ef(supabase.from('entries').select(`${entrySelect}, eggs_collected`))
+      .gt('eggs_collected', 0)
+      .order('eggs_collected', { ascending: false }).order('created_at', { ascending: true })
+      .limit(1).maybeSingle(),
+
+    ef(supabase.from('entries').select(`${entrySelect}, milk_produced`))
+      .gt('milk_produced', 0)
+      .order('milk_produced', { ascending: false }).order('created_at', { ascending: true })
+      .limit(1).maybeSingle(),
+
+    ef(supabase.from('entries').select(`${entrySelect}, hours_without_sleep`))
+      .gt('hours_without_sleep', 0)
+      .order('hours_without_sleep', { ascending: false }).order('created_at', { ascending: true })
+      .limit(1).maybeSingle(),
+
+    ef(supabase.from('entries').select(`${entrySelect}, km_driven`))
+      .gt('km_driven', 0)
+      .order('km_driven', { ascending: false }).order('created_at', { ascending: true })
+      .limit(1).maybeSingle(),
+
+    ef(supabase.from('entries').select(`${entrySelect}, materials_crafted`))
+      .gt('materials_crafted', 0)
+      .order('materials_crafted', { ascending: false }).order('created_at', { ascending: true })
+      .limit(1).maybeSingle(),
+
+    ef(supabase.from('entries').select(`${entrySelect}, meals_cooked`))
+      .gt('meals_cooked', 0)
+      .order('meals_cooked', { ascending: false }).order('created_at', { ascending: true })
+      .limit(1).maybeSingle(),
+
+    ef(supabase.from('entries').select(`${entrySelect}, trees_cut`))
+      .gt('trees_cut', 0)
+      .order('trees_cut', { ascending: false }).order('created_at', { ascending: true })
+      .limit(1).maybeSingle(),
+
+    ef(supabase.from('entries').select(`${entrySelect}, structures_built`))
+      .gt('structures_built', 0)
+      .order('structures_built', { ascending: false }).order('created_at', { ascending: true })
+      .limit(1).maybeSingle(),
   ]);
 
-  const firstErr = [killsRes.error, daysRes.error, scoreRes.error, leaderRes.error,
-                    richRes.error, hofFirstRes.error, hofAllRes.error, seasonsRes.error].find(Boolean);
+  const firstErr = [
+    killsRes.error, daysRes.error, scoreRes.error, leaderRes.error,
+    richRes.error, hofFirstRes.error, hofAllRes.error, seasonsRes.error,
+    fishRes.error, animalsRes.error, eggsRes.error, milkRes.error,
+    sleepRes.error, kmRes.error, materialsRes.error, mealsRes.error,
+    treesRes.error, structuresRes.error,
+  ].find(Boolean);
   if (firstErr) { const e = dbError(firstErr); return res.status(e.httpStatus).json({ error: e.message }); }
 
   type RichRow = {
     name: string; character_name: string | null; player_id: number | null;
-    kills: number; days: number; score: number;
-    skills: string | null; objectives: Record<string, unknown> | null; updated_at: string;
+    kills: number; days: number; score: number; created_at: string;
+    skills: string | null; objectives: Record<string, unknown> | null;
   };
   const { countSkills10 } = await import('../lib/scoring');
+  // richRows já vem ordenado por created_at ASC — o primeiro com o max é o detentor do marco
   const richRows = (richRes.data ?? []) as RichRow[];
 
   // Mais habilidades no nível 10
-  let mostSkills10: (Omit<RichRow, 'skills'|'objectives'|'updated_at'> & { skills10_count: number }) | null = null;
+  let mostSkills10: (Omit<RichRow, 'skills'|'objectives'> & { skills10_count: number }) | null = null;
   for (const row of richRows) {
     const count = countSkills10(row.skills);
     if (count > 0 && (!mostSkills10 || count > mostSkills10.skills10_count)) {
-      const { skills: _s, objectives: _o, updated_at: _u, ...base } = row;
+      const { skills: _s, objectives: _o, ...base } = row;
       mostSkills10 = { ...base, skills10_count: count };
     }
   }
 
   // Mais bases Spiffo concluídas
-  let mostSpiffo: (Omit<RichRow, 'skills'|'objectives'|'updated_at'> & { spiffo_count: number }) | null = null;
+  let mostSpiffo: (Omit<RichRow, 'skills'|'objectives'> & { spiffo_count: number }) | null = null;
   for (const row of richRows) {
     if (!row.objectives) continue;
     const bases = (row.objectives['bases'] ?? {}) as Record<string, Record<string, unknown>>;
     const count = Object.values(bases).filter(b => b['has_base'] === true).length;
     if (count > 0 && (!mostSpiffo || count > mostSpiffo.spiffo_count)) {
-      const { skills: _s, objectives: _o, updated_at: _u, ...base } = row;
+      const { skills: _s, objectives: _o, ...base } = row;
       mostSpiffo = { ...base, spiffo_count: count };
     }
   }
 
-  // Primeiro a conquistar a base militar (proxy: updated_at mais antigo com military_base=true)
-  const militaryRows = richRows
-    .filter(r => r.objectives?.['military_base'] === true)
-    .sort((a, b) => a.updated_at.localeCompare(b.updated_at));
+  // Primeiro a conquistar a base militar — richRows já ordenado por created_at
+  const militaryRows = richRows.filter(r => r.objectives?.['military_base'] === true);
   const militaryHolder = militaryRows[0]
-    ? (({ skills: _s, objectives: _o, updated_at: _u, ...base }) => base)(militaryRows[0])
+    ? (({ skills: _s, objectives: _o, ...base }) => base)(militaryRows[0])
     : null;
 
   // Hall da Fama — agrupa por temporada
@@ -188,6 +257,16 @@ router.get('/legends', async (_req: Request, res: Response) => {
     military_base_holder: militaryHolder,
     first_champion:       firstChampion,
     hall_of_fame:         hallOfFame,
+    most_fish:            fishRes.data,
+    most_animals:         animalsRes.data,
+    most_eggs:            eggsRes.data,
+    most_milk:            milkRes.data,
+    most_sleepless:       sleepRes.data,
+    most_km_driven:       kmRes.data,
+    most_materials:       materialsRes.data,
+    most_meals:           mealsRes.data,
+    most_trees:           treesRes.data,
+    most_structures:      structuresRes.data,
   });
 });
 
