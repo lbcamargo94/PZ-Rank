@@ -2,12 +2,12 @@ import { Link } from 'react-router-dom';
 import linksBg from '../../assets/background/tela-de-links-uteis.webp';
 
 const DISCORD_URL              = 'https://discord.gg/ebhts347WJ';
-const COMPANION_WIN_URL        = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.9.9/PZ.Rank.Companion.Setup.1.9.9.exe';
-const COMPANION_MAC_ARM        = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.9.9/PZ.Rank.Companion.1.9.9.Mac.arm64.dmg';
-const COMPANION_MAC_X64        = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.9.9/PZ.Rank.Companion.1.9.9.Mac.x64.dmg';
-const COMPANION_LINUX_APPIMAGE = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.9.9/PZ.Rank.Companion.1.9.9.AppImage';
-const COMPANION_LINUX_DEB      = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v1.9.9/PZ.Rank.Companion.1.9.9.deb';
-const COMPANION_VER            = 'v1.9.9';
+const COMPANION_WIN_URL        = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v2.0.8/PZ.Rank.Companion.Setup.2.0.8.exe';
+const COMPANION_MAC_ARM        = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v2.0.8/PZ.Rank.Companion.2.0.8.Mac.arm64.dmg';
+const COMPANION_MAC_X64        = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v2.0.8/PZ.Rank.Companion.2.0.8.Mac.x64.dmg';
+const COMPANION_LINUX_APPIMAGE = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v2.0.8/PZ.Rank.Companion.2.0.8.AppImage';
+const COMPANION_LINUX_DEB      = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v2.0.8/PZ.Rank.Companion.2.0.8.deb';
+const COMPANION_VER            = 'v2.0.8';
 
 export function LinksUteisPage() {
   return (
