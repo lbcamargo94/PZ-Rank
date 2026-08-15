@@ -85,6 +85,8 @@ export interface DecodedCode {
   cropsPlanted:           number;
   // PZRX5
   spiffoVisited:          number;
+  // PZRX9 slim
+  deathCause:             string | null;
   skillLevels:            Record<string, number>;
 }
 

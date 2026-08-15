@@ -312,7 +312,9 @@ export function CodeDecoder() {
 
           {/* Estatísticas estendidas */}
           {(result.animalsKilled > 0 || result.fishCaught > 0 || result.cropsHarvested > 0 ||
-            result.itemsCrafted > 0 || result.housesLooted > 0 || result.hoursWithoutSleep > 0) && (
+            result.itemsCrafted > 0 || result.housesLooted > 0 || result.hoursWithoutSleep > 0 ||
+            result.treesCut > 0 || result.booksRead > 0 || result.structuresBuilt > 0 ||
+            result.cropsPlanted > 0 || result.spiffoVisited > 0 || result.deathCause) && (
             <div className="dc-section">
               <div className="dc-section-title">
                 <i className="ti ti-chart-bar" /> Estatísticas da Run
@@ -339,11 +341,25 @@ export function CodeDecoder() {
                     <span className="dc-ext-lbl">colheitas</span>
                   </div>
                 )}
+                {result.cropsPlanted > 0 && (
+                  <div className="dc-ext-item">
+                    <i className="ti ti-seeding" />
+                    <span className="dc-ext-val">{result.cropsPlanted.toLocaleString('pt-BR')}</span>
+                    <span className="dc-ext-lbl">cultivos plantados</span>
+                  </div>
+                )}
                 {result.itemsCrafted > 0 && (
                   <div className="dc-ext-item">
                     <i className="ti ti-hammer" />
                     <span className="dc-ext-val">{result.itemsCrafted.toLocaleString('pt-BR')}</span>
                     <span className="dc-ext-lbl">itens fabricados</span>
+                  </div>
+                )}
+                {result.structuresBuilt > 0 && (
+                  <div className="dc-ext-item">
+                    <i className="ti ti-building" />
+                    <span className="dc-ext-val">{result.structuresBuilt.toLocaleString('pt-BR')}</span>
+                    <span className="dc-ext-lbl">estruturas construídas</span>
                   </div>
                 )}
                 {result.housesLooted > 0 && (
@@ -353,11 +369,39 @@ export function CodeDecoder() {
                     <span className="dc-ext-lbl">casas saqueadas</span>
                   </div>
                 )}
+                {result.treesCut > 0 && (
+                  <div className="dc-ext-item">
+                    <i className="ti ti-trees" />
+                    <span className="dc-ext-val">{result.treesCut.toLocaleString('pt-BR')}</span>
+                    <span className="dc-ext-lbl">árvores cortadas</span>
+                  </div>
+                )}
+                {result.booksRead > 0 && (
+                  <div className="dc-ext-item">
+                    <i className="ti ti-book" />
+                    <span className="dc-ext-val">{result.booksRead.toLocaleString('pt-BR')}</span>
+                    <span className="dc-ext-lbl">livros lidos</span>
+                  </div>
+                )}
                 {result.hoursWithoutSleep > 0 && (
                   <div className="dc-ext-item">
                     <i className="ti ti-moon-off" />
                     <span className="dc-ext-val">{result.hoursWithoutSleep.toLocaleString('pt-BR')}h</span>
                     <span className="dc-ext-lbl">sem dormir (máx)</span>
+                  </div>
+                )}
+                {result.spiffoVisited > 0 && (
+                  <div className="dc-ext-item">
+                    <i className="ti ti-map-pin" />
+                    <span className="dc-ext-val">{result.spiffoVisited.toLocaleString('pt-BR')}</span>
+                    <span className="dc-ext-lbl">Spiffo's visitados</span>
+                  </div>
+                )}
+                {result.deathCause && (
+                  <div className="dc-ext-item dc-ext-death">
+                    <i className="ti ti-skull" />
+                    <span className="dc-ext-val">{result.deathCause}</span>
+                    <span className="dc-ext-lbl">causa da morte</span>
                   </div>
                 )}
               </div>

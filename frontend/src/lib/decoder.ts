@@ -59,7 +59,7 @@ export function parsePzrCode(raw: string): DecodedCode | null {
   if (!match) return null;
   const [, characterName, profession, kills, timeRaw, skillsRaw, statusRaw, sandboxRaw, traitsRaw, reasonRaw,
     tsRaw, modVersionRaw, animalsKilledRaw, fishCaughtRaw, cropsHarvestedRaw, itemsCraftedRaw, housesLootedRaw, hoursWithoutSleepRaw,
-    treesCutRaw, booksReadRaw, structuresBuiltRaw, cropsPlantedRaw, spiffoVisitedRaw] = match;
+    treesCutRaw, booksReadRaw, structuresBuiltRaw, cropsPlantedRaw, spiffoVisitedRaw, deathCauseRaw] = match;
   const timeRawNum = parseInt(timeRaw, 10);
   const parseExt = (raw: string | undefined) => { const n = parseInt(raw ?? '', 10); return isNaN(n) ? 0 : n; };
   const tsNum = parseInt(tsRaw ?? '', 10);
@@ -101,6 +101,7 @@ export function parsePzrCode(raw: string): DecodedCode | null {
     structuresBuilt:   parseExt(structuresBuiltRaw),
     cropsPlanted:      parseExt(cropsPlantedRaw),
     spiffoVisited:     parseExt(spiffoVisitedRaw),
+    deathCause:        (deathCauseRaw && deathCauseRaw.trim()) ? deathCauseRaw.trim() : null,
     skillLevels,
   };
 }
