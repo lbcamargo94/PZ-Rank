@@ -43,9 +43,10 @@ export interface ExtendedStats {
 }
 
 export async function evaluateAchievements(
-  playerId: number,
-  entryId:  number,
-  s:        ExtendedStats,
+  playerId:      number,
+  characterName: string,
+  entryId:       number,
+  s:             ExtendedStats,
 ): Promise<void> {
   const { data: allAch } = await supabase
     .from('achievements')
@@ -56,7 +57,8 @@ export async function evaluateAchievements(
   const { data: existing } = await supabase
     .from('player_achievements')
     .select('achievement_id')
-    .eq('player_id', playerId);
+    .eq('player_id', playerId)
+    .eq('character_name', characterName);
 
   const unlocked = new Set(
     (existing ?? []).map((r: { achievement_id: number }) => r.achievement_id),
@@ -116,7 +118,7 @@ export async function evaluateAchievements(
 
   const toInsert = (allAch as Array<{ id: number; stat: string; threshold: number }>)
     .filter(a => !unlocked.has(a.id) && (stats[a.stat] ?? 0) >= a.threshold)
-    .map(a => ({ player_id: playerId, achievement_id: a.id, entry_id: entryId, unlocked_at: now }));
+    .map(a => ({ player_id: playerId, character_name: characterName, achievement_id: a.id, entry_id: entryId, unlocked_at: now }));
 
   if (toInsert.length > 0) {
     await supabase.from('player_achievements').insert(toInsert);

@@ -116,10 +116,12 @@ function AchCard({
 
 export function AchievementsSection({
   playerId,
+  characterName,
   playerStats,
 }: {
-  playerId:    number;
-  playerStats: PlayerStats;
+  playerId:      number;
+  characterName: string;
+  playerStats:   PlayerStats;
 }) {
   const [all,      setAll]      = useState<Achievement[]>([]);
   const [unlocked, setUnlocked] = useState<PlayerAchievement[]>([]);
@@ -132,11 +134,11 @@ export function AchievementsSection({
   const load = useCallback(() => {
     setLoading(true);
     setError(null);
-    Promise.all([apiGetAchievements(), apiGetPlayerAchievements(playerId)])
+    Promise.all([apiGetAchievements(), apiGetPlayerAchievements(playerId, characterName || undefined)])
       .then(([a, p]) => { setAll(a.achievements); setUnlocked(p.achievements); })
       .catch(err => setError((err as Error).message))
       .finally(() => setLoading(false));
-  }, [playerId]);
+  }, [playerId, characterName]);
 
   useEffect(() => { load(); }, [load]);
 

@@ -21,15 +21,25 @@ router.get('/', async (_req: Request, res: Response): Promise<void> => {
 });
 
 // GET /achievements/player/:id — conquistas desbloqueadas por um jogador (pública)
+// ?character=NomeDoPersonagem filtra por personagem específico
 router.get('/player/:id', async (req: Request, res: Response): Promise<void> => {
   const playerId = parseInt(req.params['id'] as string, 10);
   if (isNaN(playerId)) { res.status(400).json({ error: 'ID inválido.' }); return; }
 
+  const characterName = typeof req.query['character'] === 'string' ? req.query['character'] : undefined;
+
+  let query = supabase
+    .from('player_achievements')
+    .select('achievement_id, character_name, unlocked_at, entry_id')
+    .eq('player_id', playerId);
+
+  if (characterName !== undefined) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    query = (query as any).eq('character_name', characterName);
+  }
+
   const [{ data: unlocked, error: e1 }, { data: defs, error: e2 }] = await Promise.all([
-    supabase
-      .from('player_achievements')
-      .select('achievement_id, unlocked_at, entry_id')
-      .eq('player_id', playerId),
+    query,
     supabase
       .from('achievements')
       .select('id, slug, name, description, icon, tier, stat, threshold'),
@@ -44,10 +54,11 @@ router.get('/player/:id', async (req: Request, res: Response): Promise<void> => 
     (defs ?? []).map((d: { id: number }) => [d.id, d]),
   );
 
-  const result = (unlocked ?? []).map((u: { achievement_id: number; unlocked_at: string; entry_id: number | null }) => ({
+  const result = (unlocked ?? []).map((u: { achievement_id: number; character_name: string; unlocked_at: string; entry_id: number | null }) => ({
     ...defMap[u.achievement_id],
-    unlocked_at: u.unlocked_at,
-    entry_id:    u.entry_id ?? null,
+    character_name: u.character_name,
+    unlocked_at:    u.unlocked_at,
+    entry_id:       u.entry_id ?? null,
   }));
 
   res.setHeader('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=60');
@@ -55,11 +66,16 @@ router.get('/player/:id', async (req: Request, res: Response): Promise<void> => 
 });
 
 // POST /achievements/player/:playerId/:slug — conceder conquista manualmente (moderador)
+// Body opcional: { character_name: string } — padrão '' (nível de conta)
 router.post('/player/:playerId/:slug', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
   const playerId = parseInt(req.params['playerId'] as string, 10);
   const slug = String(req.params['slug'] ?? '').trim();
 
   if (isNaN(playerId) || !slug) { res.status(400).json({ error: 'Parâmetros inválidos.' }); return; }
+
+  const characterName = typeof (req.body as Record<string, unknown>)?.['character_name'] === 'string'
+    ? String((req.body as Record<string, unknown>)['character_name'])
+    : '';
 
   const { data: ach, error: achErr } = await supabase
     .from('achievements')
@@ -74,27 +90,31 @@ router.post('/player/:playerId/:slug', requireModerator, async (req: ModRequest,
     .from('player_achievements')
     .select('achievement_id')
     .eq('player_id', playerId)
+    .eq('character_name', characterName)
     .eq('achievement_id', (ach as { id: number }).id)
     .maybeSingle();
 
-  if (existing) { res.status(409).json({ error: 'Conquista já desbloqueada para este jogador.' }); return; }
+  if (existing) { res.status(409).json({ error: 'Conquista já desbloqueada para este personagem.' }); return; }
 
   const now = new Date().toISOString();
   const { error: insErr } = await supabase
     .from('player_achievements')
-    .insert({ player_id: playerId, achievement_id: (ach as { id: number }).id, entry_id: null, unlocked_at: now });
+    .insert({ player_id: playerId, character_name: characterName, achievement_id: (ach as { id: number }).id, entry_id: null, unlocked_at: now });
 
   if (insErr) { res.status(500).json({ error: dbError(insErr).message }); return; }
 
-  res.status(201).json({ achievement: { ...ach, unlocked_at: now, entry_id: null } });
+  res.status(201).json({ achievement: { ...ach, character_name: characterName, unlocked_at: now, entry_id: null } });
 });
 
 // DELETE /achievements/player/:playerId/:slug — revogar conquista (master)
+// Query param opcional: ?character=NomeDoPersonagem — padrão '' (nível de conta)
 router.delete('/player/:playerId/:slug', requireMaster, async (req: ModRequest, res: Response): Promise<void> => {
   const playerId = parseInt(req.params['playerId'] as string, 10);
   const slug = String(req.params['slug'] ?? '').trim();
 
   if (isNaN(playerId) || !slug) { res.status(400).json({ error: 'Parâmetros inválidos.' }); return; }
+
+  const characterName = typeof req.query['character'] === 'string' ? req.query['character'] : '';
 
   const { data: ach, error: achErr } = await supabase
     .from('achievements')
@@ -109,6 +129,7 @@ router.delete('/player/:playerId/:slug', requireMaster, async (req: ModRequest, 
     .from('player_achievements')
     .delete()
     .eq('player_id', playerId)
+    .eq('character_name', characterName)
     .eq('achievement_id', (ach as { id: number }).id);
 
   if (delErr) { res.status(500).json({ error: dbError(delErr).message }); return; }

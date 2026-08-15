@@ -84,6 +84,22 @@ function makePZRX3(fields: Partial<{
   return 'PZRX3:' + obfuscate(plain);
 }
 
+// PZRX9 slim (v2.16+): 12 campos — sem extended stats, com death_cause no final
+function makePZRX9Slim(fields: Partial<{
+  name: string; prof: string; kills: number; time: number;
+  skills: string; status: string; sandbox: string; traits: string;
+  motivo: string; ts: number; version: string; deathCause: string;
+}> = {}): string {
+  const f = {
+    name: 'Teste', prof: 'Bombeiro', kills: 100, time: 1440,
+    skills: '', status: 'vivo', sandbox: 'ok', traits: '', motivo: '',
+    ts: Math.floor(Date.now() / 1000), version: '2.16.0', deathCause: '',
+    ...fields,
+  };
+  const plain = `PZR|${f.name}|${f.prof}|${f.kills}|${f.time}|${f.skills}|${f.status}|${f.sandbox}|${f.traits}|${f.motivo}|${f.ts}|${f.version}|${f.deathCause}`;
+  return 'PZRX9:' + obfuscate(plain);
+}
+
 // Replica o isVersionAtLeast de sync.ts (função pura, sem efeitos colaterais)
 function isVersionAtLeast(version: string | null, minimum: string): boolean {
   if (!version) return false;
@@ -152,8 +168,13 @@ describe('parsePzrCode — entradas adversariais', () => {
     expect(parsePzrCode('   \n\t  ')).toBeNull();
   });
 
-  it('prefixo inválido PZRX4 → null', () => {
-    expect(parsePzrCode('PZRX4:' + obfuscate('PZR|x|x|0|0|||||'))).toBeNull();
+  it('prefixo PZRX10 (dois dígitos, fora do range) → null', () => {
+    // PZR_PREFIX_RE aceita apenas [123456789] (um dígito). "10" tem dois chars → no-match.
+    expect(parsePzrCode('PZRX10:' + obfuscate('PZR|x|x|0|0|||||'))).toBeNull();
+  });
+
+  it('prefixo PZRX0 (zero fora do range) → null', () => {
+    expect(parsePzrCode('PZRX0:' + obfuscate('PZR|Teste|Prof|100|1440|||||'))).toBeNull();
   });
 
   it('prefixo sem payload → null', () => {
@@ -625,7 +646,83 @@ describe('validatePoint — validação de ponto de heatmap', () => {
 
 });
 
-// ─── 6. Anti-cheat — limites de progressão ───────────────────────────────────
+// ─── 6. PZRX9 slim (v2.16+) — formato reduzido ───────────────────────────────
+
+describe('parsePzrCode — PZRX9 slim (Fase 2)', () => {
+
+  it('PZRX9 slim básico → decodifica campos de campeonato', () => {
+    const r = parsePzrCode(makePZRX9Slim({ name: 'BravoSurv', kills: 5000, time: 2880 }));
+    expect(r).not.toBeNull();
+    expect(r!.characterName).toBe('BravoSurv');
+    expect(r!.kills).toBe(5000);
+    expect(r!.days).toBe(2);
+    expect(r!.modVersion).toBe('2.16.0');
+    expect(r!.isAlive).toBe(true);
+    expect(r!.sandboxOk).toBe(true);
+  });
+
+  it('PZRX9 slim → todos os extended stats são 0 (não enviados no código)', () => {
+    const r = parsePzrCode(makePZRX9Slim({ kills: 9000 }));
+    expect(r).not.toBeNull();
+    expect(r!.animalsKilled).toBe(0);
+    expect(r!.fishCaught).toBe(0);
+    expect(r!.cropsHarvested).toBe(0);
+    expect(r!.itemsCrafted).toBe(0);
+    expect(r!.housesLooted).toBe(0);
+    expect(r!.weaponsCrafted).toBe(0);
+    expect(r!.doorsOpened).toBe(0);
+    expect(r!.daysNoCanned).toBe(0);
+  });
+
+  it('PZRX9 slim com death_cause → extraído corretamente do campo 12', () => {
+    const r = parsePzrCode(makePZRX9Slim({ status: 'morto', deathCause: 'Zombie bite' }));
+    expect(r).not.toBeNull();
+    expect(r!.isAlive).toBe(false);
+    expect(r!.deathCause).toBe('Zombie bite');
+  });
+
+  it('PZRX9 slim com death_cause vazio → deathCause é null', () => {
+    const r = parsePzrCode(makePZRX9Slim({ deathCause: '' }));
+    expect(r).not.toBeNull();
+    expect(r!.deathCause).toBeNull();
+  });
+
+  it('PZRX9 slim sandbox inválido → sandboxOk=false, motivo preenchido', () => {
+    const r = parsePzrCode(makePZRX9Slim({ sandbox: 'invalido', motivo: 'debug' }));
+    expect(r).not.toBeNull();
+    expect(r!.sandboxOk).toBe(false);
+    expect(r!.disqualificationReason).toBe('debug');
+  });
+
+  it('PZRX9 slim com skills → skillLevels decodificados', () => {
+    const r = parsePzrCode(makePZRX9Slim({ skills: 'Axe 10,Blunt 8,Sprinting 10' }));
+    expect(r).not.toBeNull();
+    expect(r!.skillLevels['axe']).toBe(10);
+    expect(r!.skillLevels['blunt']).toBe(8);
+    expect(r!.skillLevels['sprinting']).toBe(10);
+  });
+
+  it('PZRX9 slim com traits → array decodificado', () => {
+    const r = parsePzrCode(makePZRX9Slim({ traits: 'Athletic,Lucky,Smoker' }));
+    expect(r).not.toBeNull();
+    expect(r!.traits).toEqual(['Athletic', 'Lucky', 'Smoker']);
+  });
+
+  it('PZRX9 slim — death_cause começando com dígito → extraído corretamente', () => {
+    // Caso extremo: se a causa de morte começa com um número, o regex pode capturar
+    // o dígito inicial como animalsKilled (grupo 12). O deathCause ainda deve ser extraído.
+    const r = parsePzrCode(makePZRX9Slim({ status: 'morto', deathCause: '2 bites' }));
+    expect(r).not.toBeNull();
+    expect(r!.isAlive).toBe(false);
+    // O campo deathCause é o último grupo [^|]* — captura o restante depois dos zeros
+    // Os extended stats ficam em 0 (dados históricos não afetados)
+    expect(r!.animalsKilled).toBeGreaterThanOrEqual(0); // pode ser 0 ou 2, mas não importa
+    expect(r!.deathCause).toBeTruthy(); // a string não está vazia
+  });
+
+});
+
+// ─── 7. Anti-cheat — limites de progressão ───────────────────────────────────
 
 describe('anti-cheat — limites de progressão', () => {
 

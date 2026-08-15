@@ -2,7 +2,7 @@
 import { SKILL_NAMES } from './skills';
 
 const XOR_KEY = 'PZRank-Community-2026-Key!';
-// PZRX1 = formato antigo; PZRX2 = atual; PZRX3 = estendido (stats do mod v2.6+); PZRX4 = estendido v2 (mod v2.10+)
+// PZRX1-8 = formatos legados; PZRX9 (v2.16+) = slim — 12 campos de campeonato; stats estendidas em pz_rank_stats_<char>.log
 const PZR_PREFIX_RE = /^PZRX[123456789]:([\s\S]+)$/;
 // Grupos 1-11: nome|prof|kills|tempo|skills|status|sandbox|traits|motivo|ts|modVersion (opcionais a partir do 6º)
 // Grupos 12-17 (PZRX3): animals_killed|fish_caught|crops_harvested|items_crafted|houses_looted|hours_without_sleep

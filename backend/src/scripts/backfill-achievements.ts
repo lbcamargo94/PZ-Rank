@@ -1,8 +1,8 @@
 /**
  * backfill-achievements.ts
  *
- * Retroativamente desbloqueia conquistas para todos os players com base nas
- * melhores stats acumuladas em suas entradas históricas no banco.
+ * Retroativamente desbloqueia conquistas para todos os personagens (entries)
+ * com base nas stats de cada entry individual — por personagem, não por player.
  *
  * Execução (Supabase produção):
  *   npx tsx src/scripts/backfill-achievements.ts
@@ -49,11 +49,17 @@ async function main() {
   const { data: entries, error } = await supabase
     .from('entries')
     .select([
-      'id', 'player_id',
+      'id', 'player_id', 'character_name',
       'kills', 'days',
       'animals_killed', 'fish_caught', 'crops_harvested', 'items_crafted',
       'houses_looted', 'hours_without_sleep', 'trees_cut', 'books_read',
       'structures_built', 'crops_planted', 'spiffo_visited',
+      'eggs_collected', 'milk_produced', 'stone_structures', 'ceramic_items',
+      'forged_weapons', 'km_driven', 'cities_visited', 'military_visited',
+      'meals_cooked', 'water_collected', 'materials_crafted', 'animal_tracks',
+      'weapons_crafted', 'furniture_crafted', 'clothes_crafted', 'cheese_produced',
+      'doors_opened', 'sleep_locations', 'basements_explored', 'stations_used',
+      'animal_species', 'days_no_canned',
       'skills',
     ].join(', '))
     .not('player_id', 'is', null)
@@ -64,50 +70,18 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(`${entries.length} entrada(s) encontrada(s). Agrupando por player...`);
+  console.log(`${entries.length} entrada(s) encontrada(s). Avaliando conquistas por personagem...\n`);
 
-  // Mapa player_id → melhor stats acumulada de todas as entradas
-  interface PlayerBest {
-    latestEntryId: number;
-    kills:             number;
-    days:              number;
-    animalsKilled:     number;
-    fishCaught:        number;
-    cropsHarvested:    number;
-    itemsCrafted:      number;
-    housesLooted:      number;
-    hoursWithoutSleep: number;
-    treesCut:          number;
-    booksRead:         number;
-    structuresBuilt:   number;
-    cropsPlanted:      number;
-    spiffoVisited:     number;
-    eggsCollected:     number;
-    milkProduced:      number;
-    stoneStructures:   number;
-    ceramicItems:      number;
-    forgedWeapons:     number;
-    kmDriven:          number;
-    citiesVisited:     number;
-    militaryVisited:   number;
-    mealsCooked:       number;
-    waterCollected:    number;
-    materialsCrafted:  number;
-    animalTracks:      number;
-    skillLevels:       Record<string, number>;
-  }
-
-  const playerMap = new Map<number, PlayerBest>();
-
+  let total = 0;
   for (const e of entries as Array<Record<string, unknown>>) {
-    const pid = e['player_id'] as number;
+    const playerId     = e['player_id']     as number;
+    const characterName = String(e['character_name'] ?? '');
+    const entryId      = e['id']            as number;
     const n = (f: string) => Math.max(0, (e[f] as number | null) ?? 0);
-    const skillLevels = parseSkillLevels(e['skills'] as string | null);
+    const skillLevels  = parseSkillLevels(e['skills'] as string | null);
 
-    const cur = playerMap.get(pid);
-    if (!cur) {
-      playerMap.set(pid, {
-        latestEntryId:    e['id'] as number,
+    try {
+      await evaluateAchievements(playerId, characterName, entryId, {
         kills:             n('kills'),
         days:              n('days'),
         animalsKilled:     n('animals_killed'),
@@ -133,93 +107,26 @@ async function main() {
         waterCollected:    n('water_collected'),
         materialsCrafted:  n('materials_crafted'),
         animalTracks:      n('animal_tracks'),
+        weaponsCrafted:    n('weapons_crafted'),
+        furnitureCrafted:  n('furniture_crafted'),
+        clothesCrafted:    n('clothes_crafted'),
+        cheeseProduced:    n('cheese_produced'),
+        doorsOpened:       n('doors_opened'),
+        sleepLocations:    n('sleep_locations'),
+        basementsExplored: n('basements_explored'),
+        stationsUsed:      n('stations_used'),
+        animalSpecies:     n('animal_species'),
+        daysNoCanned:      n('days_no_canned'),
         skillLevels,
       });
-    } else {
-      cur.latestEntryId     = Math.max(cur.latestEntryId, e['id'] as number);
-      cur.kills              = Math.max(cur.kills,              n('kills'));
-      cur.days               = Math.max(cur.days,               n('days'));
-      cur.animalsKilled      = Math.max(cur.animalsKilled,      n('animals_killed'));
-      cur.fishCaught         = Math.max(cur.fishCaught,         n('fish_caught'));
-      cur.cropsHarvested     = Math.max(cur.cropsHarvested,     n('crops_harvested'));
-      cur.itemsCrafted       = Math.max(cur.itemsCrafted,       n('items_crafted'));
-      cur.housesLooted       = Math.max(cur.housesLooted,       n('houses_looted'));
-      cur.hoursWithoutSleep  = Math.max(cur.hoursWithoutSleep,  n('hours_without_sleep'));
-      cur.treesCut           = Math.max(cur.treesCut,           n('trees_cut'));
-      cur.booksRead          = Math.max(cur.booksRead,          n('books_read'));
-      cur.structuresBuilt    = Math.max(cur.structuresBuilt,    n('structures_built'));
-      cur.cropsPlanted       = Math.max(cur.cropsPlanted,       n('crops_planted'));
-      cur.spiffoVisited      = Math.max(cur.spiffoVisited,      n('spiffo_visited'));
-      cur.eggsCollected      = Math.max(cur.eggsCollected,      n('eggs_collected'));
-      cur.milkProduced       = Math.max(cur.milkProduced,       n('milk_produced'));
-      cur.stoneStructures    = Math.max(cur.stoneStructures,    n('stone_structures'));
-      cur.ceramicItems       = Math.max(cur.ceramicItems,       n('ceramic_items'));
-      cur.forgedWeapons      = Math.max(cur.forgedWeapons,      n('forged_weapons'));
-      cur.kmDriven           = Math.max(cur.kmDriven,           n('km_driven'));
-      cur.citiesVisited      = Math.max(cur.citiesVisited,      n('cities_visited'));
-      cur.militaryVisited    = Math.max(cur.militaryVisited,    n('military_visited'));
-      cur.mealsCooked        = Math.max(cur.mealsCooked,        n('meals_cooked'));
-      cur.waterCollected     = Math.max(cur.waterCollected,     n('water_collected'));
-      cur.materialsCrafted   = Math.max(cur.materialsCrafted,   n('materials_crafted'));
-      cur.animalTracks       = Math.max(cur.animalTracks,       n('animal_tracks'));
-      for (const [id, level] of Object.entries(skillLevels)) {
-        cur.skillLevels[id] = Math.max(cur.skillLevels[id] ?? 0, level);
-      }
-    }
-  }
-
-  const players = [...playerMap.entries()];
-  console.log(`${players.length} player(s) únicos. Avaliando conquistas...\n`);
-
-  let total = 0;
-  for (const [playerId, best] of players) {
-    try {
-      await evaluateAchievements(playerId, best.latestEntryId, {
-        kills:             best.kills,
-        days:              best.days,
-        animalsKilled:     best.animalsKilled,
-        fishCaught:        best.fishCaught,
-        cropsHarvested:    best.cropsHarvested,
-        itemsCrafted:      best.itemsCrafted,
-        housesLooted:      best.housesLooted,
-        hoursWithoutSleep: best.hoursWithoutSleep,
-        treesCut:          best.treesCut,
-        booksRead:         best.booksRead,
-        structuresBuilt:   best.structuresBuilt,
-        cropsPlanted:      best.cropsPlanted,
-        spiffoVisited:     best.spiffoVisited,
-        eggsCollected:     best.eggsCollected,
-        milkProduced:      best.milkProduced,
-        stoneStructures:   best.stoneStructures,
-        ceramicItems:      best.ceramicItems,
-        forgedWeapons:     best.forgedWeapons,
-        kmDriven:          best.kmDriven,
-        citiesVisited:     best.citiesVisited,
-        militaryVisited:   best.militaryVisited,
-        mealsCooked:       best.mealsCooked,
-        waterCollected:    best.waterCollected,
-        materialsCrafted:  best.materialsCrafted,
-        animalTracks:      best.animalTracks,
-        weaponsCrafted:    0,
-        furnitureCrafted:  0,
-        clothesCrafted:    0,
-        cheeseProduced:    0,
-        doorsOpened:       0,
-        sleepLocations:    0,
-        basementsExplored: 0,
-        stationsUsed:      0,
-        animalSpecies:     0,
-        daysNoCanned:      0,
-        skillLevels:       best.skillLevels,
-      });
-      console.log(`  player ${playerId}: ok (kills=${best.kills}, days=${best.days}, skills=${Object.keys(best.skillLevels).length})`);
+      console.log(`  entry ${entryId} (player ${playerId} / "${characterName}"): ok`);
       total++;
     } catch (err) {
-      console.error(`  player ${playerId}: ERRO`, err);
+      console.error(`  entry ${entryId} (player ${playerId} / "${characterName}"): ERRO`, err);
     }
   }
 
-  console.log(`\nBackfill concluído: ${total}/${players.length} player(s) processados.`);
+  console.log(`\nBackfill concluído: ${total}/${entries.length} entrada(s) processadas.`);
 }
 
 main().catch(err => {
