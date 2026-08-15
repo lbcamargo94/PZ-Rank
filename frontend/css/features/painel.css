@@ -1130,6 +1130,39 @@
   flex-wrap: wrap;
 }
 
+/* ── Conflito de morte não registrada ────────────────────── */
+.painel-conflict-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  background: color-mix(in srgb, #f59e0b 10%, var(--bg));
+  border: 1px solid color-mix(in srgb, #f59e0b 35%, transparent);
+  border-radius: 6px;
+  margin-top: 6px;
+}
+
+.painel-conflict-alert > .ti {
+  color: #f59e0b;
+  font-size: 1rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.painel-conflict-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 14px;
+}
+
+.painel-conflict-date {
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+.filter-entry-conflicts.active { border-color: #f59e0b; color: #f59e0b; }
+
 /* ── PendingPlayers — melhorias UX task 12 ───────────────── */
 .player-card {
   display: flex;

@@ -25,6 +25,8 @@
   updated_at?:                string | null;
   sandbox_config?:            Record<string, unknown> | null;
   sandbox_config_updated_at?: string | null;
+  pending_new_character?:       string | null;
+  pending_new_character_since?: string | null;
   is_test_mod?:         boolean;
   // PZRX3 extended stats (null = not yet reported)
   animals_killed?:      number | null;
@@ -224,16 +226,17 @@ export interface Achievement {
 }
 
 export interface PlayerAchievement {
-  id:          number;
-  slug:        string;
-  name:        string;
-  description: string;
-  icon:        string;
-  tier:        AchievementTier;
-  stat:        string;
-  threshold:   number;
-  unlocked_at: string;
-  entry_id:    number | null;
+  id:             number;
+  slug:           string;
+  name:           string;
+  description:    string;
+  icon:           string;
+  tier:           AchievementTier;
+  stat:           string;
+  threshold:      number;
+  character_name: string;
+  unlocked_at:    string;
+  entry_id:       number | null;
 }
 
 export interface HeatmapPoint {

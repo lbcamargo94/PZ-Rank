@@ -18,7 +18,6 @@ import { supabase } from '../supabase';
 import { parsePzrCode } from '../lib/decoder';
 import { dbError } from '../lib/errors';
 import { computeScore } from '../lib/scoring';
-import { evaluateAchievements, type ExtendedStats } from '../lib/achievements';
 import { processHeatmapDelta } from '../lib/heatmap';
 import { config } from '../config';
 import type { Objectives } from '../types';
@@ -256,8 +255,23 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     .limit(1);
 
   if (conflictEntries && conflictEntries.length > 0) {
+    const conflictChar = (conflictEntries[0] as { character_name: string }).character_name;
+    // Fire-and-forget: registra a tentativa para visibilidade no painel do moderador
+    void supabase
+      .from(config.tableName)
+      .update({
+        pending_new_character:       decoded.characterName,
+        pending_new_character_since: new Date().toISOString(),
+      })
+      .eq('player_id', player.id)
+      .eq('character_name', conflictChar)
+      .eq('is_alive', true)
+      .is('deleted_at', null)
+      .then();
     res.status(409).json({
-      error: `Apenas um personagem por conta é permitido. "${(conflictEntries[0] as { character_name: string }).character_name}" ainda está vivo no rank. Contate um moderador para resolver.`,
+      error: `Apenas um personagem por conta é permitido. "${conflictChar}" ainda está vivo no rank. Contate um moderador para resolver.`,
+      code:              'UNREGISTERED_DEATH',
+      blocked_character: conflictChar,
     });
     return;
   }
@@ -536,58 +550,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     return;
   }
 
-  const finalScore  = (data as { score: number }).score;
-  const finalEntryId = (data as { id: number }).id;
-
-  // Fire-and-forget — falha na avaliação não afeta a resposta do sync
-  const extStats: ExtendedStats = {
-    kills:              decoded.kills,
-    days:               decoded.days,
-    animalsKilled:      decoded.animalsKilled,
-    fishCaught:         decoded.fishCaught,
-    cropsHarvested:     decoded.cropsHarvested,
-    itemsCrafted:       decoded.itemsCrafted,
-    housesLooted:       decoded.housesLooted,
-    hoursWithoutSleep:  decoded.hoursWithoutSleep,
-    treesCut:           decoded.treesCut,
-    booksRead:          decoded.booksRead,
-    structuresBuilt:    decoded.structuresBuilt,
-    cropsPlanted:       decoded.cropsPlanted,
-    spiffoVisited:      decoded.spiffoVisited,
-    eggsCollected:      decoded.eggsCollected,
-    milkProduced:       decoded.milkProduced,
-    stoneStructures:    decoded.stoneStructures,
-    ceramicItems:       decoded.ceramicItems,
-    forgedWeapons:      decoded.forgedWeapons,
-    kmDriven:           decoded.kmDriven,
-    citiesVisited:      decoded.citiesVisited,
-    militaryVisited:    decoded.militaryVisited,
-    mealsCooked:        decoded.mealsCooked,
-    waterCollected:     decoded.waterCollected,
-    materialsCrafted:   decoded.materialsCrafted,
-    animalTracks:       decoded.animalTracks,
-    // PZRX7
-    weaponsCrafted:     decoded.weaponsCrafted,
-    // PZRX8
-    furnitureCrafted:   decoded.furnitureCrafted,
-    clothesCrafted:     decoded.clothesCrafted,
-    cheeseProduced:     decoded.cheeseProduced,
-    doorsOpened:        decoded.doorsOpened,
-    sleepLocations:     decoded.sleepLocations,
-    basementsExplored:  decoded.basementsExplored,
-    stationsUsed:       decoded.stationsUsed,
-    animalSpecies:      decoded.animalSpecies,
-    daysNoCanned:       decoded.daysNoCanned,
-    skillLevels:        decoded.skillLevels,
-  };
-  void (async () => {
-    try {
-      await evaluateAchievements(player.id, finalEntryId, extStats);
-    } catch {
-      await new Promise<void>(r => setTimeout(r, 2000));
-      await evaluateAchievements(player.id, finalEntryId, extStats);
-    }
-  })().catch(e => console.error('[achievements]', e));
+  const finalScore = (data as { score: number }).score;
 
   // Notificação de morte no Discord: dispara quando is_alive muda de true → false.
   // Ignora a primeira entrada (prev === null) e entradas desclassificadas (sandbox_ok = false).

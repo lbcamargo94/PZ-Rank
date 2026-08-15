@@ -236,7 +236,14 @@ router.patch('/:id/status', requireModerator, async (req: ModRequest, res: Respo
 
   const row = existing as { id: number; score: number; kills: number; skills: string | null; objectives: Objectives | null; disqualified_at?: string | null };
   const patch: Record<string, unknown> = {};
-  if (is_alive  !== undefined) patch.is_alive  = is_alive;
+  if (is_alive  !== undefined) {
+    patch.is_alive = is_alive;
+    // Ao marcar como morto por qualquer via, limpa o marcador de conflito
+    if (!is_alive) {
+      patch.pending_new_character       = null;
+      patch.pending_new_character_since = null;
+    }
+  }
   if (sandbox_ok !== undefined) {
     patch.sandbox_ok = sandbox_ok;
     // Ao desclassificar: registra data se ainda não havia. Ao reclassificar: limpa.
@@ -287,6 +294,42 @@ router.patch('/:id/objectives', requireModerator, async (req: ModRequest, res: R
   const { data, error } = await supabase
     .from(config.tableName)
     .update({ objectives, score: newScore, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) { res.status(500).json({ error: dbError(error).message }); return; }
+  res.json(data);
+});
+
+// PATCH /entries/:id/confirm-death — moderador: confirma morte não registrada
+// Seta is_alive=false e score=0, liberando o jogador para iniciar nova run do zero.
+// Difere do PATCH /status: também zera o score (penalidade por morte não registrada).
+router.patch('/:id/confirm-death', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
+  const id = parseInt(String(req.params.id), 10);
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
+
+  const { data: existing, error: fetchError } = await supabase
+    .from(config.tableName)
+    .select('id, is_alive')
+    .eq('id', id)
+    .single();
+
+  if (fetchError || !existing) { res.status(404).json({ error: 'Entrada não encontrada.' }); return; }
+  if (!(existing as { is_alive: boolean }).is_alive) {
+    res.status(400).json({ error: 'Personagem já está morto.' });
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from(config.tableName)
+    .update({
+      is_alive:                    false,
+      score:                       0,
+      pending_new_character:       null,
+      pending_new_character_since: null,
+      updated_at:                  new Date().toISOString(),
+    })
     .eq('id', id)
     .select()
     .single();

@@ -247,6 +247,10 @@ export function apiUpdateEntryObjectives(
   return request(`/entries/${id}/objectives`, { method: 'PATCH', ...json(token, { objectives }) });
 }
 
+export function apiConfirmDeath(token: string, id: number): Promise<Entry> {
+  return request(`/entries/${id}/confirm-death`, { method: 'PATCH', ...auth(token) });
+}
+
 export function apiSetPlayerEmail(token: string, id: number, email: string): Promise<{ message: string }> {
   return request(`/players/${id}/email`, { method: 'PATCH', ...json(token, { email }) });
 }
@@ -526,8 +530,9 @@ export function apiGetAchievements(): Promise<{ achievements: Achievement[] }> {
   return request<{ achievements: Achievement[] }>('/achievements');
 }
 
-export function apiGetPlayerAchievements(playerId: number): Promise<{ achievements: PlayerAchievement[] }> {
-  return request<{ achievements: PlayerAchievement[] }>(`/achievements/player/${playerId}`);
+export function apiGetPlayerAchievements(playerId: number, character?: string): Promise<{ achievements: PlayerAchievement[] }> {
+  const qs = character ? `?character=${encodeURIComponent(character)}` : '';
+  return request<{ achievements: PlayerAchievement[] }>(`/achievements/player/${playerId}${qs}`);
 }
 
 export function apiGrantAchievement(token: string, playerId: number, slug: string): Promise<{ achievement: PlayerAchievement }> {

@@ -128,6 +128,9 @@ CREATE TABLE IF NOT EXISTS entries (
   stations_used       INTEGER  NOT NULL DEFAULT 0,
   animal_species      INTEGER  NOT NULL DEFAULT 0,
   days_no_canned      INTEGER  NOT NULL DEFAULT 0,
+  -- Morte não registrada: personagem que tentou sincronizar enquanto este ainda estava vivo
+  pending_new_character       TEXT     DEFAULT NULL,
+  pending_new_character_since TEXT     DEFAULT NULL,
   UNIQUE (player_id, character_name)
 );
 
@@ -226,9 +229,10 @@ CREATE TABLE IF NOT EXISTS player_achievements (
   id             INTEGER  PRIMARY KEY AUTOINCREMENT,
   player_id      INTEGER  NOT NULL REFERENCES players(id) ON DELETE CASCADE,
   achievement_id INTEGER  NOT NULL REFERENCES achievements(id) ON DELETE CASCADE,
+  character_name TEXT     NOT NULL DEFAULT '',
   entry_id       INTEGER  REFERENCES entries(id) ON DELETE SET NULL,
   unlocked_at    TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
-  UNIQUE(player_id, achievement_id)
+  UNIQUE(player_id, character_name, achievement_id)
 );
 
 -- ═══════════════════════════════════════════════════════

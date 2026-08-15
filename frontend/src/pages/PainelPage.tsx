@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { apiLogout, apiDeleteEntry, apiGetEntries, apiUpdateEntryStatus, apiSetTestMod } from '../lib/api';
+import { apiLogout, apiDeleteEntry, apiGetEntries, apiUpdateEntryStatus, apiSetTestMod, apiConfirmDeath } from '../lib/api';
 import type { Entry, SortKey } from '../types';
 import type { ModSession } from '../types';
 import { useToast } from '../hooks/useToast';
@@ -41,13 +41,14 @@ function fmtEntryDate(iso: string | null | undefined): string {
 }
 
 type Tab         = 'players' | 'entries' | 'moderators' | 'mods' | 'decoder' | 'seasons' | 'jornal' | 'financas';
-type EntryFilter = 'all' | 'alive' | 'dead' | 'disqualified';
+type EntryFilter = 'all' | 'alive' | 'dead' | 'disqualified' | 'conflicts';
 
 const ENTRY_FILTER_CONFIG: { key: EntryFilter; label: string; icon: string }[] = [
-  { key: 'all',          label: 'Todos',           icon: 'ti-list'      },
-  { key: 'alive',        label: 'Vivos',            icon: 'ti-heartbeat' },
-  { key: 'dead',         label: 'Mortos',           icon: 'ti-skull'     },
-  { key: 'disqualified', label: 'Desclassificados', icon: 'ti-ban'       },
+  { key: 'all',          label: 'Todos',           icon: 'ti-list'           },
+  { key: 'alive',        label: 'Vivos',            icon: 'ti-heartbeat'      },
+  { key: 'dead',         label: 'Mortos',           icon: 'ti-skull'          },
+  { key: 'disqualified', label: 'Desclassificados', icon: 'ti-ban'            },
+  { key: 'conflicts',    label: 'Conflitos',        icon: 'ti-alert-triangle' },
 ];
 
 interface Props {
@@ -125,6 +126,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
   const [showInviteMod,        setShowInviteMod]        = useState(false);
   const [editObjEntry,         setEditObjEntry]         = useState<Entry | null>(null);
   const [confirmDeleteEntryId, setConfirmDeleteEntryId] = useState<number | null>(null);
+  const [confirmDeathEntryId,  setConfirmDeathEntryId]  = useState<number | null>(null);
   const [sandboxEntry,         setSandboxEntry]         = useState<Entry | null>(null);
   const [entries,        setEntries]        = useState<Entry[]>([]);
   const [sortKey]                           = useState<SortKey>('score');
@@ -138,10 +140,11 @@ export function PainelPage({ session, onSession, onBack }: Props) {
 
   useEffect(() => { setEntrySearch(''); }, [entryFilter]);
 
-  const aliveEntries   = useMemo(() => entries.filter(e => e.sandbox_ok !== false &&  e.is_alive),  [entries]);
-  const deadEntries    = useMemo(() => entries.filter(e => e.sandbox_ok !== false && !e.is_alive),  [entries]);
-  const discEntries    = useMemo(() => entries.filter(e => e.sandbox_ok === false && !isInDeadZone(e)), [entries]);
+  const aliveEntries    = useMemo(() => entries.filter(e => e.sandbox_ok !== false &&  e.is_alive),  [entries]);
+  const deadEntries     = useMemo(() => entries.filter(e => e.sandbox_ok !== false && !e.is_alive),  [entries]);
+  const discEntries     = useMemo(() => entries.filter(e => e.sandbox_ok === false && !isInDeadZone(e)), [entries]);
   const deadZoneEntries = useMemo(() => entries.filter(e => isInDeadZone(e)), [entries]);
+  const conflictEntries = useMemo(() => entries.filter(e => !!e.pending_new_character && e.is_alive), [entries]);
 
   const filteredEntries = useMemo(() => {
     switch (entryFilter) {
@@ -149,8 +152,9 @@ export function PainelPage({ session, onSession, onBack }: Props) {
       case 'alive':        return aliveEntries;
       case 'dead':         return deadEntries;
       case 'disqualified': return discEntries;
+      case 'conflicts':    return conflictEntries;
     }
-  }, [entryFilter, entries, aliveEntries, deadEntries, discEntries]);
+  }, [entryFilter, entries, aliveEntries, deadEntries, discEntries, conflictEntries]);
 
   const searchedEntries = useMemo(() => {
     const q = entrySearch.trim().toLowerCase();
@@ -166,6 +170,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
     alive:        aliveEntries.length,
     dead:         deadEntries.length,
     disqualified: discEntries.length,
+    conflicts:    conflictEntries.length,
   };
 
   async function doDeleteEntry(id: number) {
@@ -190,6 +195,21 @@ export function PainelPage({ session, onSession, onBack }: Props) {
     try {
       await apiUpdateEntryStatus(session.token, id, patch);
       showToast(`Personagem marcado como ${label}.`, 'success');
+      fetchEntries();
+    } catch (err) {
+      showToast((err as Error).message, 'error');
+    } finally {
+      setUpdatingEntry(null);
+    }
+  }
+
+  async function handleConfirmDeath(id: number) {
+    if (!session) return;
+    setConfirmDeathEntryId(null);
+    setUpdatingEntry(id);
+    try {
+      await apiConfirmDeath(session.token, id);
+      showToast('Morte confirmada. Personagem removido do rank com pontos zerados.', 'success');
       fetchEntries();
     } catch (err) {
       showToast((err as Error).message, 'error');
@@ -252,6 +272,17 @@ export function PainelPage({ session, onSession, onBack }: Props) {
           <EntryStatusBadge entry={entry} />
         </div>
         <DisqDetail entry={entry} />
+        {entry.pending_new_character && entry.is_alive && (
+          <div className="painel-conflict-alert">
+            <i className="ti ti-alert-triangle" />
+            <div className="painel-conflict-text">
+              <span>Tentou iniciar nova run como <strong>{entry.pending_new_character}</strong></span>
+              {entry.pending_new_character_since && (
+                <span className="painel-conflict-date">desde {fmtEntryDate(entry.pending_new_character_since)}</span>
+              )}
+            </div>
+          </div>
+        )}
         <div className="painel-entry-actions">
           <button
             className="btn-success btn-sm"
@@ -264,11 +295,21 @@ export function PainelPage({ session, onSession, onBack }: Props) {
           <button
             className="btn-warning btn-sm"
             disabled={busy || (!entry.is_alive && entry.sandbox_ok !== false)}
-            title="Marcar como Morto"
+            title="Marcar como Morto (preserva pontos)"
             onClick={() => handleEntryStatus(entry.id!, { is_alive: false, sandbox_ok: true }, 'Morto')}
           >
             <i className="ti ti-skull" /> Morto
           </button>
+          {entry.pending_new_character && entry.is_alive && (
+            <button
+              className="btn-danger btn-sm"
+              disabled={busy}
+              title="Confirmar morte não registrada — zera os pontos e libera nova run"
+              onClick={() => setConfirmDeathEntryId(entry.id!)}
+            >
+              <i className="ti ti-skull-crossed" /> Confirmar Morte
+            </button>
+          )}
           <button
             className="btn-danger btn-sm"
             disabled={busy || entry.sandbox_ok === false}
@@ -590,6 +631,17 @@ export function PainelPage({ session, onSession, onBack }: Props) {
           danger
           onConfirm={() => doDeleteEntry(confirmDeleteEntryId)}
           onCancel={() => setConfirmDeleteEntryId(null)}
+        />
+      )}
+
+      {confirmDeathEntryId !== null && (
+        <ConfirmModal
+          title="Confirmar morte não registrada"
+          message="O personagem será marcado como morto e os pontos serão zerados (score = 0), liberando o jogador para iniciar uma nova run do zero. Esta ação não pode ser desfeita."
+          confirmLabel="Confirmar Morte"
+          danger
+          onConfirm={() => handleConfirmDeath(confirmDeathEntryId)}
+          onCancel={() => setConfirmDeathEntryId(null)}
         />
       )}
     </div>
