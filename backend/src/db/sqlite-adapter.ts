@@ -118,9 +118,11 @@ class SqliteQueryBuilder {
   private conditions: { col: string; op: string; val: unknown }[] = [];
   private orderBy:    { col: string; asc: boolean }[] = [];
   private limitN:     number | null = null;
-  private mode:       'select' | 'insert' | 'update' | 'delete' = 'select';
+  private mode:       'select' | 'insert' | 'update' | 'delete' | 'upsert' = 'select';
   private insertRows: Record<string, unknown>[] = [];
   private updateData: Record<string, unknown>   = {};
+  private orFilter:       string | null = null;
+  private upsertConflict: string | null = null;
 
   constructor(db: Database, table: string) {
     assertTable(table);
@@ -218,10 +220,73 @@ class SqliteQueryBuilder {
     return this;
   }
 
+  upsert(rows: Record<string, unknown>[], opts?: { onConflict?: string }): this {
+    this.mode           = 'upsert';
+    this.insertRows     = rows;
+    this.upsertConflict = opts?.onConflict ?? null;
+    return this;
+  }
+
+  or(filter: string): this {
+    this.orFilter = filter;
+    return this;
+  }
+
   // ── Execução ───────────────────────────────────────────────────────────────
 
+  // Parseia filtro OR no formato PostgREST:
+  //   and(col.eq.v,col.eq.v),and(col.eq.v,col.eq.v)
+  //   col.is.null,col.lt.value
+  private parseOrFilter(filter: string): { sql: string; params: unknown[] } | null {
+    const opMap: Record<string, string> = { eq: '=', gt: '>', lt: '<', gte: '>=', lte: '<=' };
+
+    // Divide no nível raiz respeitando parênteses
+    const groups: string[] = [];
+    let depth = 0, start = 0;
+    for (let i = 0; i < filter.length; i++) {
+      if (filter[i] === '(') depth++;
+      else if (filter[i] === ')') depth--;
+      else if (filter[i] === ',' && depth === 0) {
+        groups.push(filter.slice(start, i).trim());
+        start = i + 1;
+      }
+    }
+    groups.push(filter.slice(start).trim());
+
+    const groupSqls: string[] = [];
+    const allParams: unknown[] = [];
+
+    for (const group of groups) {
+      const andMatch = group.match(/^and\((.+)\)$/s);
+      const items = andMatch ? andMatch[1].split(',') : [group];
+      const conds: string[] = [];
+
+      for (const item of items) {
+        const firstDot  = item.indexOf('.');
+        const secondDot = item.indexOf('.', firstDot + 1);
+        if (firstDot < 0 || secondDot < 0) return null;
+        const col = item.slice(0, firstDot).trim();
+        const op  = item.slice(firstDot + 1, secondDot).trim();
+        const val = item.slice(secondDot + 1).trim();
+        try { assertCol(this.table, col); } catch { return null; }
+        if (op === 'is') {
+          conds.push(val === 'null' ? `${col} IS NULL` : `${col} IS NOT NULL`);
+        } else {
+          const sqlOp = opMap[op];
+          if (!sqlOp) return null;
+          const num = Number(val);
+          allParams.push(isNaN(num) ? val : num);
+          conds.push(`${col} ${sqlOp} ?`);
+        }
+      }
+
+      groupSqls.push(conds.length === 1 ? conds[0] : `(${conds.join(' AND ')})`);
+    }
+
+    return { sql: groupSqls.join(' OR '), params: allParams };
+  }
+
   private where(): { sql: string; params: unknown[] } {
-    if (this.conditions.length === 0) return { sql: '', params: [] };
     const parts:  string[]  = [];
     const params: unknown[] = [];
     for (const c of this.conditions) {
@@ -236,6 +301,14 @@ class SqliteQueryBuilder {
         params.push(c.val);
       }
     }
+    if (this.orFilter) {
+      const parsed = this.parseOrFilter(this.orFilter);
+      if (parsed) {
+        parts.push(`(${parsed.sql})`);
+        params.push(...parsed.params);
+      }
+    }
+    if (parts.length === 0) return { sql: '', params: [] };
     return { sql: ' WHERE ' + parts.join(' AND '), params };
   }
 
@@ -271,6 +344,29 @@ class SqliteQueryBuilder {
           out.push(result ? fromDb(this.table, result) : null);
         }
         return { data: out, error: null };
+      }
+
+      if (this.mode === 'upsert') {
+        const conflictCols = (this.upsertConflict ?? '').split(',').map(c => c.trim()).filter(Boolean);
+        const upsertAll = this.db.transaction(() => {
+          for (const raw of this.insertRows) {
+            const row      = toDb(this.table, raw);
+            // Exclui 'id' das colunas de insert quando não informado pelo chamador
+            const hasPk    = 'id' in row && row['id'] !== undefined && row['id'] !== null;
+            const cols     = Object.keys(row).filter(c => c !== 'id' || hasPk);
+            cols.forEach(c => assertCol(this.table, c));
+            const ph       = cols.map(() => '?').join(', ');
+            const vals     = cols.map(c => row[c]);
+            const setCols  = cols.filter(c => !conflictCols.includes(c) && c !== 'id');
+            const setClause = setCols.map(c => `${c} = excluded.${c}`).join(', ');
+            const conflict  = conflictCols.length > 0 ? conflictCols.join(', ') : 'id';
+            const sql = `INSERT INTO ${this.table} (${cols.join(', ')}) VALUES (${ph})` +
+              (setClause ? ` ON CONFLICT(${conflict}) DO UPDATE SET ${setClause}` : '');
+            this.db.prepare(sql).run(...vals);
+          }
+        });
+        upsertAll();
+        return { data: [], error: null };
       }
 
       if (this.mode === 'update') {

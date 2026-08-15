@@ -226,15 +226,19 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
         const live = await getChannelCurrentLive(p.yt_channel_id);
         if (!live) return;
         await supabase.from('players').update({ yt_last_live_video_id: live.videoId }).eq('id', p.id);
-        const { data: aliveEntries } = await supabase
-          .from(config.tableName)
-          .select('player_id, score')
-          .eq('is_alive', true).eq('sandbox_ok', true).is('deleted_at', null)
-          .order('score', { ascending: false });
-        const pos   = (aliveEntries ?? []).findIndex((e: { player_id: number }) => e.player_id === p.id);
-        const rank  = pos >= 0 ? pos + 1 : null;
-        const score = (aliveEntries ?? [])
-          .find((e: { player_id: number; score: number }) => e.player_id === p.id)?.score ?? null;
+        const { data: myRow } = await supabase
+          .from(config.tableName).select('score')
+          .eq('player_id', p.id).eq('is_alive', true).eq('sandbox_ok', true).is('deleted_at', null)
+          .maybeSingle();
+        const score = (myRow as { score: number } | null)?.score ?? null;
+        let rank: number | null = null;
+        if (score !== null) {
+          const { count } = await supabase
+            .from(config.tableName).select('*', { count: 'exact', head: true })
+            .eq('is_alive', true).eq('sandbox_ok', true).is('deleted_at', null)
+            .gt('score', score);
+          rank = count !== null ? count + 1 : null;
+        }
         await sendLiveNotification({ nick: p.nick, title: live.title, videoUrl: live.videoUrl, thumbnail: live.thumbnail, rank, score });
       } catch (e) {
         console.error('[live-gate]', e);
@@ -244,12 +248,14 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     return;
   }
 
-  // Verifica se há outro personagem vivo vinculado a esta conta (apenas um personagem permitido)
+  // Verifica se há outro personagem vivo E qualificado vinculado a esta conta (apenas um personagem permitido).
+  // sandbox_ok=false = desclassificado = fora da competição → não bloqueia nova run.
   const { data: conflictEntries } = await supabase
     .from(config.tableName)
     .select('character_name')
     .eq('player_id', player.id)
     .eq('is_alive', true)
+    .eq('sandbox_ok', true)
     .is('deleted_at', null)
     .neq('character_name', decoded.characterName)
     .limit(1);
@@ -564,17 +570,12 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       try {
         const { sendDeathNotification } = await import('../lib/discord');
 
-        // Calcula posição final no rank (entre entradas vivas e qualificadas)
-        const { data: aliveEntries } = await supabase
-          .from(config.tableName)
-          .select('player_id, score')
-          .eq('is_alive', true)
-          .eq('sandbox_ok', true)
-          .is('deleted_at', null)
-          .order('score', { ascending: false });
-
-        const pos  = (aliveEntries ?? []).findIndex((e: { player_id: number }) => e.player_id === player.id);
-        const rank = pos >= 0 ? pos + 1 : null;
+        // Posição final: conta jogadores vivos com score maior (entry do morto já é is_alive=false)
+        const { count: deathRankCount } = await supabase
+          .from(config.tableName).select('*', { count: 'exact', head: true })
+          .eq('is_alive', true).eq('sandbox_ok', true).is('deleted_at', null)
+          .gt('score', finalScore);
+        const rank = deathRankCount !== null ? deathRankCount + 1 : null;
 
         await sendDeathNotification({
           nick:          player.nick,
@@ -616,17 +617,13 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       const { getChannelCurrentLive, checkIsLive } = await import('../lib/youtube');
       const { sendLiveNotification } = await import('../lib/discord');
 
-      const { data: aliveEntries } = await supabase
-        .from(config.tableName)
-        .select('player_id, score')
-        .eq('is_alive', true)
-        .eq('sandbox_ok', true)
-        .is('deleted_at', null)
-        .order('score', { ascending: false });
-
-      const pos   = (aliveEntries ?? []).findIndex((e: { player_id: number }) => e.player_id === p.id);
-      const rank  = pos >= 0 ? pos + 1 : null;
-      const score = (aliveEntries ?? []).find((e: { player_id: number; score: number }) => e.player_id === p.id)?.score ?? null;
+      // score já disponível do contexto do sync — sem query adicional
+      const score = finalScore;
+      const { count: liveRankCount } = await supabase
+        .from(config.tableName).select('*', { count: 'exact', head: true })
+        .eq('is_alive', true).eq('sandbox_ok', true).is('deleted_at', null)
+        .gt('score', score);
+      const rank = liveRankCount !== null ? liveRankCount + 1 : null;
 
       if (p.yt_last_live_video_id) {
         const liveInfo = await checkIsLive(p.yt_last_live_video_id);
