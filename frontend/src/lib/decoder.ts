@@ -1,12 +1,12 @@
 import type { DecodedCode } from '../types';
 
 const XOR_KEY = 'PZRank-Community-2026-Key!';
-// PZRX1 = formato antigo; PZRX2 = atual; PZRX3 = estendido (mod v2.7+); PZRX4 = estendido v2 (mod v2.10+)
-const PZR_PREFIX_RE = /^PZRX[12345]:([\s\S]+)$/;
+// PZRX1-5 = formatos antigos com stats estendidos; PZRX9 = slim 12 campos (mod v2.16+)
+const PZR_PREFIX_RE = /^PZRX[123456789]:([\s\S]+)$/;
 // 17 grupos base + 4 PZRX4 + 1 PZRX5: nome|prof|kills|tempo|skills|status|sandbox|traits|motivo|ts|modVersion|
 //   animals_killed|fish_caught|crops_harvested|items_crafted|houses_looted|hours_without_sleep|
 //   trees_cut|books_read|structures_built|crops_planted|spiffo_visited
-const PZR_PAYLOAD_RE = /^PZR\|([^|]*)\|([^|]*)\|(\d+)\|(\d+)\|([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?(\d*)\|?([^|]*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)$/;
+const PZR_PAYLOAD_RE = /^PZR\|([^|]*)\|([^|]*)\|(\d+)\|(\d+)\|([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?(\d*)\|?([^|]*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?([^|]*)$/;
 
 function xorBytes(bytes: Uint8Array, key: string): Uint8Array {
   const keyBytes = new TextEncoder().encode(key);
