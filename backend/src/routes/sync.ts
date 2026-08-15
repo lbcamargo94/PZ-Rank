@@ -835,9 +835,9 @@ router.post('/heartbeat', syncLimiter, async (req: Request, res: Response): Prom
     return;
   }
 
-  // Falso positivo: se a entrada foi sincronizada há menos de 2h, o mod estava ativo
+  // Falso positivo: se a entrada foi sincronizada há menos de 6h, o mod estava ativo
   // recentemente — o jogador provavelmente ficou passivo (sem kills/dias novos).
-  // O Companion dispara após 30min sem arquivo; o mod só gera arquivo com mudança de estado.
+  // 6h cobre fases longas de base-building, agricultura e sono in-game sem detecções falsas.
   // updated_at nulo = entrada nunca sincronizada (raro) → tratar como recente para evitar
   // desclassificação imediata de entradas novas sem histórico de sync.
   if (!entry.updated_at) {
@@ -845,11 +845,12 @@ router.post('/heartbeat', syncLimiter, async (req: Request, res: Response): Prom
     return;
   }
   const msSinceUpdate = Date.now() - new Date(entry.updated_at).getTime();
-  if (msSinceUpdate < 2 * 60 * 60 * 1000) {
+  if (msSinceUpdate < 6 * 60 * 60 * 1000) {
     res.status(200).json({ success: true, note: 'Entrada sincronizada recentemente — heartbeat ignorado.' });
     return;
   }
 
+  // Não sobrescreve updated_at para preservar o timestamp da última sync real (auditoria).
   await supabase
     .from(config.tableName)
     .update({
@@ -857,7 +858,6 @@ router.post('/heartbeat', syncLimiter, async (req: Request, res: Response): Prom
       score:                   0,
       disqualification_reason: 'mod_removed',
       disqualified_at:         new Date().toISOString(),
-      updated_at:              new Date().toISOString(),
     })
     .eq('id', (entry as { id: number }).id);
 
