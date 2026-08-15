@@ -55,13 +55,6 @@ function skills(n10: number): string {
   ).join(', ');
 }
 
-// Objetivos: só bases oficiais contam para score
-const OFFICIAL_BASES = [
-  'riverside', 'rosewood', 'irvington', 'ekron',
-  'muldraugh', 'muldraugh_cross', 'west_point',
-  'louisville_w', 'louisville_hq', 'louisville_e', 'louisville_c', 'brandenburg',
-];
-
 type ObjOpts = { bases?: string[]; military_base?: boolean; spiffo_hq?: boolean; spiffo_relic?: boolean };
 
 function obj(opts: ObjOpts = {}): string {
@@ -91,14 +84,6 @@ const TR_FIGHTER = 'base:Brave,base:Athletic,base:Strong,base:Lucky';
 const TR_SNEAKY  = 'base:Sneaky,base:Fit,base:Night Owl,base:Brave';
 const TR_CRAFTER = 'base:Handy,base:Outdoorsman,base:Fit,base:Brave';
 const TR_BASE    = 'base:Brave,base:Fit';
-const TRAITS     = [TR_FIGHTER, TR_SNEAKY, TR_CRAFTER, TR_BASE];
-const PROFS = [
-  'Bombeiro', 'Policial', 'Açougueiro', 'Paramédica', 'Lenhador', 'Soldado',
-  'Médico', 'Estudante', 'Chef', 'Carpinteiro', 'Mecânico', 'Veterinário',
-  'Guarda Florestal', 'Fazendeiro', 'Enfermeiro', 'Salva-vidas',
-  'Segurança', 'Professor', 'Biólogo', 'Eletricista',
-];
-
 // token a partir do ID: cccccccc-0000-4000-8000-{pad(id)}
 function tok(id: number): string {
   return `cccccccc-0000-4000-8000-${String(id).padStart(12, '0')}`;

@@ -352,7 +352,12 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     }
   }
 
-  const existingObjectives = (existing?.objectives as Objectives | null) ?? null;
+  // Detecta nova run: timeRaw regrediu = personagem morreu e reiniciou com mesmo nome.
+  // Nesse caso, objectives definidos pelo moderador NÃO são herdados — cada run começa do zero.
+  const isNewCharRun = prev !== null && decoded.timeRaw < prev.time_raw;
+  const existingObjectives = isNewCharRun
+    ? null
+    : (existing?.objectives as Objectives | null) ?? null;
 
   // ── Detecção de anomalias estatísticas ─────────────────────────────────────
   // Compara submissão atual com o último estado conhecido para detectar
