@@ -11,7 +11,7 @@ import { Router } from 'express';
 import type { Request, Response } from 'express';
 import { supabase } from '../supabase';
 import { subscribePubSub, getChannelCurrentLive, checkIsLive } from '../lib/youtube';
-import { sendLiveNotification, sendLiveEndedNotification } from '../lib/discord';
+import { sendLiveNotification } from '../lib/discord';
 import { computeScore, countSkills10, OFFICIAL_BASE_IDS } from '../lib/scoring';
 import type { Objectives, BaseObjectives } from '../types';
 
@@ -159,12 +159,6 @@ router.get('/scan-lives', async (req: Request, res: Response): Promise<void> => 
             .from('players')
             .update({ yt_last_live_video_id: null })
             .eq('id', player.id);
-          await sendLiveEndedNotification({
-            nick:     player.nick,
-            videoUrl: `https://www.youtube.com/watch?v=${player.yt_last_live_video_id}`,
-            rank,
-            score,
-          });
           liveEnded.push(player.nick);
         } else {
           // Ainda ao vivo — sem nova notificação

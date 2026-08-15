@@ -609,7 +609,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       if (!p.yt_channel_id) return;
 
       const { getChannelCurrentLive, checkIsLive } = await import('../lib/youtube');
-      const { sendLiveNotification, sendLiveEndedNotification } = await import('../lib/discord');
+      const { sendLiveNotification } = await import('../lib/discord');
 
       const { data: aliveEntries } = await supabase
         .from(config.tableName)
@@ -628,12 +628,6 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
         // null = API falhou (erro, quota, timeout) — não tratar como live encerrada
         if (liveInfo !== null && !liveInfo.isLive) {
           await supabase.from('players').update({ yt_last_live_video_id: null }).eq('id', p.id);
-          await sendLiveEndedNotification({
-            nick:     p.nick,
-            videoUrl: `https://www.youtube.com/watch?v=${p.yt_last_live_video_id}`,
-            rank,
-            score,
-          });
         }
       } else {
         const live = await getChannelCurrentLive(p.yt_channel_id);
@@ -778,27 +772,10 @@ router.post('/heartbeat', syncLimiter, async (req: Request, res: Response): Prom
       void (async () => {
         try {
           const { checkIsLive } = await import('../lib/youtube');
-          const { sendLiveEndedNotification } = await import('../lib/discord');
           const liveInfo = await checkIsLive(p.yt_last_live_video_id!);
           // null = API falhou — não tratar como live encerrada
           if (liveInfo !== null && !liveInfo.isLive) {
-            const { data: aliveEntries } = await supabase
-              .from(config.tableName)
-              .select('player_id, score')
-              .eq('is_alive', true)
-              .eq('sandbox_ok', true)
-              .is('deleted_at', null)
-              .order('score', { ascending: false });
-            const pos   = (aliveEntries ?? []).findIndex((e: { player_id: number }) => e.player_id === p.id);
-            const rank  = pos >= 0 ? pos + 1 : null;
-            const score = (aliveEntries ?? []).find((e: { player_id: number; score: number }) => e.player_id === p.id)?.score ?? null;
             await supabase.from('players').update({ yt_last_live_video_id: null }).eq('id', p.id);
-            await sendLiveEndedNotification({
-              nick:     p.nick,
-              videoUrl: `https://www.youtube.com/watch?v=${p.yt_last_live_video_id}`,
-              rank,
-              score,
-            });
           }
         } catch (e) {
           console.error('[heartbeat-live-check]', e);
