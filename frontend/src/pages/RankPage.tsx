@@ -49,12 +49,14 @@ function sortEntries(list: Entry[], key: SortKey): Entry[] {
 
 export function RankPage() {
   const navigate = useNavigate();
-  const [entries,      setEntries]     = useState<Entry[]>([]);
-  const [allEntries,   setAllEntries]  = useState<Entry[]>([]);
-  const [sortKey,      setSortKey]     = useState<SortKey>('score');
-  const [loading,      setLoading]     = useState(false);
-  const [activeTab,    setActiveTab]   = useState<RankTab>('rank');
-  const [search,       setSearch]      = useState('');
+  const [entries,          setEntries]         = useState<Entry[]>([]);
+  const [allEntries,       setAllEntries]       = useState<Entry[]>([]);
+  const [allEntriesLoaded, setAllEntriesLoaded] = useState(false);
+  const [sortKey,          setSortKey]          = useState<SortKey>('score');
+  const [loading,          setLoading]          = useState(false);
+  const [loadingRecords,   setLoadingRecords]   = useState(false);
+  const [activeTab,        setActiveTab]        = useState<RankTab>('rank');
+  const [search,           setSearch]           = useState('');
   const { toast, showToast, clearToast } = useToast();
 
   useEffect(() => {
@@ -65,12 +67,7 @@ export function RankPage() {
   const fetchEntries = useCallback(async () => {
     setLoading(true);
     try {
-      const [regular, all] = await Promise.all([
-        apiGetEntries('score'),
-        apiGetAllEntries('score'),
-      ]);
-      setEntries(regular);
-      setAllEntries(all);
+      setEntries(await apiGetEntries('score'));
     } catch (err) {
       showToast((err as Error).message || 'Erro ao carregar ranking.', 'error');
     } finally {
@@ -78,7 +75,25 @@ export function RankPage() {
     }
   }, [showToast]);
 
+  const fetchAllEntries = useCallback(async () => {
+    if (allEntriesLoaded) return;
+    setLoadingRecords(true);
+    try {
+      setAllEntries(await apiGetAllEntries('score'));
+      setAllEntriesLoaded(true);
+    } catch (err) {
+      showToast((err as Error).message || 'Erro ao carregar records.', 'error');
+    } finally {
+      setLoadingRecords(false);
+    }
+  }, [allEntriesLoaded, showToast]);
+
   useEffect(() => { fetchEntries(); }, [fetchEntries]);
+
+  const handleTabChange = useCallback((tab: RankTab) => {
+    setActiveTab(tab);
+    if (tab === 'records') fetchAllEntries();
+  }, [fetchAllEntries]);
 
   const publicEntries  = useMemo(() => entries.filter(e => !isInDeadZone(e)), [entries]);
   const aliveEntries   = useMemo(() => publicEntries.filter(e => e.sandbox_ok !== false && e.is_alive),  [publicEntries]);
@@ -176,7 +191,7 @@ export function RankPage() {
               <button
                 key={key}
                 className={`rank-tab tab-${key}${activeTab === key ? ' active' : ''}`}
-                onClick={() => setActiveTab(key)}
+                onClick={() => handleTabChange(key)}
               >
                 <i className={`ti ${icon}`} />
                 {label}
@@ -189,7 +204,7 @@ export function RankPage() {
         <RankTable
           entries={filteredEntries}
           sortKey={sortKey}
-          loading={loading}
+          loading={loading || (activeTab === 'records' && loadingRecords)}
           onSort={setSortKey}
           onReload={fetchEntries}
           tab={activeTab}
