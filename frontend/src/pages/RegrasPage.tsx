@@ -266,6 +266,12 @@ const FUNDAMENTAL_RULES = [
     title: 'Decisão da Organização',
     desc: 'Em casos omissos ou situações não previstas neste regulamento, a decisão final caberá exclusivamente à equipe organizadora do Brasileirão PZ.',
   },
+  {
+    n: '11',
+    icon: 'ti-skull-crossed',
+    title: 'Registro de Morte',
+    desc: 'Toda morte deve ser registrada no rank pelo Companion. Se a morte não for detectada automaticamente, o jogador ficará bloqueado de sincronizar um novo personagem até que um moderador confirme o óbito — após o qual os pontos do personagem anterior são zerados e a nova run pode começar do zero.',
+  },
 ];
 
 export function RegrasPage() {
@@ -349,6 +355,11 @@ export function RegrasPage() {
               <div className="rg-callout rg-callout--info">
                 <i className="ti ti-info-circle" />
                 <span>O mod exige versão mínima <strong>v2.13.0</strong>. Mantenha sempre o mod e o Companion atualizados para evitar bloqueio de sync.</span>
+              </div>
+
+              <div className="rg-callout rg-callout--warn">
+                <i className="ti ti-skull-crossed" />
+                <span><strong>Quando morrer:</strong> o Companion detecta a morte e envia automaticamente para o rank. Se isso não acontecer, seu personagem anterior ficará bloqueando qualquer nova sincronização. Entre em contato com a moderação — um moderador confirmará o óbito, zerará os pontos do personagem anterior e liberará sua nova run.</span>
               </div>
             </div>
           )}
