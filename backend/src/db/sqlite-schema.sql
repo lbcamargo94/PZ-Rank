@@ -82,6 +82,7 @@ CREATE TABLE IF NOT EXISTS entries (
   traits         TEXT,
   objectives     TEXT,
   score                      INTEGER  NOT NULL DEFAULT 0,
+  record_score               INTEGER  NOT NULL DEFAULT 0,
   sandbox_config             TEXT,
   sandbox_config_updated_at  TEXT,
   disqualification_reason    TEXT     DEFAULT NULL,

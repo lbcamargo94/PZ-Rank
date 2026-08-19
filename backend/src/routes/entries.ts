@@ -13,7 +13,7 @@ import type { Player, Objectives } from '../types';
 const PUBLIC_ENTRY_COLUMNS = [
   'id', 'player_id', 'name', 'character_name', 'profession',
   'days', 'time_raw', 'time_str', 'kills', 'skills', 'live_url',
-  'is_alive', 'sandbox_ok', 'traits', 'objectives', 'score',
+  'is_alive', 'sandbox_ok', 'traits', 'objectives', 'score', 'record_score',
   'disqualification_reason', 'disqualified_at', 'deleted_at', 'updated_at',
 ].join(', ');
 
@@ -311,7 +311,7 @@ router.patch('/:id/confirm-death', requireModerator, async (req: ModRequest, res
 
   const { data: existing, error: fetchError } = await supabase
     .from(config.tableName)
-    .select('id, is_alive')
+    .select('id, is_alive, score, record_score')
     .eq('id', id)
     .single();
 
@@ -321,11 +321,15 @@ router.patch('/:id/confirm-death', requireModerator, async (req: ModRequest, res
     return;
   }
 
+  const row = existing as { id: number; is_alive: boolean; score: number; record_score: number };
+  const newRecord = Math.max(row.score, row.record_score ?? 0);
+
   const { data, error } = await supabase
     .from(config.tableName)
     .update({
       is_alive:                    false,
       score:                       0,
+      record_score:                newRecord,
       pending_new_character:       null,
       pending_new_character_since: null,
       updated_at:                  new Date().toISOString(),

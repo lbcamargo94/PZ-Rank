@@ -16,6 +16,7 @@
   traits?:        string | null;
   objectives?:                import('./lib/objectives').Objectives | null;
   score:                      number;
+  record_score?:              number;
   disqualification_reason?:   string | null;
   disqualified_at?:           string | null;
   flagged_reason?:            string | null;

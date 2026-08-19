@@ -249,7 +249,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // Inclui deleted_at para detectar entradas soft-deleted (não devem ser atualizadas silenciosamente).
   const { data: existingRaw, error: existingError } = await supabase
     .from(config.tableName)
-    .select('id, objectives, live_url, sandbox_ok, disqualification_reason, kills, time_raw, days, flagged_reason, flagged_at, updated_at, score, character_name, is_alive, deleted_at')
+    .select('id, objectives, live_url, sandbox_ok, disqualification_reason, kills, time_raw, days, flagged_reason, flagged_at, updated_at, score, record_score, character_name, is_alive, deleted_at')
     .eq('player_id', player.id)
     .eq('character_name', decoded.characterName)
     .maybeSingle();
@@ -277,7 +277,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     sandbox_ok: boolean; disqualification_reason: string | null;
     objectives: Objectives | null; live_url: string | null;
     updated_at: string | null;
-    score: number; character_name: string; is_alive: boolean;
+    score: number; record_score: number; character_name: string; is_alive: boolean;
   };
   const prev = existing as ExistingRow | null;
 
@@ -418,6 +418,13 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
 
   const score = computeScore(decoded.kills, Object.values(decoded.skillLevels).filter(l => l === 10).length, existingObjectives);
 
+  // record_score: maior pontuação já atingida por este (player, character_name), vivo ou morto.
+  // Em nova run: preserva o melhor da run anterior. Na mesma run: atualiza se superou o record.
+  const prevRecord = prev?.record_score ?? 0;
+  const record_score = isNewCharRun
+    ? Math.max(prev!.score, prevRecord)
+    : Math.max(score, prevRecord);
+
   const hasExtended = decoded.animalsKilled > 0 || decoded.fishCaught > 0 ||
     decoded.cropsHarvested > 0 || decoded.itemsCrafted > 0 ||
     decoded.housesLooted > 0 || decoded.hoursWithoutSleep > 0 ||
@@ -453,6 +460,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     traits:         decoded.traits.length > 0 ? decoded.traits.join(',') : null,
     objectives:     existingObjectives,
     score,
+    record_score,
     flagged_reason: flaggedReason,
     flagged_at:     flaggedAt,
     updated_at:     new Date().toISOString(),

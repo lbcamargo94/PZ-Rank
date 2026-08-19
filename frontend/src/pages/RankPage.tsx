@@ -104,10 +104,15 @@ export function RankPage() {
     const best = new Map<string, Entry>();
     for (const e of allEntries) {
       const key = e.player_id != null ? String(e.player_id) : `n:${e.name}`;
-      const cur = best.get(key);
-      if (!cur || e.score > cur.score) best.set(key, e);
+      const eRec  = e.record_score ?? e.score;
+      const cur   = best.get(key);
+      const curRec = cur ? (cur.record_score ?? cur.score) : -1;
+      if (eRec > curRec) best.set(key, e);
     }
-    return Array.from(best.values()).sort((a, b) => b.score - a.score);
+    // Substitui score pelo record_score para exibição e ordenação correta na aba Records
+    return Array.from(best.values())
+      .map(e => ({ ...e, score: e.record_score ?? e.score }))
+      .sort((a, b) => b.score - a.score);
   }, [allEntries]);
 
   const tabCounts: Record<RankTab, number> = {
