@@ -111,7 +111,7 @@ export function RankPage() {
     }
     // Substitui score pelo record_score para exibição e ordenação correta na aba Records
     return Array.from(best.values())
-      .map(e => ({ ...e, score: e.record_score ?? e.score }))
+      .map(e => ({ ...e, score: Math.max(e.record_score ?? 0, e.score) }))
       .sort((a, b) => b.score - a.score);
   }, [allEntries]);
 
