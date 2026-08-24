@@ -266,8 +266,13 @@ export async function checkIsLive(videoId: string): Promise<LiveInfo | null> {
 
     const item = json.items?.[0];
     if (!item) {
-      console.warn('[checkIsLive] vídeo não encontrado:', videoId);
-      return null;
+      // Vídeo não existe mais (deletado/privado) — diferente de falha de API: isso é
+      // um sinal definitivo de "não está ao vivo", não uma incerteza transitória.
+      // Retornar null aqui faria os chamadores nunca limparem yt_last_live_video_id
+      // (todos tratam null como "mantém estado anterior" para não descartar por
+      // instabilidade momentânea da API).
+      console.warn('[checkIsLive] vídeo não encontrado (provavelmente deletado/privado):', videoId);
+      return { isLive: false, title: '', thumbnail: '' };
     }
 
     const details = item.liveStreamingDetails;
