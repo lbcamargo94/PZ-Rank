@@ -249,7 +249,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // Inclui deleted_at para detectar entradas soft-deleted (não devem ser atualizadas silenciosamente).
   const { data: existingRaw, error: existingError } = await supabase
     .from(config.tableName)
-    .select('id, objectives, live_url, sandbox_ok, disqualification_reason, kills, time_raw, days, flagged_reason, flagged_at, updated_at, score, record_score, character_name, is_alive, deleted_at')
+    .select('id, objectives, live_url, sandbox_ok, disqualification_reason, kills, time_raw, days, flagged_reason, flagged_at, updated_at, score, record_score, character_name, is_alive, deleted_at, no_live_streak')
     .eq('player_id', player.id)
     .eq('character_name', decoded.characterName)
     .maybeSingle();
@@ -278,6 +278,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     objectives: Objectives | null; live_url: string | null;
     updated_at: string | null;
     score: number; record_score: number; character_name: string; is_alive: boolean;
+    no_live_streak: number;
   };
   const prev = existing as ExistingRow | null;
 
@@ -425,6 +426,13 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     ? Math.max(prev!.score, prevRecord)
     : Math.max(score, prevRecord);
 
+  // Aviso de transmissão: incrementa a cada sync sem live confirmada no YouTube
+  // (plataforma obrigatória pelas regras). yt_last_live_video_id reflete o estado
+  // já conhecido no momento deste sync (webhook + checagens anteriores) — zera
+  // o contador assim que uma live é detectada.
+  const wasLiveAtSync = !!player.yt_last_live_video_id;
+  const no_live_streak = wasLiveAtSync ? 0 : (prev?.no_live_streak ?? 0) + 1;
+
   const hasExtended = decoded.animalsKilled > 0 || decoded.fishCaught > 0 ||
     decoded.cropsHarvested > 0 || decoded.itemsCrafted > 0 ||
     decoded.housesLooted > 0 || decoded.hoursWithoutSleep > 0 ||
@@ -464,6 +472,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     flagged_reason: flaggedReason,
     flagged_at:     flaggedAt,
     updated_at:     new Date().toISOString(),
+    no_live_streak,
     // PZRX3: only write when present to avoid overwriting with zeros on PZRX2 syncs
     ...(hasExtended ? {
       animals_killed:      decoded.animalsKilled,

@@ -20,6 +20,85 @@ function normalizeUrl(url?: string | null): string | null {
   return /^https?:\/\//i.test(t) ? t : `https://${t}`;
 }
 
+// GET /players/live-status — público: quem está ao vivo agora (YouTube ou Twitch)
+// Não depende do Companion estar rodando/sincronizando em nenhuma das duas plataformas:
+// - YouTube: yt_last_live_video_id é setado quase em tempo real pelo webhook do YouTube
+//   (ver webhooks.ts, 100% servidor-a-servidor), mas confirmamos aqui em tempo real via
+//   checkIsLive antes de responder — se a stream já encerrou e nada limpou o campo ainda
+//   (ex: jogador não usa o Companion), corrigimos na hora em vez de mostrar "ao vivo" preso.
+// - Twitch: consultado diretamente a cada chamada (sem webhook próprio). Cache de 30s no
+//   header evita abuso das APIs externas.
+router.get('/live-status', async (_req: Request, res: Response): Promise<void> => {
+  const { data: players, error } = await supabase
+    .from('players')
+    .select('id, twitch_url, yt_last_live_video_id')
+    .eq('status', 'approved')
+    .is('deleted_at', null);
+
+  if (error) {
+    res.status(500).json({ error: 'Erro ao buscar status de live.' });
+    return;
+  }
+
+  type LiveRow = { id: number; twitch_url: string | null; yt_last_live_video_id: string | null };
+  const rows = (players ?? []) as LiveRow[];
+
+  const results: Array<{ player_id: number; platform: 'youtube' | 'twitch'; url: string; title?: string; thumbnail?: string }> = [];
+
+  const { checkIsLive } = await import('../lib/youtube');
+  const ytCandidates = rows.filter((p): p is LiveRow & { yt_last_live_video_id: string } => !!p.yt_last_live_video_id);
+  const YT_BATCH = 10;
+  for (let i = 0; i < ytCandidates.length; i += YT_BATCH) {
+    const batch = ytCandidates.slice(i, i + YT_BATCH);
+    await Promise.allSettled(batch.map(async (p) => {
+      const liveInfo = await checkIsLive(p.yt_last_live_video_id);
+      if (liveInfo === null) {
+        // API falhou — não temos certeza; mantém como estava para não descartar por instabilidade
+        results.push({ player_id: p.id, platform: 'youtube', url: `https://www.youtube.com/watch?v=${p.yt_last_live_video_id}` });
+        return;
+      }
+      if (!liveInfo.isLive) {
+        // Stream já encerrou e nada tinha limpo ainda — corrige agora, independente do Companion
+        void supabase.from('players').update({ yt_last_live_video_id: null }).eq('id', p.id);
+        return;
+      }
+      results.push({
+        player_id: p.id,
+        platform:  'youtube',
+        url:       `https://www.youtube.com/watch?v=${p.yt_last_live_video_id}`,
+        title:     liveInfo.title,
+        thumbnail: liveInfo.thumbnail,
+      });
+    }));
+  }
+
+  const { extractTwitchLogin, getLiveStreams } = await import('../lib/twitch');
+  const loginByPlayer = new Map<string, number>();
+  for (const p of rows) {
+    if (!p.twitch_url) continue;
+    const login = extractTwitchLogin(p.twitch_url);
+    if (login) loginByPlayer.set(login, p.id);
+  }
+
+  if (loginByPlayer.size > 0) {
+    const live = await getLiveStreams([...loginByPlayer.keys()]);
+    for (const [login, info] of live) {
+      const playerId = loginByPlayer.get(login);
+      if (playerId == null) continue;
+      results.push({
+        player_id: playerId,
+        platform:  'twitch',
+        url:       `https://twitch.tv/${info.login}`,
+        title:     info.title,
+        thumbnail: info.thumbnail,
+      });
+    }
+  }
+
+  res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=60');
+  res.json(results);
+});
+
 // GET /players/:id — público: retorna dados do jogador + todas as entradas dele no rank
 router.get('/:id', async (req: Request, res: Response): Promise<void> => {
   const id = parseInt(String(req.params.id), 10);
@@ -30,6 +109,7 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
     'days', 'time_raw', 'time_str', 'kills', 'skills', 'live_url',
     'is_alive', 'sandbox_ok', 'traits', 'objectives', 'score',
     'disqualification_reason', 'disqualified_at', 'deleted_at', 'updated_at',
+    'no_live_streak',
   ].join(', ');
 
   const [playerRes, entriesRes] = await Promise.all([

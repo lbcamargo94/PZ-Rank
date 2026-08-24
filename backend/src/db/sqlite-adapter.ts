@@ -518,6 +518,10 @@ function runMigrations(db: Database): void {
     db.exec('ALTER TABLE entries ADD COLUMN flagged_at TEXT DEFAULT NULL');
     console.log('[SQLite] migração: coluna flagged_at adicionada em entries');
   }
+  if (!entryCols.includes('no_live_streak')) {
+    db.exec('ALTER TABLE entries ADD COLUMN no_live_streak INTEGER NOT NULL DEFAULT 0');
+    console.log('[SQLite] migração: coluna no_live_streak adicionada em entries');
+  }
 
   if (!playerCols.includes('gender')) {
     db.exec("ALTER TABLE players ADD COLUMN gender TEXT DEFAULT NULL CHECK (gender IN ('m', 'f'))");

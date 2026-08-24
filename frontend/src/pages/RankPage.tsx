@@ -1,12 +1,15 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiGetEntries, apiGetAllEntries } from '../lib/api';
-import type { Entry, SortKey, RankTab } from '../types';
+import { apiGetEntries, apiGetAllEntries, apiGetLiveStatus } from '../lib/api';
+import type { Entry, SortKey, RankTab, LiveStatus } from '../types';
 import { parseSkillMap, MAX_SKILL_LEVEL } from '../lib/skills';
+import { buildLiveMap } from '../lib/live';
 import { useToast } from '../hooks/useToast';
 import { Toast } from '../components/Toast';
 import { Header } from '../components/Header';
 import { RankTable } from '../components/RankTable';
+
+const LIVE_STATUS_POLL_MS = 30_000;
 
 const TAB_CONFIG: { key: RankTab; label: string; icon: string }[] = [
   { key: 'rank',         label: 'Rank',             icon: 'ti-heartbeat' },
@@ -57,12 +60,25 @@ export function RankPage() {
   const [loadingRecords,   setLoadingRecords]   = useState(false);
   const [activeTab,        setActiveTab]        = useState<RankTab>('rank');
   const [search,           setSearch]           = useState('');
+  const [liveStatuses,     setLiveStatuses]      = useState<LiveStatus[]>([]);
   const { toast, showToast, clearToast } = useToast();
 
   useEffect(() => {
     document.body.classList.add('rank-page-active');
     return () => document.body.classList.remove('rank-page-active');
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const fetchLive = () => {
+      apiGetLiveStatus().then(data => { if (!cancelled) setLiveStatuses(data); }).catch(() => {});
+    };
+    fetchLive();
+    const interval = setInterval(fetchLive, LIVE_STATUS_POLL_MS);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, []);
+
+  const liveMap = useMemo(() => buildLiveMap(liveStatuses), [liveStatuses]);
 
   const fetchEntries = useCallback(async () => {
     setLoading(true);
@@ -215,6 +231,7 @@ export function RankPage() {
           tab={activeTab}
           iconOnly
           isSearching={isSearching}
+          liveMap={liveMap}
         />
       </main>
 

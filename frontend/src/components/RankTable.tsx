@@ -1,8 +1,9 @@
 ﻿import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { Entry, SortKey, RankTab } from '../types';
+import type { Entry, SortKey, RankTab, LiveStatus } from '../types';
 import { RankRow, KILLS_TARGET } from './RankRow';
 import { MAX_POSSIBLE_SCORE } from '../lib/objectives';
+import { hasLiveWarning } from '../lib/live';
 
 type PageSize = 15 | 50 | 'all';
 const PAGE_SIZES: { value: PageSize; label: string }[] = [
@@ -20,6 +21,7 @@ interface RankTableProps {
   tab:          RankTab;
   iconOnly?:    boolean;
   isSearching?: boolean;
+  liveMap?:     Map<number, LiveStatus>;
 }
 
 const EMPTY_MESSAGES: Record<RankTab, { icon: string; text: string }> = {
@@ -69,11 +71,12 @@ function MiniBar({ value, max, done }: { value: number; max: number; done?: bool
   );
 }
 
-function RankCard({ entry, rank, onPlayerClick, hideStatus }: {
+function RankCard({ entry, rank, onPlayerClick, hideStatus, live }: {
   entry: Entry;
   rank: number;
   onPlayerClick: (id: number) => void;
   hideStatus?: boolean;
+  live?: LiveStatus;
 }) {
   const objCount = entry.objectives
     ? [
@@ -98,8 +101,20 @@ function RankCard({ entry, rank, onPlayerClick, hideStatus }: {
           : <span className="rc-rank">{MEDALS[rank] ?? `#${rank}`}</span>
         }
         <div className="rc-identity">
-          <span className="rc-char-name">{entry.character_name || entry.name}</span>
+          <span className="rc-char-name">
+            {live && (
+              <a href={live.url} target="_blank" rel="noopener noreferrer" className="live-badge" title={live.title || 'Transmitindo agora'}>
+                <span className="live-dot" /> AO VIVO
+              </a>
+            )}
+            {entry.character_name || entry.name}
+          </span>
           {entry.profession && <span className="profession-badge">{entry.profession}</span>}
+          {hasLiveWarning(entry) && (
+            <span className="live-warning-badge" title="Vários syncs seguidos sem transmissão confirmada no YouTube (obrigatória pelas regras)">
+              <i className="ti ti-alert-triangle" /> Sem transmissão
+            </span>
+          )}
         </div>
         {!hideStatus && (
           entry.sandbox_ok === false
@@ -158,7 +173,7 @@ function buildPageList(current: number, total: number): (number | '…')[] {
   return pages;
 }
 
-export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, iconOnly, isSearching }: RankTableProps) {
+export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, iconOnly, isSearching, liveMap }: RankTableProps) {
   const navigate = useNavigate();
   const hideStatus = false;
   const { icon: emptyIcon, text: emptyText } = EMPTY_MESSAGES[isSearching ? 'rank' : tab];
@@ -246,7 +261,14 @@ export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, ic
               </thead>
               <tbody>
                 {visibleEntries.map((entry, i) => (
-                  <RankRow key={entry.id} entry={entry} rank={displayRanks[pageOffset + i]} hideStatus={hideStatus} iconOnly={iconOnly} />
+                  <RankRow
+                    key={entry.id}
+                    entry={entry}
+                    rank={displayRanks[pageOffset + i]}
+                    hideStatus={hideStatus}
+                    iconOnly={iconOnly}
+                    live={entry.player_id != null ? liveMap?.get(entry.player_id) : undefined}
+                  />
                 ))}
               </tbody>
             </table>
@@ -302,6 +324,7 @@ export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, ic
                 rank={displayRanks[pageOffset + i]}
                 onPlayerClick={handlePlayerClick}
                 hideStatus={hideStatus}
+                live={entry.player_id != null ? liveMap?.get(entry.player_id) : undefined}
               />
             ))}
             {entries.length > 0 && pageSize !== 'all' && (

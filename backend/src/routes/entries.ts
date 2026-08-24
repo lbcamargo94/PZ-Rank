@@ -15,6 +15,7 @@ const PUBLIC_ENTRY_COLUMNS = [
   'days', 'time_raw', 'time_str', 'kills', 'skills', 'live_url',
   'is_alive', 'sandbox_ok', 'traits', 'objectives', 'score', 'record_score',
   'disqualification_reason', 'disqualified_at', 'deleted_at', 'updated_at',
+  'no_live_streak',
 ].join(', ');
 
 function isModRequest(req: Request): boolean {

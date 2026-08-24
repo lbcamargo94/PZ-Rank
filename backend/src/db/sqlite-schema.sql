@@ -132,6 +132,8 @@ CREATE TABLE IF NOT EXISTS entries (
   -- Morte não registrada: personagem que tentou sincronizar enquanto este ainda estava vivo
   pending_new_character       TEXT     DEFAULT NULL,
   pending_new_character_since TEXT     DEFAULT NULL,
+  -- Syncs consecutivos sem live confirmada no YouTube (transmissão obrigatória pelas regras)
+  no_live_streak               INTEGER  NOT NULL DEFAULT 0,
   UNIQUE (player_id, character_name)
 );
 

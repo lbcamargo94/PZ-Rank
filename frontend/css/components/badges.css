@@ -234,3 +234,61 @@
 .stat-card.stat-dead   .stat-label { color: var(--red); }
 .stat-card.stat-disc   .stat-label { color: var(--amber); }
 
+/* ── Badge "Ao Vivo" (transmissão ativa no YouTube ou Twitch) ── */
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  margin-right: 6px;
+  border-radius: 20px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: var(--red-dim);
+  color: var(--red);
+  border: 1px solid var(--red-border);
+  text-decoration: none;
+  vertical-align: middle;
+  transition: filter 0.15s;
+}
+.live-badge:hover { filter: brightness(1.2); }
+
+.live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--red);
+  flex-shrink: 0;
+  animation: live-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+  0%, 100% { opacity: 1;    box-shadow: 0 0 4px var(--red), 0 0 8px color-mix(in srgb, var(--red) 60%, transparent); }
+  50%      { opacity: 0.55; box-shadow: 0 0 2px var(--red), 0 0 4px color-mix(in srgb, var(--red) 40%, transparent); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-dot { animation: none; }
+}
+
+/* ── Aviso: syncs consecutivos sem transmissão confirmada no YouTube ── */
+.live-warning-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  background: var(--amber-dim);
+  color: var(--amber-light);
+  border: 1px solid var(--amber-border);
+  white-space: nowrap;
+}
+

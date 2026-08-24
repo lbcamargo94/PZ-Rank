@@ -21,6 +21,7 @@
   disqualified_at?:           string | null;
   flagged_reason?:            string | null;
   flagged_at?:                string | null;
+  no_live_streak?:            number;
   deleted_at?:                string | null;
   created_at?:                string | null;
   updated_at?:                string | null;
@@ -58,6 +59,14 @@
 
 export type SortKey = 'days' | 'kills' | 'time' | 'score' | 'skills' | 'updated_at';
 export type RankTab = 'rank' | 'records' | 'dead' | 'disqualified';
+
+export interface LiveStatus {
+  player_id: number;
+  platform:  'youtube' | 'twitch';
+  url:       string;
+  title?:    string;
+  thumbnail?: string;
+}
 
 export interface DecodedCode {
   characterName:          string;

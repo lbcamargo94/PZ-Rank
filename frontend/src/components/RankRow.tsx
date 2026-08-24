@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
-import type { Entry } from '../types';
+import type { Entry, LiveStatus } from '../types';
 import { parseSkillMap, SKILL_CATEGORIES, TOTAL_SKILLS, MAX_SKILL_LEVEL } from '../lib/skills';
 import { MAX_POSSIBLE_SCORE } from '../lib/objectives';
 import { getDivision } from '../lib/divisions';
+import { hasLiveWarning } from '../lib/live';
 
 export const KILLS_TARGET = 800_000;
 
@@ -13,6 +14,7 @@ interface RankRowProps {
   rank:        number;
   hideStatus?: boolean;
   iconOnly?:   boolean;
+  live?:       LiveStatus;
 }
 
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
@@ -156,7 +158,7 @@ function MiniBar({ value, max, done }: { value: number; max: number; done?: bool
   );
 }
 
-export function RankRow({ entry, rank, hideStatus, iconOnly }: RankRowProps) {
+export function RankRow({ entry, rank, hideStatus, iconOnly, live }: RankRowProps) {
   const score     = entry.score ?? 0;
   const killsDone = entry.kills >= KILLS_TARGET;
   const division  = getDivision(rank > 0 ? rank : 1);
@@ -182,8 +184,20 @@ export function RankRow({ entry, rank, hideStatus, iconOnly }: RankRowProps) {
         }
       </td>
       <td className="rank-name">
-        <span className="char-name">{entry.character_name || entry.name}</span>
+        <span className="char-name">
+          {live && (
+            <a href={live.url} target="_blank" rel="noopener noreferrer" className="live-badge" title={live.title || 'Transmitindo agora'}>
+              <span className="live-dot" /> AO VIVO
+            </a>
+          )}
+          {entry.character_name || entry.name}
+        </span>
         <span className="player-alias">{entry.name}</span>
+        {hasLiveWarning(entry) && (
+          <span className="live-warning-badge" title="Vários syncs seguidos sem transmissão confirmada no YouTube (obrigatória pelas regras)">
+            <i className="ti ti-alert-triangle" /> Sem transmissão
+          </span>
+        )}
       </td>
       {!hideStatus && (
         <td className="rank-alive">

@@ -1,4 +1,4 @@
-import type { Player, Moderator, ModSession, ModeratorRole, Entry, PlayerFilter, PlayerProfile, Mod, DailyNews, FinanceEntry, Achievement, PlayerAchievement, HeatmapPoint } from '../types';
+import type { Player, Moderator, ModSession, ModeratorRole, Entry, PlayerFilter, PlayerProfile, Mod, DailyNews, FinanceEntry, Achievement, PlayerAchievement, HeatmapPoint, LiveStatus } from '../types';
 
 const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:3000';
 
@@ -218,6 +218,10 @@ export function apiGetEntries(sort = 'days', token?: string): Promise<Entry[]> {
 
 export function apiGetAllEntries(sort = 'score'): Promise<Entry[]> {
   return request(`/entries?sort=${sort}&all=true`);
+}
+
+export function apiGetLiveStatus(): Promise<LiveStatus[]> {
+  return request('/players/live-status');
 }
 
 export function apiCreateEntry(

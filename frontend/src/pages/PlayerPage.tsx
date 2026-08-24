@@ -2,7 +2,7 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import avatarDefault from '../../assets/avatar.png';
 import perfilBg from '../../assets/background/perfil-usuario.webp';
-import { apiGetPlayerProfile, apiGetEntries } from '../lib/api';
+import { apiGetPlayerProfile, apiGetEntries, apiGetLiveStatus } from '../lib/api';
 import { parseSkillMap, SKILL_CATEGORIES, MAX_SKILL_LEVEL, TOTAL_SKILLS } from '../lib/skills';
 import { parseTraitList, resolveTrait, getTraitImageUrl } from '../lib/traits';
 import { getProfessionImageUrl } from '../lib/professions';
@@ -10,7 +10,8 @@ import { SPIFFOS_RESTAURANTS, BASE_ITEMS, initObjectives } from '../lib/objectiv
 import { ProgressBar } from '../components/ProgressBar';
 import { resolveArchetype } from '../lib/archetype';
 import { ArchetypeGuideModal } from '../components/ArchetypeGuideModal';
-import type { PlayerProfile, Entry } from '../types';
+import { hasLiveWarning } from '../lib/live';
+import type { PlayerProfile, Entry, LiveStatus } from '../types';
 import type { Objectives } from '../lib/objectives';
 
 const SOCIALS = [
@@ -224,7 +225,7 @@ function ppDisqTooltip(reason: string | null | undefined): string {
   return PP_DISQ_TOOLTIPS[reason] ?? PP_DISQ_TOOLTIPS.mods;
 }
 
-function CharacterCard({ entry, rank }: { entry: Entry; rank: number | null }) {
+function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | null; live?: LiveStatus }) {
   const [tab, setTab] = useState<'stats' | 'skills' | 'traits'>('stats');
   const [showGuide, setShowGuide] = useState(false);
   const isDisqualified = entry.sandbox_ok === false;
@@ -234,6 +235,11 @@ function CharacterCard({ entry, rank }: { entry: Entry; rank: number | null }) {
       {/* Card header */}
       <div className="pp-char-header">
         <div className="pp-char-identity">
+          {live && (
+            <a href={live.url} target="_blank" rel="noopener noreferrer" className="live-badge" title={live.title || 'Transmitindo agora'}>
+              <span className="live-dot" /> AO VIVO
+            </a>
+          )}
           <span className="pp-char-name">{entry.character_name || '—'}</span>
           {entry.profession && (
             <span className="profession-badge">
@@ -241,6 +247,11 @@ function CharacterCard({ entry, rank }: { entry: Entry; rank: number | null }) {
                 <img src={getProfessionImageUrl(entry.profession)} alt="" className="profession-img" />
               )}
               {entry.profession}
+            </span>
+          )}
+          {hasLiveWarning(entry) && (
+            <span className="live-warning-badge" title="Vários syncs seguidos sem transmissão confirmada no YouTube (obrigatória pelas regras)">
+              <i className="ti ti-alert-triangle" /> Sem transmissão
             </span>
           )}
         </div>
@@ -412,6 +423,7 @@ export function PlayerPage() {
   const [loading, setLoading]       = useState(true);
   const [error,   setError]         = useState<string | null>(null);
   const [charFilter, setCharFilter] = useState<CharFilter>('all');
+  const [liveStatus, setLiveStatus] = useState<LiveStatus | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -427,6 +439,15 @@ export function PlayerPage() {
       .then(([prof, entries]) => { setProfile(prof); setAllEntries(entries); })
       .catch(err => setError((err as Error).message))
       .finally(() => setLoading(false));
+
+    apiGetLiveStatus()
+      .then(statuses => {
+        const preferred = statuses.find(s => s.player_id === numId && s.platform === 'youtube')
+          ?? statuses.find(s => s.player_id === numId)
+          ?? null;
+        setLiveStatus(preferred);
+      })
+      .catch(() => {});
   }, [id]);
 
   if (loading) {
@@ -586,6 +607,7 @@ export function PlayerPage() {
                 key={entry.id}
                 entry={entry}
                 rank={entry.id !== undefined ? (rankMap.get(entry.id) ?? null) : null}
+                live={entry.is_alive ? (liveStatus ?? undefined) : undefined}
               />
             ))}
           </div>
