@@ -21,13 +21,20 @@ function normalizeUrl(url?: string | null): string | null {
 }
 
 // GET /players/live-status — público: quem está ao vivo agora (YouTube ou Twitch)
-// Não depende do Companion estar rodando/sincronizando em nenhuma das duas plataformas:
-// - YouTube: yt_last_live_video_id é setado quase em tempo real pelo webhook do YouTube
-//   (ver webhooks.ts, 100% servidor-a-servidor), mas confirmamos aqui em tempo real via
-//   checkIsLive antes de responder — se a stream já encerrou e nada limpou o campo ainda
-//   (ex: jogador não usa o Companion), corrigimos na hora em vez de mostrar "ao vivo" preso.
-// - Twitch: consultado diretamente a cada chamada (sem webhook próprio). Cache de 30s no
-//   header evita abuso das APIs externas.
+//
+// YouTube: lê yt_last_live_video_id direto do banco — SEM chamar a API do YouTube aqui.
+// Uma versão anterior confirmava a live em tempo real via checkIsLive a cada chamada
+// para não depender do Companion, mas isso amarrava o consumo da cota diária do YouTube
+// Data API ao volume de acessos ao rank (frontend faz polling a cada 30s enquanto a
+// página está aberta) — em produção isso estourou a cota em minutos e derrubou a
+// detecção de live pro site inteiro (inclusive notificações do Discord, que usam a
+// mesma API key). yt_last_live_video_id já é mantido fresco por vias que NÃO escalam
+// com tráfego: webhook do YouTube (event-driven, ver webhooks.ts), o fire-and-forget
+// em sync.ts e o /cron/scan-lives — todas corrigidas para limpar corretamente quando o
+// vídeo não existe mais (ver checkIsLive em lib/youtube.ts).
+//
+// Twitch: sem webhook próprio, então é consultado a cada chamada — mas via API pública
+// sem cota (ver lib/twitch.ts), então não tem o mesmo risco.
 router.get('/live-status', async (_req: Request, res: Response): Promise<void> => {
   const { data: players, error } = await supabase
     .from('players')
@@ -45,31 +52,13 @@ router.get('/live-status', async (_req: Request, res: Response): Promise<void> =
 
   const results: Array<{ player_id: number; platform: 'youtube' | 'twitch'; url: string; title?: string; thumbnail?: string }> = [];
 
-  const { checkIsLive } = await import('../lib/youtube');
-  const ytCandidates = rows.filter((p): p is LiveRow & { yt_last_live_video_id: string } => !!p.yt_last_live_video_id);
-  const YT_BATCH = 10;
-  for (let i = 0; i < ytCandidates.length; i += YT_BATCH) {
-    const batch = ytCandidates.slice(i, i + YT_BATCH);
-    await Promise.allSettled(batch.map(async (p) => {
-      const liveInfo = await checkIsLive(p.yt_last_live_video_id);
-      if (liveInfo === null) {
-        // API falhou — não temos certeza; mantém como estava para não descartar por instabilidade
-        results.push({ player_id: p.id, platform: 'youtube', url: `https://www.youtube.com/watch?v=${p.yt_last_live_video_id}` });
-        return;
-      }
-      if (!liveInfo.isLive) {
-        // Stream já encerrou e nada tinha limpo ainda — corrige agora, independente do Companion
-        void supabase.from('players').update({ yt_last_live_video_id: null }).eq('id', p.id);
-        return;
-      }
-      results.push({
-        player_id: p.id,
-        platform:  'youtube',
-        url:       `https://www.youtube.com/watch?v=${p.yt_last_live_video_id}`,
-        title:     liveInfo.title,
-        thumbnail: liveInfo.thumbnail,
-      });
-    }));
+  for (const p of rows) {
+    if (!p.yt_last_live_video_id) continue;
+    results.push({
+      player_id: p.id,
+      platform:  'youtube',
+      url:       `https://www.youtube.com/watch?v=${p.yt_last_live_video_id}`,
+    });
   }
 
   const { extractTwitchLogin, getLiveStreams } = await import('../lib/twitch');
