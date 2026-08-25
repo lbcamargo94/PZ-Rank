@@ -2,7 +2,7 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import avatarDefault from '../../assets/avatar.png';
 import perfilBg from '../../assets/background/perfil-usuario.webp';
-import { apiGetPlayerProfile, apiGetEntries, apiGetLiveStatus } from '../lib/api';
+import { apiGetPlayerProfile, apiGetEntries, apiGetLiveStatus, apiGetPlayerLikes, apiLikePlayer, apiUnlikePlayer } from '../lib/api';
 import { parseSkillMap, SKILL_CATEGORIES, MAX_SKILL_LEVEL, TOTAL_SKILLS } from '../lib/skills';
 import { parseTraitList, resolveTrait, getTraitImageUrl } from '../lib/traits';
 import { getProfessionImageUrl } from '../lib/professions';
@@ -12,8 +12,17 @@ import { resolveArchetype } from '../lib/archetype';
 import { ArchetypeGuideModal } from '../components/ArchetypeGuideModal';
 import { hasLiveWarning } from '../lib/live';
 import { LiveBadges } from '../components/LiveBadges';
-import type { PlayerProfile, Entry, LiveStatus } from '../types';
+import { useToast } from '../hooks/useToast';
+import { Toast } from '../components/Toast';
+import type { PlayerProfile, Entry, LiveStatus, PlayerSession, PlayerLikeStatus } from '../types';
 import type { Objectives } from '../lib/objectives';
+
+function readPlayerSession(): PlayerSession | null {
+  try {
+    const raw = sessionStorage.getItem('player_session');
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
 
 const SOCIALS = [
   { field: 'twitch_url',  icon: 'ti-brand-twitch',  label: 'Twitch',  cls: 'social-twitch'  },
@@ -421,6 +430,10 @@ export function PlayerPage() {
   const [error,   setError]         = useState<string | null>(null);
   const [charFilter, setCharFilter] = useState<CharFilter>('all');
   const [liveStatuses, setLiveStatuses] = useState<LiveStatus[]>([]);
+  const [playerSession] = useState(readPlayerSession);
+  const [likeStatus, setLikeStatus] = useState<PlayerLikeStatus | null>(null);
+  const [likeBusy, setLikeBusy]     = useState(false);
+  const { toast, showToast, clearToast } = useToast();
 
   useEffect(() => {
     if (!id) return;
@@ -440,7 +453,32 @@ export function PlayerPage() {
     apiGetLiveStatus()
       .then(statuses => setLiveStatuses(statuses.filter(s => s.player_id === numId)))
       .catch(() => {});
+
+    apiGetPlayerLikes(numId, playerSession?.token)
+      .then(setLikeStatus)
+      .catch(() => {});
   }, [id]);
+
+  async function handleToggleLike() {
+    if (!id) return;
+    const numId = parseInt(id, 10);
+    if (!playerSession) {
+      showToast('Faça login para curtir perfis.', 'error');
+      return;
+    }
+    if (!likeStatus || likeBusy) return;
+    setLikeBusy(true);
+    try {
+      const result = likeStatus.liked_by_me
+        ? await apiUnlikePlayer(playerSession.token, numId)
+        : await apiLikePlayer(playerSession.token, numId);
+      setLikeStatus({ count: result.count, liked_by_me: result.liked });
+    } catch (err) {
+      showToast((err as Error).message, 'error');
+    } finally {
+      setLikeBusy(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -513,7 +551,24 @@ export function PlayerPage() {
             )}
           </div>
           <div className="pp-header-info">
-            <h1 className="pp-nick">{profile.player.nick}</h1>
+            <div className="pp-nick-row">
+              <h1 className="pp-nick">{profile.player.nick}</h1>
+              {likeStatus && (
+                <button
+                  className={`pp-like-btn${likeStatus.liked_by_me ? ' pp-like-btn-active' : ''}`}
+                  disabled={likeBusy || playerSession?.player_id === profile.player.id}
+                  title={
+                    playerSession?.player_id === profile.player.id
+                      ? 'Você não pode curtir o próprio perfil'
+                      : likeStatus.liked_by_me ? 'Remover curtida' : 'Curtir perfil'
+                  }
+                  onClick={handleToggleLike}
+                >
+                  <i className={`ti ${likeStatus.liked_by_me ? 'ti-heart-filled' : 'ti-heart'}`} />
+                  {likeStatus.count.toLocaleString('pt-BR')}
+                </button>
+              )}
+            </div>
             {hasSocials && (
               <div className="pp-socials">
                 {SOCIALS.map(s => {
@@ -606,6 +661,7 @@ export function PlayerPage() {
         </div>
 
       </div>
+      <Toast {...toast} onClose={clearToast} />
     </div>
   );
 }

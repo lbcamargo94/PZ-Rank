@@ -242,6 +242,14 @@ CREATE TABLE IF NOT EXISTS player_achievements (
   UNIQUE(player_id, character_name, achievement_id)
 );
 
+CREATE TABLE IF NOT EXISTS player_likes (
+  id              INTEGER  PRIMARY KEY AUTOINCREMENT,
+  liker_player_id INTEGER  NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+  liked_player_id INTEGER  NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+  created_at      TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+  UNIQUE(liker_player_id, liked_player_id)
+);
+
 -- ═══════════════════════════════════════════════════════
 -- CONQUISTAS — 5 raridades, 75 conquistas
 -- stats rastreados: kills, days, hours_without_sleep,

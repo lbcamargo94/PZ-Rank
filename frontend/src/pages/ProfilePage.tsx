@@ -9,13 +9,15 @@ import {
   apiUpdateMyLinks,
   apiSendAccountOtp,
   apiConfirmAccountOtp,
+  apiGetMyLikes,
+  apiUnlikePlayer,
   ApiError,
 } from '../lib/api';
 import { OtpInput } from '../components/OtpInput';
 import { Header } from '../components/Header';
-import type { PlayerSession, PlayerAccount, Entry } from '../types';
+import type { PlayerSession, PlayerAccount, Entry, LikedPlayer } from '../types';
 
-type AccountTab = 'conta' | 'links' | 'runs';
+type AccountTab = 'conta' | 'links' | 'runs' | 'curtidos';
 type OtpFlowState = 'idle' | 'sent' | 'done';
 
 const PLAYER_SESSION_KEY = 'player_session';
@@ -396,12 +398,73 @@ function TabRuns({ session }: { session: PlayerSession }) {
   );
 }
 
+// ── Aba: Curtidos ─────────────────────────────────────────────
+
+function TabCurtidos({ session }: { session: PlayerSession }) {
+  const [likes,   setLikes]   = useState<LikedPlayer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error,   setError]   = useState('');
+  const [removingId, setRemovingId] = useState<number | null>(null);
+
+  useEffect(() => {
+    apiGetMyLikes(session.token)
+      .then(setLikes)
+      .catch(err => setError((err as Error).message))
+      .finally(() => setLoading(false));
+  }, [session.token]);
+
+  async function handleUnlike(id: number) {
+    setRemovingId(id);
+    try {
+      await apiUnlikePlayer(session.token, id);
+      setLikes(prev => prev.filter(l => l.id !== id));
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setRemovingId(null);
+    }
+  }
+
+  if (loading) return <div className="account-tab-body"><p className="account-section-info">Carregando…</p></div>;
+
+  return (
+    <div className="account-tab-body">
+      <section className="account-section">
+        <h2 className="account-section-title">Perfis Curtidos</h2>
+        {error && <StatusMsg msg={error} ok={false} />}
+        {likes.length === 0
+          ? <p className="account-section-info">Você ainda não curtiu nenhum perfil.</p>
+          : (
+            <div className="account-likes-list">
+              {likes.map(l => (
+                <div key={l.id} className="account-like-row">
+                  <Link to={`/player/${l.id}`} className="account-like-nick">
+                    <i className="ti ti-user" /> {l.nick}
+                  </Link>
+                  <button
+                    className="btn-ghost btn-sm"
+                    disabled={removingId === l.id}
+                    onClick={() => handleUnlike(l.id)}
+                  >
+                    <i className="ti ti-heart-off" /> Remover curtida
+                  </button>
+                </div>
+              ))}
+            </div>
+          )
+        }
+      </section>
+    </div>
+  );
+}
+
 // ── Página de Perfil ──────────────────────────────────────────
 
 const TABS: { id: AccountTab; label: string; icon: string }[] = [
-  { id: 'conta', label: 'Conta',         icon: 'ti-user'  },
-  { id: 'links', label: 'Redes Sociais', icon: 'ti-share' },
-  { id: 'runs',  label: 'Minhas Runs',   icon: 'ti-list'  },
+  { id: 'conta',    label: 'Conta',         icon: 'ti-user'  },
+  { id: 'links',    label: 'Redes Sociais', icon: 'ti-share' },
+  { id: 'runs',     label: 'Minhas Runs',   icon: 'ti-list'  },
+  { id: 'curtidos', label: 'Curtidos',      icon: 'ti-heart' },
 ];
 
 export function ProfilePage() {
@@ -491,9 +554,10 @@ export function ProfilePage() {
                 ))}
               </div>
 
-              {tab === 'conta' && <TabConta session={session!} profile={profile} onProfileChange={loadProfile} />}
-              {tab === 'links' && <TabLinks session={session!} profile={profile} onProfileChange={loadProfile} />}
-              {tab === 'runs'  && <TabRuns  session={session!} />}
+              {tab === 'conta'    && <TabConta    session={session!} profile={profile} onProfileChange={loadProfile} />}
+              {tab === 'links'    && <TabLinks    session={session!} profile={profile} onProfileChange={loadProfile} />}
+              {tab === 'runs'     && <TabRuns     session={session!} />}
+              {tab === 'curtidos' && <TabCurtidos session={session!} />}
             </div>
           )}
         </div>

@@ -43,6 +43,33 @@ router.get('/me/entries', requirePlayer, async (req: PlayerRequest, res: Respons
   res.json(data ?? []);
 });
 
+// GET /account/me/likes — perfis que o jogador autenticado curtiu
+router.get('/me/likes', requirePlayer, async (req: PlayerRequest, res: Response): Promise<void> => {
+  const { data: likes, error } = await supabase
+    .from('player_likes')
+    .select('liked_player_id, created_at')
+    .eq('liker_player_id', req.playerId!)
+    .order('created_at', { ascending: false });
+
+  if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
+
+  const rows = (likes ?? []) as Array<{ liked_player_id: number; created_at: string }>;
+
+  // Sem suporte a "IN" no adapter local — busca cada jogador individualmente
+  // (lista de curtidas de uma pessoa é sempre pequena, custo aceitável).
+  const results = await Promise.all(rows.map(async (l) => {
+    const { data: p } = await supabase
+      .from('players')
+      .select('id, nick')
+      .eq('id', l.liked_player_id)
+      .maybeSingle();
+    return p ? { id: (p as { id: number }).id, nick: (p as { nick: string }).nick, liked_at: l.created_at } : null;
+  }));
+
+  res.setHeader('Cache-Control', 'no-store');
+  res.json(results.filter((r): r is { id: number; nick: string; liked_at: string } => r !== null));
+});
+
 // PATCH /account/me/password — trocar senha (exige senha atual)
 router.patch('/me/password', requirePlayer, async (req: PlayerRequest, res: Response): Promise<void> => {
   const { current_password, new_password } = req.body as {

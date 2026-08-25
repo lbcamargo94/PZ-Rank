@@ -225,6 +225,17 @@ export interface PlayerSession {
 
 export type FinanceCategory = 'hosting' | 'prize' | 'domain' | 'adsense' | 'supporters' | 'sponsor' | 'other';
 
+export interface PlayerLikeStatus {
+  count:        number;
+  liked_by_me:  boolean;
+}
+
+export interface LikedPlayer {
+  id:       number;
+  nick:     string;
+  liked_at: string;
+}
+
 export interface FinanceEntry {
   id:         number;
   season_id:  number;

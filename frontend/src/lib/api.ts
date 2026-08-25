@@ -1,4 +1,4 @@
-import type { Player, Moderator, ModSession, ModeratorRole, Entry, PlayerFilter, PlayerProfile, Mod, DailyNews, FinanceEntry, Achievement, PlayerAchievement, HeatmapPoint, LiveStatus, FeaturedStreamer } from '../types';
+import type { Player, Moderator, ModSession, ModeratorRole, Entry, PlayerFilter, PlayerProfile, Mod, DailyNews, FinanceEntry, Achievement, PlayerAchievement, HeatmapPoint, LiveStatus, FeaturedStreamer, PlayerLikeStatus, LikedPlayer } from '../types';
 
 const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:3000';
 
@@ -172,6 +172,18 @@ export function apiResetPassword(token: string, password: string): Promise<{ mes
 
 export function apiGetPlayerProfile(id: number): Promise<PlayerProfile> {
   return request(`/players/${id}`);
+}
+
+export function apiGetPlayerLikes(id: number, playerToken?: string): Promise<PlayerLikeStatus> {
+  return request(`/players/${id}/likes`, playerToken ? playerAuth(playerToken) : undefined);
+}
+
+export function apiLikePlayer(playerToken: string, id: number): Promise<{ liked: boolean; count: number }> {
+  return request(`/players/${id}/like`, { method: 'POST', ...playerAuth(playerToken) });
+}
+
+export function apiUnlikePlayer(playerToken: string, id: number): Promise<{ liked: boolean; count: number }> {
+  return request(`/players/${id}/like`, { method: 'DELETE', ...playerAuth(playerToken) });
 }
 
 export function apiGetPlayers(token: string, status: PlayerFilter = 'all'): Promise<Player[]> {
@@ -434,6 +446,10 @@ export function apiGetMyProfile(playerToken: string): Promise<PlayerAccount> {
 
 export function apiGetMyEntries(playerToken: string): Promise<import('../types').Entry[]> {
   return request('/account/me/entries', playerAuth(playerToken));
+}
+
+export function apiGetMyLikes(playerToken: string): Promise<LikedPlayer[]> {
+  return request('/account/me/likes', playerAuth(playerToken));
 }
 
 export function apiChangePassword(

@@ -2,13 +2,17 @@ import { Router } from 'express';
 import type { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
+import jwt from 'jsonwebtoken';
 import { supabase } from '../supabase';
 import { dbError } from '../lib/errors';
 import { requireModerator, requireMaster } from '../middleware/moderator';
 import type { ModRequest } from '../middleware/moderator';
+import { requirePlayer } from '../middleware/player';
+import type { PlayerRequest } from '../middleware/player';
 import type { PlayerStatus } from '../types';
 import { sendApprovalEmail, sendActivationEmail, sendOtpEmail } from '../lib/email';
 import { validatePassword } from '../lib/password';
+import { config } from '../config';
 
 const router = Router();
 
@@ -148,6 +152,109 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
 
   res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120');
   res.json({ player: playerRes.data, entries: entriesRes.data ?? [] });
+});
+
+// Decodifica o token de jogador se presente, sem exigir (diferente de requirePlayer,
+// que rejeitaria visitantes anônimos). Usado só para saber se o jogador logado já
+// curtiu o perfil — falha silenciosa em qualquer problema (sem token, token inválido,
+// tipo errado) simplesmente resulta em null.
+function getOptionalPlayerId(req: Request): number | null {
+  const auth = req.headers.authorization;
+  if (!auth?.startsWith('Bearer ')) return null;
+  try {
+    const payload = jwt.verify(auth.slice(7).trim(), config.jwtSecret) as { sub: string; type: string };
+    if (payload.type !== 'player') return null;
+    const id = parseInt(payload.sub, 10);
+    return isNaN(id) ? null : id;
+  } catch {
+    return null;
+  }
+}
+
+// GET /players/:id/likes — público: contagem de curtidas + se o jogador logado (se houver) já curtiu
+router.get('/:id/likes', async (req: Request, res: Response): Promise<void> => {
+  const id = parseInt(String(req.params.id), 10);
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
+
+  const { count, error } = await supabase
+    .from('player_likes')
+    .select('*', { count: 'exact', head: true })
+    .eq('liked_player_id', id);
+
+  if (error) { res.status(500).json({ error: 'Erro ao buscar curtidas.' }); return; }
+
+  const viewerId = getOptionalPlayerId(req);
+  let liked_by_me = false;
+  if (viewerId !== null) {
+    const { data } = await supabase
+      .from('player_likes')
+      .select('id')
+      .eq('liker_player_id', viewerId)
+      .eq('liked_player_id', id)
+      .maybeSingle();
+    liked_by_me = !!data;
+  }
+
+  res.json({ count: count ?? 0, liked_by_me });
+});
+
+// POST /players/:id/like — jogador logado: curte o perfil de outro jogador
+router.post('/:id/like', requirePlayer, async (req: PlayerRequest, res: Response): Promise<void> => {
+  const id = parseInt(String(req.params.id), 10);
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
+
+  if (id === req.playerId) {
+    res.status(400).json({ error: 'Você não pode curtir o próprio perfil.' });
+    return;
+  }
+
+  const { data: target } = await supabase
+    .from('players')
+    .select('id')
+    .eq('id', id)
+    .is('deleted_at', null)
+    .maybeSingle();
+  if (!target) { res.status(404).json({ error: 'Jogador não encontrado.' }); return; }
+
+  const { data: existing } = await supabase
+    .from('player_likes')
+    .select('id')
+    .eq('liker_player_id', req.playerId!)
+    .eq('liked_player_id', id)
+    .maybeSingle();
+
+  if (!existing) {
+    const { error: insertError } = await supabase
+      .from('player_likes')
+      .insert([{ liker_player_id: req.playerId!, liked_player_id: id }]);
+    if (insertError) { res.status(500).json({ error: 'Erro ao curtir perfil.' }); return; }
+  }
+
+  const { count } = await supabase
+    .from('player_likes')
+    .select('*', { count: 'exact', head: true })
+    .eq('liked_player_id', id);
+
+  res.json({ liked: true, count: count ?? 0 });
+});
+
+// DELETE /players/:id/like — jogador logado: remove a curtida (idempotente)
+router.delete('/:id/like', requirePlayer, async (req: PlayerRequest, res: Response): Promise<void> => {
+  const id = parseInt(String(req.params.id), 10);
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
+
+  await supabase
+    .from('player_likes')
+    .delete()
+    .eq('liker_player_id', req.playerId!)
+    .eq('liked_player_id', id);
+
+  const { count } = await supabase
+    .from('player_likes')
+    .select('*', { count: 'exact', head: true })
+    .eq('liked_player_id', id);
+
+  res.json({ liked: false, count: count ?? 0 });
 });
 
 // POST /players/register — público
