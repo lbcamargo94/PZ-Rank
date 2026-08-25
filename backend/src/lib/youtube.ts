@@ -82,30 +82,30 @@ async function resolveChannelByHandle(handle: string, apiKey: string): Promise<s
   try {
     const url = `${YT_API_BASE}/channels?part=id&forHandle=${encodeURIComponent(handle)}&key=${apiKey}`;
     const res  = await fetch(url, { signal: AbortSignal.timeout(8_000) });
-    if (!res.ok) return null;
+    if (!res.ok) { console.warn('[resolveChannelByHandle] API erro:', res.status, handle); return null; }
     const json = await res.json() as { items?: Array<{ id: string }> };
     return json.items?.[0]?.id ?? null;
-  } catch { return null; }
+  } catch (err) { console.error('[resolveChannelByHandle] erro:', handle, err); return null; }
 }
 
 async function resolveChannelByUsername(username: string, apiKey: string): Promise<string | null> {
   try {
     const url = `${YT_API_BASE}/channels?part=id&forUsername=${encodeURIComponent(username)}&key=${apiKey}`;
     const res  = await fetch(url, { signal: AbortSignal.timeout(8_000) });
-    if (!res.ok) return null;
+    if (!res.ok) { console.warn('[resolveChannelByUsername] API erro:', res.status, username); return null; }
     const json = await res.json() as { items?: Array<{ id: string }> };
     return json.items?.[0]?.id ?? null;
-  } catch { return null; }
+  } catch (err) { console.error('[resolveChannelByUsername] erro:', username, err); return null; }
 }
 
 async function resolveChannelBySearch(name: string, apiKey: string): Promise<string | null> {
   try {
     const url = `${YT_API_BASE}/search?part=snippet&type=channel&q=${encodeURIComponent(name)}&maxResults=1&key=${apiKey}`;
     const res  = await fetch(url, { signal: AbortSignal.timeout(8_000) });
-    if (!res.ok) return null;
+    if (!res.ok) { console.warn('[resolveChannelBySearch] API erro:', res.status, name); return null; }
     const json = await res.json() as { items?: Array<{ snippet: { channelId: string } }> };
     return json.items?.[0]?.snippet?.channelId ?? null;
-  } catch { return null; }
+  } catch (err) { console.error('[resolveChannelBySearch] erro:', name, err); return null; }
 }
 
 // ── Verificação manual de live por canal ─────────────────────────────────────

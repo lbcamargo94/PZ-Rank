@@ -1,0 +1,25 @@
+name: Backfill YouTube channel IDs
+
+# Resolve yt_channel_id para jogadores aprovados que ficaram sem (idempotente —
+# só processa quem ainda está null). A resolução automática já acontece na
+# aprovação do jogador e ao editar o link do YouTube no perfil, mas falha em
+# silêncio se a API do YouTube estiver indisponível/sem cota naquele momento
+# — sem esse backfill periódico, o jogador fica sem detecção de live para
+# sempre (ver incidente de 2026-08-25: 74 jogadores afetados de uma vez,
+# coincidindo com o estouro de cota do release v4.18.26).
+
+on:
+  schedule:
+    - cron: '23 */6 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  backfill-yt-subs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Chama /cron/backfill-yt-subs
+        run: |
+          curl -sf --max-time 240 \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "https://pz-rank-backend.vercel.app/cron/backfill-yt-subs"

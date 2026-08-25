@@ -1,0 +1,28 @@
+name: Scan lives (YouTube)
+
+# Reverifica quem está ao vivo no YouTube a cada 2h — detecta início e fim de
+# transmissão de forma independente do Companion (o mod só sincroniza dados
+# enquanto o jogador está com o jogo aberto) e independente do webhook do
+# YouTube (PubSub pode falhar em silêncio para lives específicas).
+#
+# Intervalo de 2h escolhido pela cota do YouTube Data API v3 (10.000
+# unidades/dia): cada execução consome ~1 unidade por jogador com canal
+# resolvido (checar backend/src/routes/cron.ts). Reduzir o intervalo consome
+# a cota mais rápido e pode voltar a quebrar a detecção pro site inteiro
+# (ver incidente do release v4.18.27).
+
+on:
+  schedule:
+    - cron: '7 */2 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  scan-lives:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Chama /cron/scan-lives
+        run: |
+          curl -sf --max-time 240 \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "https://pz-rank-backend.vercel.app/cron/scan-lives"
