@@ -1,12 +1,15 @@
 /* PZ Rank - Home page layout */
 
-/* ── Layout de 3 colunas: streamers | conteúdo central | top 10 ── */
+/* ── Layout de 3 colunas: streamers | conteúdo central | top 10 ──
+   Só a home ocupa 100% da largura do navegador — as outras páginas
+   mantêm o .container padrão (max-width: 1080px, ver base/reset.css). */
 .home-layout {
   display: grid;
   grid-template-columns: 240px 1fr 260px;
   gap: 16px;
   align-items: start;
   margin-top: 20px;
+  max-width: 100%;
 }
 
 .home-main-col > .home-top-row { margin-top: 0; }
