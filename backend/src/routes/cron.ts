@@ -13,6 +13,7 @@ import { supabase } from '../supabase';
 import { subscribePubSub, getChannelCurrentLive, checkIsLive } from '../lib/youtube';
 import { extractTwitchLogin, getLiveStreams } from '../lib/twitch';
 import { sendLiveNotification } from '../lib/discord';
+import { isChampionshipTitle, isChampionshipTwitchGame } from '../lib/championship';
 import { computeScore, countSkills10, OFFICIAL_BASE_IDS } from '../lib/scoring';
 import type { Objectives, BaseObjectives } from '../types';
 
@@ -174,14 +175,16 @@ router.get('/scan-lives', async (req: Request, res: Response): Promise<void> => 
           .from('players')
           .update({ yt_last_live_video_id: live.videoId })
           .eq('id', player.id);
-        await sendLiveNotification({
-          nick:      player.nick,
-          title:     live.title,
-          videoUrl:  live.videoUrl,
-          thumbnail: live.thumbnail,
-          rank,
-          score,
-        });
+        if (isChampionshipTitle(live.title, live.description)) {
+          await sendLiveNotification({
+            nick:      player.nick,
+            title:     live.title,
+            videoUrl:  live.videoUrl,
+            thumbnail: live.thumbnail,
+            rank,
+            score,
+          });
+        }
         liveStarted.push(player.nick);
       }
     }));
@@ -233,15 +236,17 @@ router.get('/scan-lives', async (req: Request, res: Response): Promise<void> => 
       const score = (allAlive ?? []).find((e: { player_id: number; score: number }) => e.player_id === p.id)?.score ?? null;
 
       await supabase.from('players').update({ twitch_last_live_id: live.id }).eq('id', p.id);
-      await sendLiveNotification({
-        nick:      p.nick,
-        title:     live.title,
-        videoUrl:  `https://twitch.tv/${live.login}`,
-        thumbnail: live.thumbnail,
-        rank,
-        score,
-        platform:  'twitch',
-      });
+      if (isChampionshipTwitchGame(live.game)) {
+        await sendLiveNotification({
+          nick:      p.nick,
+          title:     live.title,
+          videoUrl:  `https://twitch.tv/${live.login}`,
+          thumbnail: live.thumbnail,
+          rank,
+          score,
+          platform:  'twitch',
+        });
+      }
       twitchStarted.push(p.nick);
     }));
   }

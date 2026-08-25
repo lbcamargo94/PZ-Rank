@@ -607,6 +607,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
 
       const { getChannelCurrentLive, checkIsLive } = await import('../lib/youtube');
       const { sendLiveNotification } = await import('../lib/discord');
+      const { isChampionshipTitle } = await import('../lib/championship');
 
       // score já disponível do contexto do sync — sem query adicional
       const score = finalScore;
@@ -626,14 +627,16 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
         const live = await getChannelCurrentLive(p.yt_channel_id);
         if (!live) return;
         await supabase.from('players').update({ yt_last_live_video_id: live.videoId }).eq('id', p.id);
-        await sendLiveNotification({
-          nick:      p.nick,
-          title:     live.title,
-          videoUrl:  live.videoUrl,
-          thumbnail: live.thumbnail,
-          rank,
-          score,
-        });
+        if (isChampionshipTitle(live.title, live.description)) {
+          await sendLiveNotification({
+            nick:      p.nick,
+            title:     live.title,
+            videoUrl:  live.videoUrl,
+            thumbnail: live.thumbnail,
+            rank,
+            score,
+          });
+        }
       }
     } catch (e) {
       console.error('[sync-live-check]', e);
@@ -650,6 +653,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
 
       const { extractTwitchLogin, getLiveStreams } = await import('../lib/twitch');
       const { sendLiveNotification } = await import('../lib/discord');
+      const { isChampionshipTwitchGame } = await import('../lib/championship');
 
       const login = extractTwitchLogin(p.twitch_url);
       if (!login) return;
@@ -676,15 +680,17 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       const rank = liveRankCount !== null ? liveRankCount + 1 : null;
 
       await supabase.from('players').update({ twitch_last_live_id: live.id }).eq('id', p.id);
-      await sendLiveNotification({
-        nick:      p.nick,
-        title:     live.title,
-        videoUrl:  `https://twitch.tv/${live.login}`,
-        thumbnail: live.thumbnail,
-        rank,
-        score,
-        platform:  'twitch',
-      });
+      if (isChampionshipTwitchGame(live.game)) {
+        await sendLiveNotification({
+          nick:      p.nick,
+          title:     live.title,
+          videoUrl:  `https://twitch.tv/${live.login}`,
+          thumbnail: live.thumbnail,
+          rank,
+          score,
+          platform:  'twitch',
+        });
+      }
     } catch (e) {
       console.error('[sync-live-check-twitch]', e);
     }

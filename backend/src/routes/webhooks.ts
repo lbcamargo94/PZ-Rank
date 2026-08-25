@@ -10,6 +10,7 @@ import type { Request, Response } from 'express';
 import { supabase } from '../supabase';
 import { verifyHmac, parsePubSubAtom, checkIsLive, subscribePubSub } from '../lib/youtube';
 import { sendLiveNotification } from '../lib/discord';
+import { isChampionshipTitle } from '../lib/championship';
 
 const router = Router();
 
@@ -76,7 +77,7 @@ router.post('/youtube', async (req: Request, res: Response): Promise<void> => {
   // Busca o jogador pelo yt_channel_id
   const { data: player } = await supabase
     .from('players')
-    .select('id, nick, yt_channel_id, yt_sub_expires_at')
+    .select('id, nick, yt_channel_id, yt_sub_expires_at, yt_last_live_video_id')
     .eq('yt_channel_id', entry.channelId)
     .is('deleted_at', null)
     .single();
@@ -86,8 +87,15 @@ router.post('/youtube', async (req: Request, res: Response): Promise<void> => {
     res.sendStatus(200); return;
   }
 
+  // O YouTube reenvia notificações PubSub várias vezes para a mesma live ativa
+  // (a cada atualização de metadados/título) — sem esse check, cada reenvio
+  // disparava uma notificação nova no Discord para o mesmo início de live.
+  if (player.yt_last_live_video_id === entry.videoId) {
+    console.log('[webhook/youtube] vídeo já registrado — notificação duplicada ignorada:', entry.videoId);
+    res.sendStatus(200); return;
+  }
+
   console.log('[webhook/youtube] jogador encontrado:', player.nick);
-  console.log('[webhook/youtube] enviando Discord:', { nick: player.nick });
 
   // Busca a melhor entry viva para rank e score
   const { data: entries } = await supabase
@@ -120,20 +128,27 @@ router.post('/youtube', async (req: Request, res: Response): Promise<void> => {
   }
 
   // Grava antes de notificar: se a função for cortada após a notificação,
-  // a deduplicação já está garantida no próximo ciclo.
+  // a deduplicação já está garantida no próximo ciclo. Sempre grava — o
+  // badge "Ao Vivo" do site e o aviso de transmissão não dependem de o
+  // conteúdo ser do campeonato, só a notificação do Discord depende.
   await supabase
     .from('players')
     .update({ yt_last_live_video_id: entry.videoId })
     .eq('id', player.id);
 
-  await sendLiveNotification({
-    nick:      player.nick,
-    title:     liveInfo.title,
-    videoUrl:  entry.videoUrl,
-    thumbnail: liveInfo.thumbnail,
-    rank,
-    score:     bestAlive?.score ?? null,
-  });
+  if (isChampionshipTitle(liveInfo.title, liveInfo.description)) {
+    console.log('[webhook/youtube] enviando Discord:', { nick: player.nick });
+    await sendLiveNotification({
+      nick:      player.nick,
+      title:     liveInfo.title,
+      videoUrl:  entry.videoUrl,
+      thumbnail: liveInfo.thumbnail,
+      rank,
+      score:     bestAlive?.score ?? null,
+    });
+  } else {
+    console.log('[webhook/youtube] live não parece ser do campeonato — notificação pulada:', { nick: player.nick, title: liveInfo.title });
+  }
 
   // Renova inscrição automaticamente ao receber notificação
   const renewed = await subscribePubSub(entry.channelId);
@@ -171,9 +186,10 @@ router.post('/youtube/simulate', async (req: Request, res: Response): Promise<vo
   if (force) {
     // Modo forçado: ignora status de live, usa dados mock se fornecidos
     liveInfo = {
-      isLive:    true,
-      title:     mockTitle ?? liveInfo?.title ?? `[TESTE] Live simulada`,
-      thumbnail: liveInfo?.thumbnail ?? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+      isLive:      true,
+      title:       mockTitle ?? liveInfo?.title ?? `[TESTE] Live simulada`,
+      description: liveInfo?.description ?? '',
+      thumbnail:   liveInfo?.thumbnail ?? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
     };
   } else {
     if (!liveInfo) {

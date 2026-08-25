@@ -114,6 +114,7 @@ export interface ChannelLiveResult {
   videoId:  string;
   videoUrl: string;
   title:    string;
+  description: string;
   thumbnail: string;
 }
 
@@ -140,9 +141,10 @@ export async function getChannelCurrentLive(channelId: string): Promise<ChannelL
 
     return {
       videoId,
-      videoUrl:  `https://www.youtube.com/watch?v=${videoId}`,
-      title:     liveInfo.title,
-      thumbnail: liveInfo.thumbnail,
+      videoUrl:    `https://www.youtube.com/watch?v=${videoId}`,
+      title:       liveInfo.title,
+      description: liveInfo.description,
+      thumbnail:   liveInfo.thumbnail,
     };
   } catch {
     return null;
@@ -233,16 +235,17 @@ export function parsePubSubAtom(xml: string): PubSubEntry | null {
 // ── Verificação se vídeo está ao vivo (YouTube Data API) ─────────────────────
 
 export interface LiveInfo {
-  isLive:    boolean;
-  title:     string;
-  thumbnail: string;
+  isLive:      boolean;
+  title:       string;
+  description: string;
+  thumbnail:   string;
 }
 
 export async function checkIsLive(videoId: string): Promise<LiveInfo | null> {
   const apiKey = process.env.YOUTUBE_API_KEY;
   if (!apiKey) {
     // Sem API key: assume que qualquer notificação é live (modo degradado)
-    return { isLive: true, title: '', thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` };
+    return { isLive: true, title: '', description: '', thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` };
   }
 
   try {
@@ -257,6 +260,7 @@ export async function checkIsLive(videoId: string): Promise<LiveInfo | null> {
       items?: Array<{
         snippet: {
           title: string;
+          description?: string;
           liveBroadcastContent: string;
           thumbnails: { maxres?: { url: string }; high?: { url: string } };
         };
@@ -272,7 +276,7 @@ export async function checkIsLive(videoId: string): Promise<LiveInfo | null> {
       // (todos tratam null como "mantém estado anterior" para não descartar por
       // instabilidade momentânea da API).
       console.warn('[checkIsLive] vídeo não encontrado (provavelmente deletado/privado):', videoId);
-      return { isLive: false, title: '', thumbnail: '' };
+      return { isLive: false, title: '', description: '', thumbnail: '' };
     }
 
     const details = item.liveStreamingDetails;
@@ -280,13 +284,14 @@ export async function checkIsLive(videoId: string): Promise<LiveInfo | null> {
     const isLive = item.snippet.liveBroadcastContent === 'live'
                 || (!!details?.actualStartTime && !details?.actualEndTime);
 
-    const title     = item.snippet.title;
-    const thumbnail = item.snippet.thumbnails.maxres?.url
-                   ?? item.snippet.thumbnails.high?.url
-                   ?? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+    const title       = item.snippet.title;
+    const description = item.snippet.description ?? '';
+    const thumbnail   = item.snippet.thumbnails.maxres?.url
+                     ?? item.snippet.thumbnails.high?.url
+                     ?? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
 
     console.log('[checkIsLive]', { videoId, liveBroadcastContent: item.snippet.liveBroadcastContent, isLive });
-    return { isLive, title, thumbnail };
+    return { isLive, title, description, thumbnail };
   } catch (err) {
     console.error('[checkIsLive] erro:', err);
     return null;
