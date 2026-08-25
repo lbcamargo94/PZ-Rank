@@ -1101,6 +1101,15 @@
   line-height: 1.4;
 }
 
+.painel-disq-note {
+  font-size: 14px;
+  font-style: italic;
+  color: var(--text-1);
+  line-height: 1.4;
+  margin-top: 2px;
+}
+.painel-disq-note strong { font-style: normal; color: var(--text-2); }
+
 .painel-disq-date {
   font-size: 14px;
   font-weight: 400;

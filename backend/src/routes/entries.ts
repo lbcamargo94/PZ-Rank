@@ -217,13 +217,19 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
 });
 
 // PATCH /entries/:id/status — moderador: altera is_alive e/ou sandbox_ok manualmente
+// Desclassificação manual (sandbox_ok: false) exige um motivo (note) — fica registrado
+// junto com o login do moderador para auditoria (mesmo padrão do banimento de jogadores).
 router.patch('/:id/status', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
   const id = parseInt(String(req.params.id), 10);
   if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
 
-  const { is_alive, sandbox_ok } = req.body as { is_alive?: boolean; sandbox_ok?: boolean };
+  const { is_alive, sandbox_ok, note } = req.body as { is_alive?: boolean; sandbox_ok?: boolean; note?: string };
   if (is_alive === undefined && sandbox_ok === undefined) {
     res.status(400).json({ error: 'Informe is_alive e/ou sandbox_ok.' });
+    return;
+  }
+  if (sandbox_ok === false && !note?.trim()) {
+    res.status(400).json({ error: 'Motivo da desclassificação é obrigatório.' });
     return;
   }
 
@@ -251,9 +257,19 @@ router.patch('/:id/status', requireModerator, async (req: ModRequest, res: Respo
     if (!sandbox_ok) {
       patch.disqualified_at         = row.disqualified_at ?? new Date().toISOString();
       patch.disqualification_reason = 'manual';
+      patch.disqualification_note   = note!.trim();
+
+      const { data: mod } = await supabase
+        .from('moderators')
+        .select('login')
+        .eq('id', req.userId!)
+        .single();
+      patch.disqualified_by = mod?.login ?? req.userId ?? 'moderador';
     } else {
       patch.disqualified_at         = null;
       patch.disqualification_reason = null;
+      patch.disqualification_note   = null;
+      patch.disqualified_by         = null;
     }
     // Ao desclassificar manualmente: zera score. Ao reclassificar: recalcula.
     patch.score = sandbox_ok ? computeScore(row.kills, countSkills10(row.skills), row.objectives) : 0;

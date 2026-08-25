@@ -96,6 +96,12 @@ function DisqDetail({ entry }: { entry: Entry }) {
           <div className="painel-disq-text">
             <span className="painel-disq-label">{disq.label}</span>
             <span className="painel-disq-desc">{disq.detail}</span>
+            {entry.disqualification_note && (
+              <span className="painel-disq-note">
+                “{entry.disqualification_note}”
+                {entry.disqualified_by && <> — <strong>{entry.disqualified_by}</strong></>}
+              </span>
+            )}
           </div>
           {entry.disqualified_at && (
             <span className="painel-disq-date"><i className="ti ti-clock" /> {fmtEntryDate(entry.disqualified_at)}</span>
@@ -118,6 +124,104 @@ function DisqDetail({ entry }: { entry: Entry }) {
   );
 }
 
+const DISQUALIFY_REASONS = [
+  'Trapaça / Cheat',
+  'Uso de mods não permitidos (não detectado automaticamente)',
+  'Configuração de sandbox suspeita',
+  'Comportamento antidesportivo',
+  'Violação das regras do campeonato',
+  'Suspeita de múltiplas contas',
+  'Outro motivo',
+];
+
+interface DisqualifyModalProps {
+  entry:     Entry;
+  onConfirm: (note: string) => void;
+  onCancel:  () => void;
+}
+
+function DisqualifyModal({ entry, onConfirm, onCancel }: DisqualifyModalProps) {
+  const [reason, setReason] = useState('');
+  const [detail, setDetail] = useState('');
+
+  useEffect(() => {
+    const prev  = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onCancel(); };
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
+  }, [onCancel]);
+
+  function handleConfirm() {
+    const note = detail.trim() ? `${reason}: ${detail.trim()}` : reason;
+    onConfirm(note);
+  }
+
+  return (
+    <div className="modal-overlay active" role="alertdialog" aria-modal="true">
+      <div className="modal-box modal-box--sm ban-modal-box" onClick={e => e.stopPropagation()}>
+        <button className="modal-close" aria-label="Fechar" onClick={onCancel}>
+          <i className="ti ti-x" />
+        </button>
+
+        <h2 className="modal-title">
+          <i className="ti ti-ban" /> Desclassificar personagem
+        </h2>
+
+        <div className="ban-modal-body">
+          <p className="ban-modal-nick">
+            Desclassificando: <strong>{entry.character_name || entry.name}</strong>
+          </p>
+
+          <div className="ban-modal-field">
+            <label className="form-label" htmlFor="disq-reason">
+              Motivo da desclassificação <span style={{ color: 'var(--red)' }}>*</span>
+            </label>
+            <select
+              id="disq-reason"
+              className="form-input ban-reason-select"
+              value={reason}
+              onChange={e => setReason(e.target.value)}
+            >
+              <option value="">Selecione um motivo...</option>
+              {DISQUALIFY_REASONS.map(r => (
+                <option key={r} value={r}>{r}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="ban-modal-field">
+            <label className="form-label" htmlFor="disq-detail">
+              Detalhes <span style={{ color: 'var(--text-4)', fontWeight: 400 }}>(opcional, mas recomendado)</span>
+            </label>
+            <textarea
+              id="disq-detail"
+              className="form-input ban-note-textarea"
+              value={detail}
+              onChange={e => setDetail(e.target.value)}
+              placeholder="Detalhes adicionais, links de evidência..."
+              rows={3}
+            />
+          </div>
+        </div>
+
+        <div className="confirm-modal-actions">
+          <button className="btn-secondary" onClick={onCancel}>
+            Cancelar
+          </button>
+          <button
+            className="btn-danger"
+            disabled={!reason}
+            onClick={handleConfirm}
+          >
+            <i className="ti ti-ban" /> Confirmar desclassificação
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function PainelPage({ session, onSession, onBack }: Props) {
   const [tab,            setTab]            = useState<Tab>('players');
   const [entryFilter,    setEntryFilter]    = useState<EntryFilter>('all');
@@ -128,6 +232,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
   const [confirmDeleteEntryId, setConfirmDeleteEntryId] = useState<number | null>(null);
   const [confirmDeathEntryId,  setConfirmDeathEntryId]  = useState<number | null>(null);
   const [sandboxEntry,         setSandboxEntry]         = useState<Entry | null>(null);
+  const [disqualifyEntry,      setDisqualifyEntry]      = useState<Entry | null>(null);
   const [entries,        setEntries]        = useState<Entry[]>([]);
   const [sortKey]                           = useState<SortKey>('score');
   const [updatingEntry,  setUpdatingEntry]  = useState<number | null>(null);
@@ -195,6 +300,22 @@ export function PainelPage({ session, onSession, onBack }: Props) {
     try {
       await apiUpdateEntryStatus(session.token, id, patch);
       showToast(`Personagem marcado como ${label}.`, 'success');
+      fetchEntries();
+    } catch (err) {
+      showToast((err as Error).message, 'error');
+    } finally {
+      setUpdatingEntry(null);
+    }
+  }
+
+  async function handleDisqualifyConfirm(note: string) {
+    if (!session || !disqualifyEntry) return;
+    const id = disqualifyEntry.id!;
+    setDisqualifyEntry(null);
+    setUpdatingEntry(id);
+    try {
+      await apiUpdateEntryStatus(session.token, id, { sandbox_ok: false, note });
+      showToast('Personagem desclassificado.', 'success');
       fetchEntries();
     } catch (err) {
       showToast((err as Error).message, 'error');
@@ -314,7 +435,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
             className="btn-danger btn-sm"
             disabled={busy || entry.sandbox_ok === false}
             title="Desclassificar"
-            onClick={() => handleEntryStatus(entry.id!, { sandbox_ok: false }, 'Desclassificado')}
+            onClick={() => setDisqualifyEntry(entry)}
           >
             <i className="ti ti-ban" /> Desc.
           </button>
@@ -642,6 +763,13 @@ export function PainelPage({ session, onSession, onBack }: Props) {
           danger
           onConfirm={() => handleConfirmDeath(confirmDeathEntryId)}
           onCancel={() => setConfirmDeathEntryId(null)}
+        />
+      )}
+      {disqualifyEntry && (
+        <DisqualifyModal
+          entry={disqualifyEntry}
+          onConfirm={handleDisqualifyConfirm}
+          onCancel={() => setDisqualifyEntry(null)}
         />
       )}
     </div>

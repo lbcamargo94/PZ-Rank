@@ -240,7 +240,7 @@ export function apiDeleteEntry(token: string, id: number): Promise<void> {
 }
 
 export function apiUpdateEntryStatus(
-  token: string, id: number, patch: { is_alive?: boolean; sandbox_ok?: boolean }
+  token: string, id: number, patch: { is_alive?: boolean; sandbox_ok?: boolean; note?: string }
 ): Promise<Entry> {
   return request(`/entries/${id}/status`, { method: 'PATCH', ...json(token, patch) });
 }

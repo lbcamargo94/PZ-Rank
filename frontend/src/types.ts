@@ -19,6 +19,8 @@
   record_score?:              number;
   disqualification_reason?:   string | null;
   disqualified_at?:           string | null;
+  disqualification_note?:     string | null;
+  disqualified_by?:           string | null;
   flagged_reason?:            string | null;
   flagged_at?:                string | null;
   no_live_streak?:            number;
