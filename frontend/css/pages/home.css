@@ -1,5 +1,169 @@
 /* PZ Rank - Home page layout */
 
+/* ── Layout de 3 colunas: streamers | conteúdo central | top 10 ── */
+.home-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr 260px;
+  gap: 16px;
+  align-items: start;
+  margin-top: 20px;
+}
+
+.home-main-col > .home-top-row { margin-top: 0; }
+
+/* ── Painel lateral genérico (streamers / top 10) ─────────────── */
+.home-side-panel {
+  background: rgba(10,14,8,0.90);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.home-side-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin: 0;
+}
+.home-side-panel-title .ti { color: var(--gold); }
+
+.home-side-panel-loading {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0;
+  color: var(--text-3);
+  font-size: 18px;
+}
+
+.home-side-panel-empty {
+  color: var(--text-3);
+  font-size: 14px;
+  margin: 0;
+  padding: 8px 0;
+}
+
+.home-side-panel-cta {
+  width: 100%;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* ── Streamers em destaque ─────────────────────────────────────── */
+.streamers-highlight-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.streamer-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-mid);
+  background: rgba(18,23,16,0.6);
+  text-decoration: none;
+  color: var(--text-1);
+  font-size: 14px;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.streamer-card:hover { border-color: var(--green-border); background: rgba(18,23,16,0.9); }
+
+.streamer-card-no-link { cursor: default; }
+
+.streamer-card-live {
+  border-color: var(--red-border);
+  background: color-mix(in srgb, var(--red) 8%, transparent);
+}
+
+.streamer-card-nick {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.streamer-card-platforms {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  color: var(--text-3);
+  font-size: 14px;
+}
+
+.streamer-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--youtube);
+  animation: live-pulse 1.4s ease-in-out infinite;
+}
+.streamer-live-dot--twitch { background: var(--twitch); }
+
+/* ── Prévia do Top 10 ───────────────────────────────────────────── */
+.top10-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.top10-row {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: var(--radius);
+  font-size: 14px;
+}
+
+.top10-row-clickable { cursor: pointer; transition: background 0.15s; }
+.top10-row-clickable:hover { background: rgba(94,144,64,0.12); }
+.top10-row-clickable:focus-visible { outline: 2px solid var(--green); outline-offset: -2px; }
+
+.top10-pos {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--text-4);
+  text-align: center;
+}
+
+.top10-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-1);
+}
+
+.top10-score {
+  font-family: var(--font-mono);
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 860px) {
+  .home-layout {
+    grid-template-columns: 1fr;
+  }
+  .home-layout .home-main-col { order: 1; }
+  .streamers-highlight   { order: 2; }
+  .rank-top10-preview    { order: 3; }
+}
+
 /* ── Linha superior: jornal + publicidade lado a lado ───────── */
 .home-top-row {
   display: grid;

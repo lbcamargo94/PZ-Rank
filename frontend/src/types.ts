@@ -123,8 +123,17 @@ export interface Player {
   is_supporter:       boolean;
   supporter_until:    string | null;
   is_test_mod?:       boolean;
+  is_featured_streamer?: boolean;
   deleted_at?:        string | null;
   created_at:         string;
+}
+
+export interface FeaturedStreamer {
+  id:          number;
+  nick:        string;
+  youtube_url: string | null;
+  twitch_url:  string | null;
+  gender:      'm' | 'f' | null;
 }
 
 export interface Moderator {

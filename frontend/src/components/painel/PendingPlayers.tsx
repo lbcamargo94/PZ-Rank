@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { apiGetPlayers, apiUpdatePlayerStatus, apiBlockPlayer, apiUnblockPlayer, apiDeletePlayer, apiRestorePlayer, apiSetPlayerEmail, apiVerifyPlayerEmail } from '../../lib/api';
+import { apiGetPlayers, apiUpdatePlayerStatus, apiBlockPlayer, apiUnblockPlayer, apiDeletePlayer, apiRestorePlayer, apiSetPlayerEmail, apiVerifyPlayerEmail, apiSetFeaturedStreamer } from '../../lib/api';
 import type { Player, PlayerStatus, PlayerFilter } from '../../types';
 import { ConfirmModal } from './ConfirmModal';
 import { EditLinksModal } from './EditLinksModal';
@@ -267,6 +267,20 @@ export function PendingPlayers({ token, showToast }: Props) {
     }
   }
 
+  async function handleToggleFeaturedStreamer(p: Player) {
+    const next = !p.is_featured_streamer;
+    setUpdating(p.id);
+    try {
+      await apiSetFeaturedStreamer(token, p.id, next);
+      setPlayers(prev => prev.map(x => x.id === p.id ? { ...x, is_featured_streamer: next } : x));
+      showToast(next ? 'Destaque de streamer definido.' : 'Destaque de streamer removido.', 'success');
+    } catch (err) {
+      showToast((err as Error).message, 'error');
+    } finally {
+      setUpdating(null);
+    }
+  }
+
   const filterOptions: PlayerFilter[] = ['pending', 'approved', 'rejected', 'blocked', 'deleted', 'all'];
   const pendingCount = players.filter(p => p.status === 'pending').length;
   const isDeleted    = filter === 'deleted';
@@ -438,6 +452,13 @@ export function PendingPlayers({ token, showToast }: Props) {
                     title="Editar links de canais"
                     onClick={() => setEditLinksPlayer(p)}>
                     <i className="ti ti-link" />
+                  </button>
+                  <button
+                    className={`btn-sm${p.is_featured_streamer ? ' btn-test-mod-active' : ' btn-secondary'}`}
+                    disabled={updating === p.id}
+                    title={p.is_featured_streamer ? 'Remover destaque de streamer oficial' : 'Definir como streamer oficial (aparece em destaque na home)'}
+                    onClick={() => handleToggleFeaturedStreamer(p)}>
+                    <i className="ti ti-star" /> Streamer
                   </button>
                   <button className="btn-ghost btn-sm btn-delete" disabled={updating === p.id}
                     title="Excluir jogador do rank"

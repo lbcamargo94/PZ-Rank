@@ -10,6 +10,8 @@ import { DonationButton } from './components/DonationButton';
 import { CommunityStats } from './components/CommunityStats';
 import { NewsInline }     from './components/NewsCard';
 import { AdBanner }      from './components/AdBanner';
+import { StreamersHighlight } from './components/StreamersHighlight';
+import { RankTop10Preview }   from './components/RankTop10Preview';
 import { RegrasPage } from './pages/RegrasPage';
 import { PainelPage } from './pages/PainelPage';
 import { PlayerPage } from './pages/PlayerPage';
@@ -71,14 +73,18 @@ function MainView() {
       <Header onPainel={() => navigate('/painel')} />
       <CommunityStats />
       <main>
-        <div className="container">
-          <div className="home-top-row">
-            <NewsInline />
-            <div className="home-patrocinio">
-              <AdBanner />
+        <div className="container home-layout">
+          <StreamersHighlight />
+          <div className="home-main-col">
+            <div className="home-top-row">
+              <NewsInline />
+              <div className="home-patrocinio">
+                <AdBanner />
+              </div>
             </div>
+            <QuickNav />
           </div>
-          <QuickNav />
+          <RankTop10Preview />
         </div>
       </main>
       <Toast {...toast} onClose={clearToast} />

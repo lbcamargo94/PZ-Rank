@@ -88,6 +88,24 @@ router.get('/live-status', async (_req: Request, res: Response): Promise<void> =
   res.json(results);
 });
 
+// GET /players/featured-streamers — público: elenco de streamers oficiais para destaque na home
+router.get('/featured-streamers', async (_req: Request, res: Response): Promise<void> => {
+  const { data, error } = await supabase
+    .from('players')
+    .select('id, nick, youtube_url, twitch_url, gender')
+    .eq('is_featured_streamer', true)
+    .eq('status', 'approved')
+    .is('deleted_at', null);
+
+  if (error) {
+    res.status(500).json({ error: 'Erro ao buscar streamers oficiais.' });
+    return;
+  }
+
+  res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120');
+  res.json(data ?? []);
+});
+
 // GET /players/:id — público: retorna dados do jogador + todas as entradas dele no rank
 router.get('/:id', async (req: Request, res: Response): Promise<void> => {
   const id = parseInt(String(req.params.id), 10);
@@ -255,7 +273,7 @@ router.get('/', requireModerator, async (req: ModRequest, res: Response): Promis
   try {
     let query = supabase
       .from('players')
-      .select('id, nick, email, email_verified_at, twitch_url, youtube_url, kick_url, tiktok_url, status, blocked, blocked_reason, blocked_at, blocked_by, blocked_note, is_supporter, supporter_until, deleted_at, created_at')
+      .select('id, nick, email, email_verified_at, twitch_url, youtube_url, kick_url, tiktok_url, status, blocked, blocked_reason, blocked_at, blocked_by, blocked_note, is_supporter, supporter_until, is_featured_streamer, deleted_at, created_at')
       .order('created_at', { ascending: false });
 
     if (statusParam === 'deleted') {
@@ -596,6 +614,33 @@ router.patch('/:id/test-mod', requireModerator, async (req: ModRequest, res: Res
   } catch (err) {
     console.error('[PATCH /players/:id/test-mod] Erro inesperado:', err);
     res.status(500).json({ error: 'Erro interno ao atualizar moderador de teste.' });
+  }
+});
+
+// PATCH /players/:id/featured-streamer — moderador: define/remove destaque na home page
+router.patch('/:id/featured-streamer', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
+  const id = parseInt(String(req.params.id), 10);
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
+
+  const { is_featured_streamer } = req.body as { is_featured_streamer?: boolean };
+  if (typeof is_featured_streamer !== 'boolean') {
+    res.status(400).json({ error: 'is_featured_streamer deve ser true ou false.' });
+    return;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('players')
+      .update({ is_featured_streamer })
+      .eq('id', id)
+      .select('id, nick, is_featured_streamer')
+      .single();
+
+    if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
+    res.json(data);
+  } catch (err) {
+    console.error('[PATCH /players/:id/featured-streamer] Erro inesperado:', err);
+    res.status(500).json({ error: 'Erro interno ao atualizar destaque de streamer.' });
   }
 });
 

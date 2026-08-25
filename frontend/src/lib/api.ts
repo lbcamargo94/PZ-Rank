@@ -1,4 +1,4 @@
-import type { Player, Moderator, ModSession, ModeratorRole, Entry, PlayerFilter, PlayerProfile, Mod, DailyNews, FinanceEntry, Achievement, PlayerAchievement, HeatmapPoint, LiveStatus } from '../types';
+import type { Player, Moderator, ModSession, ModeratorRole, Entry, PlayerFilter, PlayerProfile, Mod, DailyNews, FinanceEntry, Achievement, PlayerAchievement, HeatmapPoint, LiveStatus, FeaturedStreamer } from '../types';
 
 const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:3000';
 
@@ -528,6 +528,18 @@ export function apiSetTestMod(
   is_test_mod: boolean,
 ): Promise<{ id: number; nick: string; is_test_mod: boolean }> {
   return request(`/players/${playerId}/test-mod`, { method: 'PATCH', ...json(token, { is_test_mod }) });
+}
+
+export function apiSetFeaturedStreamer(
+  token: string,
+  playerId: number,
+  is_featured_streamer: boolean,
+): Promise<{ id: number; nick: string; is_featured_streamer: boolean }> {
+  return request(`/players/${playerId}/featured-streamer`, { method: 'PATCH', ...json(token, { is_featured_streamer }) });
+}
+
+export function apiGetFeaturedStreamers(): Promise<FeaturedStreamer[]> {
+  return request('/players/featured-streamers');
 }
 
 export function apiGetAchievements(): Promise<{ achievements: Achievement[] }> {
