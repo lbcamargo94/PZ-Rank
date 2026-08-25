@@ -89,11 +89,15 @@ function RankCard({ entry, rank, onPlayerClick, hideStatus, live }: {
     : 0;
 
   const killsDone = entry.kills >= KILLS_TARGET;
+  const clickable = entry.player_id != null;
 
   return (
     <div
-      className={`rank-card${rank <= 3 ? ` rank-card-top rank-card-${rank}` : ''}`}
-      role="article"
+      className={`rank-card${rank <= 3 ? ` rank-card-top rank-card-${rank}` : ''}${clickable ? ' rank-card-clickable' : ''}`}
+      role={clickable ? 'button' : 'article'}
+      tabIndex={clickable ? 0 : undefined}
+      onClick={clickable ? () => onPlayerClick(entry.player_id!) : undefined}
+      onKeyDown={clickable ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onPlayerClick(entry.player_id!); } } : undefined}
     >
       {/* Top row */}
       <div className="rc-top">
@@ -146,14 +150,9 @@ function RankCard({ entry, rank, onPlayerClick, hideStatus, live }: {
         <div className="rc-updated"><i className="ti ti-clock-edit" />{fmtDate(entry.updated_at ?? entry.created_at)}</div>
       )}
 
-      {/* Player + actions */}
+      {/* Player */}
       <div className="rc-footer">
         <span className="rc-player-name"><i className="ti ti-user" /> {entry.name}</span>
-        {entry.player_id && (
-          <button className="rc-player-btn" onClick={() => onPlayerClick(entry.player_id!)}>
-            <i className="ti ti-user" /> Ver detalhes
-          </button>
-        )}
       </div>
     </div>
   );
@@ -246,6 +245,7 @@ export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, ic
               <thead>
                 <tr>
                   <th>#</th>
+                  <th className="rank-live-th" title="Ao Vivo"><i className="ti ti-broadcast" aria-hidden="true" /><span className="sr-only">Ao Vivo</span></th>
                   <th>Jogador</th>
                   {!hideStatus && <th>Status</th>}
                   <th>Pontos</th>
@@ -253,7 +253,6 @@ export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, ic
                   <th>Zumbis</th>
                   <th>Habilidades</th>
                   <th>Atualizado</th>
-                  <th>Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -265,6 +264,7 @@ export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, ic
                     hideStatus={hideStatus}
                     iconOnly={iconOnly}
                     live={entry.player_id != null ? liveMap?.get(entry.player_id) : undefined}
+                    onPlayerClick={handlePlayerClick}
                   />
                 ))}
               </tbody>

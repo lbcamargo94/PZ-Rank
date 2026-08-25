@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Link } from 'react-router-dom';
 import type { Entry, LiveStatus } from '../types';
 import { parseSkillMap, SKILL_CATEGORIES, TOTAL_SKILLS, MAX_SKILL_LEVEL } from '../lib/skills';
 import { MAX_POSSIBLE_SCORE } from '../lib/objectives';
@@ -11,11 +10,12 @@ import { LiveBadges } from './LiveBadges';
 export const KILLS_TARGET = 800_000;
 
 interface RankRowProps {
-  entry:       Entry;
-  rank:        number;
-  hideStatus?: boolean;
-  iconOnly?:   boolean;
-  live?:       LiveStatus[];
+  entry:          Entry;
+  rank:           number;
+  hideStatus?:    boolean;
+  iconOnly?:      boolean;
+  live?:          LiveStatus[];
+  onPlayerClick?: (id: number) => void;
 }
 
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
@@ -121,7 +121,7 @@ function SkillsCell({ skills, charName }: { skills: string | null; charName?: st
     <>
       <button
         className={`skills-counter${maxed > 0 ? ' has-maxed' : ''}`}
-        onClick={() => setOpen(true)}
+        onClick={e => { e.stopPropagation(); setOpen(true); }}
         title="Ver progresso das habilidades"
       >
         {String(maxed).padStart(2, '0')}<span className="skills-sep">/</span>{TOTAL_SKILLS}
@@ -159,16 +159,24 @@ function MiniBar({ value, max, done }: { value: number; max: number; done?: bool
   );
 }
 
-export function RankRow({ entry, rank, hideStatus, iconOnly, live }: RankRowProps) {
+export function RankRow({ entry, rank, hideStatus, iconOnly, live, onPlayerClick }: RankRowProps) {
   const score     = entry.score ?? 0;
   const killsDone = entry.kills >= KILLS_TARGET;
   const division  = getDivision(rank > 0 ? rank : 1);
   const isTestMod = entry.is_test_mod === true;
+  const clickable = entry.player_id != null && !!onPlayerClick;
 
   let trClass = isTestMod ? 'rank-test-mod' : (rank <= 3 ? `rank-top rank-${rank}` : '');
+  if (clickable) trClass += ' rank-row-clickable';
 
   return (
-    <tr className={trClass}>
+    <tr
+      className={trClass}
+      role={clickable ? 'button' : undefined}
+      tabIndex={clickable ? 0 : undefined}
+      onClick={clickable ? () => onPlayerClick!(entry.player_id!) : undefined}
+      onKeyDown={clickable ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onPlayerClick!(entry.player_id!); } } : undefined}
+    >
       <td className="rank-pos">
         {isTestMod
           ? <span className="test-mod-badge" title="Participante com tag de Moderador de Teste"><i className="ti ti-microscope" /> Mod. Teste</span>
@@ -184,9 +192,11 @@ export function RankRow({ entry, rank, hideStatus, iconOnly, live }: RankRowProp
             </>
         }
       </td>
+      <td className="rank-live">
+        <LiveBadges live={live} compact />
+      </td>
       <td className="rank-name">
         <span className="char-name">
-          <LiveBadges live={live} />
           {entry.character_name || entry.name}
         </span>
         <span className="player-alias">{entry.name}</span>
@@ -237,13 +247,6 @@ export function RankRow({ entry, rank, hideStatus, iconOnly, live }: RankRowProp
             ? <><span className="rank-updated-date">{p.date}</span><span className="rank-updated-time">{p.time}</span></>
             : '—';
         })()}
-      </td>
-      <td className="rank-actions">
-        {entry.player_id && (
-          <Link to={`/player/${entry.player_id}`} className="btn-details">
-            <i className="ti ti-user" /> Ver detalhes
-          </Link>
-        )}
       </td>
     </tr>
   );

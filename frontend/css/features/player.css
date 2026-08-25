@@ -377,27 +377,6 @@
 }
 .pc-live-link:hover { background: #9146ff22; }
 
-/* ── Botão "Ver detalhes" na tabela de rank ── */
-.btn-details {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  font-family: var(--font-mono);
-  font-size: 14px;
-  color: var(--green);
-  background: var(--green-dim);
-  border: 1px solid var(--green-border);
-  border-radius: 4px;
-  text-decoration: none;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-}
-.btn-details:hover {
-  background: rgba(74, 222, 128, 0.15);
-  color: var(--green-light);
-  border-color: var(--green);
-}
-
 /* ── Header brand link ──────────────────────────────────────── */
 .header-brand {
   text-decoration: none;
@@ -523,6 +502,10 @@
 }
 .rank-card:hover { border-color: var(--border-mid); }
 
+.rank-card-clickable { cursor: pointer; }
+.rank-card-clickable:hover { border-color: var(--green-border); }
+.rank-card-clickable:focus-visible { outline: 2px solid var(--green); outline-offset: 1px; }
+
 .rank-card-top  { border-left: 3px solid var(--gold); }
 .rank-card-1    { border-left: 3px solid #c9a227; }
 .rank-card-2    { border-left: 3px solid var(--silver); }
@@ -590,23 +573,6 @@
   border-top: 1px solid var(--border);
   padding-top: 8px;
 }
-.rc-player-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font: inherit;
-  font-family: var(--font-mono);
-  font-size: 14px;
-  color: var(--text-3);
-  text-decoration: underline dotted;
-  text-underline-offset: 3px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  transition: color 0.15s;
-}
-.rc-player-btn:hover { color: var(--green-light); }
 .rc-player-name {
   font-family: var(--font-mono);
   font-size: 14px;
@@ -1856,29 +1822,6 @@
 /* ── 5. Fontes do modal de habilidades ────────────────────── */
 .srow-name { font-size: 14px; }
 .srow-lvl  { font-size: 14px; }
-
-/* ── 6. Botão "Ver detalhes" nos cards mobile ─────────────── */
-.rc-player-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  font-family: var(--font-mono);
-  font-size: 14px;
-  font-weight: 400;
-  color: var(--green);
-  background: var(--green-dim);
-  border: 1px solid var(--green-border);
-  border-radius: 4px;
-  cursor: pointer;
-  text-decoration: none;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-}
-.rc-player-btn:hover {
-  background: rgba(74, 222, 128, 0.15);
-  color: var(--green-light);
-  border-color: var(--green);
-}
 
 /* ── 7. Características — tamanho legível ─────────────────── */
 

@@ -2,6 +2,19 @@
 
 html { scroll-behavior: smooth; }
 
+/* Visível só para leitores de tela — usado em cabeçalhos de coluna compactos (ícone-only) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* Sticky footer: root ocupa no mínimo o viewport inteiro em coluna;
    .page-body cresce para empurrar o footer sempre para o final */
 #root {

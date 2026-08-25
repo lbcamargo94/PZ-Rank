@@ -289,6 +289,49 @@
   .live-dot { animation: none; }
 }
 
+/* ── Ícones compactos "Ao Vivo" — coluna dedicada da tabela desktop ── */
+.live-icons {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.live-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 13px;
+  background: var(--red-dim);
+  color: var(--red);
+  border: 1px solid var(--red-border);
+  text-decoration: none;
+  animation: live-icon-pulse 1.6s ease-in-out infinite;
+  transition: filter 0.15s;
+}
+.live-icon:hover { filter: brightness(1.25); }
+
+.live-icon--twitch {
+  background: color-mix(in srgb, var(--twitch) 15%, transparent);
+  color: var(--twitch);
+  border-color: color-mix(in srgb, var(--twitch) 45%, transparent);
+  animation-name: live-icon-pulse-twitch;
+}
+
+@keyframes live-icon-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--red) 55%, transparent); }
+  50%      { box-shadow: 0 0 0 3px color-mix(in srgb, var(--red) 0%, transparent); }
+}
+@keyframes live-icon-pulse-twitch {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--twitch) 55%, transparent); }
+  50%      { box-shadow: 0 0 0 3px color-mix(in srgb, var(--twitch) 0%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .live-icon { animation: none; }
+}
+
 /* ── Aviso: syncs consecutivos sem transmissão confirmada no YouTube ── */
 .live-warning-badge {
   display: inline-flex;

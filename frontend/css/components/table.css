@@ -302,6 +302,9 @@
 .rank-table tbody tr:last-child { border-bottom: none; }
 .rank-table tbody tr:hover { background: #131310; }
 
+.rank-row-clickable { cursor: pointer; }
+.rank-row-clickable:focus-visible { outline: 2px solid var(--green); outline-offset: -2px; }
+
 .rank-table tbody tr.rank-top.rank-1 {
   border-left: 3px solid var(--gold);
   background: linear-gradient(90deg, rgba(200,168,75,0.04) 0%, transparent 60%);
@@ -355,6 +358,21 @@
 .rank-top.rank-1 .rank-pos { color: var(--gold);   font-size: 20px; }
 .rank-top.rank-2 .rank-pos { color: var(--silver); font-size: 18px; }
 .rank-top.rank-3 .rank-pos { color: var(--bronze); font-size: 17px; }
+
+/* Coluna compacta — só ícones quando ao vivo, vazia (sem gastar espaço extra) quando não */
+.rank-live-th {
+  width: 34px;
+  padding-left: 8px !important;
+  padding-right: 4px !important;
+  text-align: center;
+  font-size: 15px;
+  color: var(--text-4);
+}
+.rank-table td.rank-live {
+  width: 34px;
+  padding-left: 8px;
+  padding-right: 4px;
+}
 
 .rank-name { min-width: 150px; }
 .char-name {
