@@ -125,7 +125,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // Valida token
   const { data: player, error: playerError } = await supabase
     .from('players')
-    .select('id, nick, status, blocked, youtube_url, yt_channel_id, yt_last_live_video_id')
+    .select('id, nick, status, blocked, youtube_url, yt_channel_id, yt_last_live_video_id, twitch_url')
     .eq('player_token', player_token)
     .maybeSingle();
 
@@ -427,10 +427,21 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     : Math.max(score, prevRecord);
 
   // Aviso de transmissão: incrementa a cada sync sem live confirmada no YouTube
-  // (plataforma obrigatória pelas regras). yt_last_live_video_id reflete o estado
-  // já conhecido no momento deste sync (webhook + checagens anteriores) — zera
-  // o contador assim que uma live é detectada.
-  const wasLiveAtSync = !!player.yt_last_live_video_id;
+  // OU na Twitch (as regras aceitam as duas plataformas — só o cadastro do
+  // canal do YouTube continua obrigatório). yt_last_live_video_id reflete o
+  // estado já conhecido no momento deste sync (webhook + checagens anteriores).
+  // Twitch não tem webhook próprio, então é checado na hora (API pública sem
+  // cota — ver lib/twitch.ts) só quando o YouTube já não resolveu a checagem,
+  // pra não gastar uma chamada à toa em todo sync.
+  let wasLiveAtSync = !!player.yt_last_live_video_id;
+  if (!wasLiveAtSync && player.twitch_url) {
+    const { extractTwitchLogin, getLiveStreams } = await import('../lib/twitch');
+    const login = extractTwitchLogin(player.twitch_url);
+    if (login) {
+      const live = await getLiveStreams([login]);
+      wasLiveAtSync = live.has(login.toLowerCase());
+    }
+  }
   const no_live_streak = wasLiveAtSync ? 0 : (prev?.no_live_streak ?? 0) + 1;
 
   const hasExtended = decoded.animalsKilled > 0 || decoded.fishCaught > 0 ||

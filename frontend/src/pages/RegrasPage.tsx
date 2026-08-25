@@ -215,8 +215,8 @@ const FUNDAMENTAL_RULES = [
   {
     n: '02',
     icon: 'ti-brand-youtube',
-    title: 'YouTube como Plataforma Oficial',
-    desc: 'A transmissão deve ser realizada no YouTube e permanecer salva no canal do participante para futuras auditorias. Outras plataformas podem ser utilizadas simultaneamente, desde que a live no YouTube seja mantida.',
+    title: 'YouTube ou Twitch como Plataforma Oficial',
+    desc: 'A transmissão deve ser realizada no YouTube ou na Twitch e permanecer salva para futuras auditorias. O cadastro de um canal do YouTube continua obrigatório no momento da inscrição, mas a live pode ser feita em qualquer uma das duas plataformas. Se transmitir apenas na Twitch, é responsabilidade do participante salvar/exportar o VOD manualmente — a Twitch apaga transmissões automaticamente após um período (até 60 dias).',
   },
   {
     n: '03',

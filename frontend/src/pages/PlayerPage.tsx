@@ -247,7 +247,7 @@ function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | nul
             </span>
           )}
           {hasLiveWarning(entry) && (
-            <span className="live-warning-badge" title="Vários syncs seguidos sem transmissão confirmada no YouTube (obrigatória pelas regras)">
+            <span className="live-warning-badge" title="Vários syncs seguidos sem transmissão confirmada no YouTube ou na Twitch (obrigatória pelas regras)">
               <i className="ti ti-alert-triangle" /> Sem transmissão
             </span>
           )}

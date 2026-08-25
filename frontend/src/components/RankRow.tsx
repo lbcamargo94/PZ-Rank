@@ -201,7 +201,7 @@ export function RankRow({ entry, rank, hideStatus, iconOnly, live, onPlayerClick
         </span>
         <span className="player-alias">{entry.name}</span>
         {hasLiveWarning(entry) && (
-          <span className="live-warning-badge" title="Vários syncs seguidos sem transmissão confirmada no YouTube (obrigatória pelas regras)">
+          <span className="live-warning-badge" title="Vários syncs seguidos sem transmissão confirmada no YouTube ou na Twitch (obrigatória pelas regras)">
             <i className="ti ti-alert-triangle" /> Sem transmissão
           </span>
         )}
