@@ -256,6 +256,16 @@
 }
 .live-badge:hover { filter: brightness(1.2); }
 
+.live-badge--twitch {
+  background: color-mix(in srgb, var(--twitch) 15%, transparent);
+  color: var(--twitch);
+  border-color: color-mix(in srgb, var(--twitch) 45%, transparent);
+}
+.live-badge--twitch .live-dot {
+  background: var(--twitch);
+  animation-name: live-pulse-twitch;
+}
+
 .live-dot {
   width: 7px;
   height: 7px;
@@ -268,6 +278,11 @@
 @keyframes live-pulse {
   0%, 100% { opacity: 1;    box-shadow: 0 0 4px var(--red), 0 0 8px color-mix(in srgb, var(--red) 60%, transparent); }
   50%      { opacity: 0.55; box-shadow: 0 0 2px var(--red), 0 0 4px color-mix(in srgb, var(--red) 40%, transparent); }
+}
+
+@keyframes live-pulse-twitch {
+  0%, 100% { opacity: 1;    box-shadow: 0 0 4px var(--twitch), 0 0 8px color-mix(in srgb, var(--twitch) 60%, transparent); }
+  50%      { opacity: 0.55; box-shadow: 0 0 2px var(--twitch), 0 0 4px color-mix(in srgb, var(--twitch) 40%, transparent); }
 }
 
 @media (prefers-reduced-motion: reduce) {

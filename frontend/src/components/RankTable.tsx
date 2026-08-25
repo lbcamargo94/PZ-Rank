@@ -4,6 +4,7 @@ import type { Entry, SortKey, RankTab, LiveStatus } from '../types';
 import { RankRow, KILLS_TARGET } from './RankRow';
 import { MAX_POSSIBLE_SCORE } from '../lib/objectives';
 import { hasLiveWarning } from '../lib/live';
+import { LiveBadges } from './LiveBadges';
 
 type PageSize = 15 | 50 | 'all';
 const PAGE_SIZES: { value: PageSize; label: string }[] = [
@@ -21,7 +22,7 @@ interface RankTableProps {
   tab:          RankTab;
   iconOnly?:    boolean;
   isSearching?: boolean;
-  liveMap?:     Map<number, LiveStatus>;
+  liveMap?:     Map<number, LiveStatus[]>;
 }
 
 const EMPTY_MESSAGES: Record<RankTab, { icon: string; text: string }> = {
@@ -76,7 +77,7 @@ function RankCard({ entry, rank, onPlayerClick, hideStatus, live }: {
   rank: number;
   onPlayerClick: (id: number) => void;
   hideStatus?: boolean;
-  live?: LiveStatus;
+  live?: LiveStatus[];
 }) {
   const objCount = entry.objectives
     ? [
@@ -102,11 +103,7 @@ function RankCard({ entry, rank, onPlayerClick, hideStatus, live }: {
         }
         <div className="rc-identity">
           <span className="rc-char-name">
-            {live && (
-              <a href={live.url} target="_blank" rel="noopener noreferrer" className="live-badge" title={live.title || 'Transmitindo agora'}>
-                <span className="live-dot" /> AO VIVO
-              </a>
-            )}
+            <LiveBadges live={live} />
             {entry.character_name || entry.name}
           </span>
           {entry.profession && <span className="profession-badge">{entry.profession}</span>}

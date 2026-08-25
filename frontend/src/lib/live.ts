@@ -9,11 +9,18 @@ export function hasLiveWarning(entry: Entry): boolean {
   return (entry.no_live_streak ?? 0) >= NO_LIVE_WARNING_THRESHOLD;
 }
 
-export function buildLiveMap(statuses: LiveStatus[]): Map<number, LiveStatus> {
-  const map = new Map<number, LiveStatus>();
+// Agrupa por jogador — um jogador pode estar ao vivo em mais de uma plataforma
+// simultaneamente (ex: YouTube + Twitch ao mesmo tempo), e todas devem aparecer.
+// YouTube primeiro (plataforma oficial pelas regras), Twitch depois.
+export function buildLiveMap(statuses: LiveStatus[]): Map<number, LiveStatus[]> {
+  const map = new Map<number, LiveStatus[]>();
   for (const s of statuses) {
-    // YouTube é a plataforma oficial (regras) — prioriza sobre Twitch quando ambas ativas.
-    if (!map.has(s.player_id) || s.platform === 'youtube') map.set(s.player_id, s);
+    const list = map.get(s.player_id);
+    if (list) list.push(s);
+    else map.set(s.player_id, [s]);
+  }
+  for (const list of map.values()) {
+    list.sort((a, b) => (a.platform === b.platform ? 0 : a.platform === 'youtube' ? -1 : 1));
   }
   return map;
 }

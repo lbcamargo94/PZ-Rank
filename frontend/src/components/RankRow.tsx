@@ -6,6 +6,7 @@ import { parseSkillMap, SKILL_CATEGORIES, TOTAL_SKILLS, MAX_SKILL_LEVEL } from '
 import { MAX_POSSIBLE_SCORE } from '../lib/objectives';
 import { getDivision } from '../lib/divisions';
 import { hasLiveWarning } from '../lib/live';
+import { LiveBadges } from './LiveBadges';
 
 export const KILLS_TARGET = 800_000;
 
@@ -14,7 +15,7 @@ interface RankRowProps {
   rank:        number;
   hideStatus?: boolean;
   iconOnly?:   boolean;
-  live?:       LiveStatus;
+  live?:       LiveStatus[];
 }
 
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
@@ -185,11 +186,7 @@ export function RankRow({ entry, rank, hideStatus, iconOnly, live }: RankRowProp
       </td>
       <td className="rank-name">
         <span className="char-name">
-          {live && (
-            <a href={live.url} target="_blank" rel="noopener noreferrer" className="live-badge" title={live.title || 'Transmitindo agora'}>
-              <span className="live-dot" /> AO VIVO
-            </a>
-          )}
+          <LiveBadges live={live} />
           {entry.character_name || entry.name}
         </span>
         <span className="player-alias">{entry.name}</span>

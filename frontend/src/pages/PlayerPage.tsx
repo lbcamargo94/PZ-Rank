@@ -11,6 +11,7 @@ import { ProgressBar } from '../components/ProgressBar';
 import { resolveArchetype } from '../lib/archetype';
 import { ArchetypeGuideModal } from '../components/ArchetypeGuideModal';
 import { hasLiveWarning } from '../lib/live';
+import { LiveBadges } from '../components/LiveBadges';
 import type { PlayerProfile, Entry, LiveStatus } from '../types';
 import type { Objectives } from '../lib/objectives';
 
@@ -225,7 +226,7 @@ function ppDisqTooltip(reason: string | null | undefined): string {
   return PP_DISQ_TOOLTIPS[reason] ?? PP_DISQ_TOOLTIPS.mods;
 }
 
-function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | null; live?: LiveStatus }) {
+function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | null; live?: LiveStatus[] }) {
   const [tab, setTab] = useState<'stats' | 'skills' | 'traits'>('stats');
   const [showGuide, setShowGuide] = useState(false);
   const isDisqualified = entry.sandbox_ok === false;
@@ -235,11 +236,7 @@ function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | nul
       {/* Card header */}
       <div className="pp-char-header">
         <div className="pp-char-identity">
-          {live && (
-            <a href={live.url} target="_blank" rel="noopener noreferrer" className="live-badge" title={live.title || 'Transmitindo agora'}>
-              <span className="live-dot" /> AO VIVO
-            </a>
-          )}
+          <LiveBadges live={live} />
           <span className="pp-char-name">{entry.character_name || '—'}</span>
           {entry.profession && (
             <span className="profession-badge">
@@ -423,7 +420,7 @@ export function PlayerPage() {
   const [loading, setLoading]       = useState(true);
   const [error,   setError]         = useState<string | null>(null);
   const [charFilter, setCharFilter] = useState<CharFilter>('all');
-  const [liveStatus, setLiveStatus] = useState<LiveStatus | null>(null);
+  const [liveStatuses, setLiveStatuses] = useState<LiveStatus[]>([]);
 
   useEffect(() => {
     if (!id) return;
@@ -441,12 +438,7 @@ export function PlayerPage() {
       .finally(() => setLoading(false));
 
     apiGetLiveStatus()
-      .then(statuses => {
-        const preferred = statuses.find(s => s.player_id === numId && s.platform === 'youtube')
-          ?? statuses.find(s => s.player_id === numId)
-          ?? null;
-        setLiveStatus(preferred);
-      })
+      .then(statuses => setLiveStatuses(statuses.filter(s => s.player_id === numId)))
       .catch(() => {});
   }, [id]);
 
@@ -607,7 +599,7 @@ export function PlayerPage() {
                 key={entry.id}
                 entry={entry}
                 rank={entry.id !== undefined ? (rankMap.get(entry.id) ?? null) : null}
-                live={entry.is_alive ? (liveStatus ?? undefined) : undefined}
+                live={entry.is_alive ? liveStatuses : undefined}
               />
             ))}
           </div>
