@@ -125,7 +125,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // Valida token
   const { data: player, error: playerError } = await supabase
     .from('players')
-    .select('id, nick, status, blocked, youtube_url, yt_channel_id, yt_last_live_video_id, twitch_url')
+    .select('id, nick, status, blocked, youtube_url, yt_channel_id, yt_last_live_video_id, twitch_url, twitch_last_live_id')
     .eq('player_token', player_token)
     .maybeSingle();
 
