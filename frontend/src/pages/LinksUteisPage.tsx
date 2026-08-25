@@ -1,13 +1,15 @@
 import { Link } from 'react-router-dom';
 import linksBg from '../../assets/background/tela-de-links-uteis.webp';
+import {
+  COMPANION_TAG as COMPANION_VER,
+  COMPANION_WIN_URL,
+  COMPANION_MAC_ARM_URL as COMPANION_MAC_ARM,
+  COMPANION_MAC_X64_URL as COMPANION_MAC_X64,
+  COMPANION_LINUX_APPIMAGE_URL as COMPANION_LINUX_APPIMAGE,
+  COMPANION_LINUX_DEB_URL as COMPANION_LINUX_DEB,
+} from '../lib/companion';
 
-const DISCORD_URL              = 'https://discord.gg/ebhts347WJ';
-const COMPANION_WIN_URL        = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v2.0.8/PZ.Rank.Companion.Setup.2.0.8.exe';
-const COMPANION_MAC_ARM        = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v2.0.8/PZ.Rank.Companion.2.0.8.Mac.arm64.dmg';
-const COMPANION_MAC_X64        = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v2.0.8/PZ.Rank.Companion.2.0.8.Mac.x64.dmg';
-const COMPANION_LINUX_APPIMAGE = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v2.0.8/PZ.Rank.Companion.2.0.8.AppImage';
-const COMPANION_LINUX_DEB      = 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/download/v2.0.8/PZ.Rank.Companion.2.0.8.deb';
-const COMPANION_VER            = 'v2.0.8';
+const DISCORD_URL = 'https://discord.gg/ebhts347WJ';
 
 export function LinksUteisPage() {
   return (

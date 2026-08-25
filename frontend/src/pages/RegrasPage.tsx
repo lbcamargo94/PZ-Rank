@@ -7,6 +7,7 @@ import {
   SCORE_SPIFFO_HQ, SCORE_SPIFFO_RELIC, MAX_POSSIBLE_SCORE,
 } from '../lib/objectives';
 import regrasBg from '../../assets/background/tela-de-regras.webp';
+import { COMPANION_TAG, COMPANION_LATEST_URL } from '../lib/companion';
 import './regras.css';
 
 type Section = 'participar' | 'objetivos' | 'sandbox' | 'conduta';
@@ -180,7 +181,7 @@ const PARTICIPATE_STEPS = [
     icon: 'ti-download',
     title: 'Instale o PZ Rank Companion',
     desc: 'O Companion monitora sua pasta de saves e sincroniza automaticamente com o ranking. Necessário para que suas corridas apareçam no site.',
-    action: { label: 'Baixar Companion v1.9.9', to: 'https://github.com/lbcamargo94/PZ-Rank-Companion/releases/latest', external: true },
+    action: { label: `Baixar Companion ${COMPANION_TAG}`, to: COMPANION_LATEST_URL, external: true },
   },
   {
     n: '04',
