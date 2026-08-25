@@ -1,35 +1,39 @@
 import { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { apiGetFeaturedStreamers, apiGetLiveStatus } from '../lib/api';
 import { buildLiveMap } from '../lib/live';
+import { LiveBadges } from './LiveBadges';
 import type { FeaturedStreamer, LiveStatus } from '../types';
 
 function StreamerCard({ streamer, live }: { streamer: FeaturedStreamer; live?: LiveStatus[] }) {
-  const isLive  = !!live && live.length > 0;
-  // Ao vivo: leva direto pra transmissão. Offline: leva pro canal principal cadastrado.
-  const fallbackUrl = streamer.youtube_url ?? streamer.twitch_url ?? undefined;
-  const href = isLive ? live![0].url : fallbackUrl;
+  const isLive = !!live && live.length > 0;
 
   return (
-    <a
-      href={href}
-      target={href ? '_blank' : undefined}
-      rel="noopener noreferrer"
-      className={`streamer-card${isLive ? ' streamer-card-live' : ''}${href ? '' : ' streamer-card-no-link'}`}
-    >
-      <span className="streamer-card-nick">{streamer.nick}</span>
+    <div className={`streamer-card${isLive ? ' streamer-card-live' : ''}`}>
+      {/* Nome: link próprio para o perfil do jogador no PZ Rank */}
+      <Link to={`/player/${streamer.id}`} className="streamer-card-nick">
+        {streamer.nick}
+      </Link>
+      {/* Plataformas: um link por plataforma — ao vivo (compact) ou canal cadastrado */}
       <span className="streamer-card-platforms">
-        {isLive
-          ? live!.map(s => (
-              <span key={s.platform} className={`streamer-live-dot streamer-live-dot--${s.platform}`} />
-            ))
-          : (
-            <>
-              {streamer.youtube_url && <i className="ti ti-brand-youtube" />}
-              {streamer.twitch_url  && <i className="ti ti-brand-twitch" />}
-            </>
-          )}
+        {isLive ? (
+          <LiveBadges live={live} compact />
+        ) : (
+          <>
+            {streamer.youtube_url && (
+              <a href={streamer.youtube_url} target="_blank" rel="noopener noreferrer" className="streamer-platform-link" title="Canal do YouTube">
+                <i className="ti ti-brand-youtube" />
+              </a>
+            )}
+            {streamer.twitch_url && (
+              <a href={streamer.twitch_url} target="_blank" rel="noopener noreferrer" className="streamer-platform-link" title="Canal da Twitch">
+                <i className="ti ti-brand-twitch" />
+              </a>
+            )}
+          </>
+        )}
       </span>
-    </a>
+    </div>
   );
 }
 

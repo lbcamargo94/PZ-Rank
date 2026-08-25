@@ -77,45 +77,53 @@
   border-radius: var(--radius);
   border: 1px solid var(--border-mid);
   background: rgba(18,23,16,0.6);
-  text-decoration: none;
-  color: var(--text-1);
   font-size: 14px;
   transition: border-color 0.15s, background 0.15s;
 }
 
 .streamer-card:hover { border-color: var(--green-border); background: rgba(18,23,16,0.9); }
 
-.streamer-card-no-link { cursor: default; }
-
 .streamer-card-live {
   border-color: var(--red-border);
   background: color-mix(in srgb, var(--red) 8%, transparent);
 }
 
+/* Nome — link separado para o perfil do jogador no PZ Rank */
 .streamer-card-nick {
   font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-decoration: none;
+  color: var(--text-1);
+  min-width: 0;
 }
+.streamer-card-nick:hover { color: var(--green-light); text-decoration: underline; }
 
 .streamer-card-platforms {
   display: flex;
   align-items: center;
   gap: 5px;
   flex-shrink: 0;
-  color: var(--text-3);
-  font-size: 14px;
 }
 
-.streamer-live-dot {
-  width: 8px;
-  height: 8px;
+/* Ícone de plataforma quando offline — link separado para o canal cadastrado
+   (sem o pulso do .live-icon, que é reservado para quando está ao vivo de fato) */
+.streamer-platform-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  background: var(--youtube);
-  animation: live-pulse 1.4s ease-in-out infinite;
+  font-size: 13px;
+  color: var(--text-3);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-mid);
+  text-decoration: none;
+  transition: color 0.15s, border-color 0.15s;
 }
-.streamer-live-dot--twitch { background: var(--twitch); }
+.streamer-platform-link:hover { color: var(--text-1); border-color: var(--text-3); }
 
 /* ── Prévia do Top 10 ───────────────────────────────────────────── */
 .top10-list {
