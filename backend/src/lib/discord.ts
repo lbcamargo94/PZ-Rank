@@ -65,7 +65,13 @@ export interface LiveNotificationPayload {
   thumbnail: string;
   rank:      number | null;
   score:     number | null;
+  platform?: 'youtube' | 'twitch'; // default 'youtube' — mantém o embed atual quando omitido
 }
+
+const PLATFORM_STYLE = {
+  youtube: { color: 0xE04040, label: 'YouTube' }, // vermelho vivo
+  twitch:  { color: 0x9147FF, label: 'Twitch'  }, // roxo da marca
+} as const;
 
 export async function sendLiveNotification(payload: LiveNotificationPayload): Promise<void> {
   const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
@@ -74,7 +80,8 @@ export async function sendLiveNotification(payload: LiveNotificationPayload): Pr
     return;
   }
 
-  const { nick, title, videoUrl, thumbnail, rank, score } = payload;
+  const { nick, title, videoUrl, thumbnail, rank, score, platform = 'youtube' } = payload;
+  const style = PLATFORM_STYLE[platform];
 
   const fields = [];
   if (rank !== null)  fields.push({ name: 'Posição no Rank', value: `#${rank}`,                              inline: true });
@@ -82,10 +89,10 @@ export async function sendLiveNotification(payload: LiveNotificationPayload): Pr
 
   const body = {
     embeds: [{
-      title:       `🔴  ${nick} está AO VIVO!`,
+      title:       `🔴  ${nick} está AO VIVO na ${style.label}!`,
       description: title || 'Project Zomboid — Brasileirão de Sobrevivência',
       url:         videoUrl,
-      color:       0xE04040,  // vermelho vivo
+      color:       style.color,
       thumbnail:   { url: thumbnail },
       fields,
       footer: {

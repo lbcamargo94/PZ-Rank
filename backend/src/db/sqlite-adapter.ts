@@ -522,6 +522,10 @@ function runMigrations(db: Database): void {
     db.exec('ALTER TABLE entries ADD COLUMN no_live_streak INTEGER NOT NULL DEFAULT 0');
     console.log('[SQLite] migração: coluna no_live_streak adicionada em entries');
   }
+  if (!playerCols.includes('twitch_last_live_id')) {
+    db.exec('ALTER TABLE players ADD COLUMN twitch_last_live_id TEXT DEFAULT NULL');
+    console.log('[SQLite] migração: coluna twitch_last_live_id adicionada em players');
+  }
 
   if (!playerCols.includes('gender')) {
     db.exec("ALTER TABLE players ADD COLUMN gender TEXT DEFAULT NULL CHECK (gender IN ('m', 'f'))");

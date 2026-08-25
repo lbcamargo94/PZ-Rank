@@ -11,6 +11,7 @@ import { Router } from 'express';
 import type { Request, Response } from 'express';
 import { supabase } from '../supabase';
 import { subscribePubSub, getChannelCurrentLive, checkIsLive } from '../lib/youtube';
+import { extractTwitchLogin, getLiveStreams } from '../lib/twitch';
 import { sendLiveNotification } from '../lib/discord';
 import { computeScore, countSkills10, OFFICIAL_BASE_IDS } from '../lib/scoring';
 import type { Objectives, BaseObjectives } from '../types';
@@ -186,14 +187,84 @@ router.get('/scan-lives', async (req: Request, res: Response): Promise<void> => 
     }));
   }
 
+  // ── Twitch: sem webhook próprio, então a checagem em lote via GraphQL (sem
+  // cota) é a única forma de detectar início/fim independente do Companion ──
+  const { data: twitchPlayers, error: twitchError } = await supabase
+    .from('players')
+    .select('id, nick, twitch_url, twitch_last_live_id')
+    .eq('status', 'approved')
+    .not('twitch_url', 'is', null)
+    .is('deleted_at', null);
+
+  type TwitchPlayerRow = { id: number; nick: string; twitch_url: string; twitch_last_live_id: string | null };
+  const twitchList = twitchError ? [] : (twitchPlayers ?? []) as TwitchPlayerRow[];
+
+  const twitchStarted: string[] = [];
+  const twitchEnded:   string[] = [];
+  const twitchOngoing: string[] = [];
+
+  const loginByPlayer = new Map<string, TwitchPlayerRow>();
+  for (const p of twitchList) {
+    const login = extractTwitchLogin(p.twitch_url);
+    if (login) loginByPlayer.set(login, p);
+  }
+
+  if (loginByPlayer.size > 0) {
+    const liveNow = await getLiveStreams([...loginByPlayer.keys()]);
+
+    await Promise.allSettled([...loginByPlayer.entries()].map(async ([login, p]) => {
+      const live = liveNow.get(login);
+
+      if (!live) {
+        if (p.twitch_last_live_id) {
+          await supabase.from('players').update({ twitch_last_live_id: null }).eq('id', p.id);
+          twitchEnded.push(p.nick);
+        }
+        return;
+      }
+
+      if (p.twitch_last_live_id === live.id) {
+        twitchOngoing.push(p.nick);
+        return;
+      }
+
+      const pos   = (allAlive ?? []).findIndex((e: { player_id: number }) => e.player_id === p.id);
+      const rank  = pos >= 0 ? pos + 1 : null;
+      const score = (allAlive ?? []).find((e: { player_id: number; score: number }) => e.player_id === p.id)?.score ?? null;
+
+      await supabase.from('players').update({ twitch_last_live_id: live.id }).eq('id', p.id);
+      await sendLiveNotification({
+        nick:      p.nick,
+        title:     live.title,
+        videoUrl:  `https://twitch.tv/${live.login}`,
+        thumbnail: live.thumbnail,
+        rank,
+        score,
+        platform:  'twitch',
+      });
+      twitchStarted.push(p.nick);
+    }));
+  }
+
   res.json({
-    checked:     playerList.length,
-    liveStarted: liveStarted.length,
-    liveEnded:   liveEnded.length,
-    liveOngoing: liveOngoing.length,
-    started:     liveStarted,
-    ended:       liveEnded,
-    ongoing:     liveOngoing,
+    youtube: {
+      checked:     playerList.length,
+      liveStarted: liveStarted.length,
+      liveEnded:   liveEnded.length,
+      liveOngoing: liveOngoing.length,
+      started:     liveStarted,
+      ended:       liveEnded,
+      ongoing:     liveOngoing,
+    },
+    twitch: {
+      checked:     loginByPlayer.size,
+      liveStarted: twitchStarted.length,
+      liveEnded:   twitchEnded.length,
+      liveOngoing: twitchOngoing.length,
+      started:     twitchStarted,
+      ended:       twitchEnded,
+      ongoing:     twitchOngoing,
+    },
   });
 });
 

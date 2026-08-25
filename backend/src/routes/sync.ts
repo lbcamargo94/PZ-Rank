@@ -640,6 +640,56 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     }
   })();
 
+  // Fire-and-forget: mesmo esquema acima, mas para Twitch — sem webhook próprio,
+  // então a única forma de detectar (e notificar o Discord) é verificar a cada sync.
+  void (async () => {
+    try {
+      type SyncPlayer = { id: number; nick: string; twitch_url: string | null; twitch_last_live_id: string | null };
+      const p = player as unknown as SyncPlayer;
+      if (!p.twitch_url) return;
+
+      const { extractTwitchLogin, getLiveStreams } = await import('../lib/twitch');
+      const { sendLiveNotification } = await import('../lib/discord');
+
+      const login = extractTwitchLogin(p.twitch_url);
+      if (!login) return;
+
+      const live = (await getLiveStreams([login])).get(login.toLowerCase());
+
+      if (!live) {
+        // Não está ao vivo — limpa o estado anterior, se houver (sem notificar o fim)
+        if (p.twitch_last_live_id) {
+          await supabase.from('players').update({ twitch_last_live_id: null }).eq('id', p.id);
+        }
+        return;
+      }
+
+      // Mesmo stream já notificado (id não mudou) — nada a fazer
+      if (p.twitch_last_live_id === live.id) return;
+
+      // score já disponível do contexto do sync — sem query adicional
+      const score = finalScore;
+      const { count: liveRankCount } = await supabase
+        .from(config.tableName).select('*', { count: 'exact', head: true })
+        .eq('is_alive', true).eq('sandbox_ok', true).is('deleted_at', null)
+        .gt('score', score);
+      const rank = liveRankCount !== null ? liveRankCount + 1 : null;
+
+      await supabase.from('players').update({ twitch_last_live_id: live.id }).eq('id', p.id);
+      await sendLiveNotification({
+        nick:      p.nick,
+        title:     live.title,
+        videoUrl:  `https://twitch.tv/${live.login}`,
+        thumbnail: live.thumbnail,
+        rank,
+        score,
+        platform:  'twitch',
+      });
+    } catch (e) {
+      console.error('[sync-live-check-twitch]', e);
+    }
+  })();
+
   // Posição no ranking: contagem de entradas com score mais alto (best-effort)
   const { count: rankCount, error: rankError } = await supabase
     .from(config.tableName)

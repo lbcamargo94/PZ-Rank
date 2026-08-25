@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS players (
   yt_channel_id           TEXT     DEFAULT NULL,
   yt_sub_expires_at       TEXT     DEFAULT NULL,
   yt_last_live_video_id   TEXT     DEFAULT NULL,
+  twitch_last_live_id     TEXT     DEFAULT NULL,
   created_at         TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
 );
 

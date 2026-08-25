@@ -28,6 +28,7 @@ export function extractTwitchLogin(url: string): string | null {
 }
 
 export interface TwitchLiveResult {
+  id:        string;
   login:     string;
   title:     string;
   thumbnail: string;
@@ -35,7 +36,7 @@ export interface TwitchLiveResult {
 
 interface GqlUserNode {
   login:  string;
-  stream: { type: string; title: string; previewImageURL: string } | null;
+  stream: { id: string; type: string; title: string; previewImageURL: string } | null;
 }
 
 /**
@@ -50,7 +51,7 @@ export async function getLiveStreams(logins: string[]): Promise<Map<string, Twit
   for (let i = 0; i < logins.length; i += BATCH_SIZE) {
     const batch  = logins.slice(i, i + BATCH_SIZE);
     const fields = batch.map((login, idx) =>
-      `u${idx}: user(login: ${JSON.stringify(login)}) { login stream { type title previewImageURL(width: 440, height: 248) } }`
+      `u${idx}: user(login: ${JSON.stringify(login)}) { login stream { id type title previewImageURL(width: 440, height: 248) } }`
     ).join('\n');
 
     try {
@@ -68,6 +69,7 @@ export async function getLiveStreams(logins: string[]): Promise<Map<string, Twit
       for (const node of Object.values(json.data)) {
         if (!node?.stream || node.stream.type !== 'live') continue;
         result.set(node.login.toLowerCase(), {
+          id:        node.stream.id,
           login:     node.login,
           title:     node.stream.title ?? '',
           thumbnail: node.stream.previewImageURL,
