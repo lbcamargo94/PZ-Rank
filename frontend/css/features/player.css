@@ -1685,36 +1685,42 @@
 }
 .death-alert-sub { font-size: 14px; color: var(--text-2); }
 
-.overlay-header { display: flex; flex-direction: column; gap: 2px; }
-.overlay-nick {
+/* ── Campos rotulados (rótulo pequeno em maiúsculas + valor) — cada
+   informação fica clara sem precisar adivinhar o que é cada número. ── */
+.overlay-divider { height: 1px; background: var(--border); }
+
+.overlay-field-row {
+  display: flex;
+  gap: 20px;
+}
+
+.overlay-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.overlay-field-label {
   font-size: 14px;
   color: var(--text-3);
   text-transform: uppercase;
-  letter-spacing: 1.5px;
+  letter-spacing: 1.2px;
 }
-.overlay-char {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text-1);
-}
-.overlay-prof { font-weight: 400; color: var(--text-2); }
 
-.overlay-score-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-.overlay-rank {
-  font-size: 36px;
-  font-weight: 700;
-  color: var(--gold);
-  min-width: 60px;
-}
-.overlay-score {
-  font-size: 28px;
+.overlay-field-value {
+  font-size: 18px;
   font-weight: 700;
   color: var(--text-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
+
+.overlay-field-value--lg { font-size: 22px; }
+.overlay-field-value--stat { font-size: 30px; }
+.overlay-field-value--gold { color: var(--gold); }
+
 .overlay-status-badge {
   font-size: 14px;
   font-weight: 700;

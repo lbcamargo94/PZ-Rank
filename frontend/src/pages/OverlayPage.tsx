@@ -87,19 +87,42 @@ export function OverlayPage() {
           </div>
         )}
 
-        {/* Header */}
-        <div className="overlay-header">
-          <div className="overlay-nick">{profile.player.nick}</div>
-          <div className="overlay-char">
-            {bestEntry.character_name || '—'}
-            {bestEntry.profession && <span className="overlay-prof"> · {bestEntry.profession}</span>}
-          </div>
+        {/* Jogador */}
+        <div className="overlay-field">
+          <span className="overlay-field-label">Jogador</span>
+          <span className="overlay-field-value overlay-field-value--lg">{profile.player.nick}</span>
         </div>
 
-        {/* Rank + score */}
-        <div className="overlay-score-row">
-          {rank !== null && <span className="overlay-rank">#{rank}</span>}
-          <span className="overlay-score">{bestEntry.score.toLocaleString('pt-BR')} pts</span>
+        <div className="overlay-divider" />
+
+        {/* Personagem + profissão */}
+        <div className="overlay-field-row">
+          <div className="overlay-field">
+            <span className="overlay-field-label">Personagem</span>
+            <span className="overlay-field-value">{bestEntry.character_name || '—'}</span>
+          </div>
+          {bestEntry.profession && (
+            <div className="overlay-field">
+              <span className="overlay-field-label">Profissão</span>
+              <span className="overlay-field-value">{bestEntry.profession}</span>
+            </div>
+          )}
+        </div>
+
+        <div className="overlay-divider" />
+
+        {/* Posição + pontos */}
+        <div className="overlay-field-row">
+          <div className="overlay-field">
+            <span className="overlay-field-label">Posição</span>
+            <span className="overlay-field-value overlay-field-value--stat overlay-field-value--gold">
+              {rank !== null ? `#${rank}` : '—'}
+            </span>
+          </div>
+          <div className="overlay-field">
+            <span className="overlay-field-label">Pontos</span>
+            <span className="overlay-field-value overlay-field-value--stat">{bestEntry.score.toLocaleString('pt-BR')}</span>
+          </div>
         </div>
       </div>
     </div>
