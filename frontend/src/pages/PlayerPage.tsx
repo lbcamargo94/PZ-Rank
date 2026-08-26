@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import avatarDefault from '../../assets/avatar.png';
 import perfilBg from '../../assets/background/perfil-usuario.webp';
-import { apiGetPlayerProfile, apiGetEntries, apiGetLiveStatus, apiGetPlayerLikes, apiLikePlayer, apiUnlikePlayer } from '../lib/api';
+import { apiGetPlayerProfile, apiGetLiveStatus, apiGetPlayerLikes, apiLikePlayer, apiUnlikePlayer } from '../lib/api';
 import { parseSkillMap, SKILL_CATEGORIES, MAX_SKILL_LEVEL, TOTAL_SKILLS } from '../lib/skills';
 import { parseTraitList, resolveTrait, getTraitImageUrl } from '../lib/traits';
 import { getProfessionImageUrl } from '../lib/professions';
@@ -431,7 +431,6 @@ export function PlayerPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [profile, setProfile]       = useState<PlayerProfile | null>(null);
-  const [allEntries, setAllEntries] = useState<Entry[]>([]);
   const [loading, setLoading]       = useState(true);
   const [error,   setError]         = useState<string | null>(null);
   const [charFilter, setCharFilter] = useState<CharFilter>('all');
@@ -451,8 +450,8 @@ export function PlayerPage() {
     }
     setLoading(true);
     setError(null);
-    Promise.all([apiGetPlayerProfile(numId), apiGetEntries('score')])
-      .then(([prof, entries]) => { setProfile(prof); setAllEntries(entries); })
+    apiGetPlayerProfile(numId)
+      .then(setProfile)
       .catch(err => setError(translateApiError(err, t)))
       .finally(() => setLoading(false));
 
@@ -510,11 +509,6 @@ export function PlayerPage() {
     );
   }
 
-  // Rank position map — igual ao public rank tab (só vivos e não-desclassificados, ordenados por score)
-  // Isso garante que #N aqui corresponde ao #N que o usuário vê na aba "Rank" da página principal.
-  const publicRankEntries = allEntries.filter(e => e.sandbox_ok !== false && e.is_alive);
-  const rankMap = new Map(publicRankEntries.map((e, i) => [e.id, i + 1]));
-
   // Sort this player's entries by score desc
   const entries = [...profile.entries].sort((a, b) => b.score - a.score);
 
@@ -532,7 +526,7 @@ export function PlayerPage() {
   // Melhor entry viva para mostrar posição no rank público; se não houver viva, usa a melhor geral
   const bestAliveEntry = entries.find(e => e.sandbox_ok !== false && e.is_alive) ?? null;
   const bestEntry      = entries[0] ?? null;
-  const bestRank       = bestAliveEntry?.id !== undefined ? (rankMap.get(bestAliveEntry.id) ?? null) : null;
+  const bestRank       = bestAliveEntry?.rank ?? null;
 
   const hasSocials = SOCIALS.some(
     s => !!(profile.player[s.field as keyof typeof profile.player])
@@ -659,7 +653,7 @@ export function PlayerPage() {
               <CharacterCard
                 key={entry.id}
                 entry={entry}
-                rank={entry.id !== undefined ? (rankMap.get(entry.id) ?? null) : null}
+                rank={entry.rank ?? null}
                 live={entry.is_alive ? liveStatuses : undefined}
               />
             ))}

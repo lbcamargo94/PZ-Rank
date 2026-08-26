@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import { apiGetPlayerProfile, apiGetEntries } from '../lib/api';
+import { apiGetPlayerProfile } from '../lib/api';
 import { parseSkillMap, TOTAL_SKILLS, MAX_SKILL_LEVEL } from '../lib/skills';
 import type { PlayerProfile, Entry } from '../types';
 
-// Alinhado ao Cache-Control: s-maxage=60 de /players/:id e /entries — pollar
-// mais rápido que isso só gera Edge Requests extras sem pegar dado mais
-// fresco (a resposta cacheada na borda da Vercel já é reaproveitada até 60s).
-// Isso também limita em até 1 minuto o atraso pra detectar uma morte.
+// Alinhado ao Cache-Control: s-maxage=60 de /players/:id — pollar mais rápido
+// que isso só gera Edge Requests extras sem pegar dado mais fresco (a
+// resposta cacheada na borda da Vercel já é reaproveitada até 60s). Isso
+// também limita em até 1 minuto o atraso pra detectar uma morte.
 const REFRESH_MS = 60_000;
 const DEATH_ALERT_MS = 12_000;
 
@@ -31,10 +31,7 @@ export function OverlayPage() {
     const numId = parseInt(id, 10);
     if (isNaN(numId)) { setError(true); return; }
     try {
-      const [prof, all] = await Promise.all([
-        apiGetPlayerProfile(numId),
-        apiGetEntries('score'),
-      ]);
+      const prof = await apiGetPlayerProfile(numId);
       setProfile(prof);
       const sorted = [...prof.entries].sort((a, b) => b.score - a.score);
       const best   = sorted[0] ?? null;
@@ -49,15 +46,11 @@ export function OverlayPage() {
       }
       wasAliveRef.current = best?.is_alive ?? null;
 
-      // Rank = posição entre entries vivos e não-desclassificados (igual ao public rank tab)
-      const publicRank = all.filter(e => e.sandbox_ok !== false && e.is_alive);
-      const bestAlive  = sorted.find(e => e.sandbox_ok !== false && e.is_alive) ?? null;
-      if (bestAlive?.id !== undefined) {
-        const pos = publicRank.findIndex(e => e.id === bestAlive.id);
-        setRank(pos >= 0 ? pos + 1 : null);
-      } else {
-        setRank(null);
-      }
+      // Rank já vem calculado pelo servidor (GET /players/:id) pra cada
+      // entry viva/não-desclassificada — evita baixar a lista de entries
+      // inteira (~660KB) só pra achar a posição de uma entry.
+      const bestAlive = sorted.find(e => e.sandbox_ok !== false && e.is_alive) ?? null;
+      setRank(bestAlive?.rank ?? null);
     } catch {
       setError(true);
     }

@@ -150,8 +150,26 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
+  // Posição no rank público, calculada aqui (COUNT sem trazer linhas) em vez de
+  // fazer o cliente baixar a tabela de entries inteira só pra achar a própria
+  // posição — isso sozinho respondia por boa parte do egress do Supabase
+  // (GET /entries pesa ~660KB com 546 linhas, e era chamado só pra isso em
+  // várias telas: PlayerPage, o overlay de OBS por jogador...).
+  // Só entries vivas e não-desclassificadas entram no rank público — na
+  // prática, no máximo uma por jogador na maioria dos casos.
+  const entries = (entriesRes.data ?? []) as Array<{ id: number; score: number; is_alive: boolean; sandbox_ok?: boolean }>;
+  const entriesWithRank = await Promise.all(entries.map(async (entry) => {
+    if (!entry.is_alive || entry.sandbox_ok === false) return { ...entry, rank: null };
+    const { count } = await supabase
+      .from(config.tableName)
+      .select('*', { count: 'exact', head: true })
+      .eq('is_alive', true).eq('sandbox_ok', true).is('deleted_at', null)
+      .gt('score', entry.score);
+    return { ...entry, rank: count !== null ? count + 1 : null };
+  }));
+
   res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120');
-  res.json({ player: playerRes.data, entries: entriesRes.data ?? [] });
+  res.json({ player: playerRes.data, entries: entriesWithRank });
 });
 
 // Decodifica o token de jogador se presente, sem exigir (diferente de requirePlayer,

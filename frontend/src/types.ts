@@ -16,6 +16,9 @@
   traits?:        string | null;
   objectives?:                import('./lib/objectives').Objectives | null;
   score:                      number;
+  // Posição no rank público — só vem preenchido em respostas que calculam
+  // isso no servidor (GET /players/:id); ausente/null nas demais.
+  rank?:                      number | null;
   record_score?:              number;
   disqualification_reason?:   string | null;
   disqualified_at?:           string | null;
@@ -136,6 +139,16 @@ export interface FeaturedStreamer {
   youtube_url: string | null;
   twitch_url:  string | null;
   gender:      'm' | 'f' | null;
+}
+
+// Versão enxuta de Entry usada por GET /entries/top10 — só o essencial pra
+// prévias/overlays, sem skills/traits/objectives.
+export interface Top10Entry {
+  id:             number;
+  player_id:      number | null;
+  name:           string;
+  character_name: string | null;
+  score:          number;
 }
 
 export interface Moderator {

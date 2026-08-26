@@ -1,16 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
-import { apiGetEntries } from '../lib/api';
+import { apiGetTop10Entries } from '../lib/api';
 import { formatNumber } from '../lib/format';
-import type { Entry } from '../types';
+import type { Top10Entry } from '../types';
 
-// Alinhado ao Cache-Control: s-maxage=60 de /entries — pollar mais rápido
-// que isso só gera Edge Requests extras sem nunca pegar dado mais fresco
-// (a resposta cacheada na borda da Vercel já é reaproveitada até 60s).
+// Alinhado ao Cache-Control: s-maxage=60 de /entries/top10 — pollar mais
+// rápido que isso só gera Edge Requests extras sem nunca pegar dado mais
+// fresco (a resposta cacheada na borda da Vercel já é reaproveitada até 60s).
 const REFRESH_MS = 60_000;
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
 interface Row {
-  entry:   Entry;
+  entry:   Top10Entry;
   rank:    number;
   changed: boolean; // pisca brevemente quando o score mudou desde o último poll
 }
@@ -29,24 +29,18 @@ export function OverlayTop10Page() {
 
   async function load() {
     try {
-      const all = await apiGetEntries('score');
-      const top10 = all
-        .filter(e => e.is_alive && e.sandbox_ok !== false)
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 10);
+      const top10 = await apiGetTop10Entries();
 
       const nextRows: Row[] = top10.map((entry, i) => {
-        const prevScore = entry.id != null ? prevScores.current.get(entry.id) : undefined;
+        const prevScore = prevScores.current.get(entry.id);
         return {
           entry,
           rank:    i + 1,
-          changed: entry.id != null && prevScore !== undefined && prevScore !== entry.score,
+          changed: prevScore !== undefined && prevScore !== entry.score,
         };
       });
 
-      prevScores.current = new Map(
-        top10.filter(e => e.id != null).map(e => [e.id!, e.score])
-      );
+      prevScores.current = new Map(top10.map(e => [e.id, e.score]));
 
       setRows(nextRows);
       setError(false);

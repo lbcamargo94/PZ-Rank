@@ -89,6 +89,26 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
   res.json(visible);
 });
 
+// GET /entries/top10 — público: só nome/personagem/pontuação dos 10 primeiros
+// colocados, pra telas de resumo (prévia da home, overlay de OBS) que não
+// precisam da linha inteira (skills/traits/objectives) — GET /entries sozinho
+// pesa ~660KB com o volume atual de entries; isso aqui fica na casa de 1KB.
+router.get('/top10', async (_req: Request, res: Response): Promise<void> => {
+  const { data, error } = await supabase
+    .from(config.tableName)
+    .select('id, player_id, name, character_name, score')
+    .eq('is_alive', true)
+    .eq('sandbox_ok', true)
+    .is('deleted_at', null)
+    .order('score', { ascending: false })
+    .limit(10);
+
+  if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message, error_code: 'DB_ERROR' }); return; }
+
+  res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120');
+  res.json(data ?? []);
+});
+
 // POST /entries — moderador: valida código + insere entrada
 router.post('/', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
   const { player_id, code, live_url, objectives } = req.body as {

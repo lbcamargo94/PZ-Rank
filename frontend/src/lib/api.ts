@@ -1,4 +1,4 @@
-import type { Player, Moderator, ModSession, ModeratorRole, Entry, PlayerFilter, PlayerProfile, Mod, DailyNews, FinanceEntry, Achievement, PlayerAchievement, HeatmapPoint, LiveStatus, FeaturedStreamer, PlayerLikeStatus, LikedPlayer } from '../types';
+import type { Player, Moderator, ModSession, ModeratorRole, Entry, PlayerFilter, PlayerProfile, Mod, DailyNews, FinanceEntry, Achievement, PlayerAchievement, HeatmapPoint, LiveStatus, FeaturedStreamer, PlayerLikeStatus, LikedPlayer, Top10Entry } from '../types';
 
 const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:3000';
 
@@ -233,6 +233,13 @@ export function apiGetEntries(sort = 'days', token?: string): Promise<Entry[]> {
 
 export function apiGetAllEntries(sort = 'score'): Promise<Entry[]> {
   return request(`/entries?sort=${sort}&all=true`);
+}
+
+// Versão enxuta pra telas de resumo (prévia da home, overlay de OBS) — só
+// nome/personagem/pontuação dos 10 primeiros, em vez da lista de entries
+// inteira (~660KB) só pra usar uma fração mínima dela.
+export function apiGetTop10Entries(): Promise<Top10Entry[]> {
+  return request('/entries/top10');
 }
 
 export function apiGetLiveStatus(): Promise<LiveStatus[]> {

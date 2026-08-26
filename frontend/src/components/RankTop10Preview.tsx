@@ -1,13 +1,13 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { apiGetEntries } from '../lib/api';
+import { apiGetTop10Entries } from '../lib/api';
 import { formatNumber } from '../lib/format';
-import type { Entry } from '../types';
+import type { Top10Entry } from '../types';
 
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
-function Top10Row({ entry, rank, onClick }: { entry: Entry; rank: number; onClick?: () => void }) {
+function Top10Row({ entry, rank, onClick }: { entry: Top10Entry; rank: number; onClick?: () => void }) {
   const clickable = !!onClick;
   return (
     <div
@@ -27,22 +27,15 @@ function Top10Row({ entry, rank, onClick }: { entry: Entry; rank: number; onClic
 export function RankTop10Preview() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [entries, setEntries] = useState<Entry[]>([]);
+  const [top10,   setTop10]   = useState<Top10Entry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    apiGetEntries('score')
-      .then(setEntries)
+    apiGetTop10Entries()
+      .then(setTop10)
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
-
-  const top10 = useMemo(() => {
-    return entries
-      .filter(e => e.is_alive && e.sandbox_ok !== false)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 10);
-  }, [entries]);
 
   return (
     <section className="home-side-panel rank-top10-preview">
