@@ -227,7 +227,20 @@ router.post('/:id/like', requirePlayer, async (req: PlayerRequest, res: Response
     const { error: insertError } = await supabase
       .from('player_likes')
       .insert([{ liker_player_id: req.playerId!, liked_player_id: id }]);
-    if (insertError) { res.status(500).json({ error: 'Erro ao curtir perfil.', error_code: 'DB_ERROR' }); return; }
+    if (insertError) {
+      // Corrida entre dois cliques quase simultâneos: ambos passam pelo check
+      // de "existing" acima antes de qualquer um terminar o insert, e o
+      // segundo esbarra na constraint única (liker, liked). Não é um erro de
+      // verdade — a curtida já foi registrada pelo primeiro; só o segundo
+      // request via um 500 genérico pro usuário sem essa checagem.
+      const { data: recheck } = await supabase
+        .from('player_likes')
+        .select('id')
+        .eq('liker_player_id', req.playerId!)
+        .eq('liked_player_id', id)
+        .maybeSingle();
+      if (!recheck) { res.status(500).json({ error: 'Erro ao curtir perfil.', error_code: 'DB_ERROR' }); return; }
+    }
   }
 
   const { count } = await supabase
