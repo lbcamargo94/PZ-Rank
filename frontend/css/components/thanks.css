@@ -155,10 +155,21 @@
 }
 
 .thanks-modal-scroll {
+  /* Margens seguras e conservadoras — a "área de papel" da ilustração tem
+     bordas rasgadas e irregulares, então em vez de tentar acompanhar
+     esse contorno de perto (o que cortava o texto na moldura de madeira),
+     a caixa de texto ganha um fundo próprio cor de pergaminho e fica bem
+     recuada, sempre dentro da parte sólida da moldura. */
   position: absolute;
-  inset: 13% 11% 9% 10%;
+  inset: 17% 16% 13% 15%;
   overflow-y: auto;
-  padding-right: 8px;
+  overflow-x: hidden;
+  padding: 14px 16px;
+  background: rgba(233, 220, 186, 0.94);
+  border-radius: 6px;
+  box-shadow: 0 0 24px rgba(0,0,0,0.15) inset;
+  overflow-wrap: break-word;
+  word-break: normal;
   scrollbar-width: thin;
   scrollbar-color: rgba(59,43,26,0.5) transparent;
 }
