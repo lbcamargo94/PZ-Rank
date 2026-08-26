@@ -161,7 +161,7 @@
      a caixa de texto ganha um fundo próprio cor de pergaminho e fica bem
      recuada, sempre dentro da parte sólida da moldura. */
   position: absolute;
-  inset: 16% 19% 14% 19%;
+  inset: 16% 15% 14% 23%;
   overflow-y: auto;
   overflow-x: hidden;
   padding: 14px 16px;
