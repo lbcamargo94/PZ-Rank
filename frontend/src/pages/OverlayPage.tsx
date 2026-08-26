@@ -4,7 +4,11 @@ import { apiGetPlayerProfile, apiGetEntries } from '../lib/api';
 import { parseSkillMap, TOTAL_SKILLS, MAX_SKILL_LEVEL } from '../lib/skills';
 import type { PlayerProfile, Entry } from '../types';
 
-const REFRESH_MS = 30_000;
+// Alinhado ao Cache-Control: s-maxage=60 de /players/:id e /entries — pollar
+// mais rápido que isso só gera Edge Requests extras sem pegar dado mais
+// fresco (a resposta cacheada na borda da Vercel já é reaproveitada até 60s).
+// Isso também limita em até 1 minuto o atraso pra detectar uma morte.
+const REFRESH_MS = 60_000;
 const DEATH_ALERT_MS = 12_000;
 
 export function OverlayPage() {

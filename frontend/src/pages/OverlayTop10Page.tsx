@@ -3,7 +3,10 @@ import { apiGetEntries } from '../lib/api';
 import { formatNumber } from '../lib/format';
 import type { Entry } from '../types';
 
-const REFRESH_MS = 15_000;
+// Alinhado ao Cache-Control: s-maxage=60 de /entries — pollar mais rápido
+// que isso só gera Edge Requests extras sem nunca pegar dado mais fresco
+// (a resposta cacheada na borda da Vercel já é reaproveitada até 60s).
+const REFRESH_MS = 60_000;
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
 interface Row {
