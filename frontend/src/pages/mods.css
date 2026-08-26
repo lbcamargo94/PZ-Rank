@@ -177,6 +177,11 @@
 .mod-badge-required {
   display: inline-flex;
   align-items: center;
+  /* .mod-card-text é flex-column sem align-items definido (stretch por
+     padrão) — sem align-self, a badge esticava pra largura inteira da
+     coluna, que varia com o espaço sobrando após o nome do mod truncar.
+     align-self trava a badge no tamanho do próprio conteúdo sempre. */
+  align-self: flex-start;
   gap: 4px;
   background: #1f1400;
   border: 1px solid #5a3c00;
@@ -197,6 +202,7 @@
 .mod-badge-blocked {
   display: inline-flex;
   align-items: center;
+  align-self: flex-start;
   gap: 4px;
   background: var(--red-dim);
   border: 1px solid var(--red-border);

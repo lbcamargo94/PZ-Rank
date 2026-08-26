@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { apiGetMods } from '../lib/api';
 import type { Mod } from '../types';
@@ -18,6 +18,15 @@ export function ModsPage() {
   const [tab,          setTab]        = useState<ModTab>('allowed');
   const [search,       setSearch]     = useState('');
   const [page,         setPage]       = useState(1);
+  const listTopRef = useRef<HTMLDivElement>(null);
+
+  function goToPage(p: number) {
+    setPage(p);
+    // Ao trocar de página, volta o scroll pro topo da lista — sem isso o
+    // usuário ficava parado na posição do último item da página anterior,
+    // vendo o final da lista nova em vez do começo.
+    listTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 
   useEffect(() => {
     Promise.all([apiGetMods('active'), apiGetMods('blocked')])
@@ -135,6 +144,9 @@ export function ModsPage() {
 
         {!loading && !error && filtered.length > 0 && (
           <>
+            <div ref={listTopRef} />
+            <Pagination page={safePage} totalPages={totalPages} onChange={goToPage} />
+
             <div className="mods-list">
               {paginated.map(mod => (
                 <div key={mod.id} className={`mod-card${tab === 'blocked' ? ' mod-card-blocked' : ''}`}>
@@ -173,7 +185,7 @@ export function ModsPage() {
               ))}
             </div>
 
-            <Pagination page={safePage} totalPages={totalPages} onChange={setPage} />
+            <Pagination page={safePage} totalPages={totalPages} onChange={goToPage} />
           </>
         )}
       </div>

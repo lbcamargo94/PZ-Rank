@@ -1,22 +1,24 @@
-/* PZ Rank - Paginação genérica (componente Pagination.tsx) */
+/* PZ Rank - Paginação genérica (componente Pagination.tsx)
+   Estilo inspirado no componente Pagination do shadcn/ui: Anterior/Próximo
+   com ícone + texto, números de página clicáveis, página atual com
+   destaque em quadrado arredondado, elipse pra intervalos grandes. */
 
 .pz-pagination {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 6px;
   padding: 20px 0;
+  flex-wrap: wrap;
 }
 
-.pz-page-btn {
+.pz-page-nav {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 18px;
-  background: rgba(12,17,10,0.80);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid var(--border-mid);
+  padding: 8px 14px;
+  background: transparent;
+  border: 1px solid transparent;
   border-radius: var(--radius);
   color: var(--text-2);
   font-size: 14px;
@@ -24,26 +26,59 @@
   transition: color 0.15s, border-color 0.15s, background 0.15s;
 }
 
-.pz-page-btn:hover:not(:disabled) {
+.pz-page-nav:hover:not(:disabled) {
   color: var(--text-1);
-  border-color: var(--green-border);
-  background: rgba(18,28,14,0.90);
+  background: var(--bg-3);
 }
 
-.pz-page-btn:disabled {
-  opacity: 0.35;
+.pz-page-nav:disabled {
+  opacity: 0.4;
   cursor: default;
 }
 
-.pz-page-info {
-  font-family: var(--font-mono);
-  font-size: 14px;
-  color: var(--text-3);
-  min-width: 120px;
-  text-align: center;
+.pz-page-numbers {
+  display: flex;
+  align-items: center;
+  gap: 2px;
 }
 
-.pz-page-info strong {
+.pz-page-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.pz-page-num:hover { color: var(--text-1); background: var(--bg-3); }
+
+.pz-page-num.active {
   color: var(--text-1);
+  background: var(--bg-3);
+  border-color: var(--border-mid);
   font-weight: 600;
+}
+
+.pz-page-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  color: var(--text-4);
+  font-size: 14px;
+}
+
+@media (max-width: 460px) {
+  .pz-page-nav span,
+  .pz-page-nav { font-size: 14px; padding: 8px 10px; }
 }
