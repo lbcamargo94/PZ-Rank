@@ -1,0 +1,49 @@
+/* PZ Rank - Paginação genérica (componente Pagination.tsx) */
+
+.pz-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 20px 0;
+}
+
+.pz-page-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  background: rgba(12,17,10,0.80);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  color: var(--text-2);
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.pz-page-btn:hover:not(:disabled) {
+  color: var(--text-1);
+  border-color: var(--green-border);
+  background: rgba(18,28,14,0.90);
+}
+
+.pz-page-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.pz-page-info {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-3);
+  min-width: 120px;
+  text-align: center;
+}
+
+.pz-page-info strong {
+  color: var(--text-1);
+  font-weight: 600;
+}

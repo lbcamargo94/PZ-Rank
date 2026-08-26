@@ -74,13 +74,17 @@ async function setDependencies(modId: number, depIds: number[]): Promise<void> {
   }
 }
 
-// GET /mods — public: returns only active mods
-router.get('/', async (_req, res: Response): Promise<void> => {
+// GET /mods?status=active|blocked — public: lista de mods por status (default: active).
+// "blocked" alimenta a aba pública "Bloqueados" — mods que já foram permitidos e
+// deixaram de ser, ou nunca chegaram a ser aprovados; não requer moderador porque
+// não é informação sensível (o próprio /mods já é público).
+router.get('/', async (req, res: Response): Promise<void> => {
+  const status = req.query.status === 'blocked' ? 'blocked' : 'active';
   try {
     const { data, error } = await supabase
       .from('mods')
       .select(SELECT_PUBLIC)
-      .eq('status', 'active')
+      .eq('status', status)
       .order('name', { ascending: true });
 
     if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }

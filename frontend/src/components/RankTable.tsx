@@ -183,20 +183,24 @@ export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, ic
   // Volta para pág 1 quando os entries mudam (tab ou busca)
   useEffect(() => { setPage(1); }, [entries, pageSize]);
 
-  const totalPages   = pageSize === 'all' ? 1 : Math.ceil(entries.length / pageSize);
+  const totalPages   = pageSize === 'all' ? 1 : Math.max(1, Math.ceil(entries.length / pageSize));
+  // Trava a página dentro do intervalo válido mesmo num frame antes do efeito
+  // de reset acima rodar (ex: troca de aba/busca com uma lista menor) — sem
+  // isso a tabela podia renderizar vazia por um instante.
+  const safePage      = Math.min(page, totalPages);
   const numPageSize  = pageSize === 'all' ? entries.length : pageSize;
-  const start        = entries.length === 0 ? 0 : (page - 1) * numPageSize + 1;
-  const end          = Math.min(page * numPageSize, entries.length);
+  const start        = entries.length === 0 ? 0 : (safePage - 1) * numPageSize + 1;
+  const end          = Math.min(safePage * numPageSize, entries.length);
   const visibleEntries = pageSize === 'all'
     ? entries
-    : entries.slice((page - 1) * numPageSize, page * numPageSize);
+    : entries.slice((safePage - 1) * numPageSize, safePage * numPageSize);
 
   // Pré-computa ranks ignorando entradas de Mod. Teste (não consomem posição)
   const displayRanks: number[] = (() => {
     let counter = 0;
     return entries.map(e => (e.is_test_mod ? 0 : ++counter));
   })();
-  const pageOffset = (page - 1) * numPageSize;
+  const pageOffset = (safePage - 1) * numPageSize;
 
   function handlePlayerClick(playerId: number) {
     navigate(`/player/${playerId}`);
@@ -285,28 +289,28 @@ export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, ic
                   <div className="rank-pagination-controls">
                     <button
                       className="pag-btn"
-                      disabled={page === 1}
-                      onClick={() => setPage(p => p - 1)}
+                      disabled={safePage === 1}
+                      onClick={() => setPage(p => Math.max(1, p - 1))}
                       aria-label={t('rank.pagination.prev_aria')}
                     >
                       <i className="ti ti-chevron-left" />
                     </button>
                     <div className="pag-pages">
-                      {buildPageList(page, totalPages).map((p, i) =>
+                      {buildPageList(safePage, totalPages).map((p, i) =>
                         p === '…'
                           ? <span key={`e${i}`} className="pag-ellipsis">…</span>
                           : <button
                               key={p}
-                              className={`pag-page-btn${page === p ? ' active' : ''}`}
+                              className={`pag-page-btn${safePage === p ? ' active' : ''}`}
                               onClick={() => setPage(p as number)}
-                              aria-current={page === p ? 'page' : undefined}
+                              aria-current={safePage === p ? 'page' : undefined}
                             >{p}</button>
                       )}
                     </div>
                     <button
                       className="pag-btn"
-                      disabled={page === totalPages}
-                      onClick={() => setPage(p => p + 1)}
+                      disabled={safePage === totalPages}
+                      onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                       aria-label={t('rank.pagination.next_aria')}
                     >
                       <i className="ti ti-chevron-right" />
@@ -334,11 +338,11 @@ export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, ic
                 <span className="rank-pagination-info">{t('rank.pagination.range', { start, end, total: entries.length })}</span>
                 {totalPages > 1 && (
                   <div className="rank-pagination-controls">
-                    <button className="pag-btn" disabled={page === 1} onClick={() => setPage(p => p - 1)}>
+                    <button className="pag-btn" disabled={safePage === 1} onClick={() => setPage(p => Math.max(1, p - 1))}>
                       <i className="ti ti-chevron-left" />
                     </button>
-                    <span className="rank-pagination-info">{t('rank.pagination.page_of', { page, total: totalPages })}</span>
-                    <button className="pag-btn" disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>
+                    <span className="rank-pagination-info">{t('rank.pagination.page_of', { page: safePage, total: totalPages })}</span>
+                    <button className="pag-btn" disabled={safePage === totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>
                       <i className="ti ti-chevron-right" />
                     </button>
                   </div>

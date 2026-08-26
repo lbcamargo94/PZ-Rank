@@ -4,6 +4,7 @@ import type { Entry, SortKey } from '../types';
 import type { ModSession } from '../types';
 import { useToast } from '../hooks/useToast';
 import { Toast } from '../components/Toast';
+import { Pagination } from '../components/Pagination';
 import { PainelLogin }           from '../components/painel/PainelLogin';
 import { PendingPlayers }        from '../components/painel/PendingPlayers';
 import { UpdateRankModal }       from '../components/painel/UpdateRankModal';
@@ -18,7 +19,8 @@ import { SeasonManager }        from '../components/painel/SeasonManager';
 import { NewsManager }          from '../components/painel/NewsManager';
 import { FinancesManager }      from '../components/painel/FinancesManager';
 
-const DEAD_ZONE_DAYS = 15;
+const DEAD_ZONE_DAYS   = 15;
+const PAINEL_PAGE_SIZE = 20;
 
 function isInDeadZone(entry: Entry): boolean {
   if (entry.sandbox_ok !== false) return false;
@@ -236,6 +238,8 @@ export function PainelPage({ session, onSession, onBack }: Props) {
   const [entries,        setEntries]        = useState<Entry[]>([]);
   const [sortKey]                           = useState<SortKey>('score');
   const [updatingEntry,  setUpdatingEntry]  = useState<number | null>(null);
+  const [entryPage,      setEntryPage]      = useState(1);
+  const [deadZonePage,   setDeadZonePage]   = useState(1);
   const { toast, showToast, clearToast }   = useToast();
 
   const fetchEntries = useCallback(async () => {
@@ -244,6 +248,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
   }, [sortKey, showToast, session?.token]);
 
   useEffect(() => { setEntrySearch(''); }, [entryFilter]);
+  useEffect(() => { setEntryPage(1); }, [entryFilter, entrySearch]);
 
   const aliveEntries    = useMemo(() => entries.filter(e => e.sandbox_ok !== false &&  e.is_alive),  [entries]);
   const deadEntries     = useMemo(() => entries.filter(e => e.sandbox_ok !== false && !e.is_alive),  [entries]);
@@ -269,6 +274,14 @@ export function PainelPage({ session, onSession, onBack }: Props) {
       e.name.toLowerCase().includes(q),
     );
   }, [filteredEntries, entrySearch]);
+
+  const entryTotalPages = Math.max(1, Math.ceil(searchedEntries.length / PAINEL_PAGE_SIZE));
+  const safeEntryPage    = Math.min(entryPage, entryTotalPages);
+  const paginatedEntries = searchedEntries.slice((safeEntryPage - 1) * PAINEL_PAGE_SIZE, safeEntryPage * PAINEL_PAGE_SIZE);
+
+  const deadZoneTotalPages = Math.max(1, Math.ceil(deadZoneEntries.length / PAINEL_PAGE_SIZE));
+  const safeDeadZonePage    = Math.min(deadZonePage, deadZoneTotalPages);
+  const paginatedDeadZone   = deadZoneEntries.slice((safeDeadZonePage - 1) * PAINEL_PAGE_SIZE, safeDeadZonePage * PAINEL_PAGE_SIZE);
 
   const entryCounts: Record<EntryFilter, number> = {
     all:          entries.filter(e => !isInDeadZone(e)).length,
@@ -640,10 +653,12 @@ export function PainelPage({ session, onSession, onBack }: Props) {
             )}
 
             <div className="painel-entries-list">
-              {searchedEntries.map(entry => (
+              {paginatedEntries.map(entry => (
                 <EntryCard key={entry.id} entry={entry} />
               ))}
             </div>
+
+            <Pagination page={safeEntryPage} totalPages={entryTotalPages} onChange={setEntryPage} />
 
             {/* ── Dead-Zone ── */}
             {deadZoneEntries.length > 0 && (
@@ -657,7 +672,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
                   </p>
                 </div>
                 <div className="painel-entries-list">
-                  {deadZoneEntries.map(entry => {
+                  {paginatedDeadZone.map(entry => {
                     const busy = updatingEntry === entry.id;
                     return (
                       <div key={entry.id} className="painel-entry-card entry-dead-zone">
@@ -708,6 +723,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
                     );
                   })}
                 </div>
+                <Pagination page={safeDeadZonePage} totalPages={deadZoneTotalPages} onChange={setDeadZonePage} />
               </div>
             )}
           </div>

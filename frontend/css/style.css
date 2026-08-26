@@ -22,6 +22,7 @@
 @import './components/tabs.css';
 @import './components/donation.css';
 @import './components/thanks.css';
+@import './components/pagination.css';
 
 /* Features */
 @import './features/player.css';

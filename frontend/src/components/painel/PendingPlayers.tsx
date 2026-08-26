@@ -3,6 +3,9 @@ import { apiGetPlayers, apiUpdatePlayerStatus, apiBlockPlayer, apiUnblockPlayer,
 import type { Player, PlayerStatus, PlayerFilter } from '../../types';
 import { ConfirmModal } from './ConfirmModal';
 import { EditLinksModal } from './EditLinksModal';
+import { Pagination } from '../Pagination';
+
+const PAGE_SIZE = 20;
 
 interface Props {
   token:     string;
@@ -122,6 +125,7 @@ export function PendingPlayers({ token, showToast }: Props) {
   const [players,         setPlayers]         = useState<Player[]>([]);
   const [filter,          setFilter]          = useState<PlayerFilter>('pending');
   const [search,          setSearch]          = useState('');
+  const [page,            setPage]            = useState(1);
   const [loading,         setLoading]         = useState(false);
   const [updating,        setUpdating]        = useState<number | null>(null);
   const [banTargetId,     setBanTargetId]     = useState<number | null>(null);
@@ -146,12 +150,17 @@ export function PendingPlayers({ token, showToast }: Props) {
 
   useEffect(() => { fetchPlayers(); }, [fetchPlayers]);
   useEffect(() => { setSearch(''); }, [filter]);
+  useEffect(() => { setPage(1); }, [filter, search]);
 
   const visiblePlayers = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return players;
     return players.filter(p => p.nick.toLowerCase().includes(q));
   }, [players, search]);
+
+  const totalPages     = Math.max(1, Math.ceil(visiblePlayers.length / PAGE_SIZE));
+  const safePage        = Math.min(page, totalPages);
+  const paginatedPlayers = visiblePlayers.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   async function handleStatus(id: number, status: 'approved' | 'rejected') {
     setUpdating(id);
@@ -359,7 +368,7 @@ export function PendingPlayers({ token, showToast }: Props) {
       )}
 
       <div className="players-list">
-        {visiblePlayers.map(p => (
+        {paginatedPlayers.map(p => (
           <div key={p.id} className={`player-card status-${p.status}${p.blocked ? ' player-blocked' : ''}${p.deleted_at ? ' player-deleted' : ''}`}>
             <div className="player-card-info">
               <span className="player-nick">{p.nick}</span>
@@ -518,6 +527,8 @@ export function PendingPlayers({ token, showToast }: Props) {
           </div>
         ))}
       </div>
+
+      <Pagination page={safePage} totalPages={totalPages} onChange={setPage} />
 
       {/* Modal de banimento */}
       {banTargetId !== null && banTarget && (
