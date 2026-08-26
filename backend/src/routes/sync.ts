@@ -324,7 +324,14 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
 
   // Detecta nova run: timeRaw regrediu = personagem morreu e reiniciou com mesmo nome.
   // Nesse caso, objectives definidos pelo moderador NÃO são herdados — cada run começa do zero.
-  const isNewCharRun = prev !== null && decoded.timeRaw < prev.time_raw;
+  //
+  // Exige queda de mais da metade (não só "menor que antes"): uma morte de verdade
+  // zera o timeRaw pra perto de 0, então qualquer run estabelecida sempre passa
+  // muito abaixo desse limiar. Sem essa margem, uma única leitura ruim do PZR code
+  // (glitch pontual do Companion/decoder) já bastava pra zerar objectives de uma
+  // run de centenas de dias que nunca morreu de verdade — foi o que aconteceu com
+  // o DrChatO (base de Rosewood sumiu do nada, personagem seguia vivo e íntegro).
+  const isNewCharRun = prev !== null && decoded.timeRaw < prev.time_raw * 0.5;
   const existingObjectives = isNewCharRun
     ? null
     : (existing?.objectives as Objectives | null) ?? null;
