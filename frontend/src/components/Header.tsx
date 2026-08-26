@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import pzrankLogo from '../../assets/logo/pzrank-logo.png';
 import { COMPANION_TAG } from '../lib/companion';
 import { LanguageSwitcher } from './LanguageSwitcher';
+import { ThanksCelebration } from './ThanksCelebration';
 
 interface HeaderProps {
   onPainel: () => void;
@@ -33,6 +34,7 @@ export function Header({ onPainel }: HeaderProps) {
         </Link>
 
         <div className="header-right">
+          <ThanksCelebration />
           <LanguageSwitcher />
 
           <div className="header-auth">
