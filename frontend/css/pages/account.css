@@ -257,6 +257,25 @@
 
 .account-pass-wrap { position: relative; }
 .account-pass-wrap .account-input { padding-right: 42px; }
+
+.account-overlay-link-row {
+  display: flex;
+  gap: 10px;
+  max-width: 560px;
+}
+.account-overlay-link-row .account-input {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-3);
+}
+.account-overlay-link-row .btn-secondary {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+@media (max-width: 460px) {
+  .account-overlay-link-row { flex-direction: column; }
+}
 .account-pass-toggle {
   position: absolute;
   right: 10px;

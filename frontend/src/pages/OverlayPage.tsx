@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { apiGetPlayerProfile, apiGetEntries } from '../lib/api';
 import { parseSkillMap, TOTAL_SKILLS, MAX_SKILL_LEVEL } from '../lib/skills';
 import type { PlayerProfile, Entry } from '../types';
 
 const REFRESH_MS = 30_000;
+const DEATH_ALERT_MS = 12_000;
 
 export function OverlayPage() {
   const { id } = useParams<{ id: string }>();
@@ -12,6 +13,14 @@ export function OverlayPage() {
   const [bestEntry,  setBestEntry]  = useState<Entry | null>(null);
   const [rank,       setRank]       = useState<number | null>(null);
   const [error,      setError]      = useState(false);
+  const [deathAlert, setDeathAlert] = useState<Entry | null>(null);
+  const wasAliveRef = useRef<boolean | null>(null);
+
+  // Fundo transparente pro OBS compositar só o cartão, sem o background do site atrás.
+  useEffect(() => {
+    document.body.classList.add('overlay-page-active');
+    return () => document.body.classList.remove('overlay-page-active');
+  }, []);
 
   async function load() {
     if (!id) return;
@@ -26,6 +35,16 @@ export function OverlayPage() {
       const sorted = [...prof.entries].sort((a, b) => b.score - a.score);
       const best   = sorted[0] ?? null;
       setBestEntry(best);
+
+      // Detecta a transição vivo → morto entre um poll e outro pra disparar
+      // o alerta de morte na tela — mesmo personagem (mesmo id), só mudou
+      // is_alive desde a última checagem.
+      if (best && wasAliveRef.current === true && !best.is_alive) {
+        setDeathAlert(best);
+        setTimeout(() => setDeathAlert(null), DEATH_ALERT_MS);
+      }
+      wasAliveRef.current = best?.is_alive ?? null;
+
       // Rank = posição entre entries vivos e não-desclassificados (igual ao public rank tab)
       const publicRank = all.filter(e => e.sandbox_ok !== false && e.is_alive);
       const bestAlive  = sorted.find(e => e.sandbox_ok !== false && e.is_alive) ?? null;
@@ -64,6 +83,18 @@ export function OverlayPage() {
 
   return (
     <div className="overlay-root">
+      {deathAlert && (
+        <div className="death-alert" key={deathAlert.id}>
+          <i className="ti ti-skull death-alert-icon" />
+          <div className="death-alert-text">
+            <span className="death-alert-title">{deathAlert.character_name || profile.player.nick} morreu!</span>
+            <span className="death-alert-sub">
+              {deathAlert.days}d sobrevividos · {deathAlert.kills.toLocaleString('pt-BR')} zumbis · {deathAlert.score.toLocaleString('pt-BR')} pts
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="overlay-header">
         <div className="overlay-nick">{profile.player.nick}</div>

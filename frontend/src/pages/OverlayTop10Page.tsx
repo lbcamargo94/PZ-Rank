@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { apiGetEntries } from '../lib/api';
+import { formatNumber } from '../lib/format';
 import type { Entry } from '../types';
 
 const REFRESH_MS = 15_000;
@@ -16,11 +17,18 @@ export function OverlayTop10Page() {
   const [error, setError] = useState(false);
   const prevScores = useRef<Map<number, number>>(new Map());
 
+  // Fundo transparente pro OBS compositar só o painel, sem o background do
+  // site por trás (igual ao restante do overlay, ver overlay-page-active).
+  useEffect(() => {
+    document.body.classList.add('overlay-page-active');
+    return () => document.body.classList.remove('overlay-page-active');
+  }, []);
+
   async function load() {
     try {
       const all = await apiGetEntries('score');
       const top10 = all
-        .filter(e => e.sandbox_ok !== false && e.is_alive)
+        .filter(e => e.is_alive && e.sandbox_ok !== false)
         .sort((a, b) => b.score - a.score)
         .slice(0, 10);
 
@@ -60,31 +68,27 @@ export function OverlayTop10Page() {
     return () => clearTimeout(t);
   }, [rows]);
 
-  if (error || rows.length === 0) {
-    return (
-      <div className="ovtop-root ovtop-empty">
-        {error ? 'DADOS INDISPONÍVEIS' : 'CARREGANDO...'}
-      </div>
-    );
-  }
-
   return (
-    <div className="ovtop-root">
-      <div className="ovtop-header">
-        <i className="ti ti-trophy" /> Top 10 — Brasileirão PZ
-      </div>
-      <div className="ovtop-list">
-        {rows.map(({ entry, rank, changed }) => (
-          <div key={entry.id} className={`ovtop-row${changed ? ' ovtop-row-changed' : ''}`}>
-            <span className="ovtop-rank">{MEDALS[rank] ?? `#${rank}`}</span>
-            <span className="ovtop-name">
-              {entry.character_name || entry.name}
-              <small className="ovtop-player">{entry.name}</small>
-            </span>
-            <span className="ovtop-score">{entry.score.toLocaleString('pt-BR')}</span>
+    <div className="ovtop-wrap">
+      <section className="home-side-panel rank-top10-preview">
+        <h2 className="home-side-panel-title"><i className="ti ti-trophy" /> Top 10 do Rank</h2>
+        {rows.length === 0 ? (
+          <p className="home-side-panel-empty">{error ? 'Dados indisponíveis.' : 'Carregando...'}</p>
+        ) : (
+          <div className="top10-list">
+            {rows.map(({ entry, rank, changed }) => (
+              <div key={entry.id} className={`top10-row${changed ? ' ovtop-row-changed' : ''}`}>
+                <span className="top10-pos">{MEDALS[rank] ?? `#${rank}`}</span>
+                <span className="top10-name">{entry.character_name || entry.name}</span>
+                <span className="top10-score">{formatNumber(entry.score)}</span>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        )}
+        <div className="btn-secondary btn-sm home-side-panel-cta">
+          Ver ranking completo <i className="ti ti-arrow-right" />
+        </div>
+      </section>
     </div>
   );
 }
