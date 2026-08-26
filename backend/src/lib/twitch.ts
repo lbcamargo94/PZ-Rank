@@ -40,14 +40,29 @@ interface GqlUserNode {
   stream: { id: string; type: string; title: string; previewImageURL: string; game: { name: string } | null } | null;
 }
 
+export interface TwitchLiveCheckResult {
+  /** Canais confirmados ao vivo agora. */
+  live: Map<string, TwitchLiveResult>;
+  /**
+   * Logins (lowercase) cujo lote falhou (erro de rede, timeout, resposta não-ok
+   * ou GraphQL sem `data`) — checagem INCONCLUSIVA, não confirma que o canal
+   * está offline. Quem chama esta função NUNCA deve tratar um login aqui como
+   * "não está ao vivo": essa API não-oficial falha esporadicamente, e se um
+   * falso "offline" limpar o estado de "já notificado" (ex: twitch_last_live_id),
+   * a próxima checagem bem-sucedida vê a mesma live como "nova" e duplica a
+   * notificação no Discord — foi exatamente esse o bug que motivou este campo.
+   */
+  failed: Set<string>;
+}
+
 /**
  * Consulta quais logins estão ao vivo agora via GraphQL (batch por alias, um único
- * POST por lote de até BATCH_SIZE canais). Retorna um Map<login, TwitchLiveResult>
- * apenas com os canais ao vivo.
+ * POST por lote de até BATCH_SIZE canais).
  */
-export async function getLiveStreams(logins: string[]): Promise<Map<string, TwitchLiveResult>> {
-  const result = new Map<string, TwitchLiveResult>();
-  if (logins.length === 0) return result;
+export async function getLiveStreams(logins: string[]): Promise<TwitchLiveCheckResult> {
+  const live   = new Map<string, TwitchLiveResult>();
+  const failed = new Set<string>();
+  if (logins.length === 0) return { live, failed };
 
   for (let i = 0; i < logins.length; i += BATCH_SIZE) {
     const batch  = logins.slice(i, i + BATCH_SIZE);
@@ -62,14 +77,14 @@ export async function getLiveStreams(logins: string[]): Promise<Map<string, Twit
         body:    JSON.stringify({ query: `query { ${fields} }` }),
         signal:  AbortSignal.timeout(8_000),
       });
-      if (!res.ok) continue;
+      if (!res.ok) { batch.forEach(l => failed.add(l.toLowerCase())); continue; }
 
       const json = await res.json() as { data?: Record<string, GqlUserNode | null> };
-      if (!json.data) continue;
+      if (!json.data) { batch.forEach(l => failed.add(l.toLowerCase())); continue; }
 
       for (const node of Object.values(json.data)) {
         if (!node?.stream || node.stream.type !== 'live') continue;
-        result.set(node.login.toLowerCase(), {
+        live.set(node.login.toLowerCase(), {
           id:        node.stream.id,
           login:     node.login,
           title:     node.stream.title ?? '',
@@ -78,9 +93,10 @@ export async function getLiveStreams(logins: string[]): Promise<Map<string, Twit
         });
       }
     } catch {
-      // best-effort — lote com erro simplesmente não contribui canais "ao vivo"
+      // falha de rede/timeout — lote inteiro fica inconclusivo, não "offline"
+      batch.forEach(l => failed.add(l.toLowerCase()));
     }
   }
 
-  return result;
+  return { live, failed };
 }

@@ -205,6 +205,7 @@ router.get('/scan-lives', async (req: Request, res: Response): Promise<void> => 
   const twitchStarted: string[] = [];
   const twitchEnded:   string[] = [];
   const twitchOngoing: string[] = [];
+  const twitchFailedChecks: string[] = [];
 
   const loginByPlayer = new Map<string, TwitchPlayerRow>();
   for (const p of twitchList) {
@@ -213,9 +214,14 @@ router.get('/scan-lives', async (req: Request, res: Response): Promise<void> => 
   }
 
   if (loginByPlayer.size > 0) {
-    const liveNow = await getLiveStreams([...loginByPlayer.keys()]);
+    const { live: liveNow, failed: twitchFailed } = await getLiveStreams([...loginByPlayer.keys()]);
 
     await Promise.allSettled([...loginByPlayer.entries()].map(async ([login, p]) => {
+      // Checagem falhou (API instável) — inconclusivo, não mexe no estado
+      // para não confundir "offline de verdade" com "não deu pra checar"
+      // (isso causava notificação duplicada quando a checagem seguinte funcionava).
+      if (twitchFailed.has(login)) { twitchFailedChecks.push(p.nick); return; }
+
       const live = liveNow.get(login);
 
       if (!live) {
@@ -262,13 +268,15 @@ router.get('/scan-lives', async (req: Request, res: Response): Promise<void> => 
       ongoing:     liveOngoing,
     },
     twitch: {
-      checked:     loginByPlayer.size,
-      liveStarted: twitchStarted.length,
-      liveEnded:   twitchEnded.length,
-      liveOngoing: twitchOngoing.length,
-      started:     twitchStarted,
-      ended:       twitchEnded,
-      ongoing:     twitchOngoing,
+      checked:      loginByPlayer.size,
+      liveStarted:  twitchStarted.length,
+      liveEnded:    twitchEnded.length,
+      liveOngoing:  twitchOngoing.length,
+      checkFailed:  twitchFailedChecks.length,
+      started:      twitchStarted,
+      ended:        twitchEnded,
+      ongoing:      twitchOngoing,
+      failedChecks: twitchFailedChecks,
     },
   });
 });

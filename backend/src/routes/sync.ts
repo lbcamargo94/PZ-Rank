@@ -438,8 +438,10 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     const { extractTwitchLogin, getLiveStreams } = await import('../lib/twitch');
     const login = extractTwitchLogin(player.twitch_url);
     if (login) {
-      const live = await getLiveStreams([login]);
-      wasLiveAtSync = live.has(login.toLowerCase());
+      const { live, failed } = await getLiveStreams([login]);
+      // Checagem falhou (API instável) — não penaliza o jogador por uma falha
+      // nossa: não conta como sync sem transmissão confirmada.
+      wasLiveAtSync = failed.has(login.toLowerCase()) || live.has(login.toLowerCase());
     }
   }
   const no_live_streak = wasLiveAtSync ? 0 : (prev?.no_live_streak ?? 0) + 1;
@@ -658,7 +660,13 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       const login = extractTwitchLogin(p.twitch_url);
       if (!login) return;
 
-      const live = (await getLiveStreams([login])).get(login.toLowerCase());
+      const { live: liveMap, failed } = await getLiveStreams([login]);
+      // Checagem falhou (API instável) — inconclusivo, não mexe no estado.
+      // Um falso "offline" aqui limpava twitch_last_live_id e fazia a próxima
+      // checagem bem-sucedida ver a mesma live como "nova", duplicando a
+      // notificação no Discord — essa é a causa raiz das notificações repetidas.
+      if (failed.has(login.toLowerCase())) return;
+      const live = liveMap.get(login.toLowerCase());
 
       if (!live) {
         // Não está ao vivo — limpa o estado anterior, se houver (sem notificar o fim)

@@ -74,7 +74,7 @@ router.get('/live-status', async (_req: Request, res: Response): Promise<void> =
   }
 
   if (loginByPlayer.size > 0) {
-    const live = await getLiveStreams([...loginByPlayer.keys()]);
+    const { live } = await getLiveStreams([...loginByPlayer.keys()]);
     for (const [login, info] of live) {
       const playerId = loginByPlayer.get(login);
       if (playerId == null) continue;
