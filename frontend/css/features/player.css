@@ -1637,14 +1637,14 @@
 
 .overlay-root {
   position: relative; /* contexto de posicionamento pro .death-alert */
-  width: 340px;
+  width: 300px;
   background: rgba(10, 10, 10, 0.92);
   border: 1px solid var(--border-mid);
   border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
-  padding: 20px 24px;
-  gap: 14px;
+  padding: 18px 20px;
+  gap: 12px;
   font-family: var(--font-mono);
   pointer-events: none;
   user-select: none;
@@ -1685,42 +1685,36 @@
 }
 .death-alert-sub { font-size: 14px; color: var(--text-2); }
 
-/* ── Campos rotulados (rótulo pequeno em maiúsculas + valor) — cada
-   informação fica clara sem precisar adivinhar o que é cada número. ── */
-.overlay-divider { height: 1px; background: var(--border); }
-
-.overlay-field-row {
-  display: flex;
-  gap: 20px;
-}
-
-.overlay-field {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-}
-
-.overlay-field-label {
+.overlay-header { display: flex; flex-direction: column; gap: 2px; }
+.overlay-nick {
   font-size: 14px;
   color: var(--text-3);
   text-transform: uppercase;
-  letter-spacing: 1.2px;
+  letter-spacing: 1.5px;
 }
-
-.overlay-field-value {
-  font-size: 18px;
+.overlay-char {
+  font-size: 22px;
   font-weight: 700;
   color: var(--text-1);
-  line-height: 1.25;
-  overflow-wrap: break-word;
-  word-break: break-word;
 }
+.overlay-prof { font-weight: 400; color: var(--text-2); }
 
-.overlay-field-value--lg { font-size: 22px; }
-.overlay-field-value--stat { font-size: 30px; }
-.overlay-field-value--gold { color: var(--gold); }
-
+.overlay-score-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.overlay-rank {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--gold);
+  min-width: 60px;
+}
+.overlay-score {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-1);
+}
 .overlay-status-badge {
   font-size: 14px;
   font-weight: 700;
@@ -1732,11 +1726,54 @@
   align-items: center;
   gap: 5px;
 }
+.overlay-badge-alive {
+  background: rgba(90, 138, 60, 0.25);
+  color: var(--green-light);
+  border: 1px solid var(--green-border);
+}
 .overlay-badge-dead {
   background: rgba(224, 64, 64, 0.15);
   color: var(--red);
   border: 1px solid rgba(224, 64, 64, 0.3);
 }
+
+.overlay-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+}
+.overlay-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+}
+.overlay-stat i { font-size: 14px; color: var(--text-3); }
+.overlay-stat span { font-size: 18px; font-weight: 700; color: var(--text-1); }
+.overlay-stat small { font-size: 14px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.5px; }
+
+.overlay-objs {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.overlay-obj-dot {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  color: var(--text-4);
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  background: var(--bg-3);
+}
+.overlay-obj-done {
+  color: var(--gold);
+  border-color: rgba(200, 168, 75, 0.4);
+  background: rgba(200, 168, 75, 0.08);
+}
+.overlay-obj-done i { color: var(--gold); }
 
 /* ── OBS Overlay — fundo transparente ──────────────────────────
    Aplicado via document.body.classList em toda página de overlay —
