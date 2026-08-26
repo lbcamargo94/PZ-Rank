@@ -113,7 +113,7 @@
   background: rgba(4,6,3,0.94);
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
-  padding: 8px 10px;
+  padding: 4px 6px;
   animation: thanks-fade-in 0.2s ease-out;
 }
 
@@ -142,7 +142,7 @@
      proporção da imagem) para nunca estourar a altura da viewport sem
      encolher a largura junto — evita esticar a imagem de fundo. Imagem
      bem maior que antes pra caber mais texto visível de uma vez. */
-  width: min(98vw, 980px, calc(97vh * 0.8003));
+  width: min(99vw, 1080px, calc(98vh * 0.8003));
   aspect-ratio: 1122 / 1402;
 }
 
@@ -161,7 +161,7 @@
      a caixa de texto ganha um fundo próprio cor de pergaminho e fica bem
      recuada, sempre dentro da parte sólida da moldura. */
   position: absolute;
-  inset: 17% 16% 13% 15%;
+  inset: 16% 15% 14% 15%;
   overflow-y: auto;
   overflow-x: hidden;
   padding: 14px 16px;
