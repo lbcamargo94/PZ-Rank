@@ -52,7 +52,6 @@ export function ThanksCelebration() {
         title="Uma mensagem especial da equipe PZ Rank"
       >
         <i className="ti ti-heart-filled" aria-hidden="true" />
-        <span className="btn-header-thanks-text">Obrigado</span>
       </button>
 
       {stage === 'reveal' && createPortal(
