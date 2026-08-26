@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { setOnUnauthorized } from './lib/api';
 import type { ModSession } from './types';
 import { useToast } from './hooks/useToast';
@@ -37,26 +38,27 @@ import { ModeratorRegisterPage }  from './pages/ModeratorRegisterPage';
 import { ModResetPasswordPage }   from './pages/ModResetPasswordPage';
 
 const QUICK_NAV = [
-  { to: '/rank',          icon: 'ti-trophy',           label: 'Ranking',         sub: 'Classificação geral'   },
-  { to: '/regras',        icon: 'ti-book',             label: 'Regras',          sub: 'Como participar'       },
-  { to: '/wiki',          icon: 'ti-book-2',           label: 'Wiki de Caça',    sub: 'Guia de caçadas'       },
-  { to: '/mods',          icon: 'ti-puzzle',           label: 'Mods Permitidos', sub: 'Lista oficial'         },
-  { to: '/dicas',         icon: 'ti-bulb',             label: 'Dicas',           sub: 'Guia de sobrevivência' },
-  { to: '/lendas',        icon: 'ti-medal',            label: 'Lendas',          sub: 'Hall da fama'          },
-  { to: '/links',         icon: 'ti-link',             label: 'Links Úteis',     sub: 'Recursos do campeonato'},
-  { to: '/transparencia', icon: 'ti-file-certificate', label: 'Transparência',   sub: 'Dados do servidor'     },
+  { to: '/rank',          icon: 'ti-trophy',           key: 'rank'          },
+  { to: '/regras',        icon: 'ti-book',             key: 'rules'         },
+  { to: '/wiki',          icon: 'ti-book-2',           key: 'wiki'          },
+  { to: '/mods',          icon: 'ti-puzzle',           key: 'mods'          },
+  { to: '/dicas',         icon: 'ti-bulb',             key: 'tips'          },
+  { to: '/lendas',        icon: 'ti-medal',            key: 'legends'       },
+  { to: '/links',         icon: 'ti-link',             key: 'links'         },
+  { to: '/transparencia', icon: 'ti-file-certificate', key: 'transparency'  },
 ] as const;
 
 function QuickNav() {
+  const { t } = useTranslation();
   return (
-    <section className="home-quick-nav" aria-label="Acesso rápido">
-      <p className="home-quick-nav-title">Acesso Rápido</p>
+    <section className="home-quick-nav" aria-label={t('home.quick_nav.aria')}>
+      <p className="home-quick-nav-title">{t('home.quick_nav.title')}</p>
       <div className="quick-nav-grid">
         {QUICK_NAV.map(item => (
           <Link key={item.to} to={item.to} className="quick-nav-card">
             <i className={`ti ${item.icon} quick-nav-icon`} aria-hidden="true" />
-            <span className="quick-nav-label">{item.label}</span>
-            <span className="quick-nav-sub">{item.sub}</span>
+            <span className="quick-nav-label">{t(`home.quick_nav.${item.key}.label`)}</span>
+            <span className="quick-nav-sub">{t(`home.quick_nav.${item.key}.sub`)}</span>
           </Link>
         ))}
       </div>

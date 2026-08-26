@@ -7,10 +7,12 @@ export function setOnUnauthorized(cb: () => void) { _onUnauthorized = cb; }
 
 export class ApiError extends Error {
   status: number;
-  constructor(message: string, status: number) {
+  code?: string;
+  constructor(message: string, status: number, code?: string) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
+    this.code = code;
   }
 }
 
@@ -40,6 +42,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
         ? errBody.error
         : 'Sessão expirada. Faça login novamente.',
       401,
+      typeof errBody.error_code === 'string' ? errBody.error_code : undefined,
     );
   }
 
@@ -54,7 +57,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     const msg = typeof body.error === 'string' && body.error
       ? body.error
       : 'Erro desconhecido. Tente novamente.';
-    throw new ApiError(msg, res.status);
+    throw new ApiError(msg, res.status, typeof body.error_code === 'string' ? body.error_code : undefined);
   }
 
   return body as T;

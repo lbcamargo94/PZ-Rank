@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { LiveStatus } from '../types';
 
 const PLATFORM_ICON: Record<LiveStatus['platform'], string> = {
@@ -18,6 +19,7 @@ interface LiveBadgesProps {
 }
 
 export function LiveBadges({ live, compact }: LiveBadgesProps) {
+  const { t } = useTranslation();
   if (!live || live.length === 0) return null;
 
   if (compact) {
@@ -49,12 +51,12 @@ export function LiveBadges({ live, compact }: LiveBadgesProps) {
           target="_blank"
           rel="noopener noreferrer"
           className={`live-badge live-badge--${s.platform}`}
-          title={s.title || 'Transmitindo agora'}
+          title={s.title || t('common.live_now')}
           onClick={e => e.stopPropagation()}
         >
           <span className="live-dot" />
           <i className={`ti ${PLATFORM_ICON[s.platform]}`} />
-          AO VIVO
+          {t('common.live')}
         </a>
       ))}
     </>

@@ -1,0 +1,454 @@
+{
+  "common": {
+    "language": "Idioma"
+  },
+  "header": {
+    "home_aria": "PZ Rank — Página de inicio",
+    "tagline": "Campeonato Brasileño de PZ",
+    "download_companion_title": "Descargar PZ Rank Companion",
+    "companion": "Companion",
+    "register": "Regístrate",
+    "login": "Iniciar sesión",
+    "menu_open": "Abrir menú",
+    "menu_close": "Cerrar menú",
+    "nav_aria": "Navegación principal"
+  },
+  "nav": {
+    "rank": "Ranking",
+    "rules": "Reglas",
+    "wiki": "Wiki",
+    "links": "Enlaces Útiles",
+    "mods": "Mods",
+    "legends": "Leyendas",
+    "transparency": "Transparencia",
+    "settings": "Configuración",
+    "moderators": "Moderadores"
+  },
+  "footer": {
+    "copyright": "© {{year}} lbcamargo94",
+    "tagline": "Proyecto personal para la comunidad de Project Zomboid",
+    "disclaimer": "No afiliado a The Indie Stone",
+    "contact": "Patrocinios y Anuncios",
+    "contact_title": "Patrocinios y publicidad"
+  },
+  "home": {
+    "quick_nav": {
+      "aria": "Acceso rápido",
+      "title": "Acceso Rápido",
+      "rank":          { "label": "Ranking",          "sub": "Clasificación general" },
+      "rules":         { "label": "Reglas",           "sub": "Cómo participar" },
+      "wiki":          { "label": "Wiki de Caza",     "sub": "Guía de cacerías" },
+      "mods":          { "label": "Mods Permitidos",  "sub": "Lista oficial" },
+      "tips":          { "label": "Consejos",         "sub": "Guía de supervivencia" },
+      "legends":       { "label": "Leyendas",         "sub": "Salón de la fama" },
+      "links":         { "label": "Enlaces Útiles",   "sub": "Recursos del campeonato" },
+      "transparency":  { "label": "Transparencia",    "sub": "Datos del servidor" }
+    },
+    "stats": {
+      "season_active_days_one": "{{count}} día activa",
+      "season_active_days_other": "{{count}} días activa",
+      "season_active_today": "activa hoy",
+      "zombies": "zombis",
+      "days_survived": "días sobrevividos",
+      "alive": "vivos",
+      "dead": "muertos",
+      "playing_today": "jugando hoy",
+      "on_pz_now": "en PZ ahora"
+    },
+    "news": {
+      "title": "Diario del Apocalipsis",
+      "intro_video_title": "Diario del Apocalipsis — Introducción",
+      "loading": "Cargando la edición de hoy...",
+      "load_error": "No se pudo cargar el diario.",
+      "close": "Cerrar",
+      "today_happened": "Pasó hoy",
+      "eliminations": "eliminaciones",
+      "eliminated_suffix": "eliminados",
+      "deaths_one": "muerte",
+      "deaths_other": "muertes",
+      "actives_one": "activo",
+      "actives_other": "activos",
+      "no_activity": "No se registró actividad hoy.",
+      "current_situation": "Situación actual",
+      "total_eliminated": "eliminados en total",
+      "archive": "Archivo Histórico",
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "headline_deaths_and_kills_one": "{{deaths}} superviviente cayó hoy — {{kills}} zombis eliminados en las últimas 24 horas.",
+      "headline_deaths_and_kills_other": "{{deaths}} supervivientes cayeron hoy — {{kills}} zombis eliminados en las últimas 24 horas.",
+      "headline_deaths_only_one": "{{deaths}} superviviente cayó hoy. {{alive}} todavía resisten.",
+      "headline_deaths_only_other": "{{deaths}} supervivientes cayeron hoy. {{alive}} todavía resisten.",
+      "headline_kills_only": "{{kills}} zombis eliminados hoy. {{alive}} supervivientes se mantienen firmes.",
+      "headline_syncs_only_one": "{{count}} jugador activo hoy. El apocalipsis continúa.",
+      "headline_syncs_only_other": "{{count}} jugadores activos hoy. El apocalipsis continúa.",
+      "headline_default_one": "{{alive}} superviviente resiste el apocalipsis.",
+      "headline_default_other": "{{alive}} supervivientes resisten el apocalipsis."
+    },
+    "ad": {
+      "title": "Anúnciate en el Brasileirão PZ",
+      "alt": "Anúnciate aquí — Apoya el Brasileirão PZ",
+      "contact_title": "Contáctanos sobre patrocinios"
+    },
+    "streamers": {
+      "title": "Streamers Oficiales",
+      "empty": "Ningún streamer oficial en este momento.",
+      "youtube_channel": "Canal de YouTube",
+      "twitch_channel": "Canal de Twitch"
+    },
+    "top10": {
+      "title": "Top 10 del Ranking",
+      "empty": "Ningún superviviente activo en este momento.",
+      "view_full": "Ver ranking completo"
+    }
+  },
+  "rank": {
+    "tabs": {
+      "rank": "Ranking",
+      "records": "Records",
+      "dead": "Muertes",
+      "disqualified": "Descalificados"
+    },
+    "back": "Volver",
+    "search_placeholder": "Buscar por jugador o personaje en todas las categorías...",
+    "search_aria": "Buscar jugador",
+    "search_clear_aria": "Limpiar búsqueda",
+    "search_no_results": "Ningún resultado encontrado.",
+    "search_results_one": "{{count}} resultado en todas las categorías",
+    "search_results_other": "{{count}} resultados en todas las categorías",
+    "load_error": "Error al cargar el ranking.",
+    "records_load_error": "Error al cargar los records.",
+    "sort": {
+      "label": "Ordenar por:",
+      "score": "Puntos",
+      "days": "Días vivo",
+      "kills": "Zombis",
+      "skills": "Habilidades",
+      "updated_at": "Actualización"
+    },
+    "display": {
+      "label": "Mostrar:",
+      "all": "Todo"
+    },
+    "reload_aria": "Recargar tabla",
+    "table_aria": "Ranking de supervivencia",
+    "live_th": "En Vivo",
+    "th": {
+      "player": "Jugador",
+      "status": "Estado",
+      "score": "Puntos",
+      "days": "Días",
+      "kills": "Zombis",
+      "skills": "Habilidades",
+      "updated": "Actualizado"
+    },
+    "status": {
+      "alive": "Vivo",
+      "dead": "Muerto",
+      "disqualified": "Descalificado",
+      "disqualified_short": "Desc."
+    },
+    "test_mod": "Mod. Prueba",
+    "test_mod_title": "Participante con etiqueta de Moderador de Prueba",
+    "live_warning": "Sin transmisión",
+    "live_warning_title": "Varios syncs seguidos sin transmisión confirmada en YouTube o Twitch (obligatoria por las reglas)",
+    "pts": "pts",
+    "zombies_suffix": "zombis",
+    "obj_suffix": "obj.",
+    "empty": {
+      "rank_1": "Ningún superviviente activo en este momento.",
+      "rank_2": "¡Regístrate para entrar en el ranking!",
+      "records": "Aún no se encontraron registros.",
+      "dead": "Todavía no se eliminó a ningún superviviente.",
+      "disqualified": "Ningún participante descalificado.",
+      "search": "No se encontraron resultados para la búsqueda."
+    },
+    "pagination": {
+      "zero_results": "0 resultados",
+      "range": "{{start}}–{{end}} de {{total}}",
+      "prev_aria": "Página anterior",
+      "next_aria": "Página siguiente",
+      "page_of": "Pág {{page}}/{{total}}"
+    },
+    "disq": {
+      "sandbox": "Configuraciones del sandbox difieren del desafío oficial",
+      "debug": "El jugador usó el modo debug durante el desafío Brasileirão",
+      "mods": "El jugador usó mods no permitidos en el desafío Brasileirão",
+      "manual": "Descalificado manualmente por el moderador",
+      "mod_removed_row": "El mod del desafío fue eliminado durante la partida",
+      "mod_removed": "Companion detectó que el mod fue eliminado mientras el juego estaba en ejecución",
+      "mods_list": "Mods no permitidos: {{list}}"
+    },
+    "skills": {
+      "title": "Habilidades",
+      "max_level": "en nivel máximo",
+      "close": "Cerrar",
+      "view_progress": "Ver progreso de habilidades"
+    }
+  },
+  "player": {
+    "back": "Volver",
+    "loading": "Cargando perfil...",
+    "invalid_id": "ID de jugador inválido.",
+    "not_found": "Jugador no encontrado.",
+    "back_to_rank": "Volver al Ranking",
+    "login_to_like": "Inicia sesión para dar like a los perfiles.",
+    "like_self_tooltip": "No puedes dar like a tu propio perfil",
+    "like_remove_tooltip": "Quitar like",
+    "like_add_tooltip": "Dar like al perfil",
+    "summary": {
+      "best_rank": "Mejor posición",
+      "best_score": "Mejor puntuación",
+      "characters": "Personajes",
+      "best_massacre": "Mayor masacre",
+      "pts": "pts"
+    },
+    "chars_section_title": "Personajes en el Ranking",
+    "filter": {
+      "all": "Todos",
+      "alive": "Vivos",
+      "dead": "Muertos",
+      "disqualified": "Descalificados"
+    },
+    "no_chars": "Ningún personaje en esta categoría.",
+    "tabs": {
+      "objectives": "Objetivos",
+      "skills": "Habilidades",
+      "traits": "Características"
+    },
+    "score_label": "puntos",
+    "extended_stats": {
+      "animals": "Animales cazados",
+      "fish": "Peces capturados",
+      "crops": "Cultivos cosechados",
+      "crafted": "Objetos fabricados",
+      "looted": "Casas saqueadas",
+      "sleep": "Horas sin dormir"
+    },
+    "archetype": {
+      "eyebrow": "Perfil Psicológico",
+      "guide_btn": "Ver guía completa de perfiles"
+    },
+    "objectives": {
+      "pending_banner": "Objetivos aún no registrados por el moderador. Mostrando estado inicial.",
+      "special_title": "Objetivos Especiales",
+      "kills_target": "{{count}} Zombis Eliminados",
+      "spiffo_hq": "Sede de Spiffo's Conquistada (Louisville HQ)",
+      "spiffo_relic": "Reliquia de Spiffo Recolectada",
+      "military_base": "Base Militar de Rosewood Conquistada",
+      "bases_title": "Bases en los Spiffo's"
+    },
+    "traits": {
+      "positive": "Positivas",
+      "negative": "Negativas",
+      "none": "Características no registradas en esta entrada."
+    },
+    "skills_max_label": "habilidades en nivel máximo"
+  },
+  "regras": {
+    "back": "Inicio",
+    "nav_aria": "Secciones de las reglas",
+    "eyebrow": "BRASILEIRÃO PZ · TEMPORADA 1",
+    "title": "REGLAS DEL DESAFÍO",
+    "subtitle": "Todo lo que necesitas saber para participar y competir.",
+    "sections": {
+      "participar": "Cómo Participar",
+      "objetivos": "Objetivos y Puntuación",
+      "sandbox": "Config. del Sandbox",
+      "conduta": "Reglas de Conducta"
+    },
+    "participar": {
+      "section_title": "Cómo Participar",
+      "section_sub": "Seis pasos para empezar a competir en el Brasileirão PZ.",
+      "steps": [
+        { "title": "Regístrate en el sitio", "desc": "Crea tu cuenta en pzrank.com.br. Tu registro debe ser aprobado por un moderador antes de aparecer en el ranking.", "action_label": "Crear cuenta" },
+        { "title": "Instala el Mod Oficial", "desc": "Suscríbete al mod \"PZCommunityRank\" en la Steam Workshop y actívalo en Project Zomboid. El mod valida tu sandbox y registra tus estadísticas.", "action_label": null },
+        { "title": "Instala PZ Rank Companion", "desc": "Companion monitorea tu carpeta de partidas guardadas y sincroniza automáticamente con el ranking. Necesario para que tus corridas aparezcan en el sitio.", "action_label": "Descargar Companion {{tag}}" },
+        { "title": "Usa el Preset Oficial", "desc": "Inicia una nueva partida con el preset \"Brasileirão PZ\" activado por el mod. El sandbox debe ser 100% idéntico a las configuraciones oficiales — cualquier divergencia genera descalificación automática.", "action_label": "Ver configuraciones" },
+        { "title": "Sincroniza Automáticamente", "desc": "Companion detecta cuando guardas la partida y sincroniza los datos en segundo plano. Cada sincronización actualiza días sobrevividos, muertes, habilidades y objetivos.", "action_label": null },
+        { "title": "Sigue tu Ranking", "desc": "Tu posición se calcula automáticamente según la puntuación. Accede a tu página de jugador para ver el historial completo de corridas y logros.", "action_label": "Ver ranking" }
+      ],
+      "callout_min_version_pre": "El mod requiere versión mínima",
+      "callout_min_version_post": "Mantén siempre el mod y el Companion actualizados para evitar el bloqueo de sincronización.",
+      "callout_death_lead": "Al morir:",
+      "callout_death_body": "Companion detecta la muerte y la envía automáticamente al ranking. Si eso no ocurre, tu personaje anterior bloqueará cualquier nueva sincronización. Contacta a la moderación — un moderador confirmará la muerte, pondrá a cero los puntos del personaje anterior y habilitará tu nueva corrida."
+    },
+    "objetivos": {
+      "section_title": "Objetivos y Puntuación",
+      "section_sub": "Completa los objetivos abajo para demostrar que eres un verdadero superviviente.",
+      "main_title": "Objetivos Principales",
+      "card_extermination": { "title": "Exterminio Total", "desc_pre": "Cada zombi eliminado vale", "desc_post": "Máximo contabilizado: {{max}} zombis.", "badge": "hasta +{{total}} pts" },
+      "card_survival_master": { "title": "Maestro de la Supervivencia", "desc_pre": "Cada habilidad maximizada al nivel 10 vale", "desc_post": "El juego tiene 35 habilidades.", "badge": "hasta +{{total}} pts" },
+      "card_kentucky": { "title": "Reconstrucción de Kentucky", "desc_pre": "Establece una base en cada uno de los {{count}} restaurantes Spiffo's. Cada base establecida vale", "badge": "hasta +{{total}} pts" },
+      "card_spiffo_hq": { "title": "Sede de Spiffo's (Louisville HQ)", "desc": "Conquista la Sede de Spiffo's en Louisville, eliminando toda la amenaza zombi de la región.", "badge": "+{{val}} pts" },
+      "card_spiffo_relic": { "title": "Reliquia de Spiffo", "desc": "Localiza y recolecta la legendaria Reliquia de Spiffo — símbolo máximo de la supervivencia.", "badge": "+{{val}} pts" },
+      "card_military": { "title": "Operación Base Militar", "desc": "Conquista la Base Militar Secreta al norte de Rosewood, eliminando por completo a los zombis de la instalación.", "badge": "+{{val}} pts" },
+      "max_score_label": "Puntuación máxima posible",
+      "locations_title": "Lugares — Reconstrucción de Kentucky",
+      "requirements_title": "Requisitos por Base",
+      "requirements_intro_pre": "Cada restaurante solo se considera conquistado cuando cumple",
+      "requirements_intro_bold": "todos",
+      "requirements_intro_post": "los requisitos de abajo:"
+    },
+    "sandbox": {
+      "section_title": "Configuraciones del Sandbox",
+      "section_sub": "Preset oficial \"Brasileirão PZ\" — Temporada 1. El mod verifica y corrige automáticamente.",
+      "callout_pre": "Cualquier divergencia de estas configuraciones resulta en",
+      "callout_bold": "descalificación automática",
+      "callout_post": "El preset se aplica automáticamente al iniciar una nueva partida con el mod activo.",
+      "groups": {
+        "zombies_population": {
+          "title": "Zombis — Población",
+          "rows": [
+            { "label": "Multiplicador de población", "value": "4.0×" },
+            { "label": "Pob. inicial", "value": "2.5×" },
+            { "label": "Pob. en el pico", "value": "2.5×" },
+            { "label": "Día del pico", "value": "Día 1" },
+            { "label": "Reaparición", "value": "Ninguna" },
+            { "label": "Migración de zombis", "value": "Cada 24h" },
+            { "label": "Radio de audición", "value": "600 unidades" },
+            { "label": "Tamaño de la horda", "value": "0" },
+            { "label": "Variación del grupo de horda", "value": "50" },
+            { "label": "Distancia de formación de hordas", "value": "20" },
+            { "label": "Separación de hordas", "value": "15" },
+            { "label": "Radio de hordas", "value": "3" }
+          ]
+        },
+        "zombies_behavior": {
+          "title": "Zombis — Comportamiento",
+          "rows": [
+            { "label": "Velocidad", "value": "Normal (0% lentos)" },
+            { "label": "Fuerza", "value": "Sobrehumana" },
+            { "label": "Resistencia", "value": "Normal" },
+            { "label": "Transmisión de la infección", "value": "Solo Saliva" },
+            { "label": "Mortalidad de la infección", "value": "2–3 Días" },
+            { "label": "Tiempo de reanimación", "value": "Instantáneo" },
+            { "label": "Percepción / Apertura de puertas", "value": "Avanzada" },
+            { "label": "Apertura aleatoria de puertas", "value": "0 (Ninguna)" },
+            { "label": "Rastreros en vehículos", "value": "Frecuentemente" },
+            { "label": "Memoria", "value": "Larga" },
+            { "label": "Visión", "value": "Ojo de Águila" },
+            { "label": "Audición", "value": "Alta" },
+            { "label": "Fake Dead", "value": "Total (incl. muertos por el jugador)" },
+            { "label": "Derribar al superviviente", "value": "Sí" },
+            { "label": "Rastreros derriban", "value": "Sí" },
+            { "label": "Multiplicador de daño en cercas", "value": "2.0×" },
+            { "label": "Probabilidad de arma equipada en el zombi", "value": "6%" },
+            { "label": "Armadura del zombi", "value": "2.0 (máx. 90%)" }
+          ]
+        },
+        "loot": {
+          "title": "Botín",
+          "rows": [
+            { "label": "Todas las categorías de botín", "value": "0.04 (Muy Bajo)" },
+            { "label": "Efecto de la población en el botín", "value": "2 (Bajo)" },
+            { "label": "Generadores", "value": "Extremadamente Raro" },
+            { "label": "Reaparición de objetos", "value": "Ninguna" }
+          ]
+        },
+        "world": {
+          "title": "Mundo",
+          "rows": [
+            { "label": "Corte de agua", "value": "Instantáneo" },
+            { "label": "Corte de electricidad", "value": "Instantáneo" },
+            { "label": "Descarga de batería de alarma", "value": "0–5 Años" },
+            { "label": "Casas con alarmas", "value": "Muy Frecuente" },
+            { "label": "Casas cerradas", "value": "Muy Frecuente" },
+            { "label": "Propagación del fuego", "value": "Sí" }
+          ]
+        },
+        "nature": {
+          "title": "Naturaleza",
+          "rows": [
+            { "label": "Temperatura", "value": "Muy Frío" },
+            { "label": "Lluvia", "value": "Seco" },
+            { "label": "Oscuridad nocturna", "value": "Normal" },
+            { "label": "Abundancia de pesca", "value": "Muy Mala" },
+            { "label": "Abundancia natural", "value": "Muy Mala" }
+          ]
+        },
+        "events": {
+          "title": "Eventos",
+          "rows": [
+            { "label": "Evento del helicóptero", "value": "Una Vez" },
+            { "label": "Eventos aleatorios", "value": "Nunca" },
+            { "label": "Alarmas de casas", "value": "Muy Frecuente" }
+          ]
+        },
+        "character": {
+          "title": "Personaje",
+          "rows": [
+            { "label": "Kit inicial", "value": "No" },
+            { "label": "Puntos extra de rasgos", "value": "0" },
+            { "label": "Fracturas óseas", "value": "Sí" },
+            { "label": "Multiplicador global de XP", "value": "0.8×" },
+            { "label": "Multi-golpe con armas", "value": "No" },
+            { "label": "Escalada fácil", "value": "No" },
+            { "label": "Bloqueo al atacar", "value": "Sí" },
+            { "label": "Penalización de rasgos negativos", "value": "Ninguna" },
+            { "label": "Nutrición", "value": "Sí" }
+          ]
+        },
+        "firearms": {
+          "title": "Armas de Fuego",
+          "rows": [
+            { "label": "Multiplicador de ruido", "value": "2.0×" },
+            { "label": "Multiplicador de atascos", "value": "1.0×" },
+            { "label": "Daño de armas de fuego", "value": "Solo Zombis" }
+          ]
+        },
+        "vehicles": {
+          "title": "Vehículos",
+          "rows": [
+            { "label": "Vehículos cerrados", "value": "Muy Frecuente" },
+            { "label": "Condición general", "value": "Muy Baja" },
+            { "label": "Gasolina inicial", "value": "Muy Baja" },
+            { "label": "Probabilidad de gasolina", "value": "Baja" },
+            { "label": "Alarma de auto", "value": "Muy Frecuente" },
+            { "label": "Uso fácil", "value": "No" }
+          ]
+        },
+        "animals": {
+          "title": "Animales",
+          "rows": [
+            { "label": "Probabilidad de aparición de animales de granja", "value": "Raro" },
+            { "label": "Los animales atraen zombis", "value": "Sí" },
+            { "label": "Temporada de reproducción", "value": "Sí" }
+          ]
+        },
+        "map": {
+          "title": "Mapa",
+          "rows": [
+            { "label": "Minimapa", "value": "Permitido" },
+            { "label": "Mapa del mundo", "value": "Permitido" },
+            { "label": "Todo el mapa revelado", "value": "Sí" },
+            { "label": "Luz necesaria para leer el mapa", "value": "Sí" }
+          ]
+        }
+      }
+    },
+    "conduta": {
+      "section_title": "10 Reglas Fundamentales",
+      "section_sub": "Las reglas que rigen la participación en el Brasileirão PZ. El cumplimiento es obligatorio.",
+      "rules": [
+        { "title": "Transmisión Obligatoria", "desc": "Toda la participación en el campeonato debe transmitirse en vivo en una transmisión de juego." },
+        { "title": "YouTube o Twitch como Plataforma Oficial", "desc": "La transmisión debe realizarse en YouTube o en Twitch y permanecer guardada para futuras auditorías. El registro de un canal de YouTube sigue siendo obligatorio al momento de la inscripción, pero la transmisión puede hacerse en cualquiera de las dos plataformas. Si transmites solo en Twitch, es responsabilidad del participante guardar/exportar el VOD manualmente — Twitch elimina las transmisiones automáticamente después de un período (hasta 60 días)." },
+        { "title": "Configuración Oficial", "desc": "Es obligatorio utilizar la versión del juego, el preset de Sandbox y la Lista de Mods Oficial definidos por el campeonato. Cualquier alteración resultará en la invalidación del intento." },
+        { "title": "Mods Permitidos", "desc": "Solo se pueden usar mods presentes en la Lista de Mods Oficial. Las sugerencias de nuevos mods deben enviarse al equipo de moderación para su evaluación." },
+        { "title": "Prohibición de Trampas", "desc": "Está prohibido utilizar software, scripts, macros, trainers, trampas, exploits o cualquier recurso que otorgue una ventaja indebida durante la competencia." },
+        { "title": "Integridad de la Partida", "desc": "No está permitido editar partidas guardadas, restaurar copias de seguridad después de la muerte, usar comandos administrativos o modificar archivos del juego para alterar la experiencia oficial." },
+        { "title": "Validación del Intento", "desc": "Todas las partidas deben ser válidas según las reglas del campeonato y podrán ser auditadas por la organización mediante las grabaciones y la información proporcionada por PZ-Rank." },
+        { "title": "Conducta Deportiva", "desc": "Los participantes deben mantener una actitud respetuosa hacia los demás competidores, espectadores y el equipo organizador. Las actitudes antideportivas podrán resultar en sanciones." },
+        { "title": "Penalizaciones", "desc": "El incumplimiento de cualquier regla podrá resultar en advertencia, invalidación del intento, descalificación o baneo, según la gravedad de la infracción." },
+        { "title": "Decisión de la Organización", "desc": "En casos omitidos o situaciones no previstas en este reglamento, la decisión final corresponderá exclusivamente al equipo organizador del Brasileirão PZ." },
+        { "title": "Registro de Muerte", "desc": "Toda muerte debe registrarse en el ranking mediante Companion. Si la muerte no se detecta automáticamente, el jugador quedará bloqueado para sincronizar un nuevo personaje hasta que un moderador confirme el fallecimiento — tras lo cual los puntos del personaje anterior se ponen a cero y la nueva corrida puede empezar desde cero." }
+      ],
+      "footer": "¿Dudas o denuncias? Contacta a la moderación vía Discord o por las redes sociales del campeonato."
+    }
+  },
+  "errors": {
+    "player_not_found": "Jugador no encontrado.",
+    "invalid_id": "ID inválido.",
+    "cannot_like_self": "No puedes dar like a tu propio perfil.",
+    "db_error": "Error al procesar tu solicitud. Inténtalo de nuevo."
+  }
+}

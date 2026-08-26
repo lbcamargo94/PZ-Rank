@@ -1,9 +1,15 @@
 import { useEffect, useState } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { apiGetLatestNews } from '../lib/api';
+import { formatNumber, formatDate } from '../lib/format';
 import type { DailyNews, NewsStats } from '../types';
 
+// Manchetes de lore do jogo — conteúdo de dados (flavor text fixo do universo
+// de Project Zomboid), não interface. Fica em português nesta fase do i18n,
+// mesma fronteira de escopo de traits.ts/professions.ts/objectives.ts.
 const LORE_HEADLINES: ReadonlyArray<{ source: string; text: string }> = [
   { source: 'Knox Knews · 6 jul 1993',          text: 'DOENÇA MISTERIOSA ATINGE MULDRAUGH — Autoridades sobrecarregadas. CDC e militares se mobilizam em silêncio.' },
   { source: 'Kentucky Herald · 6 jul 1993',      text: 'Surto de doença em Muldraugh. Dezenas de casos confirmados. Resposta dificultada pela falta de telefones na região.' },
@@ -26,37 +32,24 @@ const LORE_HEADLINES: ReadonlyArray<{ source: string; text: string }> = [
   { source: 'Knox Knews · 5 jul 1993',           text: 'CHEIRO FÉTIDO PODE SER "PROCESSO NATURAL". Professora de geografia liga odor misterioso ao Rio Ohio.' },
 ];
 
-
-function fmt(n: number): string {
-  return n.toLocaleString('pt-BR');
-}
-
 function fmtDateLong(dateStr: string): string {
-  return new Date(`${dateStr}T12:00:00`).toLocaleDateString('pt-BR', {
-    weekday: 'long',
-    day:     'numeric',
-    month:   'long',
-    year:    'numeric',
-  });
+  return formatDate(`${dateStr}T12:00:00`, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-function autoHeadline(s: NewsStats): string {
+function autoHeadline(s: NewsStats, t: TFunction): string {
   if (s.deaths_today > 0 && s.kills_today > 0) {
-    const d = s.deaths_today;
-    return `${d} sobrevivente${d > 1 ? 's' : ''} tombou${d > 1 ? 'ram' : ''} hoje — ${fmt(s.kills_today)} zumbis eliminados nas últimas 24 horas.`;
+    return t('home.news.headline_deaths_and_kills', { count: s.deaths_today, deaths: s.deaths_today, kills: formatNumber(s.kills_today) });
   }
   if (s.deaths_today > 0) {
-    const d = s.deaths_today;
-    return `${d} sobrevivente${d > 1 ? 's' : ''} tombou${d > 1 ? 'ram' : ''} hoje. ${fmt(s.alive_count)} ainda resistem.`;
+    return t('home.news.headline_deaths_only', { count: s.deaths_today, deaths: s.deaths_today, alive: formatNumber(s.alive_count) });
   }
   if (s.kills_today > 0) {
-    return `${fmt(s.kills_today)} zumbis eliminados hoje. ${fmt(s.alive_count)} sobreviventes seguem firmes.`;
+    return t('home.news.headline_kills_only', { kills: formatNumber(s.kills_today), alive: formatNumber(s.alive_count) });
   }
   if (s.syncs_today > 0) {
-    const a = s.syncs_today;
-    return `${a} jogador${a > 1 ? 'es' : ''} ativo${a > 1 ? 's' : ''} hoje. O apocalipse continua.`;
+    return t('home.news.headline_syncs_only', { count: s.syncs_today });
   }
-  return `${fmt(s.alive_count)} sobrevivente${s.alive_count !== 1 ? 's' : ''} resiste${s.alive_count === 1 ? '' : 'm'} ao apocalipse.`;
+  return t('home.news.headline_default', { count: s.alive_count, alive: formatNumber(s.alive_count) });
 }
 
 interface ModalProps {
@@ -66,6 +59,8 @@ interface ModalProps {
 }
 
 function NewsModal({ news, loading, onClose }: ModalProps) {
+  const { t } = useTranslation();
+
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -75,31 +70,31 @@ function NewsModal({ news, loading, onClose }: ModalProps) {
   }, [onClose]);
 
   const stats    = news?.stats ?? null;
-  const headline = news?.headline ?? (stats ? autoHeadline(stats) : null);
+  const headline = news?.headline ?? (stats ? autoHeadline(stats, t) : null);
   const hasActivity = stats && (stats.deaths_today > 0 || stats.syncs_today > 0 || stats.kills_today > 0);
 
   return (
     <div className="modal-overlay active" onClick={onClose} role="dialog" aria-modal="true">
       <div className="modal-box news-modal-box" onClick={e => e.stopPropagation()}>
-        <button className="modal-close" aria-label="Fechar" onClick={onClose}>
+        <button className="modal-close" aria-label={t('home.news.close')} onClick={onClose}>
           <i className="ti ti-x" />
         </button>
 
         {/* Masthead */}
         <div className="news-modal-masthead">
-          <span className="news-modal-label"><i className="ti ti-news" /> JORNAL DO APOCALIPSE</span>
+          <span className="news-modal-label"><i className="ti ti-news" /> {t('home.news.title')}</span>
           {news && <span className="news-modal-date">{fmtDateLong(news.date)}</span>}
         </div>
 
         {loading && (
           <div className="news-modal-state">
-            <i className="ti ti-loader-2 spin" /> Carregando edição de hoje...
+            <i className="ti ti-loader-2 spin" /> {t('home.news.loading')}
           </div>
         )}
 
         {!loading && !news && (
           <div className="news-modal-state news-modal-state--error">
-            <i className="ti ti-alert-circle" /> Não foi possível carregar o jornal.
+            <i className="ti ti-alert-circle" /> {t('home.news.load_error')}
           </div>
         )}
 
@@ -113,56 +108,56 @@ function NewsModal({ news, loading, onClose }: ModalProps) {
             {/* O que aconteceu hoje */}
             {hasActivity ? (
               <div className="news-modal-section">
-                <span className="news-modal-section-label">Aconteceu hoje</span>
+                <span className="news-modal-section-label">{t('home.news.today_happened')}</span>
                 <div className="news-today-grid">
                   {stats!.kills_today > 0 && (
                     <div className="news-today-cell news-today-cell--kills">
                       <i className="ti ti-sword" />
-                      <span className="news-today-val">+{fmt(stats!.kills_today)}</span>
-                      <span className="news-today-lbl">eliminações</span>
+                      <span className="news-today-val">+{formatNumber(stats!.kills_today)}</span>
+                      <span className="news-today-lbl">{t('home.news.eliminations')}</span>
                     </div>
                   )}
                   {stats!.deaths_today > 0 && (
                     <div className="news-today-cell news-today-cell--deaths">
                       <i className="ti ti-skull" />
                       <span className="news-today-val">{stats!.deaths_today}</span>
-                      <span className="news-today-lbl">{stats!.deaths_today === 1 ? 'morte' : 'mortes'}</span>
+                      <span className="news-today-lbl">{t('home.news.deaths', { count: stats!.deaths_today })}</span>
                     </div>
                   )}
                   {stats!.syncs_today > 0 && (
                     <div className="news-today-cell news-today-cell--syncs">
                       <i className="ti ti-users" />
                       <span className="news-today-val">{stats!.syncs_today}</span>
-                      <span className="news-today-lbl">{stats!.syncs_today === 1 ? 'ativo' : 'ativos'}</span>
+                      <span className="news-today-lbl">{t('home.news.actives', { count: stats!.syncs_today })}</span>
                     </div>
                   )}
                 </div>
               </div>
             ) : (
               <div className="news-modal-section">
-                <span className="news-modal-section-label">Aconteceu hoje</span>
-                <p className="news-quiet">Nenhuma atividade registrada hoje.</p>
+                <span className="news-modal-section-label">{t('home.news.today_happened')}</span>
+                <p className="news-quiet">{t('home.news.no_activity')}</p>
               </div>
             )}
 
             {/* Situação atual */}
             {stats && (
               <div className="news-modal-section">
-                <span className="news-modal-section-label">Situação atual</span>
+                <span className="news-modal-section-label">{t('home.news.current_situation')}</span>
                 <div className="news-current-row">
                   <span className="news-current-item news-current--alive">
                     <i className="ti ti-heartbeat" />
-                    <strong>{fmt(stats.alive_count)}</strong> vivos
+                    <strong>{formatNumber(stats.alive_count)}</strong> {t('home.stats.alive')}
                   </span>
                   <span className="news-current-sep" />
                   <span className="news-current-item news-current--dead">
                     <i className="ti ti-skull" />
-                    <strong>{fmt(stats.dead_count)}</strong> mortos
+                    <strong>{formatNumber(stats.dead_count)}</strong> {t('home.stats.dead')}
                   </span>
                   <span className="news-current-sep" />
                   <span className="news-current-item news-current--kills">
                     <i className="ti ti-sword" />
-                    <strong>{fmt(stats.total_kills)}</strong> eliminados no total
+                    <strong>{formatNumber(stats.total_kills)}</strong> {t('home.news.total_eliminated')}
                   </span>
                 </div>
               </div>
@@ -175,6 +170,7 @@ function NewsModal({ news, loading, onClose }: ModalProps) {
 }
 
 export function NewsInline() {
+  const { t } = useTranslation();
   const [news,    setNews]    = useState<DailyNews | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -202,14 +198,14 @@ export function NewsInline() {
   if (loading) return (
     <div className="news-inline news-inline--loading">
       <i className="ti ti-loader-2 spin" />
-      <span>Carregando edição de hoje...</span>
+      <span>{t('home.news.loading')}</span>
     </div>
   );
 
   if (!news) return null;
 
   const stats       = news.stats ?? null;
-  const headline    = news.headline ?? (stats ? autoHeadline(stats) : null);
+  const headline    = news.headline ?? (stats ? autoHeadline(stats, t) : null);
   const hasActivity = stats && (stats.deaths_today > 0 || stats.syncs_today > 0 || stats.kills_today > 0);
 
   return (
@@ -218,7 +214,7 @@ export function NewsInline() {
       {/* ── Masthead ── */}
       <header className="news-inline-head">
         <span className="news-inline-label">
-          <i className="ti ti-news" /> Jornal do Apocalipse
+          <i className="ti ti-news" /> {t('home.news.title')}
         </span>
         <time className="news-inline-date">{fmtDateLong(news.date)}</time>
       </header>
@@ -227,7 +223,7 @@ export function NewsInline() {
       <div className="news-video-row">
         <iframe
           src="https://www.youtube.com/embed/PLczjbLOmMg?rel=0&modestbranding=1"
-          title="Jornal do Apocalipse — Introdução"
+          title={t('home.news.intro_video_title')}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
         />
@@ -248,17 +244,17 @@ export function NewsInline() {
                 <div className="news-pills">
                   {stats.kills_today > 0 && (
                     <span className="news-pill news-pill--kills">
-                      <i className="ti ti-sword" /> +{fmt(stats.kills_today)} eliminados
+                      <i className="ti ti-sword" /> +{formatNumber(stats.kills_today)} {t('home.news.eliminated_suffix')}
                     </span>
                   )}
                   {stats.deaths_today > 0 && (
                     <span className="news-pill news-pill--deaths">
-                      <i className="ti ti-skull" /> {stats.deaths_today} {stats.deaths_today === 1 ? 'morte' : 'mortes'}
+                      <i className="ti ti-skull" /> {stats.deaths_today} {t('home.news.deaths', { count: stats.deaths_today })}
                     </span>
                   )}
                   {stats.syncs_today > 0 && (
                     <span className="news-pill news-pill--syncs">
-                      <i className="ti ti-users" /> {stats.syncs_today} {stats.syncs_today === 1 ? 'ativo' : 'ativos'}
+                      <i className="ti ti-users" /> {stats.syncs_today} {t('home.news.actives', { count: stats.syncs_today })}
                     </span>
                   )}
                 </div>
@@ -266,14 +262,14 @@ export function NewsInline() {
               <div className="news-alive-row">
                 <span className="news-alive-item news-alive-item--alive">
                   <i className="ti ti-heartbeat" />
-                  <strong>{fmt(stats.alive_count)}</strong>
-                  <span>vivos</span>
+                  <strong>{formatNumber(stats.alive_count)}</strong>
+                  <span>{t('home.stats.alive')}</span>
                 </span>
                 <span className="news-alive-sep" />
                 <span className="news-alive-item news-alive-item--dead">
                   <i className="ti ti-skull" />
-                  <strong>{fmt(stats.dead_count)}</strong>
-                  <span>mortos</span>
+                  <strong>{formatNumber(stats.dead_count)}</strong>
+                  <span>{t('home.stats.dead')}</span>
                 </span>
               </div>
             </div>
@@ -284,14 +280,14 @@ export function NewsInline() {
         <aside className="news-col-lore">
           <div className="news-lore-header">
             <span className="news-lore-label">
-              <i className="ti ti-archive" /> Arquivo Histórico
+              <i className="ti ti-archive" /> {t('home.news.archive')}
             </span>
             <div className="news-lore-controls">
-              <button className="lore-nav-btn" onClick={() => loreApi?.scrollPrev()} aria-label="Anterior">
+              <button className="lore-nav-btn" onClick={() => loreApi?.scrollPrev()} aria-label={t('home.news.previous')}>
                 <i className="ti ti-chevron-left" />
               </button>
               <span className="lore-nav-counter">{loreIdx + 1}/{LORE_HEADLINES.length}</span>
-              <button className="lore-nav-btn" onClick={() => loreApi?.scrollNext()} aria-label="Próximo">
+              <button className="lore-nav-btn" onClick={() => loreApi?.scrollNext()} aria-label={t('home.news.next')}>
                 <i className="ti ti-chevron-right" />
               </button>
             </div>
@@ -314,6 +310,7 @@ export function NewsInline() {
 }
 
 export function NewsButton() {
+  const { t } = useTranslation();
   const [open,    setOpen]    = useState(false);
   const [news,    setNews]    = useState<DailyNews | null>(null);
   const [loading, setLoading] = useState(false);
@@ -333,7 +330,7 @@ export function NewsButton() {
     <>
       <button className="news-trigger-btn" onClick={handleOpen}>
         <i className="ti ti-news" />
-        Jornal do Apocalipse
+        {t('home.news.title')}
         <i className="ti ti-chevron-right news-trigger-arrow" />
       </button>
       {open && (

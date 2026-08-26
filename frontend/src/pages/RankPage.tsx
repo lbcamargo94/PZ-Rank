@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { apiGetEntries, apiGetAllEntries, apiGetLiveStatus } from '../lib/api';
 import type { Entry, SortKey, RankTab, LiveStatus } from '../types';
 import { parseSkillMap, MAX_SKILL_LEVEL } from '../lib/skills';
 import { buildLiveMap } from '../lib/live';
+import { translateApiError } from '../lib/apiErrors';
 import { useToast } from '../hooks/useToast';
 import { Toast } from '../components/Toast';
 import { Header } from '../components/Header';
@@ -11,11 +13,11 @@ import { RankTable } from '../components/RankTable';
 
 const LIVE_STATUS_POLL_MS = 30_000;
 
-const TAB_CONFIG: { key: RankTab; label: string; icon: string }[] = [
-  { key: 'rank',         label: 'Rank',             icon: 'ti-heartbeat' },
-  { key: 'records',      label: 'Records',          icon: 'ti-trophy'    },
-  { key: 'dead',         label: 'Mortes',           icon: 'ti-skull'     },
-  { key: 'disqualified', label: 'Desclassificados', icon: 'ti-ban'       },
+const TAB_CONFIG: { key: RankTab; labelKey: string; icon: string }[] = [
+  { key: 'rank',         labelKey: 'rank.tabs.rank',         icon: 'ti-heartbeat' },
+  { key: 'records',      labelKey: 'rank.tabs.records',      icon: 'ti-trophy'    },
+  { key: 'dead',         labelKey: 'rank.tabs.dead',         icon: 'ti-skull'     },
+  { key: 'disqualified', labelKey: 'rank.tabs.disqualified', icon: 'ti-ban'       },
 ];
 
 const DEAD_ZONE_MS = 15 * 24 * 60 * 60 * 1000;
@@ -51,6 +53,7 @@ function sortEntries(list: Entry[], key: SortKey): Entry[] {
 }
 
 export function RankPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [entries,          setEntries]         = useState<Entry[]>([]);
   const [allEntries,       setAllEntries]       = useState<Entry[]>([]);
@@ -85,7 +88,7 @@ export function RankPage() {
     try {
       setEntries(await apiGetEntries('score'));
     } catch (err) {
-      showToast((err as Error).message || 'Erro ao carregar ranking.', 'error');
+      showToast(translateApiError(err, t) || t('rank.load_error'), 'error');
     } finally {
       setLoading(false);
     }
@@ -98,7 +101,7 @@ export function RankPage() {
       setAllEntries(await apiGetAllEntries('score'));
       setAllEntriesLoaded(true);
     } catch (err) {
-      showToast((err as Error).message || 'Erro ao carregar records.', 'error');
+      showToast(translateApiError(err, t) || t('rank.records_load_error'), 'error');
     } finally {
       setLoadingRecords(false);
     }
@@ -173,23 +176,23 @@ export function RankPage() {
       <main>
         <div className="container rank-page-top">
           <button className="btn-ghost btn-sm" onClick={() => navigate(-1)} type="button">
-            <i className="ti ti-arrow-left" /> Voltar
+            <i className="ti ti-arrow-left" /> {t('rank.back')}
           </button>
           <div className="rank-search-wrap">
             <i className="ti ti-search rank-search-icon" aria-hidden="true" />
             <input
               className="rank-search-input"
               type="search"
-              placeholder="Buscar por jogador ou personagem em todas as categorias..."
+              placeholder={t('rank.search_placeholder')}
               value={search}
               onChange={e => setSearch(e.target.value)}
-              aria-label="Buscar jogador"
+              aria-label={t('rank.search_aria')}
             />
             {search && (
               <button
                 className="rank-search-clear"
                 onClick={() => setSearch('')}
-                aria-label="Limpar busca"
+                aria-label={t('rank.search_clear_aria')}
                 type="button"
               >
                 <i className="ti ti-x" />
@@ -200,22 +203,22 @@ export function RankPage() {
             <div className="rank-search-global-note" role="status">
               <i className="ti ti-search" />
               {filteredEntries.length === 0
-                ? 'Nenhum resultado encontrado.'
-                : `${filteredEntries.length} resultado${filteredEntries.length !== 1 ? 's' : ''} em todas as categorias`}
+                ? t('rank.search_no_results')
+                : t('rank.search_results', { count: filteredEntries.length })}
             </div>
           )}
         </div>
 
         <div className="container rank-tabs-bar">
           <div className="rank-tabs">
-            {TAB_CONFIG.map(({ key, label, icon }) => (
+            {TAB_CONFIG.map(({ key, labelKey, icon }) => (
               <button
                 key={key}
                 className={`rank-tab tab-${key}${activeTab === key ? ' active' : ''}`}
                 onClick={() => handleTabChange(key)}
               >
                 <i className={`ti ${icon}`} />
-                {label}
+                {t(labelKey)}
                 <span className="rank-tab-badge">{tabCounts[key]}</span>
               </button>
             ))}

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import adImg from '../../assets/background/patrocinio.webp';
 
 const CLIENT = (import.meta.env.VITE_ADSENSE_CLIENT as string) ?? '';
@@ -14,6 +15,7 @@ function readIsSupporter(): boolean {
 }
 
 export function AdBanner() {
+  const { t } = useTranslation();
   const [supporter] = useState(readIsSupporter);
   const pushed = useRef(false);
 
@@ -51,17 +53,17 @@ export function AdBanner() {
         />
       ) : (
         <div className="patrocinio-placeholder">
-          <Link to="/transparencia" className="patrocinio-link" title="Anuncie no Brasileirão PZ">
+          <Link to="/transparencia" className="patrocinio-link" title={t('home.ad.title')}>
             <img
               src={adImg}
-              alt="Anuncie aqui — Apoie o Brasileirão PZ"
+              alt={t('home.ad.alt')}
               className="patrocinio-img"
             />
           </Link>
           <a
             href="mailto:brasileiraozomboid@gmail.com"
             className="patrocinio-cta-email"
-            title="Fale conosco sobre parcerias"
+            title={t('home.ad.contact_title')}
           >
             <i className="ti ti-mail" aria-hidden="true" />
             brasileiraozomboid@gmail.com

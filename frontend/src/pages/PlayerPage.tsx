@@ -1,5 +1,7 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import avatarDefault from '../../assets/avatar.png';
 import perfilBg from '../../assets/background/perfil-usuario.webp';
 import { apiGetPlayerProfile, apiGetEntries, apiGetLiveStatus, apiGetPlayerLikes, apiLikePlayer, apiUnlikePlayer } from '../lib/api';
@@ -14,6 +16,8 @@ import { hasLiveWarning } from '../lib/live';
 import { LiveBadges } from '../components/LiveBadges';
 import { useToast } from '../hooks/useToast';
 import { Toast } from '../components/Toast';
+import { formatNumber } from '../lib/format';
+import { translateApiError } from '../lib/apiErrors';
 import type { PlayerProfile, Entry, LiveStatus, PlayerSession, PlayerLikeStatus } from '../types';
 import type { Objectives } from '../lib/objectives';
 
@@ -36,6 +40,7 @@ function normalizeUrl(url: string): string {
 }
 
 function ObjectivesSection({ objectives, kills }: { objectives: Objectives | null | undefined; kills: number }) {
+  const { t } = useTranslation();
   const obj = objectives ?? initObjectives();
   const pending = !objectives;
 
@@ -47,20 +52,20 @@ function ObjectivesSection({ objectives, kills }: { objectives: Objectives | nul
       {pending && (
         <div className="pp-obj-pending-banner">
           <i className="ti ti-info-circle" />
-          Objetivos ainda não registrados pelo moderador. Mostrando estado inicial.
+          {t('player.objectives.pending_banner')}
         </div>
       )}
 
       {/* Special objectives */}
       <div className="pp-obj-group">
-        <h4 className="pp-obj-group-title"><i className="ti ti-star" /> Objetivos Especiais</h4>
+        <h4 className="pp-obj-group-title"><i className="ti ti-star" /> {t('player.objectives.special_title')}</h4>
 
         <div className="pp-obj-item">
           <div className={`pp-obj-badge ${kills >= 800_000 ? 'pp-obj-done' : ''}`}>
             {kills >= 800_000 ? <i className="ti ti-check" /> : <i className="ti ti-clock" />}
           </div>
           <div className="pp-obj-body">
-            <span className="pp-obj-name">800.000 Zumbis Abatidos</span>
+            <span className="pp-obj-name">{t('player.objectives.kills_target', { count: formatNumber(800_000) })}</span>
             <ProgressBar value={Math.min(kills, 800_000)} max={800_000} showValues />
           </div>
         </div>
@@ -70,7 +75,7 @@ function ObjectivesSection({ objectives, kills }: { objectives: Objectives | nul
             {obj.spiffo_hq ? <i className="ti ti-check" /> : <i className="ti ti-clock" />}
           </div>
           <div className="pp-obj-body">
-            <span className="pp-obj-name">Sede do Spiffo's Conquistada (Louisville HQ)</span>
+            <span className="pp-obj-name">{t('player.objectives.spiffo_hq')}</span>
           </div>
         </div>
 
@@ -79,7 +84,7 @@ function ObjectivesSection({ objectives, kills }: { objectives: Objectives | nul
             {obj.spiffo_relic ? <i className="ti ti-check" /> : <i className="ti ti-clock" />}
           </div>
           <div className="pp-obj-body">
-            <span className="pp-obj-name">Relíquia do Spiffo Coletada</span>
+            <span className="pp-obj-name">{t('player.objectives.spiffo_relic')}</span>
           </div>
         </div>
 
@@ -88,7 +93,7 @@ function ObjectivesSection({ objectives, kills }: { objectives: Objectives | nul
             {obj.military_base ? <i className="ti ti-check" /> : <i className="ti ti-clock" />}
           </div>
           <div className="pp-obj-body">
-            <span className="pp-obj-name">Base Militar de Rosewood Conquistada</span>
+            <span className="pp-obj-name">{t('player.objectives.military_base')}</span>
           </div>
         </div>
       </div>
@@ -96,7 +101,7 @@ function ObjectivesSection({ objectives, kills }: { objectives: Objectives | nul
       {/* Bases Spiffo's */}
       <div className="pp-obj-group">
         <h4 className="pp-obj-group-title">
-          <i className="ti ti-building-store" /> Bases nos Spiffo's
+          <i className="ti ti-building-store" /> {t('player.objectives.bases_title')}
           <span className="pp-obj-count">{basesCount}/{SPIFFOS_RESTAURANTS.length}</span>
         </h4>
         <ProgressBar value={basesCount} max={SPIFFOS_RESTAURANTS.length} />
@@ -122,6 +127,7 @@ function ObjectivesSection({ objectives, kills }: { objectives: Objectives | nul
 }
 
 function SkillsSection({ skillsStr }: { skillsStr: string | null }) {
+  const { t } = useTranslation();
   const skillMap = parseSkillMap(skillsStr);
   const maxedCount = Array.from(skillMap.values()).filter(l => l >= MAX_SKILL_LEVEL).length;
 
@@ -133,7 +139,7 @@ function SkillsSection({ skillsStr }: { skillsStr: string | null }) {
           <span className="pp-skills-sep">/</span>
           <span className="pp-skills-total">{TOTAL_SKILLS}</span>
         </span>
-        <span className="pp-skills-label">habilidades no nível máximo</span>
+        <span className="pp-skills-label">{t('player.skills_max_label')}</span>
       </div>
 
       <div className="pp-skills-grid">
@@ -163,8 +169,9 @@ function SkillsSection({ skillsStr }: { skillsStr: string | null }) {
 }
 
 function TraitsSection({ traitsRaw }: { traitsRaw: string | null | undefined }) {
+  const { t } = useTranslation();
   const ids = parseTraitList(traitsRaw);
-  if (ids.length === 0) return <p className="pp-no-data">Características não registradas nesta entrada.</p>;
+  if (ids.length === 0) return <p className="pp-no-data">{t('player.traits.none')}</p>;
 
   const positive = ids.filter(id => resolveTrait(id).type === 'positive');
   const negative = ids.filter(id => resolveTrait(id).type === 'negative');
@@ -173,7 +180,7 @@ function TraitsSection({ traitsRaw }: { traitsRaw: string | null | undefined }) 
     <div className="pp-traits">
       {positive.length > 0 && (
         <div className="pp-trait-group">
-          <span className="pp-trait-group-label"><i className="ti ti-circle-plus" /> Positivas</span>
+          <span className="pp-trait-group-label"><i className="ti ti-circle-plus" /> {t('player.traits.positive')}</span>
           <div className="pp-trait-list">
             {positive.map(id => {
               const def = resolveTrait(id);
@@ -190,7 +197,7 @@ function TraitsSection({ traitsRaw }: { traitsRaw: string | null | undefined }) 
       )}
       {negative.length > 0 && (
         <div className="pp-trait-group">
-          <span className="pp-trait-group-label"><i className="ti ti-circle-minus" /> Negativas</span>
+          <span className="pp-trait-group-label"><i className="ti ti-circle-minus" /> {t('player.traits.negative')}</span>
           <div className="pp-trait-list">
             {negative.map(id => {
               const def = resolveTrait(id);
@@ -209,14 +216,6 @@ function TraitsSection({ traitsRaw }: { traitsRaw: string | null | undefined }) 
   );
 }
 
-const PP_DISQ_TOOLTIPS: Record<string, string> = {
-  sandbox:     'Configurações do sandbox divergem do desafio oficial',
-  debug:       'Jogador utilizou modo debug durante o desafio Brasileirão',
-  mods:        'Jogador utilizou mods não permitidos no desafio Brasileirão',
-  manual:      'Desclassificado manualmente pelo moderador',
-  mod_removed: 'Mod do desafio foi removido durante a run',
-};
-
 function parseModViolations(reason: string | null | undefined): string[] {
   if (!reason?.startsWith('mods:')) return [];
   return reason.slice(5).split(',').map(v => {
@@ -226,16 +225,22 @@ function parseModViolations(reason: string | null | undefined): string[] {
   }).filter(Boolean);
 }
 
-function ppDisqTooltip(reason: string | null | undefined): string {
-  if (!reason) return PP_DISQ_TOOLTIPS.sandbox;
+function ppDisqTooltip(t: TFunction, reason: string | null | undefined): string {
+  if (!reason) return t('rank.disq.sandbox');
   if (reason.startsWith('mods:')) {
     const ids = parseModViolations(reason);
-    return ids.length > 0 ? `Mods não permitidos: ${ids.join(', ')}` : PP_DISQ_TOOLTIPS.mods;
+    return ids.length > 0 ? t('rank.disq.mods_list', { list: ids.join(', ') }) : t('rank.disq.mods');
   }
-  return PP_DISQ_TOOLTIPS[reason] ?? PP_DISQ_TOOLTIPS.mods;
+  switch (reason) {
+    case 'debug':       return t('rank.disq.debug');
+    case 'manual':      return t('rank.disq.manual');
+    case 'mod_removed': return t('rank.disq.mod_removed_row');
+    default:             return t('rank.disq.mods');
+  }
 }
 
 function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | null; live?: LiveStatus[] }) {
+  const { t } = useTranslation();
   const [tab, setTab] = useState<'stats' | 'skills' | 'traits'>('stats');
   const [showGuide, setShowGuide] = useState(false);
   const isDisqualified = entry.sandbox_ok === false;
@@ -256,8 +261,8 @@ function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | nul
             </span>
           )}
           {hasLiveWarning(entry) && (
-            <span className="live-warning-badge" title="Vários syncs seguidos sem transmissão confirmada no YouTube ou na Twitch (obrigatória pelas regras)">
-              <i className="ti ti-alert-triangle" /> Sem transmissão
+            <span className="live-warning-badge" title={t('rank.live_warning_title')}>
+              <i className="ti ti-alert-triangle" /> {t('rank.live_warning')}
             </span>
           )}
         </div>
@@ -268,9 +273,9 @@ function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | nul
               <div className="pp-disq-block">
                 <span
                   className="alive-badge disqualified"
-                  title={ppDisqTooltip(entry.disqualification_reason)}
+                  title={ppDisqTooltip(t, entry.disqualification_reason)}
                 >
-                  <i className="ti ti-ban" /> Desclassificado
+                  <i className="ti ti-ban" /> {t('rank.status.disqualified')}
                 </span>
                 {parseModViolations(entry.disqualification_reason).length > 0 && (
                   <span className="pp-disq-mods">
@@ -281,40 +286,40 @@ function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | nul
               </div>
             )
             : entry.is_alive
-              ? <span className="alive-badge alive"><i className="ti ti-heartbeat" /> Vivo</span>
-              : <span className="alive-badge dead"><i className="ti ti-skull" /> Morto</span>}
+              ? <span className="alive-badge alive"><i className="ti ti-heartbeat" /> {t('rank.status.alive')}</span>
+              : <span className="alive-badge dead"><i className="ti ti-skull" /> {t('rank.status.dead')}</span>}
         </div>
       </div>
 
       {/* Score highlight */}
       <div className="pp-char-score">
-        <span className="pp-score-val">{entry.score.toLocaleString('pt-BR')}</span>
-        <span className="pp-score-label">pontos</span>
+        <span className="pp-score-val">{formatNumber(entry.score)}</span>
+        <span className="pp-score-label">{t('player.score_label')}</span>
       </div>
 
       {/* Quick stats row */}
       <div className="pp-char-stats-row">
         <span className="pp-stat"><i className="ti ti-calendar" />{entry.days}d</span>
         <span className="pp-stat"><i className="ti ti-clock" />{entry.time_str ?? '—'}</span>
-        <span className="pp-stat"><i className="ti ti-sword" />{entry.kills.toLocaleString('pt-BR')}</span>
+        <span className="pp-stat"><i className="ti ti-sword" />{formatNumber(entry.kills)}</span>
       </div>
 
       {/* Extended stats (PZRX3 — only shown when mod reports them and value > 0) */}
       {(() => {
         const extStats = [
-          { key: 'animals',  tip: 'Animais abatidos',   icon: '🏹', v: entry.animals_killed },
-          { key: 'fish',     tip: 'Peixes capturados',  icon: '🐟', v: entry.fish_caught },
-          { key: 'crops',    tip: 'Vegetais colhidos',  icon: '🌽', v: entry.crops_harvested },
-          { key: 'crafted',  tip: 'Itens fabricados',   icon: '🔨', v: entry.items_crafted },
-          { key: 'looted',   tip: 'Casas saqueadas',    icon: '🏚️', v: entry.houses_looted },
-          { key: 'sleep',    tip: 'Horas sem dormir',   icon: '😴', v: entry.hours_without_sleep, suffix: 'h' },
+          { key: 'animals',  tip: t('player.extended_stats.animals'), icon: '🏹', v: entry.animals_killed },
+          { key: 'fish',     tip: t('player.extended_stats.fish'),    icon: '🐟', v: entry.fish_caught },
+          { key: 'crops',    tip: t('player.extended_stats.crops'),   icon: '🌽', v: entry.crops_harvested },
+          { key: 'crafted',  tip: t('player.extended_stats.crafted'), icon: '🔨', v: entry.items_crafted },
+          { key: 'looted',   tip: t('player.extended_stats.looted'),  icon: '🏚️', v: entry.houses_looted },
+          { key: 'sleep',    tip: t('player.extended_stats.sleep'),   icon: '😴', v: entry.hours_without_sleep, suffix: 'h' },
         ].filter(s => s.v != null && s.v > 0);
         if (extStats.length === 0) return null;
         return (
           <div className="pp-ext-stats">
             {extStats.map(s => (
               <span key={s.key} className="pp-ext-stat" data-tip={s.tip}>
-                {s.icon} {s.v!.toLocaleString('pt-BR')}{s.suffix ?? ''}
+                {s.icon} {formatNumber(s.v!)}{s.suffix ?? ''}
               </span>
             ))}
           </div>
@@ -330,7 +335,7 @@ function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | nul
               <span className="pp-arch-icon">{primary.icon}</span>
             </div>
             <div className="pp-arch-info">
-              <span className="pp-arch-eyebrow">Perfil Psicológico</span>
+              <span className="pp-arch-eyebrow">{t('player.archetype.eyebrow')}</span>
               <div className="pp-arch-names">
                 <span className="pp-arch-name">{primary.name}</span>
                 {secondary && (
@@ -387,7 +392,7 @@ function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | nul
                 onClick={() => setShowGuide(true)}
               >
                 <i className="ti ti-books" />
-                <span>Ver guia completo de perfis</span>
+                <span>{t('player.archetype.guide_btn')}</span>
                 <i className="ti ti-arrow-right pp-arch-guide-arrow" />
               </button>
             </div>
@@ -398,13 +403,13 @@ function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | nul
       {/* Tabs */}
       <div className="pp-tabs">
         <button className={`pp-tab${tab === 'stats' ? ' active' : ''}`} onClick={() => setTab('stats')}>
-          Objetivos
+          {t('player.tabs.objectives')}
         </button>
         <button className={`pp-tab${tab === 'skills' ? ' active' : ''}`} onClick={() => setTab('skills')}>
-          Habilidades
+          {t('player.tabs.skills')}
         </button>
         <button className={`pp-tab${tab === 'traits' ? ' active' : ''}`} onClick={() => setTab('traits')}>
-          Características
+          {t('player.tabs.traits')}
         </button>
       </div>
 
@@ -422,6 +427,7 @@ function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | nul
 type CharFilter = 'all' | 'alive' | 'dead' | 'disqualified';
 
 export function PlayerPage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [profile, setProfile]       = useState<PlayerProfile | null>(null);
@@ -439,7 +445,7 @@ export function PlayerPage() {
     if (!id) return;
     const numId = parseInt(id, 10);
     if (isNaN(numId)) {
-      setError('ID de jogador inválido.');
+      setError(t('player.invalid_id'));
       setLoading(false);
       return;
     }
@@ -447,7 +453,7 @@ export function PlayerPage() {
     setError(null);
     Promise.all([apiGetPlayerProfile(numId), apiGetEntries('score')])
       .then(([prof, entries]) => { setProfile(prof); setAllEntries(entries); })
-      .catch(err => setError((err as Error).message))
+      .catch(err => setError(translateApiError(err, t)))
       .finally(() => setLoading(false));
 
     apiGetLiveStatus()
@@ -463,7 +469,7 @@ export function PlayerPage() {
     if (!id) return;
     const numId = parseInt(id, 10);
     if (!playerSession) {
-      showToast('Faça login para curtir perfis.', 'error');
+      showToast(t('player.login_to_like'), 'error');
       return;
     }
     if (!likeStatus || likeBusy) return;
@@ -474,7 +480,7 @@ export function PlayerPage() {
         : await apiLikePlayer(playerSession.token, numId);
       setLikeStatus({ count: result.count, liked_by_me: result.liked });
     } catch (err) {
-      showToast((err as Error).message, 'error');
+      showToast(translateApiError(err, t), 'error');
     } finally {
       setLikeBusy(false);
     }
@@ -484,7 +490,7 @@ export function PlayerPage() {
     return (
       <div className="player-page player-page-state">
         <div className="container">
-          <i className="ti ti-loader-2 spin" /> Carregando perfil...
+          <i className="ti ti-loader-2 spin" /> {t('player.loading')}
         </div>
       </div>
     );
@@ -494,10 +500,10 @@ export function PlayerPage() {
     return (
       <div className="player-page player-page-state">
         <div className="container">
-          <i className="ti ti-alert-circle" /> {error ?? 'Jogador não encontrado.'}
+          <i className="ti ti-alert-circle" /> {error ?? t('player.not_found')}
           <br />
           <Link to="/" className="back-link" style={{ marginTop: 16, display: 'inline-block' }}>
-            ← Voltar ao Ranking
+            ← {t('player.back_to_rank')}
           </Link>
         </div>
       </div>
@@ -537,7 +543,7 @@ export function PlayerPage() {
       <div className="container">
         {/* Back link */}
         <button className="btn-primary btn-sm back-btn-rank" onClick={() => navigate(-1)}>
-          <i className="ti ti-arrow-left" /> Voltar
+          <i className="ti ti-arrow-left" /> {t('player.back')}
         </button>
 
         {/* Player header */}
@@ -559,13 +565,13 @@ export function PlayerPage() {
                   disabled={likeBusy || playerSession?.player_id === profile.player.id}
                   title={
                     playerSession?.player_id === profile.player.id
-                      ? 'Você não pode curtir o próprio perfil'
-                      : likeStatus.liked_by_me ? 'Remover curtida' : 'Curtir perfil'
+                      ? t('player.like_self_tooltip')
+                      : likeStatus.liked_by_me ? t('player.like_remove_tooltip') : t('player.like_add_tooltip')
                   }
                   onClick={handleToggleLike}
                 >
                   <i className={`ti ${likeStatus.liked_by_me ? 'ti-heart-filled' : 'ti-heart'}`} />
-                  {likeStatus.count.toLocaleString('pt-BR')}
+                  {formatNumber(likeStatus.count)}
                 </button>
               )}
             </div>
@@ -589,20 +595,20 @@ export function PlayerPage() {
         {bestEntry && (
           <div className="pp-summary">
             <div className="pp-sum-card">
-              <span className="pp-sum-label">Melhor posição</span>
+              <span className="pp-sum-label">{t('player.summary.best_rank')}</span>
               <span className="pp-sum-value">{bestRank !== null ? `#${bestRank}` : '—'}</span>
             </div>
             <div className="pp-sum-card">
-              <span className="pp-sum-label">Melhor pontuação</span>
-              <span className="pp-sum-value">{bestEntry.score.toLocaleString('pt-BR')} pts</span>
+              <span className="pp-sum-label">{t('player.summary.best_score')}</span>
+              <span className="pp-sum-value">{formatNumber(bestEntry.score)} {t('player.summary.pts')}</span>
             </div>
             <div className="pp-sum-card">
-              <span className="pp-sum-label">Personagens</span>
+              <span className="pp-sum-label">{t('player.summary.characters')}</span>
               <span className="pp-sum-value">{entries.length}</span>
             </div>
             <div className="pp-sum-card">
-              <span className="pp-sum-label">Maior massacre</span>
-              <span className="pp-sum-value">{bestEntry.kills.toLocaleString('pt-BR')}</span>
+              <span className="pp-sum-label">{t('player.summary.best_massacre')}</span>
+              <span className="pp-sum-value">{formatNumber(bestEntry.kills)}</span>
             </div>
           </div>
         )}
@@ -611,7 +617,7 @@ export function PlayerPage() {
         <div className="pp-chars-section">
           <div className="pp-chars-header">
             <h2 className="pp-section-title">
-              <i className="ti ti-users" /> Personagens no Ranking
+              <i className="ti ti-users" /> {t('player.chars_section_title')}
               <span className="pp-section-count">{entries.length}</span>
             </h2>
             <div className="pp-char-filter">
@@ -619,33 +625,33 @@ export function PlayerPage() {
                 className={`sort-btn${charFilter === 'all' ? ' active' : ''}`}
                 onClick={() => setCharFilter('all')}
               >
-                Todos ({entries.length})
+                {t('player.filter.all')} ({entries.length})
               </button>
               <button
                 className={`sort-btn filter-alive${charFilter === 'alive' ? ' active' : ''}`}
                 onClick={() => setCharFilter('alive')}
               >
-                <i className="ti ti-heartbeat" /> Vivos ({aliveCount})
+                <i className="ti ti-heartbeat" /> {t('player.filter.alive')} ({aliveCount})
               </button>
               <button
                 className={`sort-btn filter-dead${charFilter === 'dead' ? ' active' : ''}`}
                 onClick={() => setCharFilter('dead')}
               >
-                <i className="ti ti-skull" /> Mortos ({deadCount})
+                <i className="ti ti-skull" /> {t('player.filter.dead')} ({deadCount})
               </button>
               {descCount > 0 && (
                 <button
                   className={`sort-btn filter-disq${charFilter === 'disqualified' ? ' active' : ''}`}
                   onClick={() => setCharFilter('disqualified')}
                 >
-                  <i className="ti ti-ban" /> Desclassificados ({descCount})
+                  <i className="ti ti-ban" /> {t('player.filter.disqualified')} ({descCount})
                 </button>
               )}
             </div>
           </div>
 
           {filteredEntries.length === 0 && (
-            <p className="pp-no-data">Nenhum personagem nesta categoria.</p>
+            <p className="pp-no-data">{t('player.no_chars')}</p>
           )}
 
           <div className="pp-chars-list">

@@ -1,18 +1,15 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { apiGetGlobalStats, apiGetActiveSeason, apiGetSteamPlayers, type GlobalStats } from '../lib/api';
+import { formatCompactNumber } from '../lib/format';
 import type { Season } from '../types';
-
-function fmt(n: number): string {
-  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace('.', ',') + ' mi';
-  if (n >= 1_000)     return (n / 1_000).toFixed(1).replace('.', ',') + ' mil';
-  return n.toLocaleString('pt-BR');
-}
 
 function daysSince(dateStr: string): number {
   return Math.floor((Date.now() - new Date(dateStr).getTime()) / 86_400_000);
 }
 
 export function CommunityStats() {
+  const { t } = useTranslation();
   const [stats,        setStats]        = useState<GlobalStats | null>(null);
   const [season,       setSeason]       = useState<Season | null>(null);
   const [steamPlayers, setSteamPlayers] = useState<number | null>(null);
@@ -40,7 +37,7 @@ export function CommunityStats() {
             <i className="ti ti-shield-star" />
             <span className="cs-value cs-season-name">{season.name}</span>
             <span className="cs-desc">
-              {days > 0 ? `${days} ${days === 1 ? 'dia' : 'dias'} ativa` : 'ativa hoje'}
+              {days > 0 ? t('home.stats.season_active_days', { count: days }) : t('home.stats.season_active_today')}
             </span>
           </div>
         )}
@@ -51,34 +48,34 @@ export function CommunityStats() {
           <>
             <div className="cs-item cs-item--kills">
               <i className="ti ti-sword" />
-              <span className="cs-value">{fmt(stats.total_kills)}</span>
-              <span className="cs-desc">zumbis</span>
+              <span className="cs-value">{formatCompactNumber(stats.total_kills)}</span>
+              <span className="cs-desc">{t('home.stats.zombies')}</span>
             </div>
             <div className="cs-vdivider" />
             <div className="cs-item cs-item--days">
               <i className="ti ti-calendar-stats" />
-              <span className="cs-value">{fmt(stats.total_days)}</span>
-              <span className="cs-desc">dias sobrevividos</span>
+              <span className="cs-value">{formatCompactNumber(stats.total_days)}</span>
+              <span className="cs-desc">{t('home.stats.days_survived')}</span>
             </div>
             <div className="cs-vdivider" />
             <div className="cs-item cs-item--alive">
               <i className="ti ti-heartbeat" />
-              <span className="cs-value">{fmt(stats.alive_count)}</span>
-              <span className="cs-desc">vivos</span>
+              <span className="cs-value">{formatCompactNumber(stats.alive_count)}</span>
+              <span className="cs-desc">{t('home.stats.alive')}</span>
             </div>
             <div className="cs-vdivider" />
             <div className="cs-item cs-item--dead">
               <i className="ti ti-skull" />
-              <span className="cs-value">{fmt(stats.dead_count)}</span>
-              <span className="cs-desc">mortos</span>
+              <span className="cs-value">{formatCompactNumber(stats.dead_count)}</span>
+              <span className="cs-desc">{t('home.stats.dead')}</span>
             </div>
             {stats.active_count > 0 && (
               <>
                 <div className="cs-vdivider" />
                 <div className="cs-item cs-item--active">
                   <span className="cs-active-dot" aria-hidden="true" />
-                  <span className="cs-value">{fmt(stats.active_count)}</span>
-                  <span className="cs-desc">jogando hoje</span>
+                  <span className="cs-value">{formatCompactNumber(stats.active_count)}</span>
+                  <span className="cs-desc">{t('home.stats.playing_today')}</span>
                 </div>
               </>
             )}
@@ -87,8 +84,8 @@ export function CommunityStats() {
                 <div className="cs-vdivider" />
                 <div className="cs-item cs-item--steam">
                   <i className="ti ti-brand-steam" />
-                  <span className="cs-value">{fmt(steamPlayers)}</span>
-                  <span className="cs-desc">no PZ agora</span>
+                  <span className="cs-value">{formatCompactNumber(steamPlayers)}</span>
+                  <span className="cs-desc">{t('home.stats.on_pz_now')}</span>
                 </div>
               </>
             )}

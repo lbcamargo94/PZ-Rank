@@ -1,31 +1,33 @@
 import { useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export function Footer() {
   const { pathname } = useLocation();
+  const { t } = useTranslation();
   if (pathname.startsWith('/overlay')) return null;
 
   return (
     <footer className="site-footer">
       <div className="container site-footer-inner">
         <span className="site-footer-copy">
-          &copy; {new Date().getFullYear()} lbcamargo94
+          {t('footer.copyright', { year: new Date().getFullYear() })}
         </span>
         <span className="site-footer-sep" aria-hidden="true">·</span>
         <span className="site-footer-tag">
-          Projeto pessoal para a comunidade de Project Zomboid
+          {t('footer.tagline')}
         </span>
         <span className="site-footer-sep" aria-hidden="true">·</span>
         <span className="site-footer-note">
-          Não afiliado à The Indie Stone
+          {t('footer.disclaimer')}
         </span>
         <span className="site-footer-sep" aria-hidden="true">·</span>
         <a
           className="site-footer-contact"
           href="mailto:brasileiraozomboid@gmail.com"
-          title="Parcerias e anúncios"
+          title={t('footer.contact_title')}
         >
           <i className="ti ti-mail" aria-hidden="true" />
-          Parcerias &amp; Anúncios
+          {t('footer.contact')}
         </a>
       </div>
     </footer>

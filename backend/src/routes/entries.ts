@@ -50,7 +50,7 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
       supabase.from(config.tableName).select(cols).order(col, { ascending: false }),
       supabase.from('players').select('id, is_test_mod'),
     ]);
-    if (entriesRes.error) { const e = dbError(entriesRes.error); res.status(e.httpStatus).json({ error: e.message }); return; }
+    if (entriesRes.error) { const e = dbError(entriesRes.error); res.status(e.httpStatus).json({ error: e.message, error_code: 'DB_ERROR' }); return; }
     const testModIds = new Set(((playersRes.data ?? []) as { id: number; is_test_mod: boolean | number }[])
       .filter(p => p.is_test_mod).map(p => p.id));
     const all = (entriesRes.data ?? []).map((e: { player_id: number | null }) => ({
@@ -67,7 +67,7 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
     supabase.from('players').select('id, deleted_at, is_test_mod'),
   ]);
 
-  if (entriesRes.error) { const e = dbError(entriesRes.error); res.status(e.httpStatus).json({ error: e.message }); return; }
+  if (entriesRes.error) { const e = dbError(entriesRes.error); res.status(e.httpStatus).json({ error: e.message, error_code: 'DB_ERROR' }); return; }
 
   type PlayerRow = { id: number; deleted_at: string | null; is_test_mod: boolean | number };
   const players = (playersRes.data ?? []) as PlayerRow[];

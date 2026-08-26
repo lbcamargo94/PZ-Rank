@@ -1,16 +1,19 @@
 ﻿import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import type { Entry, SortKey, RankTab, LiveStatus } from '../types';
 import { RankRow, KILLS_TARGET } from './RankRow';
 import { MAX_POSSIBLE_SCORE } from '../lib/objectives';
+import { formatNumber, formatDateTime } from '../lib/format';
 import { hasLiveWarning } from '../lib/live';
 import { LiveBadges } from './LiveBadges';
 
 type PageSize = 15 | 50 | 'all';
-const PAGE_SIZES: { value: PageSize; label: string }[] = [
-  { value: 15,    label: '15'   },
-  { value: 50,    label: '50'   },
-  { value: 'all', label: 'Tudo' },
+const PAGE_SIZES: { value: PageSize; labelKey: string | null }[] = [
+  { value: 15,    labelKey: null },
+  { value: 50,    labelKey: null },
+  { value: 'all', labelKey: 'rank.display.all' },
 ];
 
 interface RankTableProps {
@@ -25,39 +28,36 @@ interface RankTableProps {
   liveMap?:     Map<number, LiveStatus[]>;
 }
 
-const EMPTY_MESSAGES: Record<RankTab, { icon: string; text: string }> = {
-  rank:         { icon: 'ti-ghost',      text: 'Nenhum sobrevivente ativo no momento.\nCadastre-se para entrar no ranking!' },
-  records:      { icon: 'ti-trophy',     text: 'Nenhum registro encontrado ainda.'                                                       },
-  dead:         { icon: 'ti-skull',      text: 'Nenhum sobrevivente foi eliminado ainda.'                                               },
-  disqualified: { icon: 'ti-ban',        text: 'Nenhum participante desclassificado.'                                                   },
+const EMPTY_ICONS: Record<RankTab, string> = {
+  rank:         'ti-ghost',
+  records:      'ti-trophy',
+  dead:         'ti-skull',
+  disqualified: 'ti-ban',
 };
 
-const SORT_LABELS: { key: SortKey; label: string }[] = [
-  { key: 'score',      label: 'Pontos'      },
-  { key: 'days',       label: 'Dias vivo'   },
-  { key: 'kills',      label: 'Zumbis'      },
-  { key: 'skills',     label: 'Habilidades' },
-  { key: 'updated_at', label: 'Atualização' },
+const SORT_KEYS: { key: SortKey; labelKey: string }[] = [
+  { key: 'score',      labelKey: 'rank.sort.score'      },
+  { key: 'days',       labelKey: 'rank.sort.days'       },
+  { key: 'kills',      labelKey: 'rank.sort.kills'      },
+  { key: 'skills',     labelKey: 'rank.sort.skills'     },
+  { key: 'updated_at', labelKey: 'rank.sort.updated_at' },
 ];
 
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
-const DISQ_TOOLTIPS: Record<string, string> = {
-  sandbox:     'Configurações do sandbox divergem do desafio oficial',
-  debug:       'Jogador utilizou modo debug durante o desafio Brasileirão',
-  mods:        'Jogador utilizou mods não permitidos no desafio Brasileirão',
-  manual:      'Desclassificado manualmente pelo moderador',
-  mod_removed: 'Companion detectou que o mod foi removido enquanto o jogo rodava',
-};
+function disqTooltip(t: TFunction, reason: string | null | undefined): string {
+  switch (reason) {
+    case 'debug':       return t('rank.disq.debug');
+    case 'mods':        return t('rank.disq.mods');
+    case 'manual':      return t('rank.disq.manual');
+    case 'mod_removed': return t('rank.disq.mod_removed');
+    default:             return t('rank.disq.sandbox');
+  }
+}
 
 function fmtDate(iso: string | null | undefined): string {
   if (!iso) return '';
-  const d = new Date(iso);
-  const dd  = String(d.getDate()).padStart(2, '0');
-  const mm  = String(d.getMonth() + 1).padStart(2, '0');
-  const hh  = String(d.getHours()).padStart(2, '0');
-  const min = String(d.getMinutes()).padStart(2, '0');
-  return dd + '/' + mm + '/' + d.getFullYear() + ' - ' + hh + ':' + min;
+  return formatDateTime(iso);
 }
 
 function MiniBar({ value, max, done }: { value: number; max: number; done?: boolean }) {
@@ -79,6 +79,7 @@ function RankCard({ entry, rank, onPlayerClick, hideStatus, live }: {
   hideStatus?: boolean;
   live?: LiveStatus[];
 }) {
+  const { t } = useTranslation();
   const objCount = entry.objectives
     ? [
         entry.objectives.spiffo_hq,
@@ -102,7 +103,7 @@ function RankCard({ entry, rank, onPlayerClick, hideStatus, live }: {
       {/* Top row */}
       <div className="rc-top">
         {entry.is_test_mod
-          ? <span className="test-mod-badge rc-rank" title="Participante com tag de Moderador de Teste"><i className="ti ti-microscope" /> Mod. Teste</span>
+          ? <span className="test-mod-badge rc-rank" title={t('rank.test_mod_title')}><i className="ti ti-microscope" /> {t('rank.test_mod')}</span>
           : <span className="rc-rank">{MEDALS[rank] ?? `#${rank}`}</span>
         }
         <div className="rc-identity">
@@ -112,39 +113,39 @@ function RankCard({ entry, rank, onPlayerClick, hideStatus, live }: {
           </span>
           {entry.profession && <span className="profession-badge">{entry.profession}</span>}
           {hasLiveWarning(entry) && (
-            <span className="live-warning-badge" title="Vários syncs seguidos sem transmissão confirmada no YouTube ou na Twitch (obrigatória pelas regras)">
-              <i className="ti ti-alert-triangle" /> Sem transmissão
+            <span className="live-warning-badge" title={t('rank.live_warning_title')}>
+              <i className="ti ti-alert-triangle" /> {t('rank.live_warning')}
             </span>
           )}
         </div>
         {!hideStatus && (
           entry.sandbox_ok === false
             ? (
-              <span className="alive-badge disqualified rc-status" title={DISQ_TOOLTIPS[entry.disqualification_reason ?? 'sandbox'] ?? DISQ_TOOLTIPS.sandbox}>
-                <i className="ti ti-ban" /> Desc.
+              <span className="alive-badge disqualified rc-status" title={disqTooltip(t, entry.disqualification_reason)}>
+                <i className="ti ti-ban" /> {t('rank.status.disqualified_short')}
               </span>
             )
             : entry.is_alive
-              ? <span className="alive-badge alive rc-status"><i className="ti ti-heartbeat" /> Vivo</span>
-              : <span className="alive-badge dead rc-status"><i className="ti ti-skull" /> Morto</span>
+              ? <span className="alive-badge alive rc-status"><i className="ti ti-heartbeat" /> {t('rank.status.alive')}</span>
+              : <span className="alive-badge dead rc-status"><i className="ti ti-skull" /> {t('rank.status.dead')}</span>
         )}
       </div>
 
       {/* Score + bar */}
       <div className="rc-score">
-        <span>{entry.score.toLocaleString('pt-BR')} <span className="rc-pts">pts</span></span>
+        <span>{formatNumber(entry.score)} <span className="rc-pts">{t('rank.pts')}</span></span>
         <MiniBar value={entry.score ?? 0} max={MAX_POSSIBLE_SCORE} />
       </div>
 
       {/* Stats */}
       <div className="rc-stats">
         <div className="rc-stat-kills">
-          <span className="rc-stat"><i className="ti ti-sword" />{entry.kills.toLocaleString('pt-BR')} zumbis</span>
+          <span className="rc-stat"><i className="ti ti-sword" />{formatNumber(entry.kills)} {t('rank.zombies_suffix')}</span>
           <MiniBar value={entry.kills} max={KILLS_TARGET} done={killsDone} />
         </div>
         <span className="rc-stat"><i className="ti ti-calendar" />{entry.days}d</span>
         {entry.time_str && <span className="rc-stat"><i className="ti ti-clock" />{entry.time_str}</span>}
-        {objCount > 0 && <span className="rc-stat rc-obj"><i className="ti ti-star" />{objCount} obj.</span>}
+        {objCount > 0 && <span className="rc-stat rc-obj"><i className="ti ti-star" />{objCount} {t('rank.obj_suffix')}</span>}
       </div>
       {(entry.updated_at ?? entry.created_at) && (
         <div className="rc-updated"><i className="ti ti-clock-edit" />{fmtDate(entry.updated_at ?? entry.created_at)}</div>
@@ -170,9 +171,11 @@ function buildPageList(current: number, total: number): (number | '…')[] {
 }
 
 export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, iconOnly, isSearching, liveMap }: RankTableProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const hideStatus = false;
-  const { icon: emptyIcon, text: emptyText } = EMPTY_MESSAGES[isSearching ? 'rank' : tab];
+  const emptyTab = isSearching ? 'rank' : tab;
+  const emptyIcon = EMPTY_ICONS[emptyTab];
 
   const [page,     setPage]     = useState(1);
   const [pageSize, setPageSize] = useState<PageSize>(15);
@@ -202,28 +205,28 @@ export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, ic
   return (
     <div className="container table-section">
       <div className="sort-bar">
-        <span className="sort-label">Ordenar por:</span>
-        {SORT_LABELS.map(({ key, label }) => (
+        <span className="sort-label">{t('rank.sort.label')}</span>
+        {SORT_KEYS.map(({ key, labelKey }) => (
           <button key={key}
             className={`sort-btn${sortKey === key ? ' active' : ''}`}
             onClick={() => onSort(key)}
             aria-pressed={sortKey === key}>
-            {label}
+            {t(labelKey)}
           </button>
         ))}
         <div className="sort-bar-actions">
           <div className="page-size-sep" aria-hidden="true" />
-          <span className="sort-label">Exibir:</span>
-          {PAGE_SIZES.map(({ value, label }) => (
+          <span className="sort-label">{t('rank.display.label')}</span>
+          {PAGE_SIZES.map(({ value, labelKey }) => (
             <button key={String(value)}
               className={`sort-btn${pageSize === value ? ' active' : ''}`}
               onClick={() => setPageSize(value)}
               aria-pressed={pageSize === value}>
-              {label}
+              {labelKey ? t(labelKey) : value}
             </button>
           ))}
           <div className="page-size-sep" aria-hidden="true" />
-          <button className="btn-reload" onClick={onReload} disabled={loading} aria-label="Recarregar tabela">
+          <button className="btn-reload" onClick={onReload} disabled={loading} aria-label={t('rank.reload_aria')}>
             <i className={`ti ti-refresh${loading ? ' spin' : ''}`} />
           </button>
         </div>
@@ -233,26 +236,28 @@ export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, ic
         <div className="empty-state">
           <i className={`ti ${emptyIcon}`} aria-hidden="true" />
           <p>{isSearching
-            ? 'Nenhum resultado encontrado para a busca.'
-            : emptyText.split('\n').map((line, i) => <span key={i}>{line}{i === 0 && emptyText.includes('\n') ? <br /> : ''}</span>)
+            ? t('rank.empty.search')
+            : emptyTab === 'rank'
+              ? <>{t('rank.empty.rank_1')}<br />{t('rank.empty.rank_2')}</>
+              : t(`rank.empty.${emptyTab}`)
           }</p>
         </div>
       ) : (
         <>
           {/* Desktop table */}
           <div className={`table-wrapper rank-table-desktop${loading ? ' table-loading' : ''}`}>
-            <table className="rank-table" aria-label="Ranking de sobrevivência">
+            <table className="rank-table" aria-label={t('rank.table_aria')}>
               <thead>
                 <tr>
                   <th>#</th>
-                  <th className="rank-live-th" title="Ao Vivo"><i className="ti ti-broadcast" aria-hidden="true" /><span className="sr-only">Ao Vivo</span></th>
-                  <th>Jogador</th>
-                  {!hideStatus && <th>Status</th>}
-                  <th>Pontos</th>
-                  <th>Dias</th>
-                  <th>Zumbis</th>
-                  <th>Habilidades</th>
-                  <th>Atualizado</th>
+                  <th className="rank-live-th" title={t('rank.live_th')}><i className="ti ti-broadcast" aria-hidden="true" /><span className="sr-only">{t('rank.live_th')}</span></th>
+                  <th>{t('rank.th.player')}</th>
+                  {!hideStatus && <th>{t('rank.th.status')}</th>}
+                  <th>{t('rank.th.score')}</th>
+                  <th>{t('rank.th.days')}</th>
+                  <th>{t('rank.th.kills')}</th>
+                  <th>{t('rank.th.skills')}</th>
+                  <th>{t('rank.th.updated')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -274,7 +279,7 @@ export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, ic
             {entries.length > 0 && pageSize !== 'all' && (
               <div className="rank-pagination">
                 <span className="rank-pagination-info">
-                  {entries.length === 0 ? '0 resultados' : `${start}–${end} de ${entries.length}`}
+                  {entries.length === 0 ? t('rank.pagination.zero_results') : t('rank.pagination.range', { start, end, total: entries.length })}
                 </span>
                 {totalPages > 1 && (
                   <div className="rank-pagination-controls">
@@ -282,7 +287,7 @@ export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, ic
                       className="pag-btn"
                       disabled={page === 1}
                       onClick={() => setPage(p => p - 1)}
-                      aria-label="Página anterior"
+                      aria-label={t('rank.pagination.prev_aria')}
                     >
                       <i className="ti ti-chevron-left" />
                     </button>
@@ -302,7 +307,7 @@ export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, ic
                       className="pag-btn"
                       disabled={page === totalPages}
                       onClick={() => setPage(p => p + 1)}
-                      aria-label="Próxima página"
+                      aria-label={t('rank.pagination.next_aria')}
                     >
                       <i className="ti ti-chevron-right" />
                     </button>
@@ -326,13 +331,13 @@ export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, ic
             ))}
             {entries.length > 0 && pageSize !== 'all' && (
               <div className="rank-pagination">
-                <span className="rank-pagination-info">{start}–{end} de {entries.length}</span>
+                <span className="rank-pagination-info">{t('rank.pagination.range', { start, end, total: entries.length })}</span>
                 {totalPages > 1 && (
                   <div className="rank-pagination-controls">
                     <button className="pag-btn" disabled={page === 1} onClick={() => setPage(p => p - 1)}>
                       <i className="ti ti-chevron-left" />
                     </button>
-                    <span className="rank-pagination-info">Pág {page}/{totalPages}</span>
+                    <span className="rank-pagination-info">{t('rank.pagination.page_of', { page, total: totalPages })}</span>
                     <button className="pag-btn" disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>
                       <i className="ti ti-chevron-right" />
                     </button>

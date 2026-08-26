@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import type { Entry, LiveStatus } from '../types';
 import { parseSkillMap, SKILL_CATEGORIES, TOTAL_SKILLS, MAX_SKILL_LEVEL } from '../lib/skills';
 import { MAX_POSSIBLE_SCORE } from '../lib/objectives';
 import { getDivision } from '../lib/divisions';
 import { hasLiveWarning } from '../lib/live';
+import { formatNumber, formatDate, formatTime } from '../lib/format';
 import { LiveBadges } from './LiveBadges';
 
 export const KILLS_TARGET = 800_000;
@@ -20,16 +23,8 @@ interface RankRowProps {
 
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
-const DISQ_TOOLTIPS: Record<string, string> = {
-  sandbox:     'Configurações do sandbox divergem do desafio oficial',
-  debug:       'Jogador utilizou modo debug durante o desafio Brasileirão',
-  mods:        'Jogador utilizou mods não permitidos no desafio Brasileirão',
-  manual:      'Desclassificado manualmente pelo moderador',
-  mod_removed: 'Mod do desafio foi removido durante a run',
-};
-
-function disqTooltip(reason: string | null | undefined): string {
-  if (!reason) return DISQ_TOOLTIPS.sandbox;
+function disqTooltip(t: TFunction, reason: string | null | undefined): string {
+  if (!reason) return t('rank.disq.sandbox');
   if (reason.startsWith('mods:')) {
     const ids = reason.slice(5).split(',').map(v => {
       if (v.startsWith('NAO_PERMITIDO:')) return v.slice(14);
@@ -37,10 +32,16 @@ function disqTooltip(reason: string | null | undefined): string {
       return v;
     }).filter(Boolean);
     return ids.length > 0
-      ? `Mods não permitidos: ${ids.join(', ')}`
-      : DISQ_TOOLTIPS.mods;
+      ? t('rank.disq.mods_list', { list: ids.join(', ') })
+      : t('rank.disq.mods');
   }
-  return DISQ_TOOLTIPS[reason] ?? DISQ_TOOLTIPS.mods;
+  switch (reason) {
+    case 'debug':       return t('rank.disq.debug');
+    case 'manual':      return t('rank.disq.manual');
+    case 'mod_removed': return t('rank.disq.mod_removed_row');
+    case 'mods':        return t('rank.disq.mods');
+    default:             return t('rank.disq.mods');
+  }
 }
 
 function SkillsModal({ skillMap, charName, onClose }: {
@@ -48,6 +49,7 @@ function SkillsModal({ skillMap, charName, onClose }: {
   charName?: string;
   onClose:   () => void;
 }) {
+  const { t } = useTranslation();
   const maxed = Array.from(skillMap.values()).filter(l => l >= MAX_SKILL_LEVEL).length;
 
   useEffect(() => {
@@ -69,15 +71,15 @@ function SkillsModal({ skillMap, charName, onClose }: {
           <div className="sm-header-info">
             <div className="sm-title">
               <i className="ti ti-sword" />
-              Habilidades
+              {t('rank.skills.title')}
               {charName && <span className="sm-char">· {charName}</span>}
             </div>
             <div className="sm-subtitle">
               <span className="sm-maxed-val">{String(maxed).padStart(2, '0')}/{TOTAL_SKILLS}</span>
-              {' '}no nível máximo
+              {' '}{t('rank.skills.max_level')}
             </div>
           </div>
-          <button className="sm-close" onClick={onClose} aria-label="Fechar">
+          <button className="sm-close" onClick={onClose} aria-label={t('rank.skills.close')}>
             <i className="ti ti-x" />
           </button>
         </div>
@@ -111,6 +113,7 @@ function SkillsModal({ skillMap, charName, onClose }: {
 }
 
 function SkillsCell({ skills, charName }: { skills: string | null; charName?: string }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const skillMap = parseSkillMap(skills);
   const maxed    = Array.from(skillMap.values()).filter(l => l >= MAX_SKILL_LEVEL).length;
@@ -122,7 +125,7 @@ function SkillsCell({ skills, charName }: { skills: string | null; charName?: st
       <button
         className={`skills-counter${maxed > 0 ? ' has-maxed' : ''}`}
         onClick={e => { e.stopPropagation(); setOpen(true); }}
-        title="Ver progresso das habilidades"
+        title={t('rank.skills.view_progress')}
       >
         {String(maxed).padStart(2, '0')}<span className="skills-sep">/</span>{TOTAL_SKILLS}
       </button>
@@ -139,12 +142,7 @@ function SkillsCell({ skills, charName }: { skills: string | null; charName?: st
 
 function fmtDateParts(iso: string | null | undefined): { date: string; time: string } | null {
   if (!iso) return null;
-  const d   = new Date(iso);
-  const dd  = String(d.getDate()).padStart(2, '0');
-  const mm  = String(d.getMonth() + 1).padStart(2, '0');
-  const hh  = String(d.getHours()).padStart(2, '0');
-  const min = String(d.getMinutes()).padStart(2, '0');
-  return { date: `${dd}/${mm}/${d.getFullYear()}`, time: `${hh}:${min}` };
+  return { date: formatDate(iso), time: formatTime(iso) };
 }
 
 function MiniBar({ value, max, done }: { value: number; max: number; done?: boolean }) {
@@ -160,6 +158,7 @@ function MiniBar({ value, max, done }: { value: number; max: number; done?: bool
 }
 
 export function RankRow({ entry, rank, hideStatus, iconOnly, live, onPlayerClick }: RankRowProps) {
+  const { t } = useTranslation();
   const score     = entry.score ?? 0;
   const killsDone = entry.kills >= KILLS_TARGET;
   const division  = getDivision(rank > 0 ? rank : 1);
@@ -179,7 +178,7 @@ export function RankRow({ entry, rank, hideStatus, iconOnly, live, onPlayerClick
     >
       <td className="rank-pos">
         {isTestMod
-          ? <span className="test-mod-badge" title="Participante com tag de Moderador de Teste"><i className="ti ti-microscope" /> Mod. Teste</span>
+          ? <span className="test-mod-badge" title={t('rank.test_mod_title')}><i className="ti ti-microscope" /> {t('rank.test_mod')}</span>
           : <>
               {MEDALS[rank] ?? rank}
               <span
@@ -201,8 +200,8 @@ export function RankRow({ entry, rank, hideStatus, iconOnly, live, onPlayerClick
         </span>
         <span className="player-alias">{entry.name}</span>
         {hasLiveWarning(entry) && (
-          <span className="live-warning-badge" title="Vários syncs seguidos sem transmissão confirmada no YouTube ou na Twitch (obrigatória pelas regras)">
-            <i className="ti ti-alert-triangle" /> Sem transmissão
+          <span className="live-warning-badge" title={t('rank.live_warning_title')}>
+            <i className="ti ti-alert-triangle" /> {t('rank.live_warning')}
           </span>
         )}
       </td>
@@ -211,29 +210,29 @@ export function RankRow({ entry, rank, hideStatus, iconOnly, live, onPlayerClick
           {entry.sandbox_ok === false
             ? (
               iconOnly
-                ? <span className="status-icon status-disq" data-tip={disqTooltip(entry.disqualification_reason)}><i className="ti ti-ban" /></span>
-                : <span className="alive-badge disqualified" data-tip={disqTooltip(entry.disqualification_reason)}><i className="ti ti-ban" /> Desclassificado</span>
+                ? <span className="status-icon status-disq" data-tip={disqTooltip(t, entry.disqualification_reason)}><i className="ti ti-ban" /></span>
+                : <span className="alive-badge disqualified" data-tip={disqTooltip(t, entry.disqualification_reason)}><i className="ti ti-ban" /> {t('rank.status.disqualified')}</span>
             )
             : entry.is_alive
               ? (iconOnly
-                  ? <span className="status-icon status-alive" data-tip="Vivo"><i className="ti ti-heartbeat" /></span>
-                  : <span className="alive-badge alive"><i className="ti ti-heartbeat" /> Vivo</span>)
+                  ? <span className="status-icon status-alive" data-tip={t('rank.status.alive')}><i className="ti ti-heartbeat" /></span>
+                  : <span className="alive-badge alive"><i className="ti ti-heartbeat" /> {t('rank.status.alive')}</span>)
               : (iconOnly
-                  ? <span className="status-icon status-dead" data-tip="Morto"><i className="ti ti-skull" /></span>
-                  : <span className="alive-badge dead"><i className="ti ti-skull" /> Morto</span>)
+                  ? <span className="status-icon status-dead" data-tip={t('rank.status.dead')}><i className="ti ti-skull" /></span>
+                  : <span className="alive-badge dead"><i className="ti ti-skull" /> {t('rank.status.dead')}</span>)
           }
         </td>
       )}
       <td className="rank-score">
         <div className="rk-bar-cell">
-          <span>{score.toLocaleString('pt-BR')}</span>
+          <span>{formatNumber(score)}</span>
           <MiniBar value={score} max={MAX_POSSIBLE_SCORE} />
         </div>
       </td>
       <td className="rank-days">{entry.days}d</td>
       <td className="rank-kills">
         <div className="rk-bar-cell">
-          <span>{entry.kills.toLocaleString('pt-BR')}</span>
+          <span>{formatNumber(entry.kills)}</span>
           <MiniBar value={entry.kills} max={KILLS_TARGET} done={killsDone} />
         </div>
       </td>

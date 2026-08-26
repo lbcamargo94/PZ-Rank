@@ -65,7 +65,7 @@ router.get('/latest', async (_req, res) => {
 
     if (selErr) {
       const e = dbError(selErr);
-      return res.status(e.httpStatus).json({ error: e.message });
+      return res.status(e.httpStatus).json({ error: e.message, error_code: 'DB_ERROR' });
     }
 
     if (existing) {
@@ -83,14 +83,14 @@ router.get('/latest', async (_req, res) => {
 
     if (insErr || !inserted) {
       const e = dbError(insErr ?? { message: 'Erro ao criar snapshot.' });
-      return res.status(e.httpStatus).json({ error: e.message });
+      return res.status(e.httpStatus).json({ error: e.message, error_code: 'DB_ERROR' });
     }
 
     const r = inserted as Record<string, unknown>;
     res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=60');
     return res.json({ ...r, stats: parseStats(r.stats) ?? stats });
   } catch (err) {
-    return res.status(500).json({ error: (err as Error).message });
+    return res.status(500).json({ error: (err as Error).message, error_code: 'DB_ERROR' });
   }
 });
 

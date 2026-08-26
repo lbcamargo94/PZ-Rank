@@ -47,7 +47,7 @@ router.get('/live-status', async (_req: Request, res: Response): Promise<void> =
     .is('deleted_at', null);
 
   if (error) {
-    res.status(500).json({ error: 'Erro ao buscar status de live.' });
+    res.status(500).json({ error: 'Erro ao buscar status de live.', error_code: 'DB_ERROR' });
     return;
   }
 
@@ -102,7 +102,7 @@ router.get('/featured-streamers', async (_req: Request, res: Response): Promise<
     .is('deleted_at', null);
 
   if (error) {
-    res.status(500).json({ error: 'Erro ao buscar streamers oficiais.' });
+    res.status(500).json({ error: 'Erro ao buscar streamers oficiais.', error_code: 'DB_ERROR' });
     return;
   }
 
@@ -113,7 +113,7 @@ router.get('/featured-streamers', async (_req: Request, res: Response): Promise<
 // GET /players/:id — público: retorna dados do jogador + todas as entradas dele no rank
 router.get('/:id', async (req: Request, res: Response): Promise<void> => {
   const id = parseInt(String(req.params.id), 10);
-  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.', error_code: 'INVALID_ID' }); return; }
 
   const PLAYER_ENTRY_COLUMNS = [
     'id', 'player_id', 'name', 'character_name', 'profession',
@@ -139,14 +139,14 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
   if (playerRes.error) {
     // PGRST116 = zero rows — jogador não existe
     if (playerRes.error.code === 'PGRST116') {
-      res.status(404).json({ error: 'Jogador não encontrado.' });
+      res.status(404).json({ error: 'Jogador não encontrado.', error_code: 'PLAYER_NOT_FOUND' });
     } else {
-      res.status(500).json({ error: 'Erro ao buscar dados do jogador.' });
+      res.status(500).json({ error: 'Erro ao buscar dados do jogador.', error_code: 'DB_ERROR' });
     }
     return;
   }
   if (!playerRes.data) {
-    res.status(404).json({ error: 'Jogador não encontrado.' });
+    res.status(404).json({ error: 'Jogador não encontrado.', error_code: 'PLAYER_NOT_FOUND' });
     return;
   }
 
@@ -174,14 +174,14 @@ function getOptionalPlayerId(req: Request): number | null {
 // GET /players/:id/likes — público: contagem de curtidas + se o jogador logado (se houver) já curtiu
 router.get('/:id/likes', async (req: Request, res: Response): Promise<void> => {
   const id = parseInt(String(req.params.id), 10);
-  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.', error_code: 'INVALID_ID' }); return; }
 
   const { count, error } = await supabase
     .from('player_likes')
     .select('*', { count: 'exact', head: true })
     .eq('liked_player_id', id);
 
-  if (error) { res.status(500).json({ error: 'Erro ao buscar curtidas.' }); return; }
+  if (error) { res.status(500).json({ error: 'Erro ao buscar curtidas.', error_code: 'DB_ERROR' }); return; }
 
   const viewerId = getOptionalPlayerId(req);
   let liked_by_me = false;
@@ -201,10 +201,10 @@ router.get('/:id/likes', async (req: Request, res: Response): Promise<void> => {
 // POST /players/:id/like — jogador logado: curte o perfil de outro jogador
 router.post('/:id/like', requirePlayer, async (req: PlayerRequest, res: Response): Promise<void> => {
   const id = parseInt(String(req.params.id), 10);
-  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.', error_code: 'INVALID_ID' }); return; }
 
   if (id === req.playerId) {
-    res.status(400).json({ error: 'Você não pode curtir o próprio perfil.' });
+    res.status(400).json({ error: 'Você não pode curtir o próprio perfil.', error_code: 'CANNOT_LIKE_SELF' });
     return;
   }
 
@@ -214,7 +214,7 @@ router.post('/:id/like', requirePlayer, async (req: PlayerRequest, res: Response
     .eq('id', id)
     .is('deleted_at', null)
     .maybeSingle();
-  if (!target) { res.status(404).json({ error: 'Jogador não encontrado.' }); return; }
+  if (!target) { res.status(404).json({ error: 'Jogador não encontrado.', error_code: 'PLAYER_NOT_FOUND' }); return; }
 
   const { data: existing } = await supabase
     .from('player_likes')
@@ -227,7 +227,7 @@ router.post('/:id/like', requirePlayer, async (req: PlayerRequest, res: Response
     const { error: insertError } = await supabase
       .from('player_likes')
       .insert([{ liker_player_id: req.playerId!, liked_player_id: id }]);
-    if (insertError) { res.status(500).json({ error: 'Erro ao curtir perfil.' }); return; }
+    if (insertError) { res.status(500).json({ error: 'Erro ao curtir perfil.', error_code: 'DB_ERROR' }); return; }
   }
 
   const { count } = await supabase
@@ -241,7 +241,7 @@ router.post('/:id/like', requirePlayer, async (req: PlayerRequest, res: Response
 // DELETE /players/:id/like — jogador logado: remove a curtida (idempotente)
 router.delete('/:id/like', requirePlayer, async (req: PlayerRequest, res: Response): Promise<void> => {
   const id = parseInt(String(req.params.id), 10);
-  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.', error_code: 'INVALID_ID' }); return; }
 
   await supabase
     .from('player_likes')

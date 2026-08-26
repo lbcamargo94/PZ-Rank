@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { apiGetEntries } from '../lib/api';
+import { formatNumber } from '../lib/format';
 import type { Entry } from '../types';
 
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
@@ -17,12 +19,13 @@ function Top10Row({ entry, rank, onClick }: { entry: Entry; rank: number; onClic
     >
       <span className="top10-pos">{MEDALS[rank] ?? `#${rank}`}</span>
       <span className="top10-name">{entry.character_name || entry.name}</span>
-      <span className="top10-score">{entry.score.toLocaleString('pt-BR')}</span>
+      <span className="top10-score">{formatNumber(entry.score)}</span>
     </div>
   );
 }
 
 export function RankTop10Preview() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,11 +46,11 @@ export function RankTop10Preview() {
 
   return (
     <section className="home-side-panel rank-top10-preview">
-      <h2 className="home-side-panel-title"><i className="ti ti-trophy" /> Top 10 do Rank</h2>
+      <h2 className="home-side-panel-title"><i className="ti ti-trophy" /> {t('home.top10.title')}</h2>
       {loading ? (
         <div className="home-side-panel-loading"><i className="ti ti-loader-2 spin" /></div>
       ) : top10.length === 0 ? (
-        <p className="home-side-panel-empty">Nenhum sobrevivente ativo no momento.</p>
+        <p className="home-side-panel-empty">{t('home.top10.empty')}</p>
       ) : (
         <div className="top10-list">
           {top10.map((entry, i) => (
@@ -61,7 +64,7 @@ export function RankTop10Preview() {
         </div>
       )}
       <button className="btn-secondary btn-sm home-side-panel-cta" onClick={() => navigate('/rank')}>
-        Ver ranking completo <i className="ti ti-arrow-right" />
+        {t('home.top10.view_full')} <i className="ti ti-arrow-right" />
       </button>
     </section>
   );
