@@ -1637,14 +1637,14 @@
 
 .overlay-root {
   position: relative; /* contexto de posicionamento pro .death-alert */
-  width: 260px;
+  width: 340px;
   background: rgba(10, 10, 10, 0.92);
   border: 1px solid var(--border-mid);
   border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
-  padding: 18px 20px;
-  gap: 12px;
+  padding: 20px 24px;
+  gap: 14px;
   font-family: var(--font-mono);
   pointer-events: none;
   user-select: none;
@@ -1712,9 +1712,9 @@
   font-size: 18px;
   font-weight: 700;
   color: var(--text-1);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.25;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .overlay-field-value--lg { font-size: 22px; }
