@@ -1637,7 +1637,7 @@
 
 .overlay-root {
   position: relative; /* contexto de posicionamento pro .death-alert */
-  width: 300px;
+  width: 260px;
   background: rgba(10, 10, 10, 0.92);
   border: 1px solid var(--border-mid);
   border-radius: var(--radius-lg);
@@ -1726,54 +1726,11 @@
   align-items: center;
   gap: 5px;
 }
-.overlay-badge-alive {
-  background: rgba(90, 138, 60, 0.25);
-  color: var(--green-light);
-  border: 1px solid var(--green-border);
-}
 .overlay-badge-dead {
   background: rgba(224, 64, 64, 0.15);
   color: var(--red);
   border: 1px solid rgba(224, 64, 64, 0.3);
 }
-
-.overlay-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px 16px;
-}
-.overlay-stat {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 1px;
-}
-.overlay-stat i { font-size: 14px; color: var(--text-3); }
-.overlay-stat span { font-size: 18px; font-weight: 700; color: var(--text-1); }
-.overlay-stat small { font-size: 14px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.5px; }
-
-.overlay-objs {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.overlay-obj-dot {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 14px;
-  color: var(--text-4);
-  padding: 3px 8px;
-  border: 1px solid var(--border);
-  border-radius: 99px;
-  background: var(--bg-3);
-}
-.overlay-obj-done {
-  color: var(--gold);
-  border-color: rgba(200, 168, 75, 0.4);
-  background: rgba(200, 168, 75, 0.08);
-}
-.overlay-obj-done i { color: var(--gold); }
 
 /* ── OBS Overlay — fundo transparente ──────────────────────────
    Aplicado via document.body.classList em toda página de overlay —
