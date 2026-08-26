@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { apiGetPlayerProfile } from '../lib/api';
 import { parseSkillMap, TOTAL_SKILLS, MAX_SKILL_LEVEL } from '../lib/skills';
+import { SPIFFOS_RESTAURANTS } from '../lib/objectives';
 import type { PlayerProfile, Entry } from '../types';
 
 // Alinhado ao Cache-Control: s-maxage=60 de /players/:id — pollar mais rápido
@@ -65,8 +66,10 @@ export function OverlayPage() {
 
   if (error || !profile || !bestEntry) {
     return (
-      <div className="overlay-root overlay-error">
-        <span className="overlay-status-badge overlay-badge-dead">DADOS INDISPONÍVEIS</span>
+      <div className="overlay-page-wrap">
+        <div className="overlay-root overlay-error">
+          <span className="overlay-status-badge overlay-badge-dead">DADOS INDISPONÍVEIS</span>
+        </div>
       </div>
     );
   }
@@ -79,6 +82,7 @@ export function OverlayPage() {
     : 0;
 
   return (
+    <div className="overlay-page-wrap">
     <div className="overlay-root">
       {deathAlert && (
         <div className="death-alert" key={deathAlert.id}>
@@ -129,7 +133,7 @@ export function OverlayPage() {
         </div>
         <div className="overlay-stat">
           <i className="ti ti-building-store" />
-          <span>{basesCount}/9</span>
+          <span>{basesCount}/{SPIFFOS_RESTAURANTS.length}</span>
           <small>bases</small>
         </div>
       </div>
@@ -147,6 +151,7 @@ export function OverlayPage() {
           </span>
         ))}
       </div>
+    </div>
     </div>
   );
 }

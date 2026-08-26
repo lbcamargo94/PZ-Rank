@@ -1627,22 +1627,29 @@
   .pp-srow-name { width: 145px; }
   .pp-srow-pips { overflow: hidden; }
 }
-/* ── OBS Overlay ────────────────────────────────────────────── */
+/* ── OBS Overlay — cartão de tamanho automático (não precisa acertar as
+   dimensões da fonte de navegador no OBS — o cartão só ocupa o espaço do
+   próprio conteúdo, igual ao overlay do Top 10). ── */
+.overlay-page-wrap {
+  display: inline-flex;
+  padding: 16px;
+}
+
 .overlay-root {
-  position: fixed;
-  inset: 0;
-  background: rgba(10, 10, 10, 0.88);
+  position: relative; /* contexto de posicionamento pro .death-alert */
+  width: 300px;
+  background: rgba(10, 10, 10, 0.92);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 24px 28px;
+  padding: 18px 20px;
   gap: 12px;
   font-family: var(--font-mono);
   pointer-events: none;
   user-select: none;
 }
-.overlay-error { align-items: center; }
+.overlay-error { align-items: center; justify-content: center; min-height: 70px; }
 
 /* ── Alerta de morte — aparece por cima do cartão por alguns segundos ── */
 @keyframes death-alert-inout {
@@ -1653,23 +1660,24 @@
 }
 .death-alert {
   position: absolute;
-  top: 24px;
-  left: 28px;
-  right: 28px;
+  inset: 10px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 14px;
-  background: rgba(40, 6, 6, 0.94);
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+  background: rgba(40, 6, 6, 0.96);
   border: 1px solid rgba(224, 64, 64, 0.5);
   border-radius: var(--radius-lg);
-  padding: 14px 18px;
+  padding: 16px 14px;
   box-shadow: 0 0 24px rgba(224, 64, 64, 0.35);
   animation: death-alert-inout 12s ease-in-out forwards;
 }
-.death-alert-icon { font-size: 34px; color: var(--red); flex-shrink: 0; }
-.death-alert-text { display: flex; flex-direction: column; gap: 2px; }
+.death-alert-icon { font-size: 30px; color: var(--red); }
+.death-alert-text { display: flex; flex-direction: column; gap: 4px; }
 .death-alert-title {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   letter-spacing: 0.5px;
   text-transform: uppercase;
@@ -1731,7 +1739,8 @@
 
 .overlay-stats {
   display: flex;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: 12px 16px;
 }
 .overlay-stat {
   display: flex;
