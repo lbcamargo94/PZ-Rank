@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { setOnUnauthorized } from './lib/api';
 import type { ModSession } from './types';
@@ -17,6 +17,7 @@ import { RegrasPage } from './pages/RegrasPage';
 import { PainelPage } from './pages/PainelPage';
 import { PlayerPage } from './pages/PlayerPage';
 import { OverlayPage } from './pages/OverlayPage';
+import { OverlayTop10Page } from './pages/OverlayTop10Page';
 import { WikiPage } from './pages/WikiPage';
 import { WikiHuntingPage } from './pages/WikiHuntingPage';
 import { ModsPage } from './pages/ModsPage';
@@ -96,6 +97,10 @@ function MainView() {
 
 export default function App() {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Overlays são consumidos como browser source no OBS — sem chrome do site
+  // (footer, botão de doação) por cima, senão aparecem sobrepostos na gravação.
+  const isOverlay = location.pathname.startsWith('/overlay/');
   const [modSession, setModSession] = useState<ModSession | null>(() => {
     try {
       const raw = sessionStorage.getItem('mod_session');
@@ -119,6 +124,7 @@ export default function App() {
           <Route path="/" element={<MainView />} />
           <Route path="/rank" element={<RankPage />} />
           <Route path="/player/:id" element={<PlayerPage />} />
+          <Route path="/overlay/top10" element={<OverlayTop10Page />} />
           <Route path="/overlay/:id" element={<OverlayPage />} />
           <Route path="/wiki" element={<WikiPage />} />
           <Route path="/wiki/cacada" element={<WikiHuntingPage />} />
@@ -148,8 +154,8 @@ export default function App() {
           <Route path="/painel/redefinir-senha"   element={<ModResetPasswordPage />} />
         </Routes>
       </div>
-      <Footer />
-      <DonationButton />
+      {!isOverlay && <Footer />}
+      {!isOverlay && <DonationButton />}
     </>
   );
 }

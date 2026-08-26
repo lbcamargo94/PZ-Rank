@@ -1732,6 +1732,100 @@
   background: rgba(200, 168, 75, 0.08);
 }
 .overlay-obj-done i { color: var(--gold); }
+
+/* ── OBS Overlay — Top 10 do rank ──────────────────────────────── */
+.ovtop-root {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 10, 0.88);
+  display: flex;
+  flex-direction: column;
+  padding: 20px 24px;
+  gap: 12px;
+  font-family: var(--font-mono);
+  pointer-events: none;
+  user-select: none;
+}
+
+.ovtop-empty {
+  align-items: center;
+  justify-content: center;
+  color: var(--text-3);
+  font-size: 16px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.ovtop-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--gold);
+  border-bottom: 1px solid var(--border-mid);
+  padding-bottom: 10px;
+}
+.ovtop-header .ti { font-size: 18px; }
+
+.ovtop-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ovtop-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  background: rgba(255,255,255,0.02);
+  transition: background 0.4s ease;
+}
+
+@keyframes ovtop-pulse {
+  0%   { background: rgba(200, 168, 75, 0.35); }
+  100% { background: rgba(255,255,255,0.02); }
+}
+.ovtop-row-changed { animation: ovtop-pulse 2.2s ease-out; }
+
+.ovtop-rank {
+  min-width: 32px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-3);
+  text-align: center;
+}
+
+.ovtop-name {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ovtop-player {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-3);
+}
+
+.ovtop-score {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--green-light);
+  white-space: nowrap;
+}
 /* ── Task 4: fonte mínima 16px no rank ──────────────────── */
 .rank-table       { font-size: 16px; }
 .rank-table td    { font-size: 16px; }
