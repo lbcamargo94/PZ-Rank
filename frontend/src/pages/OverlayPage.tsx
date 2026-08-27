@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import QRCode from 'qrcode';
-import { apiGetPlayerProfile } from '../lib/api';
+import { apiGetPlayerOverlay, ApiError } from '../lib/api';
 import { parseSkillMap, TOTAL_SKILLS, MAX_SKILL_LEVEL } from '../lib/skills';
 import { SPIFFOS_RESTAURANTS, MAX_POSSIBLE_SCORE } from '../lib/objectives';
 import type { PlayerProfile, Entry } from '../types';
@@ -25,6 +25,7 @@ export function OverlayPage() {
   const [bestEntry,  setBestEntry]  = useState<Entry | null>(null);
   const [rank,       setRank]       = useState<number | null>(null);
   const [error,      setError]      = useState(false);
+  const [blocked,    setBlocked]    = useState(false);
   const [deathAlert, setDeathAlert] = useState<Entry | null>(null);
   const [flipped,    setFlipped]    = useState(false);
   const [qrDataUrl,  setQrDataUrl]  = useState<string | null>(null);
@@ -69,7 +70,8 @@ export function OverlayPage() {
     const numId = parseInt(id, 10);
     if (isNaN(numId)) { setError(true); return; }
     try {
-      const prof = await apiGetPlayerProfile(numId);
+      const prof = await apiGetPlayerOverlay(numId);
+      setBlocked(false);
       setProfile(prof);
       const sorted = [...prof.entries].sort((a, b) => b.score - a.score);
       const best   = sorted[0] ?? null;
@@ -89,8 +91,9 @@ export function OverlayPage() {
       // inteira (~660KB) só pra achar a posição de uma entry.
       const bestAlive = sorted.find(e => e.sandbox_ok !== false && e.is_alive) ?? null;
       setRank(bestAlive?.rank ?? null);
-    } catch {
-      setError(true);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 403) setBlocked(true);
+      else setError(true);
     }
   }
 
@@ -100,6 +103,16 @@ export function OverlayPage() {
     return () => clearInterval(interval);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  if (blocked) {
+    return (
+      <div className="overlay-page-wrap">
+        <div className="overlay-mini-card overlay-error">
+          <span className="overlay-status-badge overlay-badge-dead">OVERLAY DISPONÍVEL APENAS PARA STREAMERS OFICIAIS</span>
+        </div>
+      </div>
+    );
+  }
 
   if (error || !profile || !bestEntry) {
     return (

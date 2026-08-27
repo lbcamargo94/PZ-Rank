@@ -177,6 +177,11 @@ export function apiGetPlayerProfile(id: number): Promise<PlayerProfile> {
   return request(`/players/${id}`);
 }
 
+// Restrito a streamers oficiais no backend — jogadores comuns recebem 403 (ApiError.status === 403).
+export function apiGetPlayerOverlay(id: number): Promise<PlayerProfile> {
+  return request(`/players/${id}/overlay`);
+}
+
 export function apiGetPlayerLikes(id: number, playerToken?: string): Promise<PlayerLikeStatus> {
   return request(`/players/${id}/likes`, playerToken ? playerAuth(playerToken) : undefined);
 }

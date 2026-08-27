@@ -110,23 +110,21 @@ router.get('/featured-streamers', async (_req: Request, res: Response): Promise<
   res.json(data ?? []);
 });
 
-// GET /players/:id — público: retorna dados do jogador + todas as entradas dele no rank
-router.get('/:id', async (req: Request, res: Response): Promise<void> => {
-  const id = parseInt(String(req.params.id), 10);
-  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.', error_code: 'INVALID_ID' }); return; }
+const PLAYER_ENTRY_COLUMNS = [
+  'id', 'player_id', 'name', 'character_name', 'profession',
+  'days', 'time_raw', 'time_str', 'kills', 'skills', 'live_url',
+  'is_alive', 'sandbox_ok', 'traits', 'objectives', 'score',
+  'disqualification_reason', 'disqualified_at', 'deleted_at', 'updated_at',
+  'no_live_streak',
+].join(', ');
 
-  const PLAYER_ENTRY_COLUMNS = [
-    'id', 'player_id', 'name', 'character_name', 'profession',
-    'days', 'time_raw', 'time_str', 'kills', 'skills', 'live_url',
-    'is_alive', 'sandbox_ok', 'traits', 'objectives', 'score',
-    'disqualification_reason', 'disqualified_at', 'deleted_at', 'updated_at',
-    'no_live_streak',
-  ].join(', ');
-
+// Monta o payload de perfil (jogador + entries com rank calculado) compartilhado
+// entre GET /players/:id (perfil público) e GET /players/:id/overlay (fonte OBS).
+async function buildPlayerProfilePayload(id: number) {
   const [playerRes, entriesRes] = await Promise.all([
     supabase
       .from('players')
-      .select('id, nick, twitch_url, youtube_url, kick_url, tiktok_url')
+      .select('id, nick, twitch_url, youtube_url, kick_url, tiktok_url, is_featured_streamer')
       .eq('id', id)
       .single(),
     supabase
@@ -136,19 +134,7 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
       .order('score', { ascending: false }),
   ]);
 
-  if (playerRes.error) {
-    // PGRST116 = zero rows — jogador não existe
-    if (playerRes.error.code === 'PGRST116') {
-      res.status(404).json({ error: 'Jogador não encontrado.', error_code: 'PLAYER_NOT_FOUND' });
-    } else {
-      res.status(500).json({ error: 'Erro ao buscar dados do jogador.', error_code: 'DB_ERROR' });
-    }
-    return;
-  }
-  if (!playerRes.data) {
-    res.status(404).json({ error: 'Jogador não encontrado.', error_code: 'PLAYER_NOT_FOUND' });
-    return;
-  }
+  if (playerRes.error || !playerRes.data) return null;
 
   // Posição no rank público, calculada aqui (COUNT sem trazer linhas) em vez de
   // fazer o cliente baixar a tabela de entries inteira só pra achar a própria
@@ -168,8 +154,44 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
     return { ...entry, rank: count !== null ? count + 1 : null };
   }));
 
+  return { player: playerRes.data as { id: number; is_featured_streamer?: boolean }, entries: entriesWithRank };
+}
+
+// GET /players/:id — público: retorna dados do jogador + todas as entradas dele no rank
+router.get('/:id', async (req: Request, res: Response): Promise<void> => {
+  const id = parseInt(String(req.params.id), 10);
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.', error_code: 'INVALID_ID' }); return; }
+
+  const payload = await buildPlayerProfilePayload(id);
+  if (!payload) {
+    res.status(404).json({ error: 'Jogador não encontrado.', error_code: 'PLAYER_NOT_FOUND' });
+    return;
+  }
+
   res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120');
-  res.json({ player: playerRes.data, entries: entriesWithRank });
+  res.json(payload);
+});
+
+// GET /players/:id/overlay — fonte de dados do overlay de OBS: restrito a
+// streamers oficiais (is_featured_streamer, controlado por moderadores em
+// PATCH /players/:id/featured-streamer). Jogadores comuns que já tinham o
+// link salvo no OBS passam a receber 403 aqui, o que derruba o overlay deles.
+router.get('/:id/overlay', async (req: Request, res: Response): Promise<void> => {
+  const id = parseInt(String(req.params.id), 10);
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.', error_code: 'INVALID_ID' }); return; }
+
+  const payload = await buildPlayerProfilePayload(id);
+  if (!payload) {
+    res.status(404).json({ error: 'Jogador não encontrado.', error_code: 'PLAYER_NOT_FOUND' });
+    return;
+  }
+  if (!payload.player.is_featured_streamer) {
+    res.status(403).json({ error: 'Overlay disponível apenas para streamers oficiais.', error_code: 'OVERLAY_NOT_ALLOWED' });
+    return;
+  }
+
+  res.setHeader('Cache-Control', 'no-store');
+  res.json(payload);
 });
 
 // Decodifica o token de jogador se presente, sem exigir (diferente de requirePlayer,

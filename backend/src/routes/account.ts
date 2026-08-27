@@ -21,7 +21,7 @@ function normalizeUrl(url?: string | null): string | null {
 router.get('/me', requirePlayer, async (req: PlayerRequest, res: Response): Promise<void> => {
   const { data, error } = await supabase
     .from('players')
-    .select('id, nick, email, email_verified_at, twitch_url, youtube_url, kick_url, tiktok_url, status, created_at')
+    .select('id, nick, email, email_verified_at, twitch_url, youtube_url, kick_url, tiktok_url, status, is_featured_streamer, created_at')
     .eq('id', req.playerId!)
     .single();
 

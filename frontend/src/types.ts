@@ -304,5 +304,6 @@ export interface PlayerAccount {
   tiktok_url:         string | null;
   gender?:            'm' | 'f' | null;
   status:             PlayerStatus;
+  is_featured_streamer?: boolean;
   created_at:         string;
 }

@@ -276,6 +276,15 @@ export function PendingPlayers({ token, showToast }: Props) {
     }
   }
 
+  async function handleCopyOverlayLink(p: Player) {
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}/overlay/${p.id}`);
+      showToast('Link do overlay copiado!', 'success');
+    } catch {
+      showToast('Não foi possível copiar o link.', 'error');
+    }
+  }
+
   async function handleToggleFeaturedStreamer(p: Player) {
     const next = !p.is_featured_streamer;
     setUpdating(p.id);
@@ -469,6 +478,13 @@ export function PendingPlayers({ token, showToast }: Props) {
                     onClick={() => handleToggleFeaturedStreamer(p)}>
                     <i className="ti ti-star" /> Streamer
                   </button>
+                  {p.is_featured_streamer && (
+                    <button className="btn-ghost btn-sm"
+                      title="Copiar link do overlay pra OBS"
+                      onClick={() => handleCopyOverlayLink(p)}>
+                      <i className="ti ti-copy" /> Overlay
+                    </button>
+                  )}
                   <button className="btn-ghost btn-sm btn-delete" disabled={updating === p.id}
                     title="Excluir jogador do rank"
                     onClick={() => handleDelete(p.id)}>
