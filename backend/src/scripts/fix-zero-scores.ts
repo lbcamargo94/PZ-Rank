@@ -14,7 +14,7 @@
  */
 
 import { supabase } from '../supabase';
-import { computeScore, countSkills10 } from '../lib/scoring';
+import { computeScore, sumSkillLevels } from '../lib/scoring';
 import type { Objectives } from '../types';
 
 const DRY_RUN = process.env['DRY_RUN'] === 'true';
@@ -50,7 +50,7 @@ async function main() {
   for (const e of entries as Array<Record<string, unknown>>) {
     const kills      = (e['kills'] as number) ?? 0;
     const objectives = (e['objectives'] as Objectives | null) ?? null;
-    const correctScore = computeScore(kills, countSkills10(e['skills'] as string | null), objectives);
+    const correctScore = computeScore(kills, sumSkillLevels(e['skills'] as string | null), objectives);
 
     console.log(
       `  entry ${e['id']} | player ${e['player_id']} | "${e['character_name']}"` +

@@ -424,7 +424,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     return;
   }
 
-  const score = computeScore(decoded.kills, Object.values(decoded.skillLevels).filter(l => l === 10).length, existingObjectives);
+  const score = computeScore(decoded.kills, Object.values(decoded.skillLevels).reduce((sum, l) => sum + l, 0), existingObjectives);
 
   // record_score: maior pontuação já atingida por este (player, character_name), vivo ou morto.
   // Em nova run: preserva o melhor da run anterior. Na mesma run: atualiza se superou o record.

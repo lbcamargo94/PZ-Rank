@@ -76,7 +76,8 @@ export function mergeObjectives(existing: Objectives | null | undefined): Object
 // ── Pontuação ───────────────────────────────────────────────
 export const SCORE_KILLS_PER_KILL = 0.1;      // pts por zumbi abatido
 export const SCORE_KILLS_MAX      = 800_000;  // máximo de kills contabilizados
-export const SCORE_SKILL_10       = 1_000;    // pts por habilidade nível 10
+export const SCORE_SKILL_LEVEL    = 100;      // pts por nível de habilidade
+export const SCORE_SKILL_MAXED    = SCORE_SKILL_LEVEL * 10; // pts por habilidade no nível máximo (10)
 export const SCORE_SPIFFO_DONE    = 1_000;    // pts por Spiffo's com base estabelecida
 export const SCORE_MILITARY       = 5_000;    // pts por base militar conquistada
 export const SCORE_SPIFFO_HQ      = 5_000;    // pts por Sede do Spiffo's conquistada
@@ -86,14 +87,15 @@ const N_SKILLS = 35; // habilidades do jogo
 
 export const MAX_POSSIBLE_SCORE =
   Math.round(SCORE_KILLS_MAX * SCORE_KILLS_PER_KILL) +
-  N_SKILLS * SCORE_SKILL_10 +
+  N_SKILLS * SCORE_SKILL_MAXED +
   SPIFFOS_RESTAURANTS.length * SCORE_SPIFFO_DONE +
   SCORE_MILITARY +
   SCORE_SPIFFO_HQ +
   SCORE_SPIFFO_RELIC;
 
 /** Conta skills no nível 10 a partir da string da coluna `skills` do banco.
- *  Formato: "Machado 10, Força 8, Vigilância 10, ..." */
+ *  Formato: "Machado 10, Força 8, Vigilância 10, ..."
+ *  Usado só pra exibição (ex: badge "X no nível máximo") — não entra mais no cálculo de score. */
 export function countSkills10(skillsStr: string | null | undefined): number {
   if (!skillsStr) return 0;
   let count = 0;
@@ -105,14 +107,29 @@ export function countSkills10(skillsStr: string | null | undefined): number {
   return count;
 }
 
+/** Soma o nível de todas as habilidades a partir da string da coluna `skills` do banco.
+ *  Formato: "Machado 10, Força 8, Vigilância 10, ..." */
+export function sumSkillLevels(skillsStr: string | null | undefined): number {
+  if (!skillsStr) return 0;
+  let total = 0;
+  for (const part of skillsStr.split(',')) {
+    const t = part.trim();
+    const lastSpace = t.lastIndexOf(' ');
+    if (lastSpace < 0) continue;
+    const level = parseInt(t.slice(lastSpace + 1), 10);
+    if (!isNaN(level)) total += level;
+  }
+  return total;
+}
+
 export function computeScore(
-  kills:         number,
-  skills10Count: number,
-  objectives?:   Partial<Objectives> | null,
+  kills:          number,
+  skillLevelSum:  number,
+  objectives?:    Partial<Objectives> | null,
 ): number {
   let score = Math.round(Math.min(kills, SCORE_KILLS_MAX) * SCORE_KILLS_PER_KILL);
 
-  score += skills10Count * SCORE_SKILL_10;
+  score += skillLevelSum * SCORE_SKILL_LEVEL;
 
   if (objectives?.bases) {
     for (const [id, base] of Object.entries(objectives.bases)) {

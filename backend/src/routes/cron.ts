@@ -14,7 +14,7 @@ import { subscribePubSub, getChannelCurrentLive, checkIsLive } from '../lib/yout
 import { extractTwitchLogin, getLiveStreams } from '../lib/twitch';
 import { sendLiveNotification } from '../lib/discord';
 import { isChampionshipTitle, isChampionshipTwitchGame } from '../lib/championship';
-import { computeScore, countSkills10, OFFICIAL_BASE_IDS } from '../lib/scoring';
+import { computeScore, sumSkillLevels, OFFICIAL_BASE_IDS } from '../lib/scoring';
 import type { Objectives, BaseObjectives } from '../types';
 
 const router = Router();
@@ -441,8 +441,8 @@ router.post('/recalculate-scores', async (req: Request, res: Response): Promise<
       migrated = hasOldFields || hadObsoleteBase || hadMissingBase;
     }
 
-    const skills10 = countSkills10(row.skills);
-    const newScore = row.sandbox_ok ? computeScore(row.kills, skills10, migratedObj) : 0;
+    const skillLevelSum = sumSkillLevels(row.skills);
+    const newScore = row.sandbox_ok ? computeScore(row.kills, skillLevelSum, migratedObj) : 0;
 
     const patch: Record<string, unknown> = { score: newScore, updated_at: new Date().toISOString() };
     if (migrated && migratedObj) patch.objectives = migratedObj;

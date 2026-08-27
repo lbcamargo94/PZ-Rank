@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import {
   SPIFFOS_RESTAURANTS, BASE_ITEMS,
   SCORE_KILLS_PER_KILL, SCORE_KILLS_MAX,
-  SCORE_SKILL_10, SCORE_SPIFFO_DONE, SCORE_MILITARY,
+  SCORE_SKILL_LEVEL, SCORE_SKILL_MAXED, SCORE_SPIFFO_DONE, SCORE_MILITARY,
   SCORE_SPIFFO_HQ, SCORE_SPIFFO_RELIC, MAX_POSSIBLE_SCORE,
 } from '../lib/objectives';
 import regrasBg from '../../assets/background/tela-de-regras.webp';
@@ -201,9 +201,9 @@ export function RegrasPage() {
                   <div className="rg-obj-body">
                     <span className="rg-obj-title">{t('regras.objetivos.card_survival_master.title')}</span>
                     <span className="rg-obj-desc">
-                      {t('regras.objetivos.card_survival_master.desc_pre')} <strong>+{formatNumber(SCORE_SKILL_10)} pts</strong>. {t('regras.objetivos.card_survival_master.desc_post')}
+                      {t('regras.objetivos.card_survival_master.desc_pre')} <strong>+{formatNumber(SCORE_SKILL_LEVEL)} pts</strong>. {t('regras.objetivos.card_survival_master.desc_post', { max: formatNumber(SCORE_SKILL_MAXED) })}
                     </span>
-                    <span className="rg-pts-badge">{t('regras.objetivos.card_survival_master.badge', { total: formatNumber(35 * SCORE_SKILL_10) })}</span>
+                    <span className="rg-pts-badge">{t('regras.objetivos.card_survival_master.badge', { total: formatNumber(35 * SCORE_SKILL_MAXED) })}</span>
                   </div>
                 </div>
                 <div className="rg-obj-card">

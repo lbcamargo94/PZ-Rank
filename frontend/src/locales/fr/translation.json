@@ -277,7 +277,7 @@
       "section_sub": "Complétez les objectifs ci-dessous pour prouver que vous êtes un véritable survivant.",
       "main_title": "Objectifs Principaux",
       "card_extermination": { "title": "Extermination Totale", "desc_pre": "Chaque zombie éliminé vaut", "desc_post": "Maximum comptabilisé : {{max}} zombies.", "badge": "jusqu'à +{{total}} pts" },
-      "card_survival_master": { "title": "Maître de la Survie", "desc_pre": "Chaque compétence maximisée au niveau 10 vaut", "desc_post": "Le jeu possède 35 compétences.", "badge": "jusqu'à +{{total}} pts" },
+      "card_survival_master": { "title": "Maître de la Survie", "desc_pre": "Chaque niveau de compétence vaut", "desc_post": "Jusqu'à {{max}} pts par compétence au niveau 10, pour les 35 compétences du jeu.", "badge": "jusqu'à +{{total}} pts" },
       "card_kentucky": { "title": "Reconstruction du Kentucky", "desc_pre": "Établissez une base dans chacun des {{count}} restaurants Spiffo's. Chaque base établie vaut", "badge": "jusqu'à +{{total}} pts" },
       "card_spiffo_hq": { "title": "QG de Spiffo's (Louisville HQ)", "desc": "Conquérez le QG de Spiffo's à Louisville, en éliminant toute la menace zombie de la région.", "badge": "+{{val}} pts" },
       "card_spiffo_relic": { "title": "Relique de Spiffo", "desc": "Localisez et récupérez la légendaire Relique de Spiffo — symbole ultime de la survie.", "badge": "+{{val}} pts" },

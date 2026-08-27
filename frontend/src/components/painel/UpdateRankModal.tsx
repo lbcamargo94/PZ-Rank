@@ -27,8 +27,8 @@ export function UpdateRankModal({ token, entries, onClose, onSuccess, showToast 
   const [loading,      setLoading]     = useState(false);
 
   const decoded = parsePzrCode(code.trim());
-  const skills10Count = decoded ? Object.values(decoded.skillLevels).filter(l => l === 10).length : 0;
-  const previewScore  = decoded ? computeScore(decoded.kills, skills10Count, objectives) : 0;
+  const skillLevelSum = decoded ? Object.values(decoded.skillLevels).reduce((sum, l) => sum + l, 0) : 0;
+  const previewScore   = decoded ? computeScore(decoded.kills, skillLevelSum, objectives) : 0;
 
   // Detecta se o personagem decodificado já existe no rank para este jogador.
   // Quando true, o backend preserva os objectives do DB e ignora os do form.

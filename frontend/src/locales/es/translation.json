@@ -277,7 +277,7 @@
       "section_sub": "Completa los objetivos abajo para demostrar que eres un verdadero superviviente.",
       "main_title": "Objetivos Principales",
       "card_extermination": { "title": "Exterminio Total", "desc_pre": "Cada zombi eliminado vale", "desc_post": "Máximo contabilizado: {{max}} zombis.", "badge": "hasta +{{total}} pts" },
-      "card_survival_master": { "title": "Maestro de la Supervivencia", "desc_pre": "Cada habilidad maximizada al nivel 10 vale", "desc_post": "El juego tiene 35 habilidades.", "badge": "hasta +{{total}} pts" },
+      "card_survival_master": { "title": "Maestro de la Supervivencia", "desc_pre": "Cada nivel de habilidad vale", "desc_post": "Hasta {{max}} pts por habilidad en el nivel 10, sumando las 35 habilidades del juego.", "badge": "hasta +{{total}} pts" },
       "card_kentucky": { "title": "Reconstrucción de Kentucky", "desc_pre": "Establece una base en cada uno de los {{count}} restaurantes Spiffo's. Cada base establecida vale", "badge": "hasta +{{total}} pts" },
       "card_spiffo_hq": { "title": "Sede de Spiffo's (Louisville HQ)", "desc": "Conquista la Sede de Spiffo's en Louisville, eliminando toda la amenaza zombi de la región.", "badge": "+{{val}} pts" },
       "card_spiffo_relic": { "title": "Reliquia de Spiffo", "desc": "Localiza y recolecta la legendaria Reliquia de Spiffo — símbolo máximo de la supervivencia.", "badge": "+{{val}} pts" },

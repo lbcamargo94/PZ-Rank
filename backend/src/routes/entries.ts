@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { supabase } from '../supabase';
 import { parsePzrCode } from '../lib/decoder';
 import { dbError } from '../lib/errors';
-import { computeScore, countSkills10 } from '../lib/scoring';
+import { computeScore, sumSkillLevels } from '../lib/scoring';
 import { requireModerator } from '../middleware/moderator';
 import type { ModRequest } from '../middleware/moderator';
 import { config } from '../config';
@@ -208,7 +208,7 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
     sandbox_ok:              decoded.sandboxOk,
     traits:                  decoded.traits.join(',') || null,
     objectives:              preservedObjectives,
-    score:                   decoded.sandboxOk ? computeScore(decoded.kills, Object.values(decoded.skillLevels).filter(l => l === 10).length, preservedObjectives) : 0,
+    score:                   decoded.sandboxOk ? computeScore(decoded.kills, Object.values(decoded.skillLevels).reduce((sum, l) => sum + l, 0), preservedObjectives) : 0,
     disqualification_reason: !decoded.sandboxOk
       ? (decoded.disqualificationReason ?? 'sandbox')
       : null,
@@ -292,7 +292,7 @@ router.patch('/:id/status', requireModerator, async (req: ModRequest, res: Respo
       patch.disqualified_by         = null;
     }
     // Ao desclassificar manualmente: zera score. Ao reclassificar: recalcula.
-    patch.score = sandbox_ok ? computeScore(row.kills, countSkills10(row.skills), row.objectives) : 0;
+    patch.score = sandbox_ok ? computeScore(row.kills, sumSkillLevels(row.skills), row.objectives) : 0;
   }
   patch.updated_at = new Date().toISOString();
 
@@ -326,7 +326,7 @@ router.patch('/:id/objectives', requireModerator, async (req: ModRequest, res: R
   if (fetchError || !existing) { res.status(404).json({ error: 'Entrada não encontrada.' }); return; }
 
   const row = existing as { id: number; kills: number; skills: string | null; sandbox_ok: boolean };
-  const newScore = row.sandbox_ok !== false ? computeScore(row.kills, countSkills10(row.skills), objectives) : 0;
+  const newScore = row.sandbox_ok !== false ? computeScore(row.kills, sumSkillLevels(row.skills), objectives) : 0;
 
   const { data, error } = await supabase
     .from(config.tableName)

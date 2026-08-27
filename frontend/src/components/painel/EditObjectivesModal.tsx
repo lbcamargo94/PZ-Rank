@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { apiUpdateEntryObjectives } from '../../lib/api';
 import {
   SPIFFOS_RESTAURANTS, BASE_ITEMS,
-  mergeObjectives, computeScore, countSkills10,
+  mergeObjectives, computeScore, sumSkillLevels,
 } from '../../lib/objectives';
 import type { Objectives } from '../../lib/objectives';
 import type { Entry } from '../../types';
@@ -20,7 +20,7 @@ export function EditObjectivesModal({ token, entry, onClose, onSuccess, showToas
   const [expandedBase, setExpandedBase] = useState<string | null>(null);
   const [loading,      setLoading]     = useState(false);
 
-  const previewScore = computeScore(entry.kills, countSkills10(entry.skills), objectives);
+  const previewScore = computeScore(entry.kills, sumSkillLevels(entry.skills), objectives);
 
   useEffect(() => {
     const prev = document.body.style.overflow;

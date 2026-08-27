@@ -277,7 +277,7 @@
       "section_sub": "Complete the objectives below to prove you're a true survivor.",
       "main_title": "Main Objectives",
       "card_extermination": { "title": "Total Extermination", "desc_pre": "Each zombie killed is worth", "desc_post": "Maximum counted: {{max}} zombies.", "badge": "up to +{{total}} pts" },
-      "card_survival_master": { "title": "Survival Master", "desc_pre": "Each skill maxed to level 10 is worth", "desc_post": "The game has 35 skills.", "badge": "up to +{{total}} pts" },
+      "card_survival_master": { "title": "Survival Master", "desc_pre": "Each skill level is worth", "desc_post": "Up to {{max}} pts per skill at level 10, across the game's 35 skills.", "badge": "up to +{{total}} pts" },
       "card_kentucky": { "title": "Rebuilding Kentucky", "desc_pre": "Establish a base in each of the {{count}} Spiffo's restaurants. Each established base is worth", "badge": "up to +{{total}} pts" },
       "card_spiffo_hq": { "title": "Spiffo's HQ (Louisville HQ)", "desc": "Conquer Spiffo's HQ in Louisville, eliminating the entire zombie threat in the area.", "badge": "+{{val}} pts" },
       "card_spiffo_relic": { "title": "Spiffo's Relic", "desc": "Locate and collect the legendary Spiffo's Relic — the ultimate symbol of survival.", "badge": "+{{val}} pts" },

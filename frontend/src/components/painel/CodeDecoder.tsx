@@ -126,9 +126,10 @@ export function CodeDecoder() {
     return () => window.removeEventListener('keydown', onKey);
   });
 
-  const v           = result ? verdict(result) : null;
-  const maxedSkills = result?.skills.filter(s => parseSkillRaw(s).level >= 10).length ?? 0;
-  const score       = result ? computeScore(result.kills, maxedSkills) : 0;
+  const v            = result ? verdict(result) : null;
+  const maxedSkills  = result?.skills.filter(s => parseSkillRaw(s).level >= 10).length ?? 0;
+  const skillLevelSum = result?.skills.reduce((sum, s) => sum + parseSkillRaw(s).level, 0) ?? 0;
+  const score        = result ? computeScore(result.kills, skillLevelSum) : 0;
 
   const positiveTraits = result?.traits.filter(t => resolveTrait(t).type === 'positive') ?? [];
   const negativeTraits = result?.traits.filter(t => resolveTrait(t).type === 'negative') ?? [];
