@@ -117,7 +117,6 @@ export function OverlayPage() {
     ? Object.values(bestEntry.objectives.bases).filter(b => b.has_base).length
     : 0;
   const progressPct = MAX_POSSIBLE_SCORE > 0 ? (bestEntry.score / MAX_POSSIBLE_SCORE) * 100 : 0;
-  const displayName = bestEntry.character_name || profile.player.nick;
 
   return (
     <div className="overlay-page-wrap">
@@ -140,7 +139,8 @@ export function OverlayPage() {
           <div className="overlay-flip-face overlay-flip-face--front overlay-mini-card">
             <div className="overlay-mini-row">
               <span className="overlay-mini-title">
-                {rank !== null ? `#${rank} - ` : ''}{displayName}
+                {rank !== null && <span className="overlay-rank-highlight">#{rank}</span>}
+                {' '}- {profile.player.nick}
               </span>
               <span className="overlay-mini-score">{bestEntry.score.toLocaleString('pt-BR')}pts</span>
             </div>
@@ -168,7 +168,7 @@ export function OverlayPage() {
           {/* Verso: QR code pro rank completo */}
           <div className="overlay-flip-face overlay-flip-face--back overlay-mini-card overlay-qr-face">
             {qrDataUrl && <img src={qrDataUrl} alt="QR code para o ranking" className="overlay-qr-img" />}
-            <span className="overlay-qr-link">{RANK_URL_LABEL}</span>
+            <span className="overlay-qr-link"><i className="ti ti-link" /> {RANK_URL_LABEL}</span>
           </div>
 
         </div>

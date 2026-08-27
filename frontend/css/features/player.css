@@ -1748,6 +1748,25 @@
   white-space: nowrap;
 }
 
+/* Brilho neon pulsante reutilizável — currentColor permite aplicar a mesma
+   animação em elementos de cores diferentes (posição no rank = dourado,
+   link do QR code = verde) sem duplicar keyframes. */
+@keyframes neon-text-pulse {
+  0%, 100% { text-shadow: 0 0 5px currentColor, 0 0 12px currentColor; }
+  50%      { text-shadow: 0 0 12px currentColor, 0 0 26px currentColor; }
+}
+@keyframes neon-box-pulse {
+  0%, 100% { box-shadow: 0 0 6px currentColor, 0 0 14px currentColor; }
+  50%      { box-shadow: 0 0 12px currentColor, 0 0 26px currentColor; }
+}
+
+.overlay-rank-highlight {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--gold);
+  animation: neon-text-pulse 1.8s ease-in-out infinite;
+}
+
 .overlay-mini-block {
   display: flex;
   flex-direction: column;
@@ -1806,11 +1825,20 @@
   padding: 8px;
 }
 .overlay-qr-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border-radius: 100px;
+  background: var(--green-dim);
+  border: 1px solid var(--green-border);
+  color: var(--green-light);
   font-size: 15px;
-  font-weight: 700;
-  color: var(--text-1);
+  font-weight: 800;
   letter-spacing: 0.3px;
+  animation: neon-box-pulse 1.8s ease-in-out infinite;
 }
+.overlay-qr-link .ti { font-size: 15px; }
 
 /* ── OBS Overlay — fundo transparente ──────────────────────────
    Aplicado via document.body.classList em toda página de overlay —
