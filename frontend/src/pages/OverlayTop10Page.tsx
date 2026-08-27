@@ -82,9 +82,6 @@ export function OverlayTop10Page() {
             ))}
           </div>
         )}
-        <div className="btn-secondary btn-sm home-side-panel-cta">
-          Ver ranking completo <i className="ti ti-arrow-right" />
-        </div>
       </section>
     </div>
   );
