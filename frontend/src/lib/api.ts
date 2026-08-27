@@ -573,6 +573,14 @@ export function apiGetFeaturedStreamers(): Promise<FeaturedStreamer[]> {
   return request('/players/featured-streamers');
 }
 
+export function apiSetModerator(
+  token: string,
+  playerId: number,
+  is_moderator: boolean,
+): Promise<{ id: number; nick: string; is_moderator: boolean }> {
+  return request(`/players/${playerId}/moderator`, { method: 'PATCH', ...json(token, { is_moderator }) });
+}
+
 export function apiGetAchievements(): Promise<{ achievements: Achievement[] }> {
   return request<{ achievements: Achievement[] }>('/achievements');
 }

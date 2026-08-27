@@ -124,7 +124,7 @@ async function buildPlayerProfilePayload(id: number) {
   const [playerRes, entriesRes] = await Promise.all([
     supabase
       .from('players')
-      .select('id, nick, twitch_url, youtube_url, kick_url, tiktok_url, is_featured_streamer')
+      .select('id, nick, twitch_url, youtube_url, kick_url, tiktok_url, is_featured_streamer, is_moderator')
       .eq('id', id)
       .single(),
     supabase
@@ -154,7 +154,7 @@ async function buildPlayerProfilePayload(id: number) {
     return { ...entry, rank: count !== null ? count + 1 : null };
   }));
 
-  return { player: playerRes.data as { id: number; is_featured_streamer?: boolean }, entries: entriesWithRank };
+  return { player: playerRes.data as { id: number; is_featured_streamer?: boolean; is_moderator?: boolean }, entries: entriesWithRank };
 }
 
 // GET /players/:id — público: retorna dados do jogador + todas as entradas dele no rank
@@ -173,9 +173,10 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
 });
 
 // GET /players/:id/overlay — fonte de dados do overlay de OBS: restrito a
-// streamers oficiais (is_featured_streamer, controlado por moderadores em
-// PATCH /players/:id/featured-streamer). Jogadores comuns que já tinham o
-// link salvo no OBS passam a receber 403 aqui, o que derruba o overlay deles.
+// streamers oficiais (is_featured_streamer) ou moderadores (is_moderator) —
+// controlados por moderadores em PATCH /players/:id/featured-streamer e
+// PATCH /players/:id/moderator. Jogadores comuns que já tinham o link salvo
+// no OBS passam a receber 403 aqui, o que derruba o overlay deles.
 router.get('/:id/overlay', async (req: Request, res: Response): Promise<void> => {
   const id = parseInt(String(req.params.id), 10);
   if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.', error_code: 'INVALID_ID' }); return; }
@@ -185,8 +186,8 @@ router.get('/:id/overlay', async (req: Request, res: Response): Promise<void> =>
     res.status(404).json({ error: 'Jogador não encontrado.', error_code: 'PLAYER_NOT_FOUND' });
     return;
   }
-  if (!payload.player.is_featured_streamer) {
-    res.status(403).json({ error: 'Overlay disponível apenas para streamers oficiais.', error_code: 'OVERLAY_NOT_ALLOWED' });
+  if (!payload.player.is_featured_streamer && !payload.player.is_moderator) {
+    res.status(403).json({ error: 'Overlay disponível apenas para streamers e moderadores oficiais.', error_code: 'OVERLAY_NOT_ALLOWED' });
     return;
   }
 
@@ -433,7 +434,7 @@ router.get('/', requireModerator, async (req: ModRequest, res: Response): Promis
   try {
     let query = supabase
       .from('players')
-      .select('id, nick, email, email_verified_at, twitch_url, youtube_url, kick_url, tiktok_url, status, blocked, blocked_reason, blocked_at, blocked_by, blocked_note, is_supporter, supporter_until, is_featured_streamer, deleted_at, created_at')
+      .select('id, nick, email, email_verified_at, twitch_url, youtube_url, kick_url, tiktok_url, status, blocked, blocked_reason, blocked_at, blocked_by, blocked_note, is_supporter, supporter_until, is_featured_streamer, is_moderator, deleted_at, created_at')
       .order('created_at', { ascending: false });
 
     if (statusParam === 'deleted') {
@@ -801,6 +802,36 @@ router.patch('/:id/featured-streamer', requireModerator, async (req: ModRequest,
   } catch (err) {
     console.error('[PATCH /players/:id/featured-streamer] Erro inesperado:', err);
     res.status(500).json({ error: 'Erro interno ao atualizar destaque de streamer.' });
+  }
+});
+
+// PATCH /players/:id/moderator — moderador: define/remove cargo de moderador
+// oficial no jogador. Diferente de is_test_mod (moderador de teste): o
+// jogador continua participando normalmente da numeração do rank público —
+// o cargo só concede acessos extras (ex: overlay de OBS).
+router.patch('/:id/moderator', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
+  const id = parseInt(String(req.params.id), 10);
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
+
+  const { is_moderator } = req.body as { is_moderator?: boolean };
+  if (typeof is_moderator !== 'boolean') {
+    res.status(400).json({ error: 'is_moderator deve ser true ou false.' });
+    return;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('players')
+      .update({ is_moderator })
+      .eq('id', id)
+      .select('id, nick, is_moderator')
+      .single();
+
+    if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
+    res.json(data);
+  } catch (err) {
+    console.error('[PATCH /players/:id/moderator] Erro inesperado:', err);
+    res.status(500).json({ error: 'Erro interno ao atualizar cargo de moderador.' });
   }
 });
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { apiGetPlayers, apiUpdatePlayerStatus, apiBlockPlayer, apiUnblockPlayer, apiDeletePlayer, apiRestorePlayer, apiSetPlayerEmail, apiVerifyPlayerEmail, apiSetFeaturedStreamer } from '../../lib/api';
+import { apiGetPlayers, apiUpdatePlayerStatus, apiBlockPlayer, apiUnblockPlayer, apiDeletePlayer, apiRestorePlayer, apiSetPlayerEmail, apiVerifyPlayerEmail, apiSetFeaturedStreamer, apiSetModerator } from '../../lib/api';
 import type { Player, PlayerStatus, PlayerFilter } from '../../types';
 import { ConfirmModal } from './ConfirmModal';
 import { EditLinksModal } from './EditLinksModal';
@@ -299,6 +299,20 @@ export function PendingPlayers({ token, showToast }: Props) {
     }
   }
 
+  async function handleToggleModerator(p: Player) {
+    const next = !p.is_moderator;
+    setUpdating(p.id);
+    try {
+      await apiSetModerator(token, p.id, next);
+      setPlayers(prev => prev.map(x => x.id === p.id ? { ...x, is_moderator: next } : x));
+      showToast(next ? 'Cargo de moderador definido.' : 'Cargo de moderador removido.', 'success');
+    } catch (err) {
+      showToast((err as Error).message, 'error');
+    } finally {
+      setUpdating(null);
+    }
+  }
+
   const filterOptions: PlayerFilter[] = ['pending', 'approved', 'rejected', 'blocked', 'deleted', 'all'];
   const pendingCount = players.filter(p => p.status === 'pending').length;
   const isDeleted    = filter === 'deleted';
@@ -478,7 +492,14 @@ export function PendingPlayers({ token, showToast }: Props) {
                     onClick={() => handleToggleFeaturedStreamer(p)}>
                     <i className="ti ti-star" /> Streamer
                   </button>
-                  {p.is_featured_streamer && (
+                  <button
+                    className={`btn-sm${p.is_moderator ? ' btn-test-mod-active' : ' btn-secondary'}`}
+                    disabled={updating === p.id}
+                    title={p.is_moderator ? 'Remover cargo de moderador' : 'Definir como moderador oficial (também libera o overlay de OBS)'}
+                    onClick={() => handleToggleModerator(p)}>
+                    <i className="ti ti-shield-check" /> Moderador
+                  </button>
+                  {(p.is_featured_streamer || p.is_moderator) && (
                     <button className="btn-ghost btn-sm"
                       title="Copiar link do overlay pra OBS"
                       onClick={() => handleCopyOverlayLink(p)}>

@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS players (
   supporter_until    TEXT     DEFAULT NULL,
   is_test_mod        INTEGER  NOT NULL DEFAULT 0,
   is_featured_streamer INTEGER NOT NULL DEFAULT 0,
+  is_moderator        INTEGER  NOT NULL DEFAULT 0,
   deleted_at         TEXT     DEFAULT NULL,
   gender             TEXT     DEFAULT NULL CHECK (gender IN ('m', 'f')),
   player_token       TEXT     NOT NULL DEFAULT (lower(hex(randomblob(16)))),

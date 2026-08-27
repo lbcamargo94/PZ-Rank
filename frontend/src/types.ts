@@ -129,6 +129,7 @@ export interface Player {
   supporter_until:    string | null;
   is_test_mod?:       boolean;
   is_featured_streamer?: boolean;
+  is_moderator?:      boolean;
   deleted_at?:        string | null;
   created_at:         string;
 }
@@ -305,5 +306,6 @@ export interface PlayerAccount {
   gender?:            'm' | 'f' | null;
   status:             PlayerStatus;
   is_featured_streamer?: boolean;
+  is_moderator?:      boolean;
   created_at:         string;
 }

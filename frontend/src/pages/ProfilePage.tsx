@@ -225,7 +225,7 @@ function TabConta({ session, profile, onProfileChange }: {
 
   return (
     <div className="account-tab-body">
-      {profile.is_featured_streamer && (
+      {(profile.is_featured_streamer || profile.is_moderator) && (
         <section className="account-section">
           <h2 className="account-section-title">Overlay para OBS</h2>
           <p className="account-section-info">
