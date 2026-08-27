@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
+import QRCode from 'qrcode';
 import { apiGetPlayerProfile } from '../lib/api';
 import { parseSkillMap, TOTAL_SKILLS, MAX_SKILL_LEVEL } from '../lib/skills';
-import { SPIFFOS_RESTAURANTS } from '../lib/objectives';
+import { SPIFFOS_RESTAURANTS, MAX_POSSIBLE_SCORE } from '../lib/objectives';
 import type { PlayerProfile, Entry } from '../types';
 
 // Alinhado ao Cache-Control: s-maxage=60 de /players/:id — pollar mais rápido
@@ -12,6 +13,12 @@ import type { PlayerProfile, Entry } from '../types';
 const REFRESH_MS = 60_000;
 const DEATH_ALERT_MS = 12_000;
 
+// Ciclo de virada do card: 20s mostrando os dados, 10s mostrando o QR code.
+const DATA_SIDE_MS = 20_000;
+const QR_SIDE_MS = 10_000;
+const RANK_URL = 'https://www.pzrank.com.br/rank';
+const RANK_URL_LABEL = 'pzrank.com.br/rank';
+
 export function OverlayPage() {
   const { id } = useParams<{ id: string }>();
   const [profile,    setProfile]    = useState<PlayerProfile | null>(null);
@@ -19,12 +26,42 @@ export function OverlayPage() {
   const [rank,       setRank]       = useState<number | null>(null);
   const [error,      setError]      = useState(false);
   const [deathAlert, setDeathAlert] = useState<Entry | null>(null);
+  const [flipped,    setFlipped]    = useState(false);
+  const [qrDataUrl,  setQrDataUrl]  = useState<string | null>(null);
   const wasAliveRef = useRef<boolean | null>(null);
 
   // Fundo transparente pro OBS compositar só o cartão, sem o background do site atrás.
   useEffect(() => {
     document.body.classList.add('overlay-page-active');
     return () => document.body.classList.remove('overlay-page-active');
+  }, []);
+
+  // QR code gerado localmente (sem depender de serviço externo) — o link é
+  // fixo, então só precisa gerar uma vez.
+  useEffect(() => {
+    QRCode.toDataURL(RANK_URL, { width: 200, margin: 1, color: { dark: '#000000', light: '#ffffff' } })
+      .then(setQrDataUrl)
+      .catch(() => {});
+  }, []);
+
+  // Ciclo de virada do cartão (dados → QR → dados → ...), independente do
+  // polling de dados.
+  useEffect(() => {
+    let cancelled = false;
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    function cycle() {
+      setFlipped(false);
+      timers.push(setTimeout(() => {
+        if (cancelled) return;
+        setFlipped(true);
+        timers.push(setTimeout(() => {
+          if (cancelled) return;
+          cycle();
+        }, QR_SIDE_MS));
+      }, DATA_SIDE_MS));
+    }
+    cycle();
+    return () => { cancelled = true; timers.forEach(clearTimeout); };
   }, []);
 
   async function load() {
@@ -67,91 +104,75 @@ export function OverlayPage() {
   if (error || !profile || !bestEntry) {
     return (
       <div className="overlay-page-wrap">
-        <div className="overlay-root overlay-error">
+        <div className="overlay-mini-card overlay-error">
           <span className="overlay-status-badge overlay-badge-dead">DADOS INDISPONÍVEIS</span>
         </div>
       </div>
     );
   }
 
-  const skillMap   = parseSkillMap(bestEntry.skills);
+  const skillMap    = parseSkillMap(bestEntry.skills);
   const maxedSkills = Array.from(skillMap.values()).filter(l => l >= MAX_SKILL_LEVEL).length;
-
-  const basesCount = bestEntry.objectives?.bases
+  const basesCount  = bestEntry.objectives?.bases
     ? Object.values(bestEntry.objectives.bases).filter(b => b.has_base).length
     : 0;
+  const progressPct = MAX_POSSIBLE_SCORE > 0 ? (bestEntry.score / MAX_POSSIBLE_SCORE) * 100 : 0;
+  const displayName = bestEntry.character_name || profile.player.nick;
 
   return (
     <div className="overlay-page-wrap">
-    <div className="overlay-root">
-      {deathAlert && (
-        <div className="death-alert" key={deathAlert.id}>
-          <i className="ti ti-skull death-alert-icon" />
-          <div className="death-alert-text">
-            <span className="death-alert-title">{deathAlert.character_name || profile.player.nick} morreu!</span>
-            <span className="death-alert-sub">
-              {deathAlert.days}d sobrevividos · {deathAlert.kills.toLocaleString('pt-BR')} zumbis · {deathAlert.score.toLocaleString('pt-BR')} pts
-            </span>
+      <div className="overlay-flip-wrap">
+        {deathAlert && (
+          <div className="death-alert" key={deathAlert.id}>
+            <i className="ti ti-skull death-alert-icon" />
+            <div className="death-alert-text">
+              <span className="death-alert-title">{deathAlert.character_name || profile.player.nick} morreu!</span>
+              <span className="death-alert-sub">
+                {deathAlert.days}d sobrevividos · {deathAlert.kills.toLocaleString('pt-BR')} zumbis · {deathAlert.score.toLocaleString('pt-BR')} pts
+              </span>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Header */}
-      <div className="overlay-header">
-        <div className="overlay-nick">{profile.player.nick}</div>
-        <div className="overlay-char">
-          {bestEntry.character_name || '—'}
-          {bestEntry.profession && <span className="overlay-prof"> · {bestEntry.profession}</span>}
+        <div className={`overlay-flip-card${flipped ? ' is-flipped' : ''}`}>
+
+          {/* Frente: dados do rank */}
+          <div className="overlay-flip-face overlay-flip-face--front overlay-mini-card">
+            <div className="overlay-mini-row">
+              <span className="overlay-mini-title">
+                {rank !== null ? `#${rank} - ` : ''}{displayName}
+              </span>
+              <span className="overlay-mini-score">{bestEntry.score.toLocaleString('pt-BR')}pts</span>
+            </div>
+
+            <div className="overlay-mini-row">
+              <div className="overlay-mini-block">
+                <span className="overlay-mini-label">Habilidades nv.10</span>
+                <span className="overlay-mini-value">{maxedSkills}/{TOTAL_SKILLS}</span>
+              </div>
+              <div className="overlay-mini-block overlay-mini-block--right">
+                <span className="overlay-mini-label">Bases Spiffo's</span>
+                <span className="overlay-mini-value">{basesCount}/{SPIFFOS_RESTAURANTS.length}</span>
+              </div>
+            </div>
+
+            <div className="overlay-mini-progress">
+              <span className="overlay-mini-label">Progresso</span>
+              <span className="overlay-mini-pct">{progressPct.toFixed(2)}%</span>
+              <div className="overlay-progress-track">
+                <div className="overlay-progress-fill" style={{ width: `${Math.min(100, progressPct)}%` }} />
+              </div>
+            </div>
+          </div>
+
+          {/* Verso: QR code pro rank completo */}
+          <div className="overlay-flip-face overlay-flip-face--back overlay-mini-card overlay-qr-face">
+            {qrDataUrl && <img src={qrDataUrl} alt="QR code para o ranking" className="overlay-qr-img" />}
+            <span className="overlay-qr-link">{RANK_URL_LABEL}</span>
+          </div>
+
         </div>
       </div>
-
-      {/* Rank + score */}
-      <div className="overlay-score-row">
-        {rank !== null && <span className="overlay-rank">#{rank}</span>}
-        <span className="overlay-score">{bestEntry.score.toLocaleString('pt-BR')} pts</span>
-        {bestEntry.is_alive
-          ? <span className="overlay-status-badge overlay-badge-alive"><i className="ti ti-heartbeat" /> VIVO</span>
-          : <span className="overlay-status-badge overlay-badge-dead"><i className="ti ti-skull" /> MORTO</span>}
-      </div>
-
-      {/* Stats row */}
-      <div className="overlay-stats">
-        <div className="overlay-stat">
-          <i className="ti ti-sword" />
-          <span>{bestEntry.kills.toLocaleString('pt-BR')}</span>
-          <small>zumbis</small>
-        </div>
-        <div className="overlay-stat">
-          <i className="ti ti-calendar" />
-          <span>{bestEntry.days}d</span>
-          <small>sobrevivido</small>
-        </div>
-        <div className="overlay-stat">
-          <i className="ti ti-bolt" />
-          <span>{maxedSkills}/{TOTAL_SKILLS}</span>
-          <small>habilidades</small>
-        </div>
-        <div className="overlay-stat">
-          <i className="ti ti-building-store" />
-          <span>{basesCount}/{SPIFFOS_RESTAURANTS.length}</span>
-          <small>bases</small>
-        </div>
-      </div>
-
-      {/* Objectives dots */}
-      <div className="overlay-objs">
-        {[
-          { label: 'HQ Spiffo', done: bestEntry.objectives?.spiffo_hq ?? false },
-          { label: 'Relíquia', done: bestEntry.objectives?.spiffo_relic ?? false },
-          { label: 'Base Mil.', done: bestEntry.objectives?.military_base ?? false },
-        ].map(o => (
-          <span key={o.label} className={`overlay-obj-dot ${o.done ? 'overlay-obj-done' : ''}`}>
-            {o.done ? <i className="ti ti-check" /> : <i className="ti ti-circle" />}
-            {o.label}
-          </span>
-        ))}
-      </div>
-    </div>
     </div>
   );
 }
