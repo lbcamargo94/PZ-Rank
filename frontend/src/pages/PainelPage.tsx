@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 import { apiLogout, apiDeleteEntry, apiGetEntries, apiUpdateEntryStatus, apiSetTestMod, apiConfirmDeath } from '../lib/api';
 import type { Entry, SortKey } from '../types';
 import type { ModSession } from '../types';
+import { hasLiveWarning } from '../lib/live';
 import { useToast } from '../hooks/useToast';
 import { Toast } from '../components/Toast';
 import { Pagination } from '../components/Pagination';
@@ -43,7 +44,7 @@ function fmtEntryDate(iso: string | null | undefined): string {
 }
 
 type Tab         = 'players' | 'entries' | 'moderators' | 'mods' | 'decoder' | 'seasons' | 'jornal' | 'financas';
-type EntryFilter = 'all' | 'alive' | 'dead' | 'disqualified' | 'conflicts';
+type EntryFilter = 'all' | 'alive' | 'dead' | 'disqualified' | 'conflicts' | 'no_live';
 
 const ENTRY_FILTER_CONFIG: { key: EntryFilter; label: string; icon: string }[] = [
   { key: 'all',          label: 'Todos',           icon: 'ti-list'           },
@@ -51,6 +52,7 @@ const ENTRY_FILTER_CONFIG: { key: EntryFilter; label: string; icon: string }[] =
   { key: 'dead',         label: 'Mortos',           icon: 'ti-skull'          },
   { key: 'disqualified', label: 'Desclassificados', icon: 'ti-ban'            },
   { key: 'conflicts',    label: 'Conflitos',        icon: 'ti-alert-triangle' },
+  { key: 'no_live',      label: 'Sem transmissão',  icon: 'ti-broadcast-off'  },
 ];
 
 interface Props {
@@ -97,9 +99,10 @@ function unauthorizedModAnomaly(flaggedReason: string): { label: string; detail:
 }
 
 function DisqDetail({ entry }: { entry: Entry }) {
-  const hasDisq   = entry.sandbox_ok === false;
+  const hasDisq    = entry.sandbox_ok === false;
   const hasAnomaly = !!entry.flagged_reason;
-  if (!hasDisq && !hasAnomaly) return null;
+  const hasNoLive  = entry.sandbox_ok !== false && entry.is_alive && hasLiveWarning(entry);
+  if (!hasDisq && !hasAnomaly && !hasNoLive) return null;
 
   const disq    = DISQ_INFO[entry.disqualification_reason ?? 'sandbox'] ?? DISQ_INFO.sandbox;
   const anomaly = entry.flagged_reason
@@ -136,6 +139,17 @@ function DisqDetail({ entry }: { entry: Entry }) {
           {entry.flagged_at && (
             <span className="painel-disq-date"><i className="ti ti-clock" /> {fmtEntryDate(entry.flagged_at)}</span>
           )}
+        </div>
+      )}
+      {hasNoLive && (
+        <div className="painel-disq-row painel-disq-row--anomaly">
+          <i className="ti ti-broadcast-off painel-disq-icon" />
+          <div className="painel-disq-text">
+            <span className="painel-disq-label">Sem transmissão confirmada</span>
+            <span className="painel-disq-desc">
+              {entry.no_live_streak} sync(s) seguidos sem live detectada no YouTube ou na Twitch.
+            </span>
+          </div>
         </div>
       )}
     </div>
@@ -271,6 +285,9 @@ export function PainelPage({ session, onSession, onBack }: Props) {
   const discEntries     = useMemo(() => entries.filter(e => e.sandbox_ok === false && !isInDeadZone(e)), [entries]);
   const deadZoneEntries = useMemo(() => entries.filter(e => isInDeadZone(e)), [entries]);
   const conflictEntries = useMemo(() => entries.filter(e => !!e.pending_new_character && e.is_alive), [entries]);
+  // Vivos e classificados sem transmissão confirmada há um tempo — mesmo critério do
+  // badge público (hasLiveWarning), restrito a quem ainda está competindo de verdade.
+  const noLiveEntries   = useMemo(() => entries.filter(e => e.sandbox_ok !== false && e.is_alive && hasLiveWarning(e)), [entries]);
 
   const filteredEntries = useMemo(() => {
     switch (entryFilter) {
@@ -279,8 +296,9 @@ export function PainelPage({ session, onSession, onBack }: Props) {
       case 'dead':         return deadEntries;
       case 'disqualified': return discEntries;
       case 'conflicts':    return conflictEntries;
+      case 'no_live':      return noLiveEntries;
     }
-  }, [entryFilter, entries, aliveEntries, deadEntries, discEntries, conflictEntries]);
+  }, [entryFilter, entries, aliveEntries, deadEntries, discEntries, conflictEntries, noLiveEntries]);
 
   const searchedEntries = useMemo(() => {
     const q = entrySearch.trim().toLowerCase();
@@ -305,6 +323,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
     dead:         deadEntries.length,
     disqualified: discEntries.length,
     conflicts:    conflictEntries.length,
+    no_live:      noLiveEntries.length,
   };
 
   async function doDeleteEntry(id: number) {
