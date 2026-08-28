@@ -82,13 +82,29 @@ const ANOMALY_INFO: Record<string, { label: string; detail: string }> = {
   code_replay:      { label: 'Replay de código antigo',         detail: 'O timestamp do código é anterior ao último sync gravado — possível reenvio de código desatualizado.' },
 };
 
+// Mod não permitido detectado pelo próprio mod Lua (checagem contra a whitelist) — não
+// desclassifica sozinho, só avisa o moderador. Formato dinâmico "unauthorized_mod:<Nome>",
+// por isso não cabe no dicionário estático ANOMALY_INFO acima.
+function unauthorizedModAnomaly(flaggedReason: string): { label: string; detail: string } | null {
+  if (!flaggedReason.startsWith('unauthorized_mod')) return null;
+  const modName = flaggedReason.startsWith('unauthorized_mod:') ? flaggedReason.slice('unauthorized_mod:'.length) : '';
+  return {
+    label:  'Mod não permitido detectado',
+    detail: modName
+      ? `O mod "${modName}" não está na whitelist do campeonato. Não foi desclassificado automaticamente — revise e decida manualmente.`
+      : 'Um mod fora da whitelist foi detectado, mas o código não trouxe o nome. Não foi desclassificado automaticamente — revise e decida manualmente.',
+  };
+}
+
 function DisqDetail({ entry }: { entry: Entry }) {
   const hasDisq   = entry.sandbox_ok === false;
   const hasAnomaly = !!entry.flagged_reason;
   if (!hasDisq && !hasAnomaly) return null;
 
   const disq    = DISQ_INFO[entry.disqualification_reason ?? 'sandbox'] ?? DISQ_INFO.sandbox;
-  const anomaly = entry.flagged_reason ? (ANOMALY_INFO[entry.flagged_reason] ?? { label: entry.flagged_reason, detail: '' }) : null;
+  const anomaly = entry.flagged_reason
+    ? (unauthorizedModAnomaly(entry.flagged_reason) ?? ANOMALY_INFO[entry.flagged_reason] ?? { label: entry.flagged_reason, detail: '' })
+    : null;
 
   return (
     <div className="painel-disq-detail">

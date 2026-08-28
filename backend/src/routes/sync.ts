@@ -336,6 +336,17 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     ? null
     : (existing?.objectives as Objectives | null) ?? null;
 
+  // ── Detecção de mods não permitidos ────────────────────────────────────────
+  // O mod Lua compara os mods ativos contra GET /sync/allowed-mods e embute o
+  // resultado no código (formato "mods:NAO_PERMITIDO:<Nome>"). Não desclassifica
+  // (ver isModsReason abaixo) — só fica como aviso pro moderador revisar e decidir
+  // manualmente. Reavaliado a cada sync, sem "carregar" pro próximo (diferente das
+  // anomalias de progressão logo abaixo): se o jogador remover o mod, o aviso some
+  // sozinho no sync seguinte. 'mod_removed' é outro sinal (mod do campeonato
+  // desligado, ver heartbeat) e não entra aqui.
+  const codeReasonRaw = decoded.disqualificationReason;
+  const hasModsFlag = !!codeReasonRaw && isModsReason(codeReasonRaw) && codeReasonRaw !== 'mod_removed';
+
   // ── Detecção de anomalias estatísticas ─────────────────────────────────────
   // Compara submissão atual com o último estado conhecido para detectar
   // progressão impossível (regressão de kills/dias ou ritmo de kills absurdo).
@@ -347,7 +358,15 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   let flaggedReason: string | null = null;
   let flaggedAt:     string | null = null;
 
-  if (prev && decoded.sandboxOk && !justReactivated) {
+  if (hasModsFlag) {
+    // Formato do mod Lua: "mods:NAO_PERMITIDO:<Nome>" — "NAO_PERMITIDO" é um marcador
+    // fixo, não faz parte do nome do mod, então é removido antes de guardar/exibir.
+    const modName = codeReasonRaw!.startsWith('mods:')
+      ? codeReasonRaw!.slice('mods:'.length).replace(/^NAO_PERMITIDO:/, '').trim()
+      : '';
+    flaggedReason = modName ? `unauthorized_mod:${modName}` : 'unauthorized_mod';
+    flaggedAt     = new Date().toISOString();
+  } else if (prev && decoded.sandboxOk && !justReactivated) {
     // timeRaw (minutos totais) nunca retrocede numa run legítima — se diminuiu,
     // o personagem morreu e iniciou nova partida com o mesmo nome.
     // Usa timeRaw em vez de days para capturar o caso em que ambas as runs
@@ -383,8 +402,9 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
         });
         return;
       }
-    } else if (!isNewRun && prev.flagged_reason) {
-      // Mantém flag anterior até revisão manual do moderador (não carrega flags de runs antigas)
+    } else if (!isNewRun && prev.flagged_reason && !prev.flagged_reason.startsWith('unauthorized_mod')) {
+      // Mantém flag anterior até revisão manual do moderador (não carrega flags de runs
+      // antigas, nem avisos de mod — esses não são "sticky", ver hasModsFlag acima).
       flaggedReason = prev.flagged_reason;
       flaggedAt     = prev.flagged_at ?? null;
     }
@@ -392,8 +412,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
 
   // Desclassificação: apenas sandbox e debug causam desclassificação.
   // Mods não desclassificam — se decoded.sandboxOk=false por mods (mod antigo), ignora e segue.
-  const codeReason = decoded.disqualificationReason;
-  if (!decoded.sandboxOk && !isModsReason(codeReason)) {
+  if (!decoded.sandboxOk && !isModsReason(codeReasonRaw)) {
     // Primeiro sync com sandbox/debug ativo: rejeita sem criar entrada no banco.
     // Sem o && prev anterior, um jogador novo com sandbox podia entrar no rank
     // temporariamente (INSERT com sandbox_ok:true) até o segundo sync corrigir.
@@ -402,7 +421,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       return;
     }
     const existingRow = prev as { id: number; disqualification_reason?: string | null };
-    const validatedReason = companionReason ?? (codeReason && isValidReason(codeReason) ? codeReason : null) ?? 'sandbox';
+    const validatedReason = companionReason ?? (codeReasonRaw && isValidReason(codeReasonRaw) ? codeReasonRaw : null) ?? 'sandbox';
     const reasonToStore = existingRow.disqualification_reason ?? validatedReason;
     const { data, error } = await supabase
       .from(config.tableName)
