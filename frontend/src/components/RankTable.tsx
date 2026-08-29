@@ -6,7 +6,6 @@ import type { Entry, SortKey, RankTab, LiveStatus } from '../types';
 import { RankRow, KILLS_TARGET } from './RankRow';
 import { MAX_POSSIBLE_SCORE } from '../lib/objectives';
 import { formatNumber, formatDateTime } from '../lib/format';
-import { hasLiveWarning } from '../lib/live';
 import { LiveBadges } from './LiveBadges';
 
 type PageSize = 15 | 50 | 'all';
@@ -112,11 +111,6 @@ function RankCard({ entry, rank, onPlayerClick, hideStatus, live }: {
             {entry.character_name || entry.name}
           </span>
           {entry.profession && <span className="profession-badge">{entry.profession}</span>}
-          {hasLiveWarning(entry) && (
-            <span className="live-warning-badge" title={t('rank.live_warning_title')}>
-              <i className="ti ti-alert-triangle" /> {t('rank.live_warning')}
-            </span>
-          )}
         </div>
         {!hideStatus && (
           entry.sandbox_ok === false

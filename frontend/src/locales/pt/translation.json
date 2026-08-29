@@ -149,8 +149,6 @@
     },
     "test_mod": "Mod. Teste",
     "test_mod_title": "Participante com tag de Moderador de Teste",
-    "live_warning": "Sem transmissão",
-    "live_warning_title": "Vários syncs seguidos sem transmissão confirmada no YouTube ou na Twitch (obrigatória pelas regras)",
     "pts": "pts",
     "zombies_suffix": "zumbis",
     "obj_suffix": "obj.",

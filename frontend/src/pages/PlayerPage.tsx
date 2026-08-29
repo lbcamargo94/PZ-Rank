@@ -12,7 +12,6 @@ import { SPIFFOS_RESTAURANTS, BASE_ITEMS, initObjectives } from '../lib/objectiv
 import { ProgressBar } from '../components/ProgressBar';
 import { resolveArchetype } from '../lib/archetype';
 import { ArchetypeGuideModal } from '../components/ArchetypeGuideModal';
-import { hasLiveWarning } from '../lib/live';
 import { LiveBadges } from '../components/LiveBadges';
 import { useToast } from '../hooks/useToast';
 import { Toast } from '../components/Toast';
@@ -258,11 +257,6 @@ function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | nul
                 <img src={getProfessionImageUrl(entry.profession)} alt="" className="profession-img" />
               )}
               {entry.profession}
-            </span>
-          )}
-          {hasLiveWarning(entry) && (
-            <span className="live-warning-badge" title={t('rank.live_warning_title')}>
-              <i className="ti ti-alert-triangle" /> {t('rank.live_warning')}
             </span>
           )}
         </div>

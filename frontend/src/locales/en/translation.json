@@ -149,8 +149,6 @@
     },
     "test_mod": "Test Mod.",
     "test_mod_title": "Participant tagged as Test Moderator",
-    "live_warning": "No stream",
-    "live_warning_title": "Several syncs in a row without a confirmed stream on YouTube or Twitch (required by the rules)",
     "pts": "pts",
     "zombies_suffix": "zombies",
     "obj_suffix": "obj.",

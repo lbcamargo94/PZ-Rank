@@ -149,8 +149,6 @@
     },
     "test_mod": "Mod. Test",
     "test_mod_title": "Participant avec le tag Modérateur de Test",
-    "live_warning": "Pas de diffusion",
-    "live_warning_title": "Plusieurs syncs consécutifs sans diffusion confirmée sur YouTube ou Twitch (obligatoire selon les règles)",
     "pts": "pts",
     "zombies_suffix": "zombies",
     "obj_suffix": "obj.",

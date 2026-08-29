@@ -6,7 +6,6 @@ import type { Entry, LiveStatus } from '../types';
 import { parseSkillMap, SKILL_CATEGORIES, TOTAL_SKILLS, MAX_SKILL_LEVEL } from '../lib/skills';
 import { MAX_POSSIBLE_SCORE } from '../lib/objectives';
 import { getDivision } from '../lib/divisions';
-import { hasLiveWarning } from '../lib/live';
 import { formatNumber, formatDate, formatTime } from '../lib/format';
 import { LiveBadges } from './LiveBadges';
 
@@ -199,11 +198,6 @@ export function RankRow({ entry, rank, hideStatus, iconOnly, live, onPlayerClick
           {entry.character_name || entry.name}
         </span>
         <span className="player-alias">{entry.name}</span>
-        {hasLiveWarning(entry) && (
-          <span className="live-warning-badge" title={t('rank.live_warning_title')}>
-            <i className="ti ti-alert-triangle" /> {t('rank.live_warning')}
-          </span>
-        )}
       </td>
       {!hideStatus && (
         <td className="rank-alive">
