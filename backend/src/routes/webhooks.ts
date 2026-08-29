@@ -133,7 +133,7 @@ router.post('/youtube', async (req: Request, res: Response): Promise<void> => {
   // conteúdo ser do campeonato, só a notificação do Discord depende.
   await supabase
     .from('players')
-    .update({ yt_last_live_video_id: entry.videoId })
+    .update({ yt_last_live_video_id: entry.videoId, yt_live_confirmed_at: new Date().toISOString() })
     .eq('id', player.id);
 
   if (isChampionshipTitle(liveInfo.title, liveInfo.description)) {

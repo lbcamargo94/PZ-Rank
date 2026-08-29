@@ -13,6 +13,7 @@ import type { PlayerStatus } from '../types';
 import { sendApprovalEmail, sendActivationEmail, sendOtpEmail } from '../lib/email';
 import { validatePassword } from '../lib/password';
 import { config } from '../config';
+import { YT_LIVE_MAX_AGE_MS } from '../lib/youtube';
 
 const router = Router();
 
@@ -42,7 +43,7 @@ function normalizeUrl(url?: string | null): string | null {
 router.get('/live-status', async (_req: Request, res: Response): Promise<void> => {
   const { data: players, error } = await supabase
     .from('players')
-    .select('id, twitch_url, yt_last_live_video_id')
+    .select('id, twitch_url, yt_last_live_video_id, yt_live_confirmed_at')
     .eq('status', 'approved')
     .is('deleted_at', null);
 
@@ -51,13 +52,23 @@ router.get('/live-status', async (_req: Request, res: Response): Promise<void> =
     return;
   }
 
-  type LiveRow = { id: number; twitch_url: string | null; yt_last_live_video_id: string | null };
+  type LiveRow = {
+    id: number; twitch_url: string | null;
+    yt_last_live_video_id: string | null; yt_live_confirmed_at: string | null;
+  };
   const rows = (players ?? []) as LiveRow[];
 
   const results: Array<{ player_id: number; platform: 'youtube' | 'twitch'; url: string; title?: string; thumbnail?: string }> = [];
 
+  // Rede de segurança final: se por algum motivo yt_last_live_video_id nunca foi
+  // limpo (checkIsLive falhando/degradado por muito tempo — ver YT_LIVE_MAX_AGE_MS
+  // em lib/youtube.ts), não exibe como "ao vivo" além do teto de segurança, mesmo
+  // que a limpeza em si ainda não tenha rodado.
+  const now = Date.now();
   for (const p of rows) {
     if (!p.yt_last_live_video_id) continue;
+    const confirmedAtMs = p.yt_live_confirmed_at ? new Date(p.yt_live_confirmed_at).getTime() : 0;
+    if (now - confirmedAtMs > YT_LIVE_MAX_AGE_MS) continue;
     results.push({
       player_id: p.id,
       platform:  'youtube',

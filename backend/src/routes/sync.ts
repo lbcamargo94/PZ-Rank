@@ -125,7 +125,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // Valida token
   const { data: player, error: playerError } = await supabase
     .from('players')
-    .select('id, nick, status, blocked, youtube_url, yt_channel_id, yt_last_live_video_id, twitch_url, twitch_last_live_id')
+    .select('id, nick, status, blocked, youtube_url, yt_channel_id, yt_last_live_video_id, yt_live_confirmed_at, twitch_url, twitch_last_live_id')
     .eq('player_token', player_token)
     .maybeSingle();
 
@@ -629,11 +629,14 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // naturalmente sem cron externo — se o jogador está sincronizando, está jogando.
   void (async () => {
     try {
-      type SyncPlayer = { id: number; nick: string; yt_channel_id: string | null; yt_last_live_video_id: string | null };
+      type SyncPlayer = {
+        id: number; nick: string; yt_channel_id: string | null;
+        yt_last_live_video_id: string | null; yt_live_confirmed_at: string | null;
+      };
       const p = player as unknown as SyncPlayer;
       if (!p.yt_channel_id) return;
 
-      const { getChannelCurrentLive, checkIsLive } = await import('../lib/youtube');
+      const { getChannelCurrentLive, checkIsLive, YT_LIVE_MAX_AGE_MS } = await import('../lib/youtube');
       const { sendLiveNotification } = await import('../lib/discord');
       const { isChampionshipTitle } = await import('../lib/championship');
 
@@ -646,15 +649,28 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       const rank = liveRankCount !== null ? liveRankCount + 1 : null;
 
       if (p.yt_last_live_video_id) {
-        const liveInfo = await checkIsLive(p.yt_last_live_video_id);
-        // null = API falhou (erro, quota, timeout) — não tratar como live encerrada
-        if (liveInfo !== null && !liveInfo.isLive) {
-          await supabase.from('players').update({ yt_last_live_video_id: null }).eq('id', p.id);
+        const confirmedAtMs = p.yt_live_confirmed_at ? new Date(p.yt_live_confirmed_at).getTime() : 0;
+        if (Date.now() - confirmedAtMs > YT_LIVE_MAX_AGE_MS) {
+          // Nunca reconfirmada de forma confiável dentro do teto de segurança — força
+          // limpeza sem gastar chamada tentando confirmar de novo (ver YT_LIVE_MAX_AGE_MS
+          // em lib/youtube.ts). Cobre o caso de checkIsLive falhando/degradado por muito
+          // tempo (API key ausente ou cota estourada) e nunca limpando sozinho.
+          await supabase.from('players').update({ yt_last_live_video_id: null, yt_live_confirmed_at: null }).eq('id', p.id);
+        } else {
+          const liveInfo = await checkIsLive(p.yt_last_live_video_id);
+          // null = API falhou (erro, quota, timeout) — não tratar como live encerrada
+          if (liveInfo !== null && !liveInfo.isLive) {
+            await supabase.from('players').update({ yt_last_live_video_id: null, yt_live_confirmed_at: null }).eq('id', p.id);
+          } else if (liveInfo?.isLive && !liveInfo.degraded) {
+            // Confirmação real (não "modo degradado") — renova o timer de confiança,
+            // senão uma live legítima de várias horas seria limpa por engano depois.
+            await supabase.from('players').update({ yt_live_confirmed_at: new Date().toISOString() }).eq('id', p.id);
+          }
         }
       } else {
         const live = await getChannelCurrentLive(p.yt_channel_id);
         if (!live) return;
-        await supabase.from('players').update({ yt_last_live_video_id: live.videoId }).eq('id', p.id);
+        await supabase.from('players').update({ yt_last_live_video_id: live.videoId, yt_live_confirmed_at: new Date().toISOString() }).eq('id', p.id);
         if (isChampionshipTitle(live.title, live.description)) {
           await sendLiveNotification({
             nick:      p.nick,

@@ -44,7 +44,7 @@ const UUID_DEFAULTS: Record<string, string[]> = {
 const ALLOWED_TABLES = new Set(['players', 'moderators', 'moderator_tokens', 'entries', 'mods', 'mod_dependencies', 'player_tokens', 'seasons', 'hall_of_fame', 'daily_news', 'season_finances', 'achievements', 'player_achievements', 'heatmap_events', 'player_likes']);
 
 const ALLOWED_COLS: Record<string, Set<string>> = {
-  players:          new Set(['id','nick','email','password_hash','email_verified_at','twitch_url','youtube_url','kick_url','tiktok_url','status','blocked','is_supporter','supporter_until','is_test_mod','is_featured_streamer','is_moderator','player_token','created_at','deleted_at','gender','yt_channel_id','yt_sub_expires_at','yt_last_live_video_id','twitch_last_live_id']),
+  players:          new Set(['id','nick','email','password_hash','email_verified_at','twitch_url','youtube_url','kick_url','tiktok_url','status','blocked','is_supporter','supporter_until','is_test_mod','is_featured_streamer','is_moderator','player_token','created_at','deleted_at','gender','yt_channel_id','yt_sub_expires_at','yt_last_live_video_id','yt_live_confirmed_at','twitch_last_live_id']),
   moderators:       new Set(['id','login','email','email_verified_at','role','password_hash','created_at']),
   moderator_tokens: new Set(['id','email','token','type','expires_at','used_at','created_at']),
   entries:          new Set(['id','player_id','moderator_id','name','character_name','profession','days','time_raw','time_str','kills','skills','live_url','is_alive','sandbox_ok','traits','objectives','score','record_score','created_at','updated_at','sandbox_config','sandbox_config_updated_at','disqualified_at','disqualification_reason','disqualification_note','disqualified_by','flagged_reason','flagged_at','deleted_at','season_id','animals_killed','fish_caught','crops_harvested','items_crafted','houses_looted','hours_without_sleep','trees_cut','books_read','structures_built','crops_planted','spiffo_visited','eggs_collected','milk_produced','stone_structures','ceramic_items','forged_weapons','km_driven','cities_visited','military_visited','meals_cooked','water_collected','materials_crafted','animal_tracks','weapons_crafted','furniture_crafted','clothes_crafted','cheese_produced','doors_opened','sleep_locations','basements_explored','stations_used','animal_species','days_no_canned','pending_new_character','pending_new_character_since','no_live_streak']),
@@ -85,7 +85,7 @@ function fromDb(table: string, row: Record<string, unknown>): Record<string, unk
   return r;
 }
 
-function toDb(table: string, row: Record<string, unknown>): Record<string, unknown> {
+function toDb(table: string, row: Record<string, unknown>, isInsert = false): Record<string, unknown> {
   const r: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(row)) {
     if (v !== undefined) r[k] = v;
@@ -98,8 +98,13 @@ function toDb(table: string, row: Record<string, unknown>): Record<string, unkno
       r[col] = JSON.stringify(r[col]);
     }
   }
-  for (const col of UUID_DEFAULTS[table] ?? []) {
-    if (!r[col]) r[col] = crypto.randomUUID();
+  // Só gera UUID default em INSERT — em UPDATE, a coluna simplesmente não fazer
+  // parte do payload não significa "ausente", significa "não está sendo alterada"
+  // (senão qualquer UPDATE que não toque em player_token o rotacionava à toa).
+  if (isInsert) {
+    for (const col of UUID_DEFAULTS[table] ?? []) {
+      if (!r[col]) r[col] = crypto.randomUUID();
+    }
   }
   return r;
 }
@@ -335,7 +340,7 @@ class SqliteQueryBuilder {
       if (this.mode === 'insert') {
         const out: unknown[] = [];
         for (const raw of this.insertRows) {
-          const row  = toDb(this.table, raw);
+          const row  = toDb(this.table, raw, true);
           const cols = Object.keys(row);
           cols.forEach(c => assertCol(this.table, c));
           const ph   = cols.map(() => '?').join(', ');
@@ -351,7 +356,7 @@ class SqliteQueryBuilder {
         const conflictCols = (this.upsertConflict ?? '').split(',').map(c => c.trim()).filter(Boolean);
         const upsertAll = this.db.transaction(() => {
           for (const raw of this.insertRows) {
-            const row      = toDb(this.table, raw);
+            const row      = toDb(this.table, raw, true);
             // Exclui 'id' das colunas de insert quando não informado pelo chamador
             const hasPk    = 'id' in row && row['id'] !== undefined && row['id'] !== null;
             const cols     = Object.keys(row).filter(c => c !== 'id' || hasPk);
@@ -550,6 +555,10 @@ function runMigrations(db: Database): void {
   if (!playerCols.includes('is_featured_streamer')) {
     db.exec('ALTER TABLE players ADD COLUMN is_featured_streamer INTEGER NOT NULL DEFAULT 0');
     console.log('[SQLite] migração: coluna is_featured_streamer adicionada em players');
+  }
+  if (!playerCols.includes('yt_live_confirmed_at')) {
+    db.exec('ALTER TABLE players ADD COLUMN yt_live_confirmed_at TEXT DEFAULT NULL');
+    console.log('[SQLite] migração: coluna yt_live_confirmed_at adicionada em players');
   }
 
   if (!playerCols.includes('gender')) {

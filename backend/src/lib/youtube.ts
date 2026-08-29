@@ -234,18 +234,28 @@ export function parsePubSubAtom(xml: string): PubSubEntry | null {
 
 // ── Verificação se vídeo está ao vivo (YouTube Data API) ─────────────────────
 
+// Teto de segurança: se uma live nunca é reconfirmada de forma confiável (checagem
+// real, não "modo degradado") dentro desse intervalo, o chamador deve tratá-la como
+// encerrada e limpar o estado, mesmo que a checagem continue falhando/indisponível.
+// 12h cobre folgadamente qualquer transmissão real do desafio.
+export const YT_LIVE_MAX_AGE_MS = 12 * 60 * 60 * 1000;
+
 export interface LiveInfo {
   isLive:      boolean;
   title:       string;
   description: string;
   thumbnail:   string;
+  /** true = isLive é um palpite (sem API key configurada), não uma confirmação real —
+   *  chamadores não devem usar isLive:true aqui pra renovar timers de confiança
+   *  (ver YT_LIVE_MAX_AGE_MS), só pra manter o comportamento de dev sem quebrar. */
+  degraded?: boolean;
 }
 
 export async function checkIsLive(videoId: string): Promise<LiveInfo | null> {
   const apiKey = process.env.YOUTUBE_API_KEY;
   if (!apiKey) {
     // Sem API key: assume que qualquer notificação é live (modo degradado)
-    return { isLive: true, title: '', description: '', thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` };
+    return { isLive: true, title: '', description: '', thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`, degraded: true };
   }
 
   try {

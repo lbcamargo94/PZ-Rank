@@ -10,7 +10,7 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
 import { supabase } from '../supabase';
-import { subscribePubSub, getChannelCurrentLive, checkIsLive } from '../lib/youtube';
+import { subscribePubSub, getChannelCurrentLive, checkIsLive, YT_LIVE_MAX_AGE_MS } from '../lib/youtube';
 import { extractTwitchLogin, getLiveStreams } from '../lib/twitch';
 import { sendLiveNotification } from '../lib/discord';
 import { isChampionshipTitle, isChampionshipTwitchGame } from '../lib/championship';
@@ -115,7 +115,7 @@ router.get('/scan-lives', async (req: Request, res: Response): Promise<void> => 
 
   const { data: players, error } = await supabase
     .from('players')
-    .select('id, nick, yt_channel_id, yt_last_live_video_id')
+    .select('id, nick, yt_channel_id, yt_last_live_video_id, yt_live_confirmed_at')
     .eq('status', 'approved')
     .not('yt_channel_id', 'is', null)
     .is('deleted_at', null);
@@ -134,7 +134,10 @@ router.get('/scan-lives', async (req: Request, res: Response): Promise<void> => 
     .is('deleted_at', null)
     .order('score', { ascending: false });
 
-  type PlayerRow = { id: number; nick: string; yt_channel_id: string; yt_last_live_video_id: string | null };
+  type PlayerRow = {
+    id: number; nick: string; yt_channel_id: string;
+    yt_last_live_video_id: string | null; yt_live_confirmed_at: string | null;
+  };
   const playerList = (players ?? []) as PlayerRow[];
 
   const liveStarted: string[] = [];
@@ -151,6 +154,18 @@ router.get('/scan-lives', async (req: Request, res: Response): Promise<void> => 
       const score = (allAlive ?? []).find((e: { player_id: number; score: number }) => e.player_id === player.id)?.score ?? null;
 
       if (player.yt_last_live_video_id) {
+        const confirmedAtMs = player.yt_live_confirmed_at ? new Date(player.yt_live_confirmed_at).getTime() : 0;
+        if (Date.now() - confirmedAtMs > YT_LIVE_MAX_AGE_MS) {
+          // Teto de segurança: nunca reconfirmada de forma confiável — limpa sem gastar
+          // chamada tentando confirmar de novo (ver YT_LIVE_MAX_AGE_MS em lib/youtube.ts).
+          await supabase
+            .from('players')
+            .update({ yt_last_live_video_id: null, yt_live_confirmed_at: null })
+            .eq('id', player.id);
+          liveEnded.push(player.nick);
+          return;
+        }
+
         // Jogador estava ao vivo na última verificação — confirma se ainda está
         const liveInfo = await checkIsLive(player.yt_last_live_video_id);
 
@@ -159,11 +174,18 @@ router.get('/scan-lives', async (req: Request, res: Response): Promise<void> => 
           // Live encerrou
           await supabase
             .from('players')
-            .update({ yt_last_live_video_id: null })
+            .update({ yt_last_live_video_id: null, yt_live_confirmed_at: null })
             .eq('id', player.id);
           liveEnded.push(player.nick);
         } else {
-          // Ainda ao vivo — sem nova notificação
+          // Ainda ao vivo — sem nova notificação. Só renova o timer de confiança em
+          // confirmação real (não "modo degradado" por falta de API key).
+          if (liveInfo?.isLive && !liveInfo.degraded) {
+            await supabase
+              .from('players')
+              .update({ yt_live_confirmed_at: new Date().toISOString() })
+              .eq('id', player.id);
+          }
           liveOngoing.push(player.nick);
         }
       } else {
@@ -173,7 +195,7 @@ router.get('/scan-lives', async (req: Request, res: Response): Promise<void> => 
 
         await supabase
           .from('players')
-          .update({ yt_last_live_video_id: live.videoId })
+          .update({ yt_last_live_video_id: live.videoId, yt_live_confirmed_at: new Date().toISOString() })
           .eq('id', player.id);
         if (isChampionshipTitle(live.title, live.description)) {
           await sendLiveNotification({
