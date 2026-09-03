@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { apiGetEntries, apiGetAllEntries, apiGetLiveStatus } from '../lib/api';
+import { useSse } from '../hooks/useSse';
 import type { Entry, SortKey, RankTab, LiveStatus } from '../types';
 import { parseSkillMap, MAX_SKILL_LEVEL } from '../lib/skills';
 import { buildLiveMap } from '../lib/live';
@@ -10,8 +11,6 @@ import { useToast } from '../hooks/useToast';
 import { Toast } from '../components/Toast';
 import { Header } from '../components/Header';
 import { RankTable } from '../components/RankTable';
-
-const LIVE_STATUS_POLL_MS = 30_000;
 
 const TAB_CONFIG: { key: RankTab; labelKey: string; icon: string }[] = [
   { key: 'rank',         labelKey: 'rank.tabs.rank',         icon: 'ti-heartbeat' },
@@ -72,13 +71,7 @@ export function RankPage() {
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    const fetchLive = () => {
-      apiGetLiveStatus().then(data => { if (!cancelled) setLiveStatuses(data); }).catch(() => {});
-    };
-    fetchLive();
-    const interval = setInterval(fetchLive, LIVE_STATUS_POLL_MS);
-    return () => { cancelled = true; clearInterval(interval); };
+    apiGetLiveStatus().then(setLiveStatuses).catch(() => {});
   }, []);
 
   const liveMap = useMemo(() => buildLiveMap(liveStatuses), [liveStatuses]);
@@ -108,6 +101,12 @@ export function RankPage() {
   }, [allEntriesLoaded, showToast]);
 
   useEffect(() => { fetchEntries(); }, [fetchEntries]);
+
+  // Atualiza rank e live status em tempo real via SSE.
+  useSse({
+    'rank-updated': fetchEntries,
+    'live-status':  useCallback(() => { apiGetLiveStatus().then(setLiveStatuses).catch(() => {}); }, []),
+  });
 
   const handleTabChange = useCallback((tab: RankTab) => {
     setActiveTab(tab);
