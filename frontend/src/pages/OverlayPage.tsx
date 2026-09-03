@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import QRCode from 'qrcode';
 import { apiGetPlayerOverlay } from '../lib/api';
+import { useSse } from '../hooks/useSse';
 import { parseSkillMap, TOTAL_SKILLS, MAX_SKILL_LEVEL } from '../lib/skills';
 import { SPIFFOS_RESTAURANTS, MAX_POSSIBLE_SCORE } from '../lib/objectives';
 import type { PlayerProfile, Entry } from '../types';
@@ -64,7 +65,7 @@ export function OverlayPage() {
     return () => { cancelled = true; timers.forEach(clearTimeout); };
   }, []);
 
-  async function load() {
+  const load = useCallback(async function load() {
     if (!id) return;
     const numId = parseInt(id, 10);
     if (isNaN(numId)) { setError(true); return; }
@@ -92,14 +93,27 @@ export function OverlayPage() {
     } catch {
       setError(true);
     }
-  }
+  }, [id]);
 
   useEffect(() => {
     load();
+    // Poll de 60s como fallback de segurança — o SSE já cobre atualizações em tempo real.
     const interval = setInterval(load, REFRESH_MS);
     return () => clearInterval(interval);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [load]);
+
+  // Atualiza dados via SSE quando o servidor sinaliza mudança deste jogador.
+  const numericId = id ? parseInt(id, 10) : NaN;
+  useSse({
+    'rank-updated': (d) => {
+      const ev = d as { playerId: number };
+      if (!isNaN(numericId) && ev.playerId === numericId) load();
+    },
+    'player-died': (d) => {
+      const ev = d as { playerId: number };
+      if (!isNaN(numericId) && ev.playerId === numericId) load();
+    },
+  });
 
   if (error || !profile || !bestEntry) {
     return (

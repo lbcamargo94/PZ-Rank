@@ -1,9 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { apiGetFeaturedStreamers, apiGetLiveStatus } from '../lib/api';
 import { buildLiveMap } from '../lib/live';
 import { LiveBadges } from './LiveBadges';
+import { useSse } from '../hooks/useSse';
 import type { FeaturedStreamer, LiveStatus } from '../types';
 
 function StreamerCard({ streamer, live }: { streamer: FeaturedStreamer; live?: LiveStatus[] }) {
@@ -45,12 +46,19 @@ export function StreamersHighlight() {
   const [liveStatuses, setLiveStatuses]   = useState<LiveStatus[]>([]);
   const [loading, setLoading]             = useState(true);
 
+  const refreshLiveStatus = useCallback(() => {
+    apiGetLiveStatus().then(setLiveStatuses).catch(() => {});
+  }, []);
+
   useEffect(() => {
     Promise.all([apiGetFeaturedStreamers(), apiGetLiveStatus()])
       .then(([s, l]) => { setStreamers(s); setLiveStatuses(l); })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  // Atualiza live status em tempo real quando o servidor detecta mudança.
+  useSse({ 'live-status': refreshLiveStatus });
 
   const liveMap = useMemo(() => buildLiveMap(liveStatuses), [liveStatuses]);
 

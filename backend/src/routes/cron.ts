@@ -9,6 +9,7 @@
 
 import { Router } from 'express';
 import type { Request, Response } from 'express';
+import { broadcast } from '../lib/sse';
 import { supabase } from '../supabase';
 import { subscribePubSub, getChannelCurrentLive, checkIsLive, YT_LIVE_MAX_AGE_MS } from '../lib/youtube';
 import { extractTwitchLogin, getLiveStreams } from '../lib/twitch';
@@ -277,6 +278,14 @@ router.get('/scan-lives', async (req: Request, res: Response): Promise<void> => 
       }
       twitchStarted.push(p.nick);
     }));
+  }
+
+  // SSE: notifica clientes se houve qualquer mudança de status de live.
+  if (liveStarted.length > 0 || liveEnded.length > 0 || twitchStarted.length > 0 || twitchEnded.length > 0) {
+    broadcast('live-status', {
+      started: [...liveStarted, ...twitchStarted],
+      ended:   [...liveEnded,   ...twitchEnded],
+    });
   }
 
   res.json({

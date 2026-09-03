@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { apiGetTop10Entries } from '../lib/api';
 import { formatNumber } from '../lib/format';
+import { useSse } from '../hooks/useSse';
 import type { Top10Entry } from '../types';
 
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
@@ -30,12 +31,19 @@ export function RankTop10Preview() {
   const [top10,   setTop10]   = useState<Top10Entry[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const refresh = useCallback(() => {
+    apiGetTop10Entries().then(setTop10).catch(() => {});
+  }, []);
+
   useEffect(() => {
     apiGetTop10Entries()
       .then(setTop10)
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  // Atualiza o top10 em tempo real quando um sync altera pontuações.
+  useSse({ 'rank-updated': refresh });
 
   return (
     <section className="home-side-panel rank-top10-preview">

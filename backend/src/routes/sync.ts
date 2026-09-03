@@ -1,6 +1,7 @@
 ﻿import { Router } from 'express';
 import type { Request, Response } from 'express';
 import { createHmac } from 'crypto';
+import { broadcast } from '../lib/sse';
 import rateLimit from 'express-rate-limit';
 
 function isVersionAtLeast(version: string | null, minimum: string): boolean {
@@ -581,6 +582,19 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   }
 
   const finalScore = (data as { score: number }).score;
+
+  // SSE: notifica clientes conectados sobre mudança de score ou morte.
+  broadcast('rank-updated', { playerId: player.id, score: finalScore, isAlive: decoded.isAlive });
+  if (prev?.is_alive === true && !decoded.isAlive) {
+    broadcast('player-died', {
+      playerId:      player.id,
+      nick:          player.nick,
+      characterName: decoded.characterName,
+      score:         finalScore,
+      days:          decoded.days,
+      kills:         decoded.kills,
+    });
+  }
 
   // Notificação de morte no Discord: dispara quando is_alive muda de true → false.
   // Ignora a primeira entrada (prev === null) e entradas desclassificadas (sandbox_ok = false).
