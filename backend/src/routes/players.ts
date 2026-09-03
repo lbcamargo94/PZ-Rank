@@ -183,11 +183,7 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
   res.json(payload);
 });
 
-// GET /players/:id/overlay — fonte de dados do overlay de OBS: restrito a
-// streamers oficiais (is_featured_streamer) ou moderadores (is_moderator) —
-// controlados por moderadores em PATCH /players/:id/featured-streamer e
-// PATCH /players/:id/moderator. Jogadores comuns que já tinham o link salvo
-// no OBS passam a receber 403 aqui, o que derruba o overlay deles.
+// GET /players/:id/overlay — fonte de dados do overlay de OBS: disponível para qualquer jogador cadastrado.
 router.get('/:id/overlay', async (req: Request, res: Response): Promise<void> => {
   const id = parseInt(String(req.params.id), 10);
   if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.', error_code: 'INVALID_ID' }); return; }
@@ -195,10 +191,6 @@ router.get('/:id/overlay', async (req: Request, res: Response): Promise<void> =>
   const payload = await buildPlayerProfilePayload(id);
   if (!payload) {
     res.status(404).json({ error: 'Jogador não encontrado.', error_code: 'PLAYER_NOT_FOUND' });
-    return;
-  }
-  if (!payload.player.is_featured_streamer && !payload.player.is_moderator) {
-    res.status(403).json({ error: 'Overlay disponível apenas para streamers e moderadores oficiais.', error_code: 'OVERLAY_NOT_ALLOWED' });
     return;
   }
 
