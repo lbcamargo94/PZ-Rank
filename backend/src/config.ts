@@ -1,10 +1,11 @@
 import 'dotenv/config';
 
 const useSQLite = process.env.USE_SQLITE === 'true';
+const usePg     = process.env.USE_PG     === 'true';
 
 function required(name: string, optionalInSQLite = false): string {
   const value = process.env[name];
-  if (!value && !(useSQLite && optionalInSQLite)) {
+  if (!value && !(useSQLite && optionalInSQLite) && !(usePg && optionalInSQLite)) {
     throw new Error(`Variável de ambiente obrigatória não definida: ${name}`);
   }
   return value ?? '';
