@@ -259,7 +259,7 @@
       "section_sub": "Six étapes pour commencer à concourir dans le Brasileirão PZ.",
       "steps": [
         { "title": "Inscrivez-vous sur le site", "desc": "Créez votre compte sur pzrank.com.br. Votre inscription doit être approuvée par un modérateur avant d'apparaître dans le classement.", "action_label": "Créer un compte" },
-        { "title": "Installez le Mod Officiel", "desc": "Abonnez-vous au mod \"PZCommunityRank\" sur le Steam Workshop et activez-le dans Project Zomboid. Le mod valide votre sandbox et enregistre vos statistiques.", "action_label": null },
+        { "title": "Installez le Mod Officiel", "desc": "Abonnez-vous au mod \"PZCommunityRank\" sur le Steam Workshop et activez-le dans Project Zomboid. Le mod valide votre sandbox et enregistre vos statistiques.", "action_label": "Voir sur Steam Workshop" },
         { "title": "Installez PZ Rank Companion", "desc": "Companion surveille votre dossier de sauvegardes et se synchronise automatiquement avec le classement. Nécessaire pour que vos parties apparaissent sur le site.", "action_label": "Télécharger Companion {{tag}}" },
         { "title": "Utilisez le Preset Officiel", "desc": "Démarrez une nouvelle partie avec le preset \"Brasileirão PZ\" activé par le mod. Le sandbox doit être 100 % identique aux paramètres officiels — toute divergence entraîne une disqualification automatique.", "action_label": "Voir les paramètres" },
         { "title": "Synchronisez Automatiquement", "desc": "Companion détecte quand vous sauvegardez la partie et synchronise les données en arrière-plan. Chaque synchronisation met à jour les jours survécus, les zombies tués, les compétences et les objectifs.", "action_label": null },

@@ -259,7 +259,7 @@
       "section_sub": "Seis passos para começar a competir no Brasileirão PZ.",
       "steps": [
         { "title": "Cadastre-se no site", "desc": "Crie sua conta em pzrank.com.br. Seu cadastro precisa ser aprovado por um moderador antes de aparecer no ranking.", "action_label": "Criar conta" },
-        { "title": "Instale o Mod Oficial", "desc": "Assine o mod \"PZCommunityRank\" na Steam Workshop e ative-o no Project Zomboid. O mod valida sua sandbox e registra suas estatísticas.", "action_label": null },
+        { "title": "Instale o Mod Oficial", "desc": "Assine o mod \"PZCommunityRank\" na Steam Workshop e ative-o no Project Zomboid. O mod valida sua sandbox e registra suas estatísticas.", "action_label": "Ver na Steam Workshop" },
         { "title": "Instale o PZ Rank Companion", "desc": "O Companion monitora sua pasta de saves e sincroniza automaticamente com o ranking. Necessário para que suas corridas apareçam no site.", "action_label": "Baixar Companion {{tag}}" },
         { "title": "Use o Preset Oficial", "desc": "Inicie um novo jogo com o preset \"Brasileirão PZ\" ativado pelo mod. O sandbox precisa estar 100% idêntico às configurações oficiais — qualquer divergência gera desclassificação automática.", "action_label": "Ver configurações" },
         { "title": "Sincronize Automaticamente", "desc": "O Companion detecta quando você salva o jogo e sincroniza os dados em segundo plano. Cada sync atualiza dias sobrevividos, kills, habilidades e objetivos.", "action_label": null },
