@@ -5,7 +5,7 @@
 // desatualizado em dois deles antes de ser notado).
 const COMPANION_REPO = 'https://github.com/lbcamargo94/PZ-Rank-Companion';
 
-export const COMPANION_VERSION = '2.0.9';       // sem "v" — usado nos nomes de arquivo dos assets
+export const COMPANION_VERSION = '2.1.0';       // sem "v" — usado nos nomes de arquivo dos assets
 export const COMPANION_TAG     = `v${COMPANION_VERSION}`; // com "v" — usado na URL da tag e exibido ao usuário
 
 export const COMPANION_LATEST_URL     = `${COMPANION_REPO}/releases/latest`;
