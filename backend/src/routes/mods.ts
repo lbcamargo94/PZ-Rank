@@ -74,11 +74,7 @@ async function setDependencies(modId: number, depIds: number[]): Promise<void> {
   }
 }
 
-// GET /mods?status=active|blocked — public: lista de mods por status (default: active).
-// "blocked" alimenta a aba pública "Bloqueados" — mods que já foram permitidos e
-// deixaram de ser, ou nunca chegaram a ser aprovados; não requer moderador porque
-// não é informação sensível (o próprio /mods já é público).
-router.get('/', async (req, res: Response): Promise<void> => {
+async function handleGetMods(req: import('express').Request, res: Response): Promise<void> {
   const status = req.query.status === 'blocked' ? 'blocked' : 'active';
   try {
     const { data, error } = await supabase
@@ -90,10 +86,15 @@ router.get('/', async (req, res: Response): Promise<void> => {
     if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
     res.json(await attachDeps((data ?? []) as RawMod[]));
   } catch (err) {
-    console.error('[GET /mods] Erro inesperado:', err);
+    console.error('[GET /mods/list] Erro inesperado:', err);
     res.status(500).json({ error: 'Erro interno ao buscar mods.' });
   }
-});
+}
+
+// GET /mods/list?status=active|blocked — public: lista de mods por status.
+router.get('/list', handleGetMods);
+// Alias legado mantido para compatibilidade com chamadas diretas.
+router.get('/', handleGetMods);
 
 // GET /mods/all — moderator: returns all mods (active + blocked)
 router.get('/all', requireModerator, async (_req: ModRequest, res: Response): Promise<void> => {

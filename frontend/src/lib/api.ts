@@ -413,7 +413,7 @@ export function apiCloseSeason(token: string, id: number): Promise<{ ok: boolean
 }
 
 export function apiGetMods(status: 'active' | 'blocked' = 'active'): Promise<Mod[]> {
-  return request(`/mods?status=${status}`);
+  return request(`/mods/list?status=${status}`);
 }
 
 export function apiGetAllMods(token: string): Promise<Mod[]> {
