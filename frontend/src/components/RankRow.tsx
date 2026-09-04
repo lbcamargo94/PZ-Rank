@@ -18,6 +18,7 @@ interface RankRowProps {
   iconOnly?:      boolean;
   live?:          LiveStatus[];
   onPlayerClick?: (id: number) => void;
+  isUpdated?:     boolean;
 }
 
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
@@ -156,7 +157,7 @@ function MiniBar({ value, max, done }: { value: number; max: number; done?: bool
   );
 }
 
-export function RankRow({ entry, rank, hideStatus, iconOnly, live, onPlayerClick }: RankRowProps) {
+export function RankRow({ entry, rank, hideStatus, iconOnly, live, onPlayerClick, isUpdated }: RankRowProps) {
   const { t } = useTranslation();
   const score     = entry.score ?? 0;
   const killsDone = entry.kills >= KILLS_TARGET;
@@ -219,14 +220,16 @@ export function RankRow({ entry, rank, hideStatus, iconOnly, live, onPlayerClick
       )}
       <td className="rank-score">
         <div className="rk-bar-cell">
-          <span>{formatNumber(score)}</span>
+          <span className={isUpdated ? 'stat-flash' : ''}>{formatNumber(score)}</span>
           <MiniBar value={score} max={MAX_POSSIBLE_SCORE} />
         </div>
       </td>
-      <td className="rank-days">{entry.days}d</td>
+      <td className="rank-days">
+        <span className={isUpdated ? 'stat-flash' : ''}>{entry.days}d</span>
+      </td>
       <td className="rank-kills">
         <div className="rk-bar-cell">
-          <span>{formatNumber(entry.kills)}</span>
+          <span className={isUpdated ? 'stat-flash' : ''}>{formatNumber(entry.kills)}</span>
           <MiniBar value={entry.kills} max={KILLS_TARGET} done={killsDone} />
         </div>
       </td>

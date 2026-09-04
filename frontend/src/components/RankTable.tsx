@@ -25,6 +25,7 @@ interface RankTableProps {
   iconOnly?:    boolean;
   isSearching?: boolean;
   liveMap?:     Map<number, LiveStatus[]>;
+  updatedIds?:  Set<number>;
 }
 
 const EMPTY_ICONS: Record<RankTab, string> = {
@@ -71,12 +72,13 @@ function MiniBar({ value, max, done }: { value: number; max: number; done?: bool
   );
 }
 
-function RankCard({ entry, rank, onPlayerClick, hideStatus, live }: {
+function RankCard({ entry, rank, onPlayerClick, hideStatus, live, isUpdated }: {
   entry: Entry;
   rank: number;
   onPlayerClick: (id: number) => void;
   hideStatus?: boolean;
   live?: LiveStatus[];
+  isUpdated?: boolean;
 }) {
   const { t } = useTranslation();
   const objCount = entry.objectives
@@ -127,14 +129,14 @@ function RankCard({ entry, rank, onPlayerClick, hideStatus, live }: {
 
       {/* Score + bar */}
       <div className="rc-score">
-        <span>{formatNumber(entry.score)} <span className="rc-pts">{t('rank.pts')}</span></span>
+        <span className={isUpdated ? 'stat-flash' : ''}>{formatNumber(entry.score)} <span className="rc-pts">{t('rank.pts')}</span></span>
         <MiniBar value={entry.score ?? 0} max={MAX_POSSIBLE_SCORE} />
       </div>
 
       {/* Stats */}
       <div className="rc-stats">
         <div className="rc-stat-kills">
-          <span className="rc-stat"><i className="ti ti-sword" />{formatNumber(entry.kills)} {t('rank.zombies_suffix')}</span>
+          <span className={`rc-stat${isUpdated ? ' stat-flash' : ''}`}><i className="ti ti-sword" />{formatNumber(entry.kills)} {t('rank.zombies_suffix')}</span>
           <MiniBar value={entry.kills} max={KILLS_TARGET} done={killsDone} />
         </div>
         <span className="rc-stat"><i className="ti ti-calendar" />{entry.days}d</span>
@@ -164,7 +166,7 @@ function buildPageList(current: number, total: number): (number | '…')[] {
   return pages;
 }
 
-export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, iconOnly, isSearching, liveMap }: RankTableProps) {
+export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, iconOnly, isSearching, liveMap, updatedIds }: RankTableProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const hideStatus = false;
@@ -268,6 +270,7 @@ export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, ic
                     iconOnly={iconOnly}
                     live={entry.player_id != null ? liveMap?.get(entry.player_id) : undefined}
                     onPlayerClick={handlePlayerClick}
+                    isUpdated={entry.player_id != null && updatedIds?.has(entry.player_id)}
                   />
                 ))}
               </tbody>
@@ -325,6 +328,7 @@ export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, ic
                 onPlayerClick={handlePlayerClick}
                 hideStatus={hideStatus}
                 live={entry.player_id != null ? liveMap?.get(entry.player_id) : undefined}
+                isUpdated={entry.player_id != null && updatedIds?.has(entry.player_id)}
               />
             ))}
             {entries.length > 0 && pageSize !== 'all' && (

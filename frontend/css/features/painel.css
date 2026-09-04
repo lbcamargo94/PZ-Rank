@@ -713,6 +713,19 @@
 .rc-score { display: flex; flex-direction: column; gap: 3px; }
 .rc-stat-kills { display: flex; flex-direction: column; gap: 3px; width: 100%; }
 
+/* ── Animação de atualização de pontuação/kills ────────── */
+@keyframes stat-flash {
+  0%   { background: var(--green); color: #fff; border-radius: 4px; padding: 1px 5px; }
+  60%  { background: color-mix(in srgb, var(--green) 40%, transparent); color: var(--green); border-radius: 4px; padding: 1px 5px; }
+  100% { background: transparent; color: inherit; padding: 1px 5px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .stat-flash {
+    animation: stat-flash 2.2s ease-out forwards;
+    display: inline-block;
+  }
+}
+
 /* ── Modal de Regras ──────────────────────────────────────── */
 .rules-modal-box {
   max-width: 640px;

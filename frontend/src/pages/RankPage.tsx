@@ -63,6 +63,7 @@ export function RankPage() {
   const [activeTab,        setActiveTab]        = useState<RankTab>('rank');
   const [search,           setSearch]           = useState('');
   const [liveStatuses,     setLiveStatuses]      = useState<LiveStatus[]>([]);
+  const [updatedIds,       setUpdatedIds]        = useState<Set<number>>(new Set());
   const { toast, showToast, clearToast } = useToast();
 
   useEffect(() => {
@@ -102,9 +103,18 @@ export function RankPage() {
 
   useEffect(() => { fetchEntries(); }, [fetchEntries]);
 
+  const handleRankUpdated = useCallback((data: unknown) => {
+    const id = (data as { playerId?: number })?.playerId;
+    if (id) {
+      setUpdatedIds(prev => new Set([...prev, id]));
+      setTimeout(() => setUpdatedIds(prev => { const n = new Set(prev); n.delete(id); return n; }), 2500);
+    }
+    fetchEntries();
+  }, [fetchEntries]);
+
   // Atualiza rank e live status em tempo real via SSE.
   useSse({
-    'rank-updated': fetchEntries,
+    'rank-updated': handleRankUpdated,
     'live-status':  useCallback(() => { apiGetLiveStatus().then(setLiveStatuses).catch(() => {}); }, []),
   });
 
@@ -234,6 +244,7 @@ export function RankPage() {
           iconOnly
           isSearching={isSearching}
           liveMap={liveMap}
+          updatedIds={updatedIds}
         />
       </main>
 
