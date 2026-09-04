@@ -8,7 +8,7 @@ import type { Top10Entry } from '../types';
 
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
-function Top10Row({ entry, rank, onClick }: { entry: Top10Entry; rank: number; onClick?: () => void }) {
+function Top10Row({ entry, rank, onClick, isUpdated }: { entry: Top10Entry; rank: number; onClick?: () => void; isUpdated?: boolean }) {
   const clickable = !!onClick;
   return (
     <div
@@ -20,7 +20,7 @@ function Top10Row({ entry, rank, onClick }: { entry: Top10Entry; rank: number; o
     >
       <span className="top10-pos">{MEDALS[rank] ?? `#${rank}`}</span>
       <span className="top10-name">{entry.character_name || entry.name}</span>
-      <span className="top10-score">{formatNumber(entry.score)}</span>
+      <span className={`top10-score${isUpdated ? ' stat-flash' : ''}`}>{formatNumber(entry.score)}</span>
     </div>
   );
 }
@@ -28,12 +28,22 @@ function Top10Row({ entry, rank, onClick }: { entry: Top10Entry; rank: number; o
 export function RankTop10Preview() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [top10,   setTop10]   = useState<Top10Entry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [top10,      setTop10]      = useState<Top10Entry[]>([]);
+  const [loading,    setLoading]    = useState(true);
+  const [updatedIds, setUpdatedIds] = useState<Set<number>>(new Set());
 
   const refresh = useCallback(() => {
     apiGetTop10Entries().then(setTop10).catch(() => {});
   }, []);
+
+  const handleRankUpdated = useCallback((data: unknown) => {
+    const id = (data as { playerId?: number })?.playerId;
+    if (id) {
+      setUpdatedIds(prev => new Set([...prev, id]));
+      setTimeout(() => setUpdatedIds(prev => { const n = new Set(prev); n.delete(id); return n; }), 2500);
+    }
+    refresh();
+  }, [refresh]);
 
   useEffect(() => {
     apiGetTop10Entries()
@@ -43,7 +53,7 @@ export function RankTop10Preview() {
   }, []);
 
   // Atualiza o top10 em tempo real quando um sync altera pontuações.
-  useSse({ 'rank-updated': refresh });
+  useSse({ 'rank-updated': handleRankUpdated });
 
   return (
     <section className="home-side-panel rank-top10-preview">
@@ -60,6 +70,7 @@ export function RankTop10Preview() {
               entry={entry}
               rank={i + 1}
               onClick={entry.player_id != null ? () => navigate(`/player/${entry.player_id}`) : undefined}
+              isUpdated={entry.player_id != null && updatedIds.has(entry.player_id)}
             />
           ))}
         </div>
