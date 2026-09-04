@@ -9,13 +9,27 @@ import type { PlayerSession } from '../types';
 const PLAYER_SESSION_KEY = 'player_session';
 const RE_EMAIL_LOGIN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+export function savePlayerSession(s: PlayerSession): void {
+  const value = JSON.stringify(s);
+  try {
+    if (s.rememberMe) localStorage.setItem(PLAYER_SESSION_KEY, value);
+    else              sessionStorage.setItem(PLAYER_SESSION_KEY, value);
+  } catch { /* storage bloqueado */ }
+}
+
+export function clearPlayerSession(): void {
+  try { localStorage.removeItem(PLAYER_SESSION_KEY); } catch { /* ignore */ }
+  try { sessionStorage.removeItem(PLAYER_SESSION_KEY); } catch { /* ignore */ }
+}
+
 // ── Login form ────────────────────────────────────────────────
 
 function LoginForm({ onLogin }: { onLogin: (s: PlayerSession) => void }) {
-  const [email,    setEmail]    = useState('');
-  const [password, setPassword] = useState('');
-  const [loading,  setLoading]  = useState(false);
-  const [showPass, setShowPass] = useState(false);
+  const [email,      setEmail]      = useState('');
+  const [password,   setPassword]   = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
+  const [loading,    setLoading]    = useState(false);
+  const [showPass,   setShowPass]   = useState(false);
   const { toast, showToast, clearToast } = useToast();
 
   const emailOk   = RE_EMAIL_LOGIN.test(email.trim());
@@ -26,8 +40,8 @@ function LoginForm({ onLogin }: { onLogin: (s: PlayerSession) => void }) {
     if (!canSubmit) return;
     setLoading(true);
     try {
-      const data = await apiPlayerLogin(email.trim(), password);
-      onLogin(data);
+      const data = await apiPlayerLogin(email.trim(), password, rememberMe);
+      onLogin({ ...data, rememberMe });
     } catch (err) {
       showToast((err as Error).message, 'error');
     } finally {
@@ -102,6 +116,16 @@ function LoginForm({ onLogin }: { onLogin: (s: PlayerSession) => void }) {
             </div>
           </div>
 
+          <label className="login-remember-label">
+            <input
+              type="checkbox"
+              className="login-remember-checkbox"
+              checked={rememberMe}
+              onChange={e => setRememberMe(e.target.checked)}
+            />
+            <span>Manter-me conectado por 30 dias</span>
+          </label>
+
           <button
             type="submit"
             className={`btn-primary reg-submit${canSubmit ? ' reg-submit--ready' : ''}`}
@@ -130,7 +154,9 @@ export function AccountPage() {
   const navigate = useNavigate();
 
   const [hasSession] = useState(() => {
-    try { return !!sessionStorage.getItem(PLAYER_SESSION_KEY); } catch { return false; }
+    try {
+      return !!(localStorage.getItem(PLAYER_SESSION_KEY) || sessionStorage.getItem(PLAYER_SESSION_KEY));
+    } catch { return false; }
   });
 
   useEffect(() => {
@@ -138,7 +164,7 @@ export function AccountPage() {
   }, [hasSession, navigate]);
 
   function handleLogin(s: PlayerSession) {
-    sessionStorage.setItem(PLAYER_SESSION_KEY, JSON.stringify(s));
+    savePlayerSession(s);
     navigate('/perfil', { replace: true });
   }
 

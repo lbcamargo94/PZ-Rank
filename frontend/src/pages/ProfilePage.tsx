@@ -11,8 +11,10 @@ import {
   apiConfirmAccountOtp,
   apiGetMyLikes,
   apiUnlikePlayer,
+  apiPlayerLogout,
   ApiError,
 } from '../lib/api';
+import { clearPlayerSession } from './AccountPage';
 import { OtpInput } from '../components/OtpInput';
 import { Header } from '../components/Header';
 import type { PlayerSession, PlayerAccount, Entry, LikedPlayer } from '../types';
@@ -98,8 +100,8 @@ function OtpActionForm({
 
 // ── Aba: Conta ────────────────────────────────────────────────
 
-function TabConta({ session, profile, onProfileChange }: {
-  session: PlayerSession;
+function TabConta({ profile, onProfileChange }: {
+  session?: PlayerSession;
   profile: PlayerAccount;
   onProfileChange: () => void;
 }) {
@@ -137,7 +139,7 @@ function TabConta({ session, profile, onProfileChange }: {
     e.preventDefault();
     setEmailMsg(''); setEmailLoading(true);
     try {
-      const res = await apiSendAccountOtp(session.token, 'change_email', {
+      const res = await apiSendAccountOtp('change_email', {
         current_password: curPassEmail, new_email: newEmail,
       });
       setEmailMsg(res.message); setEmailOk(true); setEmailOtpState('sent');
@@ -152,7 +154,7 @@ function TabConta({ session, profile, onProfileChange }: {
     e.preventDefault();
     setEmailMsg(''); setEmailLoading(true);
     try {
-      const res = await apiConfirmAccountOtp(session.token, 'change_email', {
+      const res = await apiConfirmAccountOtp('change_email', {
         code: emailOtpCode, current_password: curPassEmail, new_email: newEmail,
       });
       setEmailMsg(res.message); setEmailOtpState('done');
@@ -168,7 +170,7 @@ function TabConta({ session, profile, onProfileChange }: {
   async function handleEmailResend() {
     setEmailResendMsg('');
     try {
-      const res = await apiSendAccountOtp(session.token, 'change_email', {
+      const res = await apiSendAccountOtp('change_email', {
         current_password: curPassEmail, new_email: newEmail,
       });
       setEmailResendMsg(res.message);
@@ -184,7 +186,7 @@ function TabConta({ session, profile, onProfileChange }: {
     if (newPwd !== confirmPwd) { setPwdMsg('As senhas não conferem.'); setPwdOk(false); return; }
     setPwdLoading(true);
     try {
-      const res = await apiSendAccountOtp(session.token, 'change_password', {
+      const res = await apiSendAccountOtp('change_password', {
         current_password: curPassPwd, new_password: newPwd,
       });
       setPwdMsg(res.message); setPwdOk(true); setPwdOtpState('sent');
@@ -199,7 +201,7 @@ function TabConta({ session, profile, onProfileChange }: {
     e.preventDefault();
     setPwdMsg(''); setPwdLoading(true);
     try {
-      const res = await apiConfirmAccountOtp(session.token, 'change_password', {
+      const res = await apiConfirmAccountOtp('change_password', {
         code: pwdOtpCode, current_password: curPassPwd, new_password: newPwd,
       });
       setPwdMsg(res.message); setPwdOtpState('done');
@@ -214,7 +216,7 @@ function TabConta({ session, profile, onProfileChange }: {
   async function handlePwdResend() {
     setPwdResendMsg('');
     try {
-      const res = await apiSendAccountOtp(session.token, 'change_password', {
+      const res = await apiSendAccountOtp('change_password', {
         current_password: curPassPwd, new_password: newPwd,
       });
       setPwdResendMsg(res.message);
@@ -314,8 +316,8 @@ function TabConta({ session, profile, onProfileChange }: {
 
 // ── Aba: Redes Sociais ────────────────────────────────────────
 
-function TabLinks({ session, profile, onProfileChange }: {
-  session: PlayerSession;
+function TabLinks({ profile, onProfileChange }: {
+  session?: PlayerSession;
   profile: PlayerAccount;
   onProfileChange: () => void;
 }) {
@@ -331,7 +333,7 @@ function TabLinks({ session, profile, onProfileChange }: {
     e.preventDefault();
     setMsg(''); setLoading(true);
     try {
-      await apiUpdateMyLinks(session.token, {
+      await apiUpdateMyLinks({
         twitch_url:  twitch  || null,
         youtube_url: youtube || null,
         kick_url:    kick    || null,
@@ -386,17 +388,17 @@ function TabLinks({ session, profile, onProfileChange }: {
 
 // ── Aba: Minhas Runs ──────────────────────────────────────────
 
-function TabRuns({ session }: { session: PlayerSession }) {
+function TabRuns(_: { session: PlayerSession }) {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState('');
 
   useEffect(() => {
-    apiGetMyEntries(session.token)
+    apiGetMyEntries()
       .then(setEntries)
       .catch(err => setError((err as Error).message))
       .finally(() => setLoading(false));
-  }, [session.token]);
+  }, []);
 
   if (loading) return <div className="account-tab-body"><p className="account-section-info">Carregando…</p></div>;
   if (error)   return <div className="account-tab-body"><StatusMsg msg={error} ok={false} /></div>;
@@ -437,23 +439,23 @@ function TabRuns({ session }: { session: PlayerSession }) {
 
 // ── Aba: Curtidos ─────────────────────────────────────────────
 
-function TabCurtidos({ session }: { session: PlayerSession }) {
+function TabCurtidos(_: { session: PlayerSession }) {
   const [likes,   setLikes]   = useState<LikedPlayer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState('');
   const [removingId, setRemovingId] = useState<number | null>(null);
 
   useEffect(() => {
-    apiGetMyLikes(session.token)
+    apiGetMyLikes()
       .then(setLikes)
       .catch(err => setError((err as Error).message))
       .finally(() => setLoading(false));
-  }, [session.token]);
+  }, []);
 
   async function handleUnlike(id: number) {
     setRemovingId(id);
     try {
-      await apiUnlikePlayer(session.token, id);
+      await apiUnlikePlayer(id);
       setLikes(prev => prev.filter(l => l.id !== id));
     } catch (err) {
       setError((err as Error).message);
@@ -509,7 +511,7 @@ export function ProfilePage() {
 
   const [session,      setSession]      = useState<PlayerSession | null>(() => {
     try {
-      const raw = sessionStorage.getItem(PLAYER_SESSION_KEY);
+      const raw = localStorage.getItem(PLAYER_SESSION_KEY) || sessionStorage.getItem(PLAYER_SESSION_KEY);
       return raw ? (JSON.parse(raw) as PlayerSession) : null;
     } catch { return null; }
   });
@@ -521,7 +523,7 @@ export function ProfilePage() {
     if (!session) return;
     setLoadError('');
     try {
-      const data = await apiGetMyProfile(session.token);
+      const data = await apiGetMyProfile();
       setProfile(data);
     } catch (err) {
       const status = err instanceof ApiError ? err.status : 0;
@@ -539,8 +541,9 @@ export function ProfilePage() {
     loadProfile();
   }, [session, navigate, loadProfile]);
 
-  function handleLogout() {
-    sessionStorage.removeItem(PLAYER_SESSION_KEY);
+  async function handleLogout() {
+    try { await apiPlayerLogout(); } catch { /* ignora erros de rede */ }
+    clearPlayerSession();
     setSession(null);
     navigate('/login', { replace: true });
   }

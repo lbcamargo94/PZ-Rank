@@ -22,7 +22,7 @@ import type { Objectives } from '../lib/objectives';
 
 function readPlayerSession(): PlayerSession | null {
   try {
-    const raw = sessionStorage.getItem('player_session');
+    const raw = localStorage.getItem('player_session') || sessionStorage.getItem('player_session');
     return raw ? JSON.parse(raw) : null;
   } catch { return null; }
 }
@@ -453,7 +453,7 @@ export function PlayerPage() {
       .then(statuses => setLiveStatuses(statuses.filter(s => s.player_id === numId)))
       .catch(() => {});
 
-    apiGetPlayerLikes(numId, playerSession?.token)
+    apiGetPlayerLikes(numId)
       .then(setLikeStatus)
       .catch(() => {});
   }, [id]);
@@ -469,8 +469,8 @@ export function PlayerPage() {
     setLikeBusy(true);
     try {
       const result = likeStatus.liked_by_me
-        ? await apiUnlikePlayer(playerSession.token, numId)
-        : await apiLikePlayer(playerSession.token, numId);
+        ? await apiUnlikePlayer(numId)
+        : await apiLikePlayer(numId);
       setLikeStatus({ count: result.count, liked_by_me: result.liked });
     } catch (err) {
       showToast(translateApiError(err, t), 'error');

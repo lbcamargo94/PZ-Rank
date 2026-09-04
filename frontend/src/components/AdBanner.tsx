@@ -8,7 +8,7 @@ const SLOT   = (import.meta.env.VITE_ADSENSE_SLOT   as string) ?? '';
 
 function readIsSupporter(): boolean {
   try {
-    const raw = sessionStorage.getItem('player_session');
+    const raw = localStorage.getItem('player_session') || sessionStorage.getItem('player_session');
     if (!raw) return false;
     return (JSON.parse(raw) as { is_supporter?: boolean }).is_supporter === true;
   } catch { return false; }

@@ -231,10 +231,10 @@ export interface DailyNews {
 }
 
 export interface PlayerSession {
-  token:        string;
   player_id:    number;
   nick:         string;
   is_supporter: boolean;
+  rememberMe:   boolean;
 }
 
 export type FinanceCategory = 'hosting' | 'prize' | 'domain' | 'adsense' | 'supporters' | 'sponsor' | 'other';

@@ -14,13 +14,23 @@ interface PlayerJwtPayload {
   nick: string;
 }
 
-export async function requirePlayer(req: PlayerRequest, res: Response, next: NextFunction): Promise<void> {
+function extractToken(req: Request): string | null {
+  // Cookie HttpOnly tem prioridade (mais seguro que header)
+  const cookieToken = (req.cookies as Record<string, string> | undefined)?.player_session;
+  if (cookieToken) return cookieToken;
+
+  // Fallback: Authorization: Bearer <token> (Companion + clientes legados)
   const auth = req.headers.authorization;
-  if (!auth?.startsWith('Bearer ')) {
-    res.status(401).json({ error: 'Token de jogador obrigatório.' });
-    return;
+  if (auth?.startsWith('Bearer ')) {
+    const t = auth.slice(7).trim();
+    if (t) return t;
   }
-  const token = auth.slice(7).trim();
+
+  return null;
+}
+
+export async function requirePlayer(req: PlayerRequest, res: Response, next: NextFunction): Promise<void> {
+  const token = extractToken(req);
   if (!token) {
     res.status(401).json({ error: 'Token de jogador obrigatório.' });
     return;
@@ -41,7 +51,6 @@ export async function requirePlayer(req: PlayerRequest, res: Response, next: Nex
 
   const playerId = parseInt(payload.sub, 10);
 
-  // Verifica estado atual do jogador no banco (bloqueado ou deletado após emissão do JWT)
   const { data: player } = await supabase
     .from('players')
     .select('id, blocked, deleted_at')

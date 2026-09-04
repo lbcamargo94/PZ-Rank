@@ -2,6 +2,7 @@ import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import { config } from './config';
 import authRouter        from './routes/auth';
@@ -55,6 +56,7 @@ export function createApp() {
   app.set('trust proxy', 1);
 
   app.use(helmet());
+  app.use(cookieParser());
 
   // O Helmet seta Cache-Control: public, max-age=0, must-revalidate por padrão.
   // O "public" permite conditional caching (304) no CDN e no browser.

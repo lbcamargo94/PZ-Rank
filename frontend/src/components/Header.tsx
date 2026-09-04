@@ -12,7 +12,7 @@ interface HeaderProps {
 
 function readPlayerSession(): { nick: string; player_id: number } | null {
   try {
-    const raw = sessionStorage.getItem('player_session');
+    const raw = localStorage.getItem('player_session') || sessionStorage.getItem('player_session');
     return raw ? JSON.parse(raw) : null;
   } catch { return null; }
 }

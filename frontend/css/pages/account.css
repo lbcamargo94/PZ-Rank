@@ -134,6 +134,23 @@
 
 .login-register-btn { justify-content: center; }
 
+.login-remember-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  color: var(--text-2);
+  cursor: pointer;
+  user-select: none;
+}
+.login-remember-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--green);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
 /* ── Authenticated layout ─────────────────────────────── */
 .account-wrap {
   max-width: 780px;

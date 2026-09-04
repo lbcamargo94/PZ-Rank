@@ -90,9 +90,24 @@ router.post('/resend-verification', async (req: Request, res: Response): Promise
   res.json({ message: 'Se o email existir e ainda não estiver verificado, um novo link foi enviado.' });
 });
 
-// POST /auth/player/login — email + senha → player_token
+const COOKIE_NAME    = 'player_session';
+const COOKIE_30D_MS  = 30 * 24 * 60 * 60 * 1000;
+const COOKIE_7D_MS   =  7 * 24 * 60 * 60 * 1000;
+const IS_PROD        = process.env.NODE_ENV !== 'development';
+
+function cookieOpts(maxAgeMs?: number): import('express').CookieOptions {
+  return {
+    httpOnly:  true,
+    secure:    IS_PROD,
+    sameSite:  'lax',
+    path:      '/',
+    ...(maxAgeMs !== undefined ? { maxAge: maxAgeMs } : {}),
+  };
+}
+
+// POST /auth/player/login — email + senha → cookie HttpOnly + player_token
 router.post('/login', async (req: Request, res: Response): Promise<void> => {
-  const { email, password } = req.body as { email?: string; password?: string };
+  const { email, password, rememberMe } = req.body as { email?: string; password?: string; rememberMe?: boolean };
   if (!email?.trim() || !password) {
     res.status(400).json({ error: 'Email e senha são obrigatórios.' });
     return;
@@ -149,12 +164,27 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
     await supabase.from('players').update({ player_token: playerToken }).eq('id', row.id);
   }
 
+  const persist   = rememberMe === true;
+  const expiresIn = persist ? '30d' : '7d';
+  const maxAge    = persist ? COOKIE_30D_MS : COOKIE_7D_MS;
+
   const token = jwt.sign(
     { sub: String(row.id), type: 'player', nick: row.nick },
     config.jwtSecret,
-    { expiresIn: '7d' },
+    { expiresIn },
   );
-  res.json({ token, player_token: playerToken, player_id: row.id, nick: row.nick, is_supporter: row.is_supporter ?? false });
+
+  // Cookie HttpOnly — não acessível via JavaScript (proteção contra XSS)
+  res.cookie(COOKIE_NAME, token, cookieOpts(maxAge));
+
+  // Retorna dados de UI sem expor o JWT no body
+  res.json({ player_token: playerToken, player_id: row.id, nick: row.nick, is_supporter: row.is_supporter ?? false });
+});
+
+// POST /auth/player/logout — apaga o cookie de sessão
+router.post('/logout', (_req: Request, res: Response): void => {
+  res.clearCookie(COOKIE_NAME, cookieOpts());
+  res.status(204).end();
 });
 
 // POST /auth/player/forgot-password — solicita redefinição de senha

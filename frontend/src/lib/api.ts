@@ -25,7 +25,7 @@ interface LoginResponse {
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let res: Response;
   try {
-    res = await fetch(`${API_URL}${path}`, init);
+    res = await fetch(`${API_URL}${path}`, { credentials: 'include', ...init });
   } catch (e) {
     console.error('[api] fetch error', path, e);
     throw new Error('Não foi possível conectar ao servidor. Verifique se o backend está rodando.');
@@ -111,8 +111,12 @@ export function apiRegisterPlayer(data: {
   return request('/players/register', { method: 'POST', ...json(null, data) });
 }
 
-export function apiPlayerLogin(email: string, password: string): Promise<{ token: string; player_id: number; nick: string; is_supporter: boolean }> {
-  return request('/auth/player/login', { method: 'POST', ...json(null, { email, password }) });
+export function apiPlayerLogin(email: string, password: string, rememberMe: boolean): Promise<{ player_id: number; nick: string; is_supporter: boolean }> {
+  return request('/auth/player/login', { method: 'POST', ...json(null, { email, password, rememberMe }) });
+}
+
+export function apiPlayerLogout(): Promise<void> {
+  return request('/auth/player/logout', { method: 'POST' });
 }
 
 export function apiForgotPassword(email: string): Promise<{ message: string }> {
@@ -146,26 +150,24 @@ export function apiVerifyEmail(token: string): Promise<{ message: string }> {
 
 // ── OTP — mudanças de conta ──────────────────────────────────
 export function apiSendAccountOtp(
-  playerToken: string,
   action: 'change_email' | 'change_password',
   data: { current_password: string; new_email?: string; new_password?: string },
 ): Promise<{ message: string }> {
   return request('/account/me/otp/send', {
     method: 'POST',
     body: JSON.stringify({ action, ...data }),
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${playerToken}` },
+    headers: { 'Content-Type': 'application/json' },
   });
 }
 
 export function apiConfirmAccountOtp(
-  playerToken: string,
   action: 'change_email' | 'change_password',
   data: { code: string; current_password: string; new_email?: string; new_password?: string },
 ): Promise<{ message: string }> {
   return request('/account/me/otp/confirm', {
     method: 'POST',
     body: JSON.stringify({ action, ...data }),
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${playerToken}` },
+    headers: { 'Content-Type': 'application/json' },
   });
 }
 
@@ -182,16 +184,16 @@ export function apiGetPlayerOverlay(id: number): Promise<PlayerProfile> {
   return request(`/players/${id}/overlay`);
 }
 
-export function apiGetPlayerLikes(id: number, playerToken?: string): Promise<PlayerLikeStatus> {
-  return request(`/players/${id}/likes`, playerToken ? playerAuth(playerToken) : undefined);
+export function apiGetPlayerLikes(id: number): Promise<PlayerLikeStatus> {
+  return request(`/players/${id}/likes`);
 }
 
-export function apiLikePlayer(playerToken: string, id: number): Promise<{ liked: boolean; count: number }> {
-  return request(`/players/${id}/like`, { method: 'POST', ...playerAuth(playerToken) });
+export function apiLikePlayer(id: number): Promise<{ liked: boolean; count: number }> {
+  return request(`/players/${id}/like`, { method: 'POST' });
 }
 
-export function apiUnlikePlayer(playerToken: string, id: number): Promise<{ liked: boolean; count: number }> {
-  return request(`/players/${id}/like`, { method: 'DELETE', ...playerAuth(playerToken) });
+export function apiUnlikePlayer(id: number): Promise<{ liked: boolean; count: number }> {
+  return request(`/players/${id}/like`, { method: 'DELETE' });
 }
 
 export function apiGetPlayers(token: string, status: PlayerFilter = 'all'): Promise<Player[]> {
@@ -449,57 +451,40 @@ export function apiRefreshModImages(token: string): Promise<{ total: number; upd
 }
 
 // ── Conta do jogador ─────────────────────────────────
+// Autenticação via cookie HttpOnly (player_session) enviado automaticamente
+// com credentials:'include' definido na função request() base.
 import type { PlayerAccount } from '../types';
 
-function playerAuth(playerToken: string): RequestInit {
-  return { headers: { Authorization: `Bearer ${playerToken}` } };
+export function apiGetMyProfile(): Promise<PlayerAccount> {
+  return request('/account/me');
 }
 
-export function apiGetMyProfile(playerToken: string): Promise<PlayerAccount> {
-  return request('/account/me', playerAuth(playerToken));
+export function apiGetMyEntries(): Promise<import('../types').Entry[]> {
+  return request('/account/me/entries');
 }
 
-export function apiGetMyEntries(playerToken: string): Promise<import('../types').Entry[]> {
-  return request('/account/me/entries', playerAuth(playerToken));
-}
-
-export function apiGetMyLikes(playerToken: string): Promise<LikedPlayer[]> {
-  return request('/account/me/likes', playerAuth(playerToken));
+export function apiGetMyLikes(): Promise<LikedPlayer[]> {
+  return request('/account/me/likes');
 }
 
 export function apiChangePassword(
-  playerToken: string,
   current_password: string,
   new_password: string,
 ): Promise<{ message: string }> {
-  return request('/account/me/password', {
-    method: 'PATCH',
-    ...json(null, { current_password, new_password }),
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${playerToken}` },
-  });
+  return request('/account/me/password', { method: 'PATCH', ...json(null, { current_password, new_password }) });
 }
 
 export function apiChangeEmail(
-  playerToken: string,
   current_password: string,
   email: string,
 ): Promise<{ message: string }> {
-  return request('/account/me/email', {
-    method: 'PATCH',
-    ...json(null, { current_password, email }),
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${playerToken}` },
-  });
+  return request('/account/me/email', { method: 'PATCH', ...json(null, { current_password, email }) });
 }
 
 export function apiUpdateMyLinks(
-  playerToken: string,
   links: { twitch_url?: string | null; youtube_url?: string | null; kick_url?: string | null; tiktok_url?: string | null },
 ): Promise<{ id: number; twitch_url: string | null; youtube_url: string | null; kick_url: string | null; tiktok_url: string | null }> {
-  return request('/account/me/links', {
-    method: 'PATCH',
-    ...json(null, links),
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${playerToken}` },
-  });
+  return request('/account/me/links', { method: 'PATCH', ...json(null, links) });
 }
 
 // ── Jornal do Apocalipse ─────────────────────────────
