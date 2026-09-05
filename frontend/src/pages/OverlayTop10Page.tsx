@@ -74,10 +74,10 @@ export function OverlayTop10Page() {
         ) : (
           <div className="top10-list">
             {rows.map(({ entry, rank, changed }) => (
-              <div key={entry.id} className={`top10-row${changed ? ' ovtop-row-changed' : ''}`}>
+              <div key={entry.id} className="top10-row">
                 <span className="top10-pos">{MEDALS[rank] ?? `#${rank}`}</span>
                 <span className="top10-name">{entry.character_name || entry.name}</span>
-                <span className="top10-score">{formatNumber(entry.score)}</span>
+                <span className={`top10-score${changed ? ' stat-flash' : ''}`}>{formatNumber(entry.score)}</span>
               </div>
             ))}
           </div>

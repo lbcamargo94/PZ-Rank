@@ -1857,11 +1857,7 @@ body.overlay-page-active::before { display: none; }
 
 .ovtop-wrap .rank-top10-preview { width: 260px; }
 
-@keyframes ovtop-pulse {
-  0%   { background: rgba(200, 168, 75, 0.35); }
-  100% { background: transparent; }
-}
-.ovtop-row-changed { animation: ovtop-pulse 2.2s ease-out; }
+
 /* ── Task 4: fonte mínima 16px no rank ──────────────────── */
 .rank-table       { font-size: 16px; }
 .rank-table td    { font-size: 16px; }
