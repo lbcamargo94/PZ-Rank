@@ -260,7 +260,7 @@
       "steps": [
         { "title": "Sign up on the site", "desc": "Create your account at pzrank.com.br. Your registration must be approved by a moderator before it appears in the rank.", "action_label": "Create account" },
         { "title": "Install the Official Mod", "desc": "Subscribe to the \"PZCommunityRank\" mod on the Steam Workshop and enable it in Project Zomboid. The mod validates your sandbox and records your stats.", "action_label": "View on Steam Workshop" },
-        { "title": "Install PZ Rank Companion", "desc": "Companion monitors your saves folder and syncs automatically with the rank. Required for your runs to appear on the site.", "action_label": "Download Companion {{tag}}" },
+        { "title": "Install PZ Rank Companion", "desc": "Companion monitors your saves folder and syncs automatically with the rank. Required for your runs to appear on the site.", "action_label": "View download links" },
         { "title": "Use the Official Preset", "desc": "Start a new game with the \"Brasileirão PZ\" preset enabled by the mod. The sandbox must be 100% identical to the official settings — any divergence causes automatic disqualification.", "action_label": "View settings" },
         { "title": "Sync Automatically", "desc": "Companion detects when you save the game and syncs the data in the background. Each sync updates days survived, kills, skills and objectives.", "action_label": null },
         { "title": "Track Your Rank", "desc": "Your position is calculated automatically by score. Visit your player page to see the full history of runs and achievements.", "action_label": "View rank" }

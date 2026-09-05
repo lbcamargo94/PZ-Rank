@@ -8,7 +8,7 @@ import {
   SCORE_SPIFFO_HQ, SCORE_SPIFFO_RELIC, MAX_POSSIBLE_SCORE,
 } from '../lib/objectives';
 import regrasBg from '../../assets/background/tela-de-regras.webp';
-import { COMPANION_TAG, COMPANION_LATEST_URL, STEAM_WORKSHOP_URL } from '../lib/companion';
+import { COMPANION_TAG, STEAM_WORKSHOP_URL } from '../lib/companion';
 import { formatNumber } from '../lib/format';
 import './regras.css';
 
@@ -26,7 +26,7 @@ interface StepText { title: string; desc: string; action_label: string | null }
 const PARTICIPATE_STEPS_META = [
   { n: '01', icon: 'ti-user-circle', action: { to: '/login' } },
   { n: '02', icon: 'ti-puzzle',      action: { to: STEAM_WORKSHOP_URL, external: true } },
-  { n: '03', icon: 'ti-download',    action: { to: COMPANION_LATEST_URL, external: true } },
+  { n: '03', icon: 'ti-download',    action: { to: '/links' } },
   { n: '04', icon: 'ti-settings',    action: { to: '#sandbox', scroll: true } },
   { n: '05', icon: 'ti-refresh',     action: null },
   { n: '06', icon: 'ti-trophy',      action: { to: '/rank' } },
