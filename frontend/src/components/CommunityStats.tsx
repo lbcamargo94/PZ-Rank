@@ -1,8 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { apiGetGlobalStats, apiGetActiveSeason, apiGetSteamPlayers, type GlobalStats } from '../lib/api';
 import { formatCompactNumber } from '../lib/format';
+import { useSse } from '../hooks/useSse';
 import type { Season } from '../types';
+
+const STATS_REFRESH_MS  = 60_000;       // fallback de polling
+const STEAM_REFRESH_MS  = 5 * 60_000;  // Steam API é externa, atualiza a cada 5 min
 
 function daysSince(dateStr: string): number {
   return Math.floor((Date.now() - new Date(dateStr).getTime()) / 86_400_000);
@@ -14,15 +18,30 @@ export function CommunityStats() {
   const [season,       setSeason]       = useState<Season | null>(null);
   const [steamPlayers, setSteamPlayers] = useState<number | null>(null);
 
-  useEffect(() => {
-    Promise.all([apiGetGlobalStats(), apiGetActiveSeason()])
-      .then(([g, s]) => { setStats(g); setSeason(s); })
-      .catch(() => {});
-
-    apiGetSteamPlayers()
-      .then(r => setSteamPlayers(r.player_count))
-      .catch(() => {});
+  const refreshStats = useCallback(() => {
+    apiGetGlobalStats().then(setStats).catch(() => {});
   }, []);
+
+  const refreshSteam = useCallback(() => {
+    apiGetSteamPlayers().then(r => setSteamPlayers(r.player_count)).catch(() => {});
+  }, []);
+
+  // Carga inicial — season é estático, não precisa de refresh
+  useEffect(() => {
+    refreshStats();
+    refreshSteam();
+    apiGetActiveSeason().then(setSeason).catch(() => {});
+
+    const statsInterval = setInterval(refreshStats, STATS_REFRESH_MS);
+    const steamInterval = setInterval(refreshSteam, STEAM_REFRESH_MS);
+    return () => { clearInterval(statsInterval); clearInterval(steamInterval); };
+  }, [refreshStats, refreshSteam]);
+
+  // Atualiza stats imediatamente quando qualquer sync ou morte ocorrer
+  useSse({
+    'rank-updated': refreshStats,
+    'player-died':  refreshStats,
+  });
 
   if (!stats && !season) return null;
 
