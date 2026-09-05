@@ -1,9 +1,17 @@
-# PZ Rank
+<p align="center">
+  <img src="frontend/assets/logo/pzrank-logo.webp" alt="PZ Rank" width="220" />
+</p>
 
-Site oficial de ranking para o desafio de sobrevivência da comunidade **Brasileirão PZ**.  
-Os jogadores enviam seus dados via mod Lua e o sistema processa, pontua e exibe em tempo real.
+<h1 align="center">PZ Rank</h1>
 
-🌐 **[pzrank.com.br](https://www.pzrank.com.br)**
+<p align="center">
+  Site oficial de ranking para o desafio de sobrevivência da comunidade <strong>Brasileirão PZ</strong>.<br/>
+  Os jogadores enviam seus dados via mod Lua e o sistema processa, pontua e exibe em tempo real.
+</p>
+
+<p align="center">
+  🌐 <strong><a href="https://www.pzrank.com.br">pzrank.com.br</a></strong>
+</p>
 
 ---
 
