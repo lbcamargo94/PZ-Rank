@@ -83,11 +83,7 @@ export function apiModResetPassword(token: string, password: string): Promise<{ 
   return request('/auth/mod/reset-password', { method: 'POST', ...json(null, { token, password }) });
 }
 
-export async function apiLogin(email: string, password: string): Promise<ModSession> {
-  const data = await request<LoginResponse>('/auth/login', {
-    method: 'POST',
-    ...json(null, { email, password }),
-  });
+function parseModSession(data: LoginResponse): ModSession {
   if (!data.role) throw new Error('Usuário não tem permissão de moderador.');
   return {
     token:  data.session.access_token,
@@ -96,6 +92,19 @@ export async function apiLogin(email: string, password: string): Promise<ModSess
     email:  data.user.email,
     modId:  data.user.id,
   };
+}
+
+export async function apiLogin(email: string, password: string, rememberMe = false): Promise<ModSession> {
+  const data = await request<LoginResponse>('/auth/login', {
+    method: 'POST',
+    ...json(null, { email, password, rememberMe }),
+  });
+  return parseModSession(data);
+}
+
+export async function apiModMe(): Promise<ModSession> {
+  const data = await request<LoginResponse>('/auth/mod/me');
+  return parseModSession(data);
 }
 
 export function apiLogout(token: string): Promise<void> {

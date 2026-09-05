@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { setOnUnauthorized } from './lib/api';
+import { setOnUnauthorized, apiModMe } from './lib/api';
 import type { ModSession } from './types';
 import { useToast } from './hooks/useToast';
 import { Toast } from './components/Toast';
@@ -101,21 +101,13 @@ export default function App() {
   // Overlays são consumidos como browser source no OBS — sem chrome do site
   // (footer, botão de doação) por cima, senão aparecem sobrepostos na gravação.
   const isOverlay = location.pathname.startsWith('/overlay/');
-  const [modSession, setModSession] = useState<ModSession | null>(() => {
-    try {
-      const raw = sessionStorage.getItem('mod_session');
-      return raw ? (JSON.parse(raw) as ModSession) : null;
-    } catch { return null; }
-  });
+  const [modSession, setModSession] = useState<ModSession | null>(null);
 
   useEffect(() => {
     setOnUnauthorized(() => setModSession(null));
+    // Tenta restaurar sessão de moderador via cookie HttpOnly (persiste entre abas e recargas).
+    apiModMe().then(setModSession).catch(() => {});
   }, []);
-
-  useEffect(() => {
-    if (modSession) sessionStorage.setItem('mod_session', JSON.stringify(modSession));
-    else sessionStorage.removeItem('mod_session');
-  }, [modSession]);
 
   return (
     <>

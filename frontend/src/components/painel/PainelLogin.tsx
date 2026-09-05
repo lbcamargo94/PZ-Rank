@@ -11,17 +11,18 @@ interface Props {
 type View = 'login' | 'forgot' | 'forgot-sent';
 
 export function PainelLogin({ onSuccess, onBack, showToast }: Props) {
-  const [view,     setView]     = useState<View>('login');
-  const [email,    setEmail]    = useState('');
-  const [password, setPassword] = useState('');
-  const [fpEmail,  setFpEmail]  = useState('');
-  const [loading,  setLoading]  = useState(false);
+  const [view,       setView]       = useState<View>('login');
+  const [email,      setEmail]      = useState('');
+  const [password,   setPassword]   = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
+  const [fpEmail,    setFpEmail]    = useState('');
+  const [loading,    setLoading]    = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     try {
-      const session = await apiLogin(email, password);
+      const session = await apiLogin(email, password, rememberMe);
       onSuccess(session);
     } catch (err) {
       showToast((err as Error).message, 'error');
@@ -105,6 +106,16 @@ export function PainelLogin({ onSuccess, onBack, showToast }: Props) {
                 required
               />
             </div>
+
+            <label className="painel-remember-label">
+              <input
+                type="checkbox"
+                className="painel-remember-check"
+                checked={rememberMe}
+                onChange={e => setRememberMe(e.target.checked)}
+              />
+              Manter-me conectado por 30 dias
+            </label>
 
             <button
               className="btn-primary btn-block painel-login-btn"

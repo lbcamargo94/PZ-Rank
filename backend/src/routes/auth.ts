@@ -12,9 +12,23 @@ import type { ModeratorRole } from '../types';
 
 const router = Router();
 
+const MOD_COOKIE_NAME  = 'mod_session';
+const MOD_COOKIE_30D_MS = 30 * 24 * 60 * 60 * 1000;
+const IS_PROD          = process.env.NODE_ENV !== 'development';
+
+function modCookieOpts(maxAgeMs?: number): import('express').CookieOptions {
+  return {
+    httpOnly: true,
+    secure:   IS_PROD,
+    sameSite: 'lax',
+    path:     '/',
+    ...(maxAgeMs !== undefined ? { maxAge: maxAgeMs } : {}),
+  };
+}
+
 // Login: verifica credenciais na tabela moderators e retorna JWT próprio
 router.post('/login', async (req: Request, res: Response): Promise<void> => {
-  const { email, password } = req.body as { email?: string; password?: string };
+  const { email, password, rememberMe } = req.body as { email?: string; password?: string; rememberMe?: boolean };
   if (!email || !password) {
     res.status(400).json({ error: 'Email e senha são obrigatórios.' });
     return;
@@ -48,12 +62,17 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    const persist   = rememberMe === true;
+    const expiresIn = persist ? '30d' : '8h';
+    const maxAge    = persist ? MOD_COOKIE_30D_MS : undefined;
+
     const token = jwt.sign(
       { sub: modRow.id, role: modRow.role },
       config.jwtSecret,
-      { expiresIn: '8h' }
+      { expiresIn },
     );
 
+    res.cookie(MOD_COOKIE_NAME, token, modCookieOpts(maxAge));
     res.json({
       session: { access_token: token },
       user:    { id: modRow.id, login: modRow.login, email: modRow.email },
@@ -65,7 +84,48 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+// GET /auth/mod/me — restaura sessão de moderador a partir do cookie HttpOnly
+router.get('/mod/me', async (req: Request, res: Response): Promise<void> => {
+  const token = (req.cookies as Record<string, string> | undefined)?.[MOD_COOKIE_NAME];
+  if (!token) {
+    res.status(401).json({ error: 'Não autenticado.' });
+    return;
+  }
+
+  let payload: { sub: string; role: ModeratorRole };
+  try {
+    payload = jwt.verify(token, config.jwtSecret) as { sub: string; role: ModeratorRole };
+  } catch {
+    res.status(401).json({ error: 'Sessão expirada. Faça login novamente.' });
+    return;
+  }
+
+  try {
+    const { data: mod } = await supabase
+      .from('moderators')
+      .select('id, login, email, role')
+      .eq('id', payload.sub)
+      .maybeSingle();
+
+    if (!mod) {
+      res.status(401).json({ error: 'Conta não encontrada.' });
+      return;
+    }
+
+    const modRow = mod as { id: string; login: string; email: string; role: ModeratorRole };
+    res.json({
+      session: { access_token: token },
+      user:    { id: modRow.id, login: modRow.login, email: modRow.email },
+      role:    modRow.role,
+    });
+  } catch (err) {
+    console.error('[GET /auth/mod/me] Erro inesperado:', err);
+    res.status(500).json({ error: 'Erro interno no servidor.' });
+  }
+});
+
 router.post('/logout', (_req: Request, res: Response): void => {
+  res.clearCookie(MOD_COOKIE_NAME, modCookieOpts());
   res.status(204).send();
 });
 
