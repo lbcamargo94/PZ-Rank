@@ -273,7 +273,7 @@ function TabConta({ profile, onProfileChange }: {
           <FormField label="Senha atual" type="password" value={curPassEmail}
             onChange={setCurPassEmail} autoComplete="current-password" />
           <FormField label="Novo email" type="email" value={newEmail}
-            onChange={setNewEmail} placeholder="novo@email.com" autoComplete="email" />
+            onChange={setNewEmail} placeholder="novo@email.com" autoComplete="off" />
           <button type="submit" className="btn-primary" disabled={emailLoading || !curPassEmail || !newEmail}>
             {emailLoading ? 'Enviando código…' : 'Trocar email'}
           </button>
