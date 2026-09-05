@@ -227,29 +227,27 @@ function TabConta({ profile, onProfileChange }: {
 
   return (
     <div className="account-tab-body">
-      {(profile.is_featured_streamer || profile.is_moderator) && (
-        <section className="account-section">
-          <h2 className="account-section-title">Overlay para OBS</h2>
-          <p className="account-section-info">
-            Adicione esse link como Fonte de Navegador (Browser Source) no OBS
-            pra mostrar sua posição no rank, pontos, personagem e profissão
-            ao vivo — atualiza sozinho conforme o Companion sincroniza.
-          </p>
-          <div className="account-overlay-link-row">
-            <input
-              className="account-input"
-              type="text"
-              value={overlayUrl}
-              readOnly
-              onFocus={e => e.target.select()}
-            />
-            <button type="button" className="btn-secondary" onClick={handleCopyOverlayLink}>
-              <i className={`ti ${overlayCopied ? 'ti-check' : 'ti-copy'}`} />
-              {overlayCopied ? 'Copiado!' : 'Copiar'}
-            </button>
-          </div>
-        </section>
-      )}
+      <section className="account-section">
+        <h2 className="account-section-title">Overlay para OBS</h2>
+        <p className="account-section-info">
+          Adicione esse link como Fonte de Navegador (Browser Source) no OBS
+          pra mostrar sua posição no rank, pontos, personagem e profissão
+          ao vivo — atualiza sozinho conforme o Companion sincroniza.
+        </p>
+        <div className="account-overlay-link-row">
+          <input
+            className="account-input"
+            type="text"
+            value={overlayUrl}
+            readOnly
+            onFocus={e => e.target.select()}
+          />
+          <button type="button" className="btn-secondary" onClick={handleCopyOverlayLink}>
+            <i className={`ti ${overlayCopied ? 'ti-check' : 'ti-copy'}`} />
+            {overlayCopied ? 'Copiado!' : 'Copiar'}
+          </button>
+        </div>
+      </section>
 
       <div className="account-divider" />
 

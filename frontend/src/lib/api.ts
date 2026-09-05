@@ -179,7 +179,7 @@ export function apiGetPlayerProfile(id: number): Promise<PlayerProfile> {
   return request(`/players/${id}`);
 }
 
-// Restrito a streamers oficiais no backend — jogadores comuns recebem 403 (ApiError.status === 403).
+// GET /players/:id/overlay — disponível para qualquer jogador cadastrado (sem restrição de streamer).
 export function apiGetPlayerOverlay(id: number): Promise<PlayerProfile> {
   return request(`/players/${id}/overlay`);
 }
