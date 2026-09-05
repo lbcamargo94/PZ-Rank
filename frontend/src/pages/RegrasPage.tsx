@@ -34,7 +34,7 @@ const PARTICIPATE_STEPS_META = [
 
 const FUNDAMENTAL_RULES_META = [
   { n: '01', icon: 'ti-video' },
-  { n: '02', icon: 'ti-brand-youtube' },
+  { n: '02', icon: 'ti-broadcast' },
   { n: '03', icon: 'ti-settings' },
   { n: '04', icon: 'ti-puzzle' },
   { n: '05', icon: 'ti-ban' },
