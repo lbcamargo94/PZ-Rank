@@ -183,7 +183,7 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
   res.json(payload);
 });
 
-// GET /players/:id/overlay — fonte de dados do overlay de OBS: restrito a streamers destaque e moderadores.
+// GET /players/:id/overlay — fonte de dados do overlay de OBS: disponível para qualquer jogador cadastrado.
 router.get('/:id/overlay', async (req: Request, res: Response): Promise<void> => {
   const id = parseInt(String(req.params.id), 10);
   if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.', error_code: 'INVALID_ID' }); return; }
@@ -191,12 +191,6 @@ router.get('/:id/overlay', async (req: Request, res: Response): Promise<void> =>
   const payload = await buildPlayerProfilePayload(id);
   if (!payload) {
     res.status(404).json({ error: 'Jogador não encontrado.', error_code: 'PLAYER_NOT_FOUND' });
-    return;
-  }
-
-  const { is_featured_streamer, is_moderator } = payload.player as { is_featured_streamer?: boolean; is_moderator?: boolean };
-  if (!is_featured_streamer && !is_moderator) {
-    res.status(403).json({ error: 'Overlay disponível apenas para streamers destaque e moderadores.', error_code: 'OVERLAY_NOT_ALLOWED' });
     return;
   }
 

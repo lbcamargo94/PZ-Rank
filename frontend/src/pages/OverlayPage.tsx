@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import QRCode from 'qrcode';
-import { apiGetPlayerOverlay, ApiError } from '../lib/api';
+import { apiGetPlayerOverlay } from '../lib/api';
 import { useSse } from '../hooks/useSse';
 import { parseSkillMap, TOTAL_SKILLS, MAX_SKILL_LEVEL } from '../lib/skills';
 import { SPIFFOS_RESTAURANTS, MAX_POSSIBLE_SCORE } from '../lib/objectives';
@@ -25,7 +25,7 @@ export function OverlayPage() {
   const [profile,    setProfile]    = useState<PlayerProfile | null>(null);
   const [bestEntry,  setBestEntry]  = useState<Entry | null>(null);
   const [rank,       setRank]       = useState<number | null>(null);
-  const [error,      setError]      = useState<'not_found' | 'not_allowed' | 'generic' | false>(false);
+  const [error,      setError]      = useState(false);
   const [deathAlert, setDeathAlert] = useState<Entry | null>(null);
   const [flipped,    setFlipped]    = useState(false);
   const [qrDataUrl,  setQrDataUrl]  = useState<string | null>(null);
@@ -68,16 +68,9 @@ export function OverlayPage() {
   const load = useCallback(async function load() {
     if (!id) return;
     const numId = parseInt(id, 10);
-    if (isNaN(numId)) { setError('generic'); return; }
+    if (isNaN(numId)) { setError(true); return; }
     try {
-      const prof = await apiGetPlayerOverlay(numId).catch((err: unknown) => {
-        if (err instanceof ApiError) {
-          if (err.status === 403) { setError('not_allowed'); return null; }
-          if (err.status === 404) { setError('not_found');   return null; }
-        }
-        throw err;
-      });
-      if (!prof) return;
+      const prof = await apiGetPlayerOverlay(numId);
       setProfile(prof);
       const sorted = [...prof.entries].sort((a, b) => b.score - a.score);
       const best   = sorted[0] ?? null;
@@ -98,7 +91,7 @@ export function OverlayPage() {
       const bestAlive = sorted.find(e => e.sandbox_ok !== false && e.is_alive) ?? null;
       setRank(bestAlive?.rank ?? null);
     } catch {
-      setError('generic');
+      setError(true);
     }
   }, [id]);
 
@@ -123,13 +116,10 @@ export function OverlayPage() {
   });
 
   if (error || !profile || !bestEntry) {
-    const msg = error === 'not_allowed'
-      ? 'OVERLAY NÃO DISPONÍVEL'
-      : 'DADOS INDISPONÍVEIS';
     return (
       <div className="overlay-page-wrap">
         <div className="overlay-mini-card overlay-error">
-          <span className="overlay-status-badge overlay-badge-dead">{msg}</span>
+          <span className="overlay-status-badge overlay-badge-dead">DADOS INDISPONÍVEIS</span>
         </div>
       </div>
     );
