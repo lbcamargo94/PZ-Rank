@@ -42,7 +42,7 @@ const sensitiveActionLimiter = rateLimit({
 
 const syncLimiter = rateLimit({
   windowMs:        60 * 1000, // 1 minuto
-  max:             30,
+  max:             300, // burst legítimo: fila de ~31 itens × 3 req cada = 93; 300 cobre folga
   standardHeaders: true,
   legacyHeaders:   false,
   message:         { error: 'Muitas sincronizações. Aguarde um momento.' },
