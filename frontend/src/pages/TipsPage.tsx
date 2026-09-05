@@ -1,13 +1,14 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import './tips.css';
 
 export function TipsPage() {
+  const navigate = useNavigate();
   return (
     <div className="tips-wip-page">
-      <Link to="/" className="tips-wip-back">
+      <button type="button" className="tips-wip-back" onClick={() => navigate(-1)}>
         <i className="ti ti-arrow-left" />
-        <span>Início</span>
-      </Link>
+        <span>Voltar</span>
+      </button>
 
       <div className="tips-wip-content">
         <div className="tips-wip-icon-wrap">

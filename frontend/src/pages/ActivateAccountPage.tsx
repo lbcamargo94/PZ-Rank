@@ -49,8 +49,8 @@ export function ActivateAccountPage() {
             <p className="reg-sub" style={{ marginBottom: 24 }}>
               O link de ativação é inválido ou expirou.
             </p>
-            <button className="btn-primary reg-submit" onClick={() => navigate('/')}>
-              <i className="ti ti-arrow-left" /> Voltar ao ranking
+            <button className="btn-primary reg-submit" onClick={() => navigate(-1)}>
+              <i className="ti ti-arrow-left" /> Voltar
             </button>
           </div>
         </div>
@@ -69,8 +69,8 @@ export function ActivateAccountPage() {
             <p className="reg-sub" style={{ marginBottom: 24 }}>
               Agora faça login no Companion com seu email e senha para sincronizar suas runs.
             </p>
-            <button className="btn-primary reg-submit reg-submit--ready" onClick={() => navigate('/')}>
-              <i className="ti ti-arrow-left" /> Voltar ao ranking
+            <button className="btn-primary reg-submit reg-submit--ready" onClick={() => navigate(-1)}>
+              <i className="ti ti-arrow-left" /> Voltar
             </button>
           </div>
         </div>

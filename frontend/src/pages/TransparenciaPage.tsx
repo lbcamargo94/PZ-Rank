@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { apiGetCurrentFinances } from '../lib/api';
 import type { FinanceEntry, FinanceCategory } from '../types';
 
@@ -22,6 +22,7 @@ function sum(entries: FinanceEntry[]): number {
 }
 
 export function TransparenciaPage() {
+  const navigate = useNavigate();
   const [entries,  setEntries]  = useState<FinanceEntry[]>([]);
   const [loading,  setLoading]  = useState(true);
   const [error,    setError]    = useState<string | null>(null);
@@ -44,9 +45,9 @@ export function TransparenciaPage() {
   return (
     <div className="transp-page">
       <header className="transp-header">
-        <Link to="/" className="transp-back">
-          <i className="ti ti-arrow-left" /> Voltar ao Ranking
-        </Link>
+        <button type="button" className="transp-back" onClick={() => navigate(-1)}>
+          <i className="ti ti-arrow-left" /> Voltar
+        </button>
         <h1 className="transp-title">Transparência Financeira</h1>
         <p className="transp-subtitle">
           Temporada atual · Valores declarados manualmente pelos organizadores

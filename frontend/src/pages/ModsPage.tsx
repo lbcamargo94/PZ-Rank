@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { apiGetMods } from '../lib/api';
 import type { Mod } from '../types';
 import { Pagination } from '../components/Pagination';
@@ -11,6 +11,7 @@ const PAGE_SIZE = 15;
 type ModTab = 'allowed' | 'blocked';
 
 export function ModsPage() {
+  const navigate = useNavigate();
   const [allowedMods, setAllowedMods] = useState<Mod[]>([]);
   const [blockedMods, setBlockedMods] = useState<Mod[]>([]);
   const [loading,      setLoading]    = useState(true);
@@ -56,9 +57,9 @@ export function ModsPage() {
     <div className="mods-page claim-page-wrap" style={{ backgroundImage: `url(${modsBg})` }}>
       <div className="mods-header">
         <div className="mods-header-inner container">
-          <Link to="/" className="wiki-back">
+          <button type="button" className="wiki-back" onClick={() => navigate(-1)}>
             <i className="ti ti-arrow-left" /> Voltar
-          </Link>
+          </button>
           <div>
             <h1 className="mods-title"><i className="ti ti-puzzle" /> Mods do Campeonato</h1>
             <p className="mods-subtitle">

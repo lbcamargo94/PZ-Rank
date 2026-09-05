@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { apiGetLegends, type Legends, type LegendEntry, type HofSeason } from '../lib/api';
 
 function fmt(n: number): string {
@@ -187,6 +187,7 @@ const SEASON_CARDS: CardDef[] = [
 ];
 
 export function LegendsPage() {
+  const navigate = useNavigate();
   const [legends, setLegends] = useState<Legends | null>(null);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState<string | null>(null);
@@ -204,9 +205,9 @@ export function LegendsPage() {
     <div className="legends-page">
       <div className="container">
         <div className="legends-header">
-          <Link to="/" className="legends-back">
-            <i className="ti ti-arrow-left" /> Voltar ao Ranking
-          </Link>
+          <button type="button" className="legends-back" onClick={() => navigate(-1)}>
+            <i className="ti ti-arrow-left" /> Voltar
+          </button>
           <h1 className="legends-title">
             <i className="ti ti-award" /> Lendas do Brasileirão
           </h1>

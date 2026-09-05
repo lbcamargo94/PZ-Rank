@@ -139,7 +139,7 @@ export default function App() {
             <PainelPage
               session={modSession}
               onSession={setModSession}
-              onBack={() => navigate('/')}
+              onBack={() => navigate(-1)}
             />
           } />
           <Route path="/painel/convite/:token"     element={<ModeratorRegisterPage />} />

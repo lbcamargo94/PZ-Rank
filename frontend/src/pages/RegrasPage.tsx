@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   SPIFFOS_RESTAURANTS, BASE_ITEMS,
@@ -66,6 +66,7 @@ interface SandboxGroupText { title: string; rows: SandboxRow[] }
 interface RuleText { title: string; desc: string }
 
 export function RegrasPage() {
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const [active, setActive] = useState<Section>('participar');
 
@@ -83,10 +84,10 @@ export function RegrasPage() {
     <div className="rg-page" style={{ '--rg-bg-img': `url(${regrasBg})` } as React.CSSProperties}>
       <header className="rg-header">
         <div className="rg-header-inner">
-          <Link to="/" className="rg-back-link">
+          <button type="button" className="rg-back-link" onClick={() => navigate(-1)}>
             <i className="ti ti-arrow-left" />
             <span>{t('regras.back')}</span>
-          </Link>
+          </button>
           <div className="rg-header-title-block">
             <p className="rg-eyebrow">{t('regras.eyebrow')}</p>
             <h1 className="rg-title">{t('regras.title')}</h1>

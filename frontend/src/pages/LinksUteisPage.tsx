@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import linksBg from '../../assets/background/tela-de-links-uteis.webp';
 import {
   COMPANION_TAG as COMPANION_VER,
@@ -12,13 +12,14 @@ import {
 const DISCORD_URL = 'https://discord.gg/ebhts347WJ';
 
 export function LinksUteisPage() {
+  const navigate = useNavigate();
   return (
     <main className="lu-page claim-page-wrap" style={{ backgroundImage: `url(${linksBg})` }}>
       <div className="container lu-container">
         <div className="lu-header">
-          <Link to="/" className="back-link">
+          <button type="button" className="back-link" onClick={() => navigate(-1)}>
             <i className="ti ti-arrow-left" aria-hidden="true" /> Voltar
-          </Link>
+          </button>
           <h1 className="lu-title">Links Úteis</h1>
           <p className="lu-sub">Recursos essenciais do Campeonato Brasileiro PZ</p>
         </div>
