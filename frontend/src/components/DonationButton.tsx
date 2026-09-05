@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, CSSProperties } from 'react';
 import { useLocation } from 'react-router-dom';
 import { DonationModal } from './DonationModal';
 import { burstConfetti } from '../lib/confetti';
-import pinImg from '../../assets/donation-pin.png';
+import pinImg from '../../assets/donation-pin.webp';
 
 export function DonationButton() {
   const { pathname } = useLocation();
