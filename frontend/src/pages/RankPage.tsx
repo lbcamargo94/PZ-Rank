@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { apiGetEntries, apiGetAllEntries, apiGetLiveStatus } from '../lib/api';
@@ -103,14 +103,22 @@ export function RankPage() {
 
   useEffect(() => { fetchEntries(); }, [fetchEntries]);
 
+  // Debounce: fila de syncs pode disparar N rank-updated em sequência.
+  // O flash de atualização (updatedIds) é imediato; o fetch dos dados é coalescido.
+  const fetchDebounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fetchEntriesDebounced = useCallback(() => {
+    if (fetchDebounceTimer.current) clearTimeout(fetchDebounceTimer.current);
+    fetchDebounceTimer.current = setTimeout(fetchEntries, 300);
+  }, [fetchEntries]);
+
   const handleRankUpdated = useCallback((data: unknown) => {
     const id = (data as { playerId?: number })?.playerId;
     if (id) {
       setUpdatedIds(prev => new Set([...prev, id]));
       setTimeout(() => setUpdatedIds(prev => { const n = new Set(prev); n.delete(id); return n; }), 2500);
     }
-    fetchEntries();
-  }, [fetchEntries]);
+    fetchEntriesDebounced();
+  }, [fetchEntriesDebounced]);
 
   // Atualiza rank e live status em tempo real via SSE.
   useSse({
