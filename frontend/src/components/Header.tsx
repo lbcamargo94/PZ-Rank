@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import pzrankLogo from '../../assets/logo/pzrank-logo.png';
+import pzrankLogo from '../../assets/logo/pzrank-logo.webp';
 import { COMPANION_TAG } from '../lib/companion';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { ThanksCelebration } from './ThanksCelebration';
