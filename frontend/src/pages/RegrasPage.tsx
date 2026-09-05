@@ -27,7 +27,7 @@ const PARTICIPATE_STEPS_META = [
   { n: '01', icon: 'ti-user-circle', action: { to: '/login' } },
   { n: '02', icon: 'ti-puzzle',      action: { to: STEAM_WORKSHOP_URL, external: true } },
   { n: '03', icon: 'ti-download',    action: { to: '/links' } },
-  { n: '04', icon: 'ti-settings',    action: { to: '#sandbox', scroll: true } },
+  { n: '04', icon: 'ti-settings',    action: { tab: 'sandbox' } },
   { n: '05', icon: 'ti-refresh',     action: null },
   { n: '06', icon: 'ti-trophy',      action: { to: '/rank' } },
 ] as const;
@@ -144,7 +144,11 @@ export function RegrasPage() {
                         </div>
                         <p className="rg-step-desc">{text.desc}</p>
                         {step.action && actionLabel && (
-                          'external' in step.action && step.action.external ? (
+                          'tab' in step.action ? (
+                            <button className="rg-step-action" onClick={() => setActive((step.action as { tab: Section }).tab)}>
+                              {actionLabel} <i className="ti ti-arrow-right" />
+                            </button>
+                          ) : 'external' in step.action && step.action.external ? (
                             <a href={step.action.to} className="rg-step-action" target="_blank" rel="noopener noreferrer">
                               {actionLabel} <i className="ti ti-external-link" />
                             </a>
