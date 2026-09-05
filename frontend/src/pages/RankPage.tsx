@@ -167,6 +167,18 @@ export function RankPage() {
     [aliveEntries, deadEntries, discEntries, sortKey],
   );
 
+  // Mapa de rank real (por score) para cada entry viva — usado na busca global
+  const rankMap = useMemo(() => {
+    const sorted = [...aliveEntries].sort((a, b) => b.score - a.score);
+    const map = new Map<number, number>();
+    let counter = 0;
+    for (const e of sorted) {
+      if (!e.is_test_mod) counter++;
+      if (e.id != null) map.set(e.id, e.is_test_mod ? 0 : counter);
+    }
+    return map;
+  }, [aliveEntries]);
+
   const isSearching = search.trim().length > 0;
 
   const filteredEntries = useMemo(() => {
@@ -245,6 +257,7 @@ export function RankPage() {
           isSearching={isSearching}
           liveMap={liveMap}
           updatedIds={updatedIds}
+          rankMap={rankMap}
         />
       </main>
 

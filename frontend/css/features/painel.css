@@ -715,13 +715,13 @@
 
 /* ── Animação de atualização de pontuação/kills ────────── */
 @keyframes stat-flash {
-  0%   { background: var(--green); color: #fff; border-radius: 4px; padding: 1px 5px; }
-  60%  { background: color-mix(in srgb, var(--green) 40%, transparent); color: var(--green); border-radius: 4px; padding: 1px 5px; }
-  100% { background: transparent; color: inherit; padding: 1px 5px; }
+  0%   { color: #fff; text-shadow: 0 0 18px var(--green), 0 0 6px var(--green); transform: scale(1.22); }
+  30%  { color: var(--green); text-shadow: 0 0 10px color-mix(in srgb, var(--green) 65%, transparent); transform: scale(1.08); }
+  100% { color: inherit; text-shadow: none; transform: scale(1); }
 }
 @media (prefers-reduced-motion: no-preference) {
   .stat-flash {
-    animation: stat-flash 2.2s ease-out forwards;
+    animation: stat-flash 1.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     display: inline-block;
   }
 }

@@ -26,6 +26,7 @@ interface RankTableProps {
   isSearching?: boolean;
   liveMap?:     Map<number, LiveStatus[]>;
   updatedIds?:  Set<number>;
+  rankMap?:     Map<number, number>;
 }
 
 const EMPTY_ICONS: Record<RankTab, string> = {
@@ -166,7 +167,7 @@ function buildPageList(current: number, total: number): (number | '…')[] {
   return pages;
 }
 
-export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, iconOnly, isSearching, liveMap, updatedIds }: RankTableProps) {
+export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, iconOnly, isSearching, liveMap, updatedIds, rankMap }: RankTableProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const hideStatus = false;
@@ -191,8 +192,12 @@ export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, ic
     ? entries
     : entries.slice((safePage - 1) * numPageSize, safePage * numPageSize);
 
-  // Pré-computa ranks ignorando entradas de Mod. Teste (não consomem posição)
+  // Pré-computa ranks: na busca global usa o rank real (por score) de cada entry;
+  // nas abas normais usa contagem sequencial (entries já estão na ordem correta).
   const displayRanks: number[] = (() => {
+    if (isSearching && rankMap) {
+      return entries.map(e => (e.id != null ? (rankMap.get(e.id) ?? 0) : 0));
+    }
     let counter = 0;
     return entries.map(e => (e.is_test_mod ? 0 : ++counter));
   })();
@@ -271,6 +276,7 @@ export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, ic
                     live={entry.player_id != null ? liveMap?.get(entry.player_id) : undefined}
                     onPlayerClick={handlePlayerClick}
                     isUpdated={entry.player_id != null && updatedIds?.has(entry.player_id)}
+                    showDivision={tab === 'rank' && !isSearching}
                   />
                 ))}
               </tbody>

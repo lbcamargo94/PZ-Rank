@@ -19,6 +19,7 @@ interface RankRowProps {
   live?:          LiveStatus[];
   onPlayerClick?: (id: number) => void;
   isUpdated?:     boolean;
+  showDivision?:  boolean;
 }
 
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
@@ -157,7 +158,7 @@ function MiniBar({ value, max, done }: { value: number; max: number; done?: bool
   );
 }
 
-export function RankRow({ entry, rank, hideStatus, iconOnly, live, onPlayerClick, isUpdated }: RankRowProps) {
+export function RankRow({ entry, rank, hideStatus, iconOnly, live, onPlayerClick, isUpdated, showDivision }: RankRowProps) {
   const { t } = useTranslation();
   const score     = entry.score ?? 0;
   const killsDone = entry.kills >= KILLS_TARGET;
@@ -180,14 +181,16 @@ export function RankRow({ entry, rank, hideStatus, iconOnly, live, onPlayerClick
         {isTestMod
           ? <span className="test-mod-badge" title={t('rank.test_mod_title')}><i className="ti ti-microscope" /> {t('rank.test_mod')}</span>
           : <>
-              {MEDALS[rank] ?? rank}
-              <span
-                className={`division-badge division-badge--${division.division.toLowerCase()}`}
-                data-tip={`${division.label} · ${division.range}`}
-                data-tip-pos="bottom"
-              >
-                {division.label}
-              </span>
+              {MEDALS[rank] ?? (rank > 0 ? rank : '—')}
+              {showDivision && rank > 0 && (
+                <span
+                  className={`division-badge division-badge--${division.division.toLowerCase()}`}
+                  data-tip={`${division.label} · ${division.range}`}
+                  data-tip-pos="bottom"
+                >
+                  {division.label}
+                </span>
+              )}
             </>
         }
       </td>
