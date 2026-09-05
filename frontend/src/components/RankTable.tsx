@@ -27,6 +27,7 @@ interface RankTableProps {
   liveMap?:     Map<number, LiveStatus[]>;
   updatedIds?:  Set<number>;
   rankMap?:     Map<number, number>;
+  resetKey?:    string;
 }
 
 const EMPTY_ICONS: Record<RankTab, string> = {
@@ -167,7 +168,7 @@ function buildPageList(current: number, total: number): (number | '…')[] {
   return pages;
 }
 
-export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, iconOnly, isSearching, liveMap, updatedIds, rankMap }: RankTableProps) {
+export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, iconOnly, isSearching, liveMap, updatedIds, rankMap, resetKey }: RankTableProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const hideStatus = false;
@@ -177,8 +178,9 @@ export function RankTable({ entries, sortKey, loading, onSort, onReload, tab, ic
   const [page,     setPage]     = useState(1);
   const [pageSize, setPageSize] = useState<PageSize>(15);
 
-  // Volta para pág 1 quando os entries mudam (tab ou busca)
-  useEffect(() => { setPage(1); }, [entries, pageSize]);
+  // Reseta para pág 1 apenas em ações do usuário (aba, busca, ordenação, pageSize).
+  // Não depende de `entries` para não resetar durante atualizações automáticas em background.
+  useEffect(() => { setPage(1); }, [resetKey, pageSize]);
 
   const totalPages   = pageSize === 'all' ? 1 : Math.max(1, Math.ceil(entries.length / pageSize));
   // Trava a página dentro do intervalo válido mesmo num frame antes do efeito

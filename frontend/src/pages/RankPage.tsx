@@ -258,6 +258,7 @@ export function RankPage() {
           liveMap={liveMap}
           updatedIds={updatedIds}
           rankMap={rankMap}
+          resetKey={`${activeTab}:${search}:${sortKey}`}
         />
       </main>
 
