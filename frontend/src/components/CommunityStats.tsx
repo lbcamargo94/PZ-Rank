@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { apiGetGlobalStats, apiGetActiveSeason, apiGetSteamPlayers, type GlobalStats } from '../lib/api';
 import { formatCompactNumber } from '../lib/format';
@@ -26,6 +26,14 @@ export function CommunityStats() {
     apiGetSteamPlayers().then(r => setSteamPlayers(r.player_count)).catch(() => {});
   }, []);
 
+  // Debounce: fila de syncs pode disparar dezenas de rank-updated em sequência.
+  // Coalesce todos num único fetch após 300ms de silêncio.
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const refreshStatsDebounced = useCallback(() => {
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(refreshStats, 300);
+  }, [refreshStats]);
+
   // Carga inicial — season é estático, não precisa de refresh
   useEffect(() => {
     refreshStats();
@@ -34,13 +42,17 @@ export function CommunityStats() {
 
     const statsInterval = setInterval(refreshStats, STATS_REFRESH_MS);
     const steamInterval = setInterval(refreshSteam, STEAM_REFRESH_MS);
-    return () => { clearInterval(statsInterval); clearInterval(steamInterval); };
+    return () => {
+      clearInterval(statsInterval);
+      clearInterval(steamInterval);
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
   }, [refreshStats, refreshSteam]);
 
-  // Atualiza stats imediatamente quando qualquer sync ou morte ocorrer
+  // Atualiza stats quando qualquer sync ou morte ocorrer, com debounce para coalescer filas
   useSse({
-    'rank-updated': refreshStats,
-    'player-died':  refreshStats,
+    'rank-updated': refreshStatsDebounced,
+    'player-died':  refreshStatsDebounced,
   });
 
   if (!stats && !season) return null;
