@@ -115,11 +115,11 @@ class PgQueryBuilder {
 
   limit(n: number): this { this.limitN = n; return this; }
 
-  insert(rows: Record<string, unknown>[]):         this { this.mode = 'insert'; this.insertRows = rows; return this; }
+  insert(rows: Record<string, unknown> | Record<string, unknown>[]): this { this.mode = 'insert'; this.insertRows = Array.isArray(rows) ? rows : [rows]; return this; }
   update(data: Record<string, unknown>):           this { this.mode = 'update'; this.updateData = data; return this; }
   delete():                                        this { this.mode = 'delete'; return this; }
-  upsert(rows: Record<string, unknown>[], opts?: { onConflict?: string }): this {
-    this.mode = 'upsert'; this.insertRows = rows; this.upsertConflict = opts?.onConflict ?? null; return this;
+  upsert(rows: Record<string, unknown> | Record<string, unknown>[], opts?: { onConflict?: string }): this {
+    this.mode = 'upsert'; this.insertRows = Array.isArray(rows) ? rows : [rows]; this.upsertConflict = opts?.onConflict ?? null; return this;
   }
 
   or(filter: string): this { this.orFilter = filter; return this; }

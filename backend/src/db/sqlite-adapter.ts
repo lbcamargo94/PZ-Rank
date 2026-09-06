@@ -211,9 +211,9 @@ class SqliteQueryBuilder {
     return this;
   }
 
-  insert(rows: Record<string, unknown>[]): this {
+  insert(rows: Record<string, unknown> | Record<string, unknown>[]): this {
     this.mode       = 'insert';
-    this.insertRows = rows;
+    this.insertRows = Array.isArray(rows) ? rows : [rows];
     return this;
   }
 
