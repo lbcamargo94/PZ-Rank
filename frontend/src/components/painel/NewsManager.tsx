@@ -11,8 +11,13 @@ function fmt(n: number): string {
   return n.toLocaleString('pt-BR');
 }
 
+function toDateOnly(dateStr: string): string {
+  // O backend pode retornar ISO completo ("2026-09-06T00:00:00.000Z") ou só "YYYY-MM-DD"
+  return dateStr.slice(0, 10);
+}
+
 function fmtDate(dateStr: string): string {
-  return new Date(`${dateStr}T12:00:00`).toLocaleDateString('pt-BR', {
+  return new Date(`${toDateOnly(dateStr)}T12:00:00`).toLocaleDateString('pt-BR', {
     weekday: 'short',
     day:     'numeric',
     month:   'short',
@@ -62,7 +67,7 @@ export function NewsManager({ token, showToast }: Props) {
     if (!today) return;
     setSaving(true);
     try {
-      const updated = await apiSetHeadline(token, today.date, draft.trim() || null);
+      const updated = await apiSetHeadline(token, toDateOnly(today.date), draft.trim() || null);
       setToday(updated);
       showToast('Manchete salva com sucesso.', 'success');
     } catch (err) {
@@ -76,7 +81,7 @@ export function NewsManager({ token, showToast }: Props) {
     if (!today) return;
     setSaving(true);
     try {
-      const updated = await apiSetHeadline(token, today.date, null);
+      const updated = await apiSetHeadline(token, toDateOnly(today.date), null);
       setToday(updated);
       setDraft('');
       showToast('Manchete removida — será gerada automaticamente.', 'success');
