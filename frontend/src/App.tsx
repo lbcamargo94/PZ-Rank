@@ -8,7 +8,8 @@ import { Toast } from './components/Toast';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { DonationButton } from './components/DonationButton';
-import { CommunityStats } from './components/CommunityStats';
+import { CommunityStats }      from './components/CommunityStats';
+import { ApocalypseJournal }   from './components/ApocalypseJournal';
 import { NewsInline }     from './components/NewsCard';
 import { AdBanner }      from './components/AdBanner';
 import { StreamersHighlight } from './components/StreamersHighlight';
@@ -79,6 +80,7 @@ function MainView() {
     <>
       <Header onPainel={() => navigate('/painel')} />
       <CommunityStats />
+      <ApocalypseJournal />
       <main>
         <div className="container home-layout">
           <StreamersHighlight />

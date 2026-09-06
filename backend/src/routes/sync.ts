@@ -250,7 +250,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // Inclui deleted_at para detectar entradas soft-deleted (não devem ser atualizadas silenciosamente).
   const { data: existingRaw, error: existingError } = await supabase
     .from(config.tableName)
-    .select('id, objectives, live_url, sandbox_ok, disqualification_reason, kills, time_raw, days, flagged_reason, flagged_at, updated_at, score, record_score, character_name, is_alive, deleted_at, no_live_streak')
+    .select('id, objectives, live_url, sandbox_ok, disqualification_reason, kills, time_raw, days, flagged_reason, flagged_at, updated_at, score, record_score, character_name, is_alive, deleted_at, no_live_streak, skills')
     .eq('player_id', player.id)
     .eq('character_name', decoded.characterName)
     .maybeSingle();
@@ -280,6 +280,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     updated_at: string | null;
     score: number; record_score: number; character_name: string; is_alive: boolean;
     no_live_streak: number;
+    skills: string | null;
   };
   const prev = existing as ExistingRow | null;
 
@@ -595,6 +596,85 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       kills:         decoded.kills,
     });
   }
+
+  // Jornal do Apocalipse: detecta eventos notáveis e persiste em journal_events.
+  void (async () => {
+    try {
+      const KILL_MILESTONES = [5000, 10000, 25000, 50000, 100000, 200000, 300000, 500000, 800000];
+      type JournalInsert = {
+        type: 'player_died' | 'skill_maxed' | 'kill_milestone';
+        player_id: number;
+        player_nick: string;
+        char_name: string;
+        data: Record<string, unknown>;
+      };
+      const events: JournalInsert[] = [];
+
+      // 1. Morte
+      if (prev?.is_alive === true && !decoded.isAlive) {
+        events.push({
+          type:        'player_died',
+          player_id:   player.id,
+          player_nick: player.nick,
+          char_name:   decoded.characterName,
+          data: { cause: decoded.deathCause ?? null, score: finalScore, days: decoded.days, kills: decoded.kills },
+        });
+      }
+
+      // 2. Marco de kills (somente enquanto vivo; detecta apenas o maior marco novo do sync)
+      if (prev && decoded.isAlive) {
+        for (const threshold of KILL_MILESTONES) {
+          if (prev.kills < threshold && decoded.kills >= threshold) {
+            events.push({
+              type:        'kill_milestone',
+              player_id:   player.id,
+              player_nick: player.nick,
+              char_name:   decoded.characterName,
+              data: { milestone: threshold, kills: decoded.kills },
+            });
+            break;
+          }
+        }
+      }
+
+      // 3. Skill lv10 nova (compara com habilidades previas armazenadas)
+      if (prev) {
+        const prevSkillMap = new Map<string, number>();
+        if (prev.skills) {
+          for (const s of prev.skills.split(',')) {
+            const t = s.trim();
+            const idx = t.lastIndexOf(' ');
+            if (idx > 0) {
+              const name  = t.slice(0, idx);
+              const level = parseInt(t.slice(idx + 1), 10);
+              if (!isNaN(level)) prevSkillMap.set(name, level);
+            }
+          }
+        }
+        for (const skillStr of decoded.skills) {
+          if (!skillStr.endsWith(' 10')) continue;
+          const idx       = skillStr.lastIndexOf(' ');
+          const skillName = skillStr.slice(0, idx);
+          if ((prevSkillMap.get(skillName) ?? 0) < 10) {
+            events.push({
+              type:        'skill_maxed',
+              player_id:   player.id,
+              player_nick: player.nick,
+              char_name:   decoded.characterName,
+              data: { skill: skillName },
+            });
+          }
+        }
+      }
+
+      for (const ev of events) {
+        await supabase.from('journal_events').insert(ev);
+        broadcast('journal-event', { ...ev, created_at: new Date().toISOString() });
+      }
+    } catch (e) {
+      console.error('[journal] error:', e);
+    }
+  })();
 
   // Notificação de morte no Discord: dispara quando is_alive muda de true → false.
   // Ignora a primeira entrada (prev === null) e entradas desclassificadas (sandbox_ok = false).

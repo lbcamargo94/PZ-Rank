@@ -22,6 +22,7 @@ import heatmapRouter       from './routes/heatmap';
 import webhooksRouter      from './routes/webhooks';
 import cronRouter          from './routes/cron';
 import sseRouter           from './routes/sse';
+import journalRouter       from './routes/journal';
 
 // Rate limiters por contexto de uso
 const authLimiter = rateLimit({
@@ -135,6 +136,7 @@ export function createApp() {
   app.use('/webhooks',      webhooksRouter);
   app.use('/cron',          cronRouter);
   app.use('/sse',           sseRouter);
+  app.use('/journal',       journalRouter);
 
   return app;
 }

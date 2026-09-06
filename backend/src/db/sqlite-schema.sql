@@ -252,6 +252,18 @@ CREATE TABLE IF NOT EXISTS player_likes (
   UNIQUE(liker_player_id, liked_player_id)
 );
 
+-- Jornal do Apocalipse: eventos notáveis durante uma run (morte, milestones, skills)
+CREATE TABLE IF NOT EXISTS journal_events (
+  id          INTEGER  PRIMARY KEY AUTOINCREMENT,
+  type        TEXT     NOT NULL CHECK (type IN ('player_died', 'skill_maxed', 'kill_milestone')),
+  player_id   INTEGER  REFERENCES players(id) ON DELETE CASCADE,
+  player_nick TEXT     NOT NULL DEFAULT '',
+  char_name   TEXT     DEFAULT NULL,
+  data        TEXT     NOT NULL DEFAULT '{}',
+  created_at  TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+);
+CREATE INDEX IF NOT EXISTS idx_journal_created ON journal_events(created_at DESC);
+
 -- ═══════════════════════════════════════════════════════
 -- CONQUISTAS — 5 raridades, 75 conquistas
 -- stats rastreados: kills, days, hours_without_sleep,

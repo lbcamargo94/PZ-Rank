@@ -448,5 +448,29 @@
     "invalid_id": "Invalid ID.",
     "cannot_like_self": "You can't like your own profile.",
     "db_error": "Error processing your request. Please try again."
+  },
+  "journal": {
+    "title": "Apocalypse Journal",
+    "aria": "Apocalypse Journal — recent events feed",
+    "died": "died",
+    "milestone": "reached {{count}} zombie kills!",
+    "skill_maxed": "maxed {{skill}} to level 10!",
+    "cause": {
+      "zombie":       "Zombie",
+      "zombie_horde": "Zombie horde",
+      "zombie_virus": "Zombie virus",
+      "vehicle":      "Vehicle crash",
+      "pvp":          "Killed by another survivor",
+      "burned":       "Burned to death",
+      "bled":         "Bled to death",
+      "infection":    "Infected wound",
+      "bleach":       "Drank bleach",
+      "poison":       "Poisoned",
+      "fall":         "Fatal fall",
+      "cold":         "Hypothermia",
+      "sick":         "Sickness",
+      "hunger":       "Starvation",
+      "thirst":       "Dehydration"
+    }
   }
 }

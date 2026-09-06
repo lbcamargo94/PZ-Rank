@@ -448,5 +448,29 @@
     "invalid_id": "ID inválido.",
     "cannot_like_self": "No puedes dar like a tu propio perfil.",
     "db_error": "Error al procesar tu solicitud. Inténtalo de nuevo."
+  },
+  "journal": {
+    "title": "Diario del Apocalipsis",
+    "aria": "Diario del Apocalipsis — feed de eventos recientes",
+    "died": "murió",
+    "milestone": "¡alcanzó {{count}} muertes de zombis!",
+    "skill_maxed": "¡maximizó {{skill}} al nivel 10!",
+    "cause": {
+      "zombie":       "Zombi",
+      "zombie_horde": "Horda de zombis",
+      "zombie_virus": "Virus zombi",
+      "vehicle":      "Accidente de vehículo",
+      "pvp":          "Muerto por otro superviviente",
+      "burned":       "Quemado",
+      "bled":         "Desangrado",
+      "infection":    "Herida infectada",
+      "bleach":       "Bebió lejía",
+      "poison":       "Envenenado",
+      "fall":         "Caída fatal",
+      "cold":         "Hipotermia",
+      "sick":         "Enfermedad",
+      "hunger":       "Inanición",
+      "thirst":       "Deshidratación"
+    }
   }
 }

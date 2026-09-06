@@ -448,5 +448,29 @@
     "invalid_id": "ID inválido.",
     "cannot_like_self": "Você não pode curtir o próprio perfil.",
     "db_error": "Erro ao processar sua solicitação. Tente novamente."
+  },
+  "journal": {
+    "title": "Jornal do Apocalipse",
+    "aria": "Jornal do Apocalipse — feed de eventos recentes",
+    "died": "morreu",
+    "milestone": "alcançou {{count}} kills de zumbis!",
+    "skill_maxed": "maximizou {{skill}} no nível 10!",
+    "cause": {
+      "zombie":       "Zumbi",
+      "zombie_horde": "Horda de zumbis",
+      "zombie_virus": "Vírus zumbi",
+      "vehicle":      "Acidente de veículo",
+      "pvp":          "Morto por outro sobrevivente",
+      "burned":       "Queimado",
+      "bled":         "Sangramento",
+      "infection":    "Infecção na ferida",
+      "bleach":       "Ingeriu água sanitária",
+      "poison":       "Envenenamento",
+      "fall":         "Queda fatal",
+      "cold":         "Hipotermia",
+      "sick":         "Doença",
+      "hunger":       "Inanição",
+      "thirst":       "Desidratação"
+    }
   }
 }

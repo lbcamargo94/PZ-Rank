@@ -448,5 +448,29 @@
     "invalid_id": "ID invalide.",
     "cannot_like_self": "Vous ne pouvez pas aimer votre propre profil.",
     "db_error": "Erreur lors du traitement de votre demande. Veuillez réessayer."
+  },
+  "journal": {
+    "title": "Journal de l'Apocalypse",
+    "aria": "Journal de l'Apocalypse — fil d'événements récents",
+    "died": "est mort(e)",
+    "milestone": "a atteint {{count}} zombies tués !",
+    "skill_maxed": "a maximisé {{skill}} au niveau 10 !",
+    "cause": {
+      "zombie":       "Zombie",
+      "zombie_horde": "Horde de zombies",
+      "zombie_virus": "Virus zombie",
+      "vehicle":      "Accident de véhicule",
+      "pvp":          "Tué par un autre survivant",
+      "burned":       "Brûlé vif",
+      "bled":         "Mort d'hémorragie",
+      "infection":    "Plaie infectée",
+      "bleach":       "A bu de l'eau de Javel",
+      "poison":       "Empoisonné",
+      "fall":         "Chute mortelle",
+      "cold":         "Hypothermie",
+      "sick":         "Maladie",
+      "hunger":       "Famine",
+      "thirst":       "Déshydratation"
+    }
   }
 }

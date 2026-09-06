@@ -601,3 +601,22 @@ export function apiRevokeAchievement(token: string, playerId: number, slug: stri
 export function apiGetHeatmap(): Promise<{ points: HeatmapPoint[]; season: { id: number; name: string } | null }> {
   return request<{ points: HeatmapPoint[]; season: { id: number; name: string } | null }>('/heatmap/current');
 }
+
+export type JournalEventType = 'player_died' | 'skill_maxed' | 'kill_milestone';
+
+export interface JournalEvent {
+  id:          number;
+  type:        JournalEventType;
+  player_id:   number | null;
+  player_nick: string;
+  char_name:   string | null;
+  data:        Record<string, unknown>;
+  created_at:  string;
+}
+
+export async function apiGetJournal(limit = 30, before?: number): Promise<JournalEvent[]> {
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (before != null) params.set('before', String(before));
+  const result = await request<{ events: JournalEvent[] }>(`/journal?${params}`);
+  return result.events;
+}

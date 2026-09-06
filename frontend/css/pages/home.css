@@ -632,3 +632,84 @@
   .quick-nav-label { font-size: 14px; }
   .home-patrocinio .patrocinio-btn { margin-left: 0; }
 }
+
+/* ── Jornal do Apocalipse ──────────────────────────────────── */
+.apocalypse-journal {
+  max-width: 860px;
+  margin: 0 auto 0;
+  padding: 0 16px;
+}
+
+.aj-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-4);
+  margin: 12px 0 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.aj-title .ti { font-size: 15px; }
+
+.aj-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.aj-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: var(--radius);
+  font-size: 16px;
+  line-height: 1.4;
+  background: rgba(12,17,10,0.60);
+  border: 1px solid transparent;
+  transition: background 0.15s;
+}
+
+.aj-item:hover { background: rgba(18,26,14,0.80); }
+
+.aj-item-player_died    { border-color: rgba(92,26,26,0.5); }
+.aj-item-kill_milestone { border-color: rgba(107,64,16,0.5); }
+.aj-item-skill_maxed    { border-color: rgba(45,90,26,0.4); }
+
+.aj-icon {
+  font-size: 15px;
+  flex-shrink: 0;
+  width: 18px;
+  text-align: center;
+}
+
+.aj-icon-death { color: var(--red); }
+.aj-icon-kill  { color: var(--amber); }
+.aj-icon-skill { color: var(--green); }
+
+.aj-text    { flex: 1; min-width: 0; }
+.aj-char    { font-weight: 600; color: var(--text-1); }
+.aj-player  { color: var(--text-4); font-size: 14px; }
+.aj-verb    { color: var(--text-3); }
+.aj-cause   { color: var(--text-2); }
+
+.aj-time {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-4);
+  margin-left: 4px;
+}
+
+@media (max-width: 600px) {
+  .aj-item { font-size: 15px; padding: 6px 8px; }
+  .aj-player { display: none; }
+}
