@@ -18,7 +18,7 @@ const ALLOWED_TABLES = new Set([
   'players', 'moderators', 'moderator_tokens', 'entries', 'mods',
   'mod_dependencies', 'player_tokens', 'seasons', 'hall_of_fame',
   'daily_news', 'season_finances', 'achievements', 'player_achievements',
-  'heatmap_events', 'player_likes',
+  'heatmap_events', 'player_likes', 'journal_events',
 ]);
 
 const ALLOWED_COLS: Record<string, Set<string>> = {
@@ -37,6 +37,7 @@ const ALLOWED_COLS: Record<string, Set<string>> = {
   player_achievements: new Set(['id','player_id','achievement_id','entry_id','unlocked_at']),
   player_likes:        new Set(['id','liker_player_id','liked_player_id','created_at']),
   heatmap_events:      new Set(['id','season_id','event_type','grid_x','grid_y','count']),
+  journal_events:      new Set(['id','type','player_id','player_nick','char_name','data','created_at']),
 };
 
 function assertTable(table: string): void {
