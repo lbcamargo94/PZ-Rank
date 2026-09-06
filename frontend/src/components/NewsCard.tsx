@@ -33,16 +33,17 @@ const LORE_HEADLINES: ReadonlyArray<{ source: string; text: string }> = [
   { source: 'Knox Knews · 5 jul 1993',           text: 'CHEIRO FÉTIDO PODE SER "PROCESSO NATURAL". Professora de geografia liga odor misterioso ao Rio Ohio.' },
 ];
 
-const MAX_JOURNAL = 20;
+const MAX_JOURNAL = 30;
 
-function timeAgo(iso: string): string {
-  const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-  if (s < 60)              return `${s}s`;
-  const m = Math.floor(s / 60);
-  if (m < 60)              return `${m}min`;
-  const h = Math.floor(m / 60);
-  if (h < 24)              return `${h}h`;
-  return `${Math.floor(h / 24)}d`;
+function fmtEventTime(iso: string): string {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const date = `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+  const time = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  const s = Math.floor((Date.now() - d.getTime()) / 1000);
+  let ago = `${s}s`;
+  if (s >= 60) { const m = Math.floor(s / 60); ago = m < 60 ? `${m}min` : `${Math.floor(m / 60)}h`; }
+  return `${date} ${time} · ${ago} atrás`;
 }
 
 function JournalSlide({ ev, tick }: { ev: JournalEvent; tick: number }) {
@@ -80,7 +81,7 @@ function JournalSlide({ ev, tick }: { ev: JournalEvent; tick: number }) {
         </div>
       </div>
       <p className="njs-verb">{verb}</p>
-      <span className="njs-time">{timeAgo(ev.created_at)}</span>
+      <span className="njs-time">{fmtEventTime(ev.created_at)}</span>
     </div>
   );
 }
