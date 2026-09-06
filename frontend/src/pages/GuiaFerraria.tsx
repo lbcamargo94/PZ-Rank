@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './tips.css';
 
@@ -18,49 +18,12 @@ const TOC = [
   { id: 'rota0',      label: '13. Rota 0 → 10' },
   { id: 'ferreiro',   label: '14. Rota Ferreiro' },
   { id: 'ouroloop',   label: '15. Ciclo do ouro' },
-  { id: 'checklist',  label: '16. Checklist' },
-  { id: 'erros',      label: '17. Erros comuns' },
-  { id: 'fontes',     label: '18. Fontes' },
+  { id: 'erros',      label: '16. Erros comuns' },
+  { id: 'fontes',     label: '17. Fontes' },
 ];
-
-const CHECKLIST = [
-  { key: 'mag-iron',       label: 'Li/tenho Iron Age Blacksmithing.' },
-  { key: 'book3',          label: 'Tenho Ferraria III.' },
-  { key: 'book4',          label: 'Tenho Ferraria IV.' },
-  { key: 'book5',          label: 'Tenho Ferraria V.' },
-  { key: 'tongs',          label: 'Tenho Tenaz metálica ou substituto funcional.' },
-  { key: 'hammer',         label: 'Tenho martelo compatível e reserva.' },
-  { key: 'punch',          label: 'Tenho Punção para Metalurgia.' },
-  { key: 'chisel',         label: 'Tenho Talhadeira para Metal.' },
-  { key: 'pliers',         label: 'Tenho alicate/tenaz para receitas finas.' },
-  { key: 'file',           label: 'Tenho lima/conjunto de limas quando necessário.' },
-  { key: 'shovel',         label: 'Tenho pá para a estrutura de carvão.' },
-  { key: 'bucket',         label: 'Tenho balde para cimento/concreto.' },
-  { key: 'anvil',          label: 'Fiz Bigorna de Pedra / tenho Alvenaria 2.' },
-  { key: 'charcoalstation',label: 'Tenho fonte de produção de carvão.' },
-  { key: 'forge',          label: 'Forja Primitiva construída.' },
-  { key: 'coal',           label: 'Estoque grande de carvão pronto.' },
-  { key: 'metal',          label: 'Estoque de ferro/aço separado por tamanho.' },
-  { key: 'gold',           label: 'Separei joias/fragmentos de ouro.' },
-  { key: 'safe',           label: 'Perímetro da oficina está limpo e seguro.' },
-  { key: 'water',          label: 'Tenho água/extintor para emergência de fogo.' },
-];
-
-const STORAGE_PREFIX = 'pzforge_';
-
-function loadChecks(): Record<string, boolean> {
-  const stored: Record<string, boolean> = {};
-  try {
-    CHECKLIST.forEach(item => {
-      stored[item.key] = localStorage.getItem(STORAGE_PREFIX + item.key) === '1';
-    });
-  } catch { /* localStorage indisponível */ }
-  return stored;
-}
 
 export function GuiaFerraria() {
   const [compact, setCompact]   = useState(false);
-  const [checks, setChecks]     = useState<Record<string, boolean>>(loadChecks);
   const [xpBase, setXpBase]     = useState(50);
   const [boost, setBoost]       = useState(1.66);
   const [book, setBook]         = useState(8);
@@ -68,24 +31,6 @@ export function GuiaFerraria() {
   const [skillXp, setSkillXp]   = useState(1);
 
   const xpResult  = xpBase * boost * book * globalXp * skillXp;
-  const doneCount = CHECKLIST.filter(i => checks[i.key]).length;
-  const pct       = Math.round((doneCount / CHECKLIST.length) * 100);
-
-  function toggleCheck(key: string) {
-    const next = !checks[key];
-    try { localStorage.setItem(STORAGE_PREFIX + key, next ? '1' : '0'); } catch { /* sem-op */ }
-    setChecks(prev => ({ ...prev, [key]: next }));
-  }
-
-  function resetChecks() {
-    try { CHECKLIST.forEach(i => localStorage.removeItem(STORAGE_PREFIX + i.key)); } catch { /* sem-op */ }
-    setChecks({});
-  }
-
-  // Sync ao montar (caso outra aba tenha alterado)
-  useEffect(() => {
-    setChecks(loadChecks());
-  }, []);
 
   return (
     <div className={`guia-page${compact ? ' guia-compact' : ''}`}>
@@ -105,9 +50,6 @@ export function GuiaFerraria() {
             </button>
             <button className="guia-btn" onClick={() => setCompact(c => !c)}>
               {compact ? 'Modo normal' : 'Modo compacto'}
-            </button>
-            <button className="guia-btn" onClick={resetChecks}>
-              Limpar checklist
             </button>
           </div>
         </div>
@@ -803,32 +745,6 @@ export function GuiaFerraria() {
             <div className="guia-alert danger"><strong>Brasileirão:</strong> este ciclo deve ter uma decisão explícita de regulamento. Ele permite repetir XP usando o mesmo metal precioso, e a comunidade já tratou ciclos semelhantes como possíveis falhas/exploits de balanceamento. Para um ranking competitivo, o ideal é escrever "permitido" ou "proibido" sem ambiguidade.</div>
             <h3 className="guia-h3">Se for permitido</h3>
             <p className="guia-muted">A prioridade muda para: <strong>Forja Primitiva → 10 fragmentos/moedas de ouro → estoque enorme de carvão → livro correto → repetição.</strong> Nesse cenário, procurar ferro para grind perde grande parte do valor.</p>
-          </section>
-
-          {/* ── 16. Checklist ── */}
-          <section id="checklist" className="guia-section">
-            <div className="guia-eyebrow">16 · Checklist persistente</div>
-            <h2 className="guia-h2">Preparação da run</h2>
-            <p className="guia-sub guia-no-print">Marque os itens; o navegador salva o progresso localmente.</p>
-
-            <div className="guia-checks">
-              {CHECKLIST.map(item => (
-                <label key={item.key} className={`guia-check${checks[item.key] ? ' done' : ''}`}>
-                  <input
-                    type="checkbox"
-                    checked={!!checks[item.key]}
-                    onChange={() => toggleCheck(item.key)}
-                  />
-                  {item.label}
-                </label>
-              ))}
-            </div>
-
-            <div className="guia-progressbar">
-              <div className="guia-progressbar-fill" style={{ width: `${pct}%` }} />
-            </div>
-            <div className="guia-sub">{doneCount} de {CHECKLIST.length} concluídos ({pct}%)</div>
-
             <h3 className="guia-h3">Layout recomendado da oficina</h3>
             <div className="guia-route">
               <span className="guia-node">Estoque de madeira</span><span className="guia-arrow">→</span>
@@ -842,9 +758,9 @@ export function GuiaFerraria() {
             <div className="guia-alert warning"><strong>Segurança:</strong> mantenha fogo e ruído longe de entradas não protegidas. Tenha rota de fuga e água/extintor próximos. Em população elevada, a oficina não deve ficar colada ao portão principal.</div>
           </section>
 
-          {/* ── 17. Erros comuns ── */}
+          {/* ── 16. Erros comuns ── */}
           <section id="erros" className="guia-section">
-            <div className="guia-eyebrow">17 · Erros comuns</div>
+            <div className="guia-eyebrow">16 · Erros comuns</div>
             <h2 className="guia-h2">O que mais atrasa uma Ferraria 10</h2>
             <details className="guia-details" open>
               <summary>1. Grindar sem livro</summary>
@@ -876,9 +792,9 @@ export function GuiaFerraria() {
             </details>
           </section>
 
-          {/* ── 18. Fontes ── */}
+          {/* ── 17. Fontes ── */}
           <section id="fontes" className="guia-section">
-            <div className="guia-eyebrow">18 · Fontes e versão</div>
+            <div className="guia-eyebrow">17 · Fontes e versão</div>
             <h2 className="guia-h2">Base técnica usada neste manual</h2>
             <p className="guia-muted">Data de consolidação: 4 de setembro de 2026. A versão estável oficial consultada é <strong>42.20.4</strong>. A lista completa de XP de Ferraria disponível com extração direta dos arquivos usa 42.20.2; a lista de materiais de fundição usa 42.20.3. Não há evidência nas fontes consultadas de mudança desses valores específica na 42.20.4, mas um hotfix futuro pode alterá-los.</p>
             <ol style={{ paddingLeft: '20px', margin: '12px 0 0' }}>
