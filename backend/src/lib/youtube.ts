@@ -136,6 +136,15 @@ export async function getChannelCurrentLive(channelId: string): Promise<ChannelL
     const videoId = xml.match(/<yt:videoId>([^<]+)<\/yt:videoId>/)?.[1];
     if (!videoId) return null;
 
+    // Economiza quota: só chama a API se o vídeo foi publicado nas últimas 12h.
+    // Lives aparecem no RSS com <published> próximo da hora de início.
+    // Vídeos mais antigos nunca são lives ativas.
+    const published = xml.match(/<published>([^<]+)<\/published>/)?.[1];
+    if (published) {
+      const ageMs = Date.now() - new Date(published).getTime();
+      if (ageMs > 12 * 60 * 60 * 1000) return null;
+    }
+
     const liveInfo = await checkIsLive(videoId);
     if (!liveInfo?.isLive) return null;
 
