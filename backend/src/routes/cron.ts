@@ -105,6 +105,9 @@ router.get('/renew-yt-subs', async (req: Request, res: Response): Promise<void> 
         .update({ yt_sub_expires_at: result.expiresAt })
         .eq('id', player.id);
     }
+
+    // Pausa entre requisições para não acionar rate limiting do PubSub hub.
+    await new Promise(r => setTimeout(r, 300));
   }
 
   res.json({ renewed: results.length, results });
