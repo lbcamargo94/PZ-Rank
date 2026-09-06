@@ -351,6 +351,8 @@
   font-weight: 700;
   margin-top: 6px;
 }
+.guia-rank.gold { border-color: #5d4c22; color: var(--gold, #C8A84B); }
+.guia-rank.red  { border-color: #65332d; color: var(--red, #BC5B50); }
 
 /* Sections */
 .guia-section {

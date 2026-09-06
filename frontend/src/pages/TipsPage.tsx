@@ -33,7 +33,7 @@ const GUIDES: GuideCard[] = [
     name: 'Costura',
     desc: 'Materiais, padrões e receitas mais eficientes para evoluir Costura ao máximo.',
     level: '0 → 10',
-    available: false,
+    available: true,
   },
   {
     to: '/dicas/carpintaria',
