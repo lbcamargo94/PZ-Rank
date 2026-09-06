@@ -9,7 +9,7 @@ const router = Router();
 
 type FinanceCategory = 'hosting' | 'prize' | 'domain' | 'adsense' | 'supporters' | 'sponsor' | 'other';
 const VALID_CATEGORIES: FinanceCategory[] = ['hosting', 'prize', 'domain', 'adsense', 'supporters', 'sponsor', 'other'];
-const FINANCE_COLS = 'id, season_id, category, label, amount_brl, goal_brl, updated_at, created_at';
+const FINANCE_COLS = 'id, season_id, category, label, amount_brl, goal_brl, updated_at';
 
 // GET /finances/current — público: finanças da temporada ativa
 router.get('/current', async (_req: Request, res: Response): Promise<void> => {
