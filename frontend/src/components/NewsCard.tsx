@@ -322,8 +322,8 @@ export function NewsInline() {
         {/* Coluna esquerda — Últimas Notícias (journal) */}
         <div className="news-col-main">
 
-          {/* Header: label + controles do carousel */}
-          <div className="news-col-journal-head">
+          {/* Header: mesma estética do arquivo histórico */}
+          <div className="news-lore-header">
             <span className="news-lore-label">
               <i className="ti ti-news" /> {t('home.news.latest_news')}
             </span>
@@ -345,7 +345,7 @@ export function NewsInline() {
             <div className="embla journal-embla" ref={journalRef}>
               <div className="embla__container">
                 {journalEvents.map((ev, i) => (
-                  <div key={ev.id ?? i} className="embla__slide news-journal-slide">
+                  <div key={ev.id ?? i} className="embla__slide news-lore-slide">
                     <JournalSlide ev={ev} tick={tick} />
                   </div>
                 ))}
