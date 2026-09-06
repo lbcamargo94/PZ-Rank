@@ -27,6 +27,7 @@ const WikiPage              = lazy(() => import('./pages/WikiPage').then(m => ({
 const WikiHuntingPage       = lazy(() => import('./pages/WikiHuntingPage').then(m => ({ default: m.WikiHuntingPage })));
 const ModsPage              = lazy(() => import('./pages/ModsPage').then(m => ({ default: m.ModsPage })));
 const TipsPage              = lazy(() => import('./pages/TipsPage').then(m => ({ default: m.TipsPage })));
+const GuiaFerraria          = lazy(() => import('./pages/GuiaFerraria').then(m => ({ default: m.GuiaFerraria })));
 const VerifyEmailPage       = lazy(() => import('./pages/VerifyEmailPage').then(m => ({ default: m.VerifyEmailPage })));
 const ResetPasswordPage     = lazy(() => import('./pages/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
 const ActivateAccountPage   = lazy(() => import('./pages/ActivateAccountPage').then(m => ({ default: m.ActivateAccountPage })));
@@ -127,6 +128,7 @@ export default function App() {
             <Route path="/wiki/cacada" element={<WikiHuntingPage />} />
             <Route path="/mods" element={<ModsPage />} />
             <Route path="/dicas" element={<TipsPage />} />
+            <Route path="/dicas/ferraria" element={<GuiaFerraria />} />
             <Route path="/regras" element={<RegrasPage />} />
             <Route path="/verificar-email"  element={<VerifyEmailPage />} />
             <Route path="/redefinir-senha"  element={<ResetPasswordPage />} />
