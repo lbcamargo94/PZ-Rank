@@ -25,7 +25,7 @@ const GUIDES: GuideCard[] = [
     name: 'Entalhamento',
     desc: 'Guia completo para atingir nível 10 em Entalhamento (Whittling) com eficiência máxima de XP.',
     level: '0 → 10',
-    available: false,
+    available: true,
   },
   {
     to: '/dicas/costura',
