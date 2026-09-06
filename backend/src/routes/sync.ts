@@ -601,8 +601,9 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   void (async () => {
     try {
       const KILL_MILESTONES = [5000, 10000, 25000, 50000, 100000, 200000, 300000, 500000, 800000];
+      const RANK_MILESTONES = [10, 5, 3, 1];
       type JournalInsert = {
-        type: 'player_died' | 'skill_maxed' | 'kill_milestone';
+        type: 'player_died' | 'skill_maxed' | 'kill_milestone' | 'rank_milestone';
         player_id: number;
         player_nick: string;
         char_name: string;
@@ -663,6 +664,42 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
               char_name:   decoded.characterName,
               data: { skill: skillName },
             });
+          }
+        }
+      }
+
+      // 4. Marco de posição no rank (top 10, 5, 3, 1) — apenas enquanto vivo
+      if (prev && decoded.isAlive) {
+        const entryId = (prev as { id: number }).id;
+
+        const { count: aboveNow } = await supabase
+          .from(config.tableName)
+          .select('id', { count: 'exact', head: true })
+          .eq('is_alive', true)
+          .eq('sandbox_ok', true)
+          .gt('score', finalScore);
+        const currentPos = (aboveNow ?? 0) + 1;
+
+        const { count: abovePrev } = await supabase
+          .from(config.tableName)
+          .select('id', { count: 'exact', head: true })
+          .eq('is_alive', true)
+          .eq('sandbox_ok', true)
+          .gt('score', prev.score)
+          .neq('id', entryId);
+        const prevPos = (abovePrev ?? 0) + 1;
+
+        // Reporta o marco mais específico atingido (ex: de 15→3 reporta top 3, não top 10)
+        for (const milestone of RANK_MILESTONES) {
+          if (currentPos <= milestone && prevPos > milestone) {
+            events.push({
+              type:        'rank_milestone',
+              player_id:   player.id,
+              player_nick: player.nick,
+              char_name:   decoded.characterName,
+              data:        { position: currentPos, milestone },
+            });
+            break;
           }
         }
       }

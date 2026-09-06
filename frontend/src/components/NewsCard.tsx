@@ -56,6 +56,8 @@ function JournalSlide({ ev, tick }: { ev: JournalEvent; tick: number }) {
     ? 'ti ti-skull njs-icon njs-icon-death'
     : ev.type === 'kill_milestone'
     ? 'ti ti-sword njs-icon njs-icon-kill'
+    : ev.type === 'rank_milestone'
+    ? 'ti ti-trophy njs-icon njs-icon-rank'
     : 'ti ti-star  njs-icon njs-icon-skill';
 
   let verb = '';
@@ -66,6 +68,9 @@ function JournalSlide({ ev, tick }: { ev: JournalEvent; tick: number }) {
   } else if (ev.type === 'kill_milestone') {
     const m = typeof ev.data.milestone === 'number' ? formatNumber(ev.data.milestone) : '?';
     verb = t('journal.milestone', { count: m });
+  } else if (ev.type === 'rank_milestone') {
+    const pos = typeof ev.data.position === 'number' ? ev.data.position : ev.data.milestone;
+    verb = t('journal.rank_top', { position: pos });
   } else {
     const skill = typeof ev.data.skill === 'string' ? ev.data.skill : '?';
     verb = t('journal.skill_maxed', { skill });

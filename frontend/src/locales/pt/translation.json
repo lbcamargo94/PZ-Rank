@@ -456,6 +456,7 @@
     "died": "morreu",
     "milestone": "alcançou {{count}} kills de zumbis!",
     "skill_maxed": "maximizou {{skill}} no nível 10!",
+    "rank_top": "entrou no TOP {{position}} do rank!",
     "cause": {
       "zombie":       "Zumbi",
       "zombie_horde": "Horda de zumbis",

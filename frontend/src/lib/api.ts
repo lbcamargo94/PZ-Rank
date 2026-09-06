@@ -602,7 +602,7 @@ export function apiGetHeatmap(): Promise<{ points: HeatmapPoint[]; season: { id:
   return request<{ points: HeatmapPoint[]; season: { id: number; name: string } | null }>('/heatmap/current');
 }
 
-export type JournalEventType = 'player_died' | 'skill_maxed' | 'kill_milestone';
+export type JournalEventType = 'player_died' | 'skill_maxed' | 'kill_milestone' | 'rank_milestone';
 
 export interface JournalEvent {
   id:          number;

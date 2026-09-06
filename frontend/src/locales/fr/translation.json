@@ -456,6 +456,7 @@
     "died": "est mort(e)",
     "milestone": "a atteint {{count}} zombies tués !",
     "skill_maxed": "a maximisé {{skill}} au niveau 10 !",
+    "rank_top": "est entré dans le TOP {{position}} du classement !",
     "cause": {
       "zombie":       "Zombie",
       "zombie_horde": "Horde de zombies",

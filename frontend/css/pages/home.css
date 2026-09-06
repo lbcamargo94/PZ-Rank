@@ -675,6 +675,7 @@
 .njs-icon-death { color: var(--red); }
 .njs-icon-kill  { color: var(--amber, #d97706); }
 .njs-icon-skill { color: var(--green); }
+.njs-icon-rank  { color: var(--yellow, #ca8a04); }
 
 .njs-names {
   display: flex;

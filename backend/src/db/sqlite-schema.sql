@@ -255,7 +255,7 @@ CREATE TABLE IF NOT EXISTS player_likes (
 -- Jornal do Apocalipse: eventos notáveis durante uma run (morte, milestones, skills)
 CREATE TABLE IF NOT EXISTS journal_events (
   id          INTEGER  PRIMARY KEY AUTOINCREMENT,
-  type        TEXT     NOT NULL CHECK (type IN ('player_died', 'skill_maxed', 'kill_milestone')),
+  type        TEXT     NOT NULL CHECK (type IN ('player_died', 'skill_maxed', 'kill_milestone', 'rank_milestone')),
   player_id   INTEGER  REFERENCES players(id) ON DELETE CASCADE,
   player_nick TEXT     NOT NULL DEFAULT '',
   char_name   TEXT     DEFAULT NULL,

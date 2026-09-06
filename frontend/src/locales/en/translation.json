@@ -456,6 +456,7 @@
     "died": "died",
     "milestone": "reached {{count}} zombie kills!",
     "skill_maxed": "maxed {{skill}} to level 10!",
+    "rank_top": "entered the TOP {{position}} of the rank!",
     "cause": {
       "zombie":       "Zombie",
       "zombie_horde": "Zombie horde",
