@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { apiGetLatestNews } from '../lib/api';
+import { apiGetLatestNews, apiGetJournal, type JournalEvent } from '../lib/api';
 import { formatNumber, formatDate } from '../lib/format';
 import type { DailyNews, NewsStats } from '../types';
+import { useSse } from '../hooks/useSse';
 
 // Manchetes de lore do jogo — conteúdo de dados (flavor text fixo do universo
 // de Project Zomboid), não interface. Fica em português nesta fase do i18n,
@@ -31,6 +32,58 @@ const LORE_HEADLINES: ReadonlyArray<{ source: string; text: string }> = [
   { source: 'Knox Knews · 4 jul 1993',           text: '"SEM PERIGO AO PÚBLICO" — Caminhão militar com material perigoso tomba na Rota 60 perto de March Ridge.' },
   { source: 'Knox Knews · 5 jul 1993',           text: 'CHEIRO FÉTIDO PODE SER "PROCESSO NATURAL". Professora de geografia liga odor misterioso ao Rio Ohio.' },
 ];
+
+const MAX_JOURNAL = 20;
+
+function timeAgo(iso: string): string {
+  const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (s < 60)              return `${s}s`;
+  const m = Math.floor(s / 60);
+  if (m < 60)              return `${m}min`;
+  const h = Math.floor(m / 60);
+  if (h < 24)              return `${h}h`;
+  return `${Math.floor(h / 24)}d`;
+}
+
+function JournalSlide({ ev, tick }: { ev: JournalEvent; tick: number }) {
+  const { t } = useTranslation();
+  void tick; // força re-render quando o pai incrementa o tick
+  const nick = ev.player_nick || '?';
+  const char = ev.char_name  || nick;
+
+  const iconClass = ev.type === 'player_died'
+    ? 'ti ti-skull njs-icon njs-icon-death'
+    : ev.type === 'kill_milestone'
+    ? 'ti ti-sword njs-icon njs-icon-kill'
+    : 'ti ti-star  njs-icon njs-icon-skill';
+
+  let verb = '';
+  if (ev.type === 'player_died') {
+    const causeKey  = typeof ev.data.cause === 'string' && ev.data.cause ? `journal.cause.${ev.data.cause}` : null;
+    const causeText = causeKey ? t(causeKey, { defaultValue: ev.data.cause as string }) : null;
+    verb = causeText ? `${t('journal.died')} — ${causeText}` : t('journal.died');
+  } else if (ev.type === 'kill_milestone') {
+    const m = typeof ev.data.milestone === 'number' ? formatNumber(ev.data.milestone) : '?';
+    verb = t('journal.milestone', { count: m });
+  } else {
+    const skill = typeof ev.data.skill === 'string' ? ev.data.skill : '?';
+    verb = t('journal.skill_maxed', { skill });
+  }
+
+  return (
+    <div className="njs-content">
+      <div className="njs-row">
+        <i className={iconClass} aria-hidden="true" />
+        <div className="njs-names">
+          <span className="njs-char">{char}</span>
+          {char !== nick && <span className="njs-nick">({nick})</span>}
+        </div>
+      </div>
+      <p className="njs-verb">{verb}</p>
+      <span className="njs-time">{timeAgo(ev.created_at)}</span>
+    </div>
+  );
+}
 
 function fmtDateLong(dateStr: string): string {
   return formatDate(`${dateStr}T12:00:00`, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
@@ -174,26 +227,54 @@ export function NewsInline() {
   const [news,    setNews]    = useState<DailyNews | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // ── Lore carousel ────────────────────────────────────────────
   const initIdx = (() => {
     const start = new Date(new Date().getFullYear(), 0, 1).getTime();
     return Math.floor((Date.now() - start) / 86_400_000) % LORE_HEADLINES.length;
   })();
   const [loreIdx, setLoreIdx] = useState(initIdx);
-
   const [loreRef, loreApi] = useEmblaCarousel(
     { loop: true },
     [Autoplay({ delay: 60_000, stopOnInteraction: false })]
   );
 
+  // ── Journal carousel ─────────────────────────────────────────
+  const [journalEvents, setJournalEvents] = useState<JournalEvent[]>([]);
+  const [journalIdx,    setJournalIdx]    = useState(0);
+  const [tick,          setTick]          = useState(0);
+  const [journalRef, journalApi] = useEmblaCarousel(
+    { loop: true },
+    [Autoplay({ delay: 5_000, stopOnInteraction: false })]
+  );
+  const journalApiRef = useRef(journalApi);
+  useEffect(() => { journalApiRef.current = journalApi; }, [journalApi]);
+
   useEffect(() => {
     apiGetLatestNews().then(setNews).catch(() => {}).finally(() => setLoading(false));
+    apiGetJournal(MAX_JOURNAL).then(setJournalEvents).catch(() => {});
+    const tickId = setInterval(() => setTick(n => n + 1), 30_000);
+    return () => clearInterval(tickId);
   }, []);
+
+  const handleJournalEvent = useCallback((data: unknown) => {
+    const ev = data as JournalEvent;
+    if (!ev?.type) return;
+    setJournalEvents(prev => [ev, ...prev].slice(0, MAX_JOURNAL));
+    journalApiRef.current?.scrollTo(0);
+  }, []);
+
+  useSse({ 'journal-event': handleJournalEvent });
 
   useEffect(() => {
     if (!loreApi) return;
     if (initIdx > 0) loreApi.scrollTo(initIdx, false);
     loreApi.on('select', () => setLoreIdx(loreApi.selectedScrollSnap()));
   }, [loreApi]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!journalApi) return;
+    journalApi.on('select', () => setJournalIdx(journalApi.selectedScrollSnap()));
+  }, [journalApi]);
 
   if (loading) return (
     <div className="news-inline news-inline--loading">
@@ -232,12 +313,43 @@ export function NewsInline() {
       {/* ── Corpo em duas colunas ── */}
       <div className="news-body-grid">
 
-        {/* Coluna esquerda — notícia do dia */}
+        {/* Coluna esquerda — Últimas Notícias (journal) */}
         <div className="news-col-main">
-          {headline && (
-            <p className="news-headline-main">{headline}</p>
+
+          {/* Header: label + controles do carousel */}
+          <div className="news-col-journal-head">
+            <span className="news-lore-label">
+              <i className="ti ti-news" /> {t('home.news.latest_news')}
+            </span>
+            {journalEvents.length > 1 && (
+              <div className="news-lore-controls">
+                <button className="lore-nav-btn" onClick={() => journalApi?.scrollPrev()} aria-label={t('home.news.previous')}>
+                  <i className="ti ti-chevron-left" />
+                </button>
+                <span className="lore-nav-counter">{journalIdx + 1}/{journalEvents.length}</span>
+                <button className="lore-nav-btn" onClick={() => journalApi?.scrollNext()} aria-label={t('home.news.next')}>
+                  <i className="ti ti-chevron-right" />
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Carousel de eventos ou manchete de fallback */}
+          {journalEvents.length > 0 ? (
+            <div className="embla journal-embla" ref={journalRef}>
+              <div className="embla__container">
+                {journalEvents.map((ev, i) => (
+                  <div key={ev.id ?? i} className="embla__slide news-journal-slide">
+                    <JournalSlide ev={ev} tick={tick} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            headline && <p className="news-headline-main">{headline}</p>
           )}
 
+          {/* Stats fixas na base */}
           {stats && (
             <div className="news-stats-row">
               {hasActivity && (

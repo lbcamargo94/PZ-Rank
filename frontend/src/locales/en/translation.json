@@ -72,6 +72,7 @@
       "current_situation": "Current situation",
       "total_eliminated": "eliminated in total",
       "archive": "Historical Archive",
+      "latest_news": "Latest News",
       "previous": "Previous",
       "next": "Next",
       "headline_deaths_and_kills_one": "{{deaths}} survivor fell today — {{kills}} zombies eliminated in the last 24 hours.",
