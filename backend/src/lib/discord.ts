@@ -6,6 +6,29 @@
  *   DISCORD_DEATH_WEBHOOK_URL — webhook do canal de mortes (usa DISCORD_WEBHOOK_URL se não definida)
  */
 
+const DEATH_CAUSE_PT: Record<string, string> = {
+  zombie:       'Zumbi',
+  zombie_horde: 'Horda de zumbis',
+  zombie_virus: 'Vírus zumbi',
+  vehicle:      'Acidente de veículo',
+  pvp:          'Morto por outro sobrevivente',
+  burned:       'Queimado',
+  bled:         'Sangramento',
+  infection:    'Infecção na ferida',
+  bleach:       'Ingeriu água sanitária',
+  poison:       'Envenenamento',
+  fall:         'Queda fatal',
+  cold:         'Hipotermia',
+  sick:         'Doença',
+  hunger:       'Inanição',
+  thirst:       'Desidratação',
+};
+
+function fmtDeathCause(raw: string | null): string | null {
+  if (!raw) return null;
+  return DEATH_CAUSE_PT[raw] ?? raw;
+}
+
 export interface DeathNotificationPayload {
   nick:        string;
   characterName: string;
@@ -31,7 +54,8 @@ export async function sendDeathNotification(payload: DeathNotificationPayload): 
   ];
   if (rank !== null)  fields.push({ name: 'Posição no rank', value: `#${rank}`,   inline: true });
   if (profession)     fields.push({ name: 'Profissão',        value: profession,   inline: true });
-  if (deathCause)     fields.push({ name: 'Causa da morte',   value: deathCause,   inline: false });
+  const causeLabel = fmtDeathCause(deathCause);
+  if (causeLabel)    fields.push({ name: 'Causa da morte',   value: causeLabel,   inline: false });
 
   const body = {
     embeds: [{
