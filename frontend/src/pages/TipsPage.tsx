@@ -49,7 +49,7 @@ const GUIDES: GuideCard[] = [
     name: 'Mecânica',
     desc: 'Rota de evolução em Mecânica: peças, veículos e aproveitamento de loot 0,04.',
     level: '0 → 10',
-    available: false,
+    available: true,
   },
   {
     to: '/dicas/eletrica',
@@ -57,7 +57,7 @@ const GUIDES: GuideCard[] = [
     name: 'Elétrica',
     desc: 'Componentes elétricos, geradores e receitas de XP mais rentáveis para Elétrica.',
     level: '0 → 10',
-    available: false,
+    available: true,
   },
   {
     to: '/dicas/manutencao',
@@ -65,7 +65,7 @@ const GUIDES: GuideCard[] = [
     name: 'Manutenção',
     desc: 'Como maximizar Manutenção e prolongar a durabilidade das suas ferramentas e armas.',
     level: '0 → 10',
-    available: false,
+    available: true,
   },
   {
     to: '/dicas/condicionamento',
@@ -73,7 +73,7 @@ const GUIDES: GuideCard[] = [
     name: 'Condicionamento Físico',
     desc: 'Exercícios, peso e rotinas de XP para subir Condicionamento Físico rapidamente.',
     level: '0 → 10',
-    available: false,
+    available: true,
   },
 ];
 

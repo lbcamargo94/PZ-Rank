@@ -31,6 +31,10 @@ const GuiaFerraria          = lazy(() => import('./pages/GuiaFerraria').then(m =
 const GuiaEntalhamento      = lazy(() => import('./pages/GuiaEntalhamento').then(m => ({ default: m.GuiaEntalhamento })));
 const GuiaCostura           = lazy(() => import('./pages/GuiaCostura').then(m => ({ default: m.GuiaCostura })));
 const GuiaCarpintaria       = lazy(() => import('./pages/GuiaCarpintaria').then(m => ({ default: m.GuiaCarpintaria })));
+const GuiaMecanica          = lazy(() => import('./pages/GuiaMecanica').then(m => ({ default: m.GuiaMecanica })));
+const GuiaEletrica          = lazy(() => import('./pages/GuiaEletrica').then(m => ({ default: m.GuiaEletrica })));
+const GuiaManutencao        = lazy(() => import('./pages/GuiaManutencao').then(m => ({ default: m.GuiaManutencao })));
+const GuiaCondicionamento   = lazy(() => import('./pages/GuiaCondicionamento').then(m => ({ default: m.GuiaCondicionamento })));
 const VerifyEmailPage       = lazy(() => import('./pages/VerifyEmailPage').then(m => ({ default: m.VerifyEmailPage })));
 const ResetPasswordPage     = lazy(() => import('./pages/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
 const ActivateAccountPage   = lazy(() => import('./pages/ActivateAccountPage').then(m => ({ default: m.ActivateAccountPage })));
@@ -135,6 +139,10 @@ export default function App() {
             <Route path="/dicas/entalhamento" element={<GuiaEntalhamento />} />
             <Route path="/dicas/costura" element={<GuiaCostura />} />
             <Route path="/dicas/carpintaria" element={<GuiaCarpintaria />} />
+            <Route path="/dicas/mecanica" element={<GuiaMecanica />} />
+            <Route path="/dicas/eletrica" element={<GuiaEletrica />} />
+            <Route path="/dicas/manutencao" element={<GuiaManutencao />} />
+            <Route path="/dicas/condicionamento" element={<GuiaCondicionamento />} />
             <Route path="/regras" element={<RegrasPage />} />
             <Route path="/verificar-email"  element={<VerifyEmailPage />} />
             <Route path="/redefinir-senha"  element={<ResetPasswordPage />} />
