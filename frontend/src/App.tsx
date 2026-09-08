@@ -35,6 +35,16 @@ const GuiaMecanica          = lazy(() => import('./pages/GuiaMecanica').then(m =
 const GuiaEletrica          = lazy(() => import('./pages/GuiaEletrica').then(m => ({ default: m.GuiaEletrica })));
 const GuiaManutencao        = lazy(() => import('./pages/GuiaManutencao').then(m => ({ default: m.GuiaManutencao })));
 const GuiaCondicionamento   = lazy(() => import('./pages/GuiaCondicionamento').then(m => ({ default: m.GuiaCondicionamento })));
+const GuiaCulinaria         = lazy(() => import('./pages/GuiaCulinaria').then(m => ({ default: m.GuiaCulinaria })));
+const GuiaAgricultura       = lazy(() => import('./pages/GuiaAgricultura').then(m => ({ default: m.GuiaAgricultura })));
+const GuiaAnimais           = lazy(() => import('./pages/GuiaAnimais').then(m => ({ default: m.GuiaAnimais })));
+const GuiaAbate             = lazy(() => import('./pages/GuiaAbate').then(m => ({ default: m.GuiaAbate })));
+const GuiaCeramica          = lazy(() => import('./pages/GuiaCeramica').then(m => ({ default: m.GuiaCeramica })));
+const GuiaColeta            = lazy(() => import('./pages/GuiaColeta').then(m => ({ default: m.GuiaColeta })));
+const GuiaRastreamento      = lazy(() => import('./pages/GuiaRastreamento').then(m => ({ default: m.GuiaRastreamento })));
+const GuiaArmadilhas        = lazy(() => import('./pages/GuiaArmadilhas').then(m => ({ default: m.GuiaArmadilhas })));
+const GuiaLascamento        = lazy(() => import('./pages/GuiaLascamento').then(m => ({ default: m.GuiaLascamento })));
+const GuiaAlvenaria         = lazy(() => import('./pages/GuiaAlvenaria').then(m => ({ default: m.GuiaAlvenaria })));
 const VerifyEmailPage       = lazy(() => import('./pages/VerifyEmailPage').then(m => ({ default: m.VerifyEmailPage })));
 const ResetPasswordPage     = lazy(() => import('./pages/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
 const ActivateAccountPage   = lazy(() => import('./pages/ActivateAccountPage').then(m => ({ default: m.ActivateAccountPage })));
@@ -143,6 +153,16 @@ export default function App() {
             <Route path="/dicas/eletrica" element={<GuiaEletrica />} />
             <Route path="/dicas/manutencao" element={<GuiaManutencao />} />
             <Route path="/dicas/condicionamento" element={<GuiaCondicionamento />} />
+            <Route path="/dicas/culinaria" element={<GuiaCulinaria />} />
+            <Route path="/dicas/agricultura" element={<GuiaAgricultura />} />
+            <Route path="/dicas/animais" element={<GuiaAnimais />} />
+            <Route path="/dicas/abate" element={<GuiaAbate />} />
+            <Route path="/dicas/ceramica" element={<GuiaCeramica />} />
+            <Route path="/dicas/coleta" element={<GuiaColeta />} />
+            <Route path="/dicas/rastreamento" element={<GuiaRastreamento />} />
+            <Route path="/dicas/armadilhas" element={<GuiaArmadilhas />} />
+            <Route path="/dicas/lascamento" element={<GuiaLascamento />} />
+            <Route path="/dicas/alvenaria" element={<GuiaAlvenaria />} />
             <Route path="/regras" element={<RegrasPage />} />
             <Route path="/verificar-email"  element={<VerifyEmailPage />} />
             <Route path="/redefinir-senha"  element={<ResetPasswordPage />} />
