@@ -41,7 +41,7 @@ const GUIDES: GuideCard[] = [
     name: 'Carpintaria',
     desc: 'Sequência de construção e receitas de XP otimizadas para Carpintaria no Brasileirão.',
     level: '0 → 10',
-    available: false,
+    available: true,
   },
   {
     to: '/dicas/mecanica',

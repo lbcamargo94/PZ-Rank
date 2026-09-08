@@ -30,6 +30,7 @@ const TipsPage              = lazy(() => import('./pages/TipsPage').then(m => ({
 const GuiaFerraria          = lazy(() => import('./pages/GuiaFerraria').then(m => ({ default: m.GuiaFerraria })));
 const GuiaEntalhamento      = lazy(() => import('./pages/GuiaEntalhamento').then(m => ({ default: m.GuiaEntalhamento })));
 const GuiaCostura           = lazy(() => import('./pages/GuiaCostura').then(m => ({ default: m.GuiaCostura })));
+const GuiaCarpintaria       = lazy(() => import('./pages/GuiaCarpintaria').then(m => ({ default: m.GuiaCarpintaria })));
 const VerifyEmailPage       = lazy(() => import('./pages/VerifyEmailPage').then(m => ({ default: m.VerifyEmailPage })));
 const ResetPasswordPage     = lazy(() => import('./pages/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
 const ActivateAccountPage   = lazy(() => import('./pages/ActivateAccountPage').then(m => ({ default: m.ActivateAccountPage })));
@@ -133,6 +134,7 @@ export default function App() {
             <Route path="/dicas/ferraria" element={<GuiaFerraria />} />
             <Route path="/dicas/entalhamento" element={<GuiaEntalhamento />} />
             <Route path="/dicas/costura" element={<GuiaCostura />} />
+            <Route path="/dicas/carpintaria" element={<GuiaCarpintaria />} />
             <Route path="/regras" element={<RegrasPage />} />
             <Route path="/verificar-email"  element={<VerifyEmailPage />} />
             <Route path="/redefinir-senha"  element={<ResetPasswordPage />} />
