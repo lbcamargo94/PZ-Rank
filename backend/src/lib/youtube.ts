@@ -132,14 +132,18 @@ export async function getChannelCurrentLive(channelId: string): Promise<ChannelL
     const feedRes = await fetch(feedUrl, { signal: AbortSignal.timeout(5_000) });
     if (!feedRes.ok) return null;
 
-    const xml     = await feedRes.text();
-    const videoId = xml.match(/<yt:videoId>([^<]+)<\/yt:videoId>/)?.[1];
+    const xml = await feedRes.text();
+
+    // O feed Atom do YouTube tem <published> na raiz (data de criação do canal)
+    // e dentro de cada <entry> (data real do vídeo). Extraímos do primeiro <entry>
+    // para não confundir a data do canal (que pode ter anos) com a do vídeo.
+    const entryXml = xml.match(/<entry>([\s\S]*?)<\/entry>/)?.[1] ?? '';
+    const videoId  = entryXml.match(/<yt:videoId>([^<]+)<\/yt:videoId>/)?.[1];
     if (!videoId) return null;
 
     // Economiza quota: só chama a API se o vídeo foi publicado nas últimas 12h.
-    // Lives aparecem no RSS com <published> próximo da hora de início.
-    // Vídeos mais antigos nunca são lives ativas.
-    const published = xml.match(/<published>([^<]+)<\/published>/)?.[1];
+    // Vídeos mais antigos que 12h nunca são lives ativas no momento da checagem.
+    const published = entryXml.match(/<published>([^<]+)<\/published>/)?.[1];
     if (published) {
       const ageMs = Date.now() - new Date(published).getTime();
       if (ageMs > 12 * 60 * 60 * 1000) return null;
