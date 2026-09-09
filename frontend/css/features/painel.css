@@ -148,19 +148,26 @@
   gap: 5px;
 }
 
-/* ── Painel — geral ───────────────────────────────────────── */
+/* ── Painel — shell ───────────────────────────────────────── */
 .painel-wrap {
   flex: 1;
   background: var(--bg-0);
   display: flex;
   flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+}
+@supports not (height: 1dvh) {
+  .painel-wrap { height: 100vh; }
 }
 
+/* ── Header ───────────────────────────────────────────────── */
 .painel-header {
   background: var(--bg-1);
   border-bottom: 1px solid var(--border);
   border-top: 3px solid var(--amber);
-  padding: 14px 0;
+  flex-shrink: 0;
+  z-index: 40;
 }
 
 .painel-header-inner {
@@ -168,20 +175,39 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  flex-wrap: wrap;
+  padding: 0 16px;
+  height: 52px;
 }
 
-.painel-header-left, .painel-header-right {
+.painel-header-left,
+.painel-header-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
+
+.painel-mobile-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-2);
+  cursor: pointer;
+  font-size: 18px;
+  transition: color .15s, border-color .15s;
+}
+.painel-mobile-toggle:hover { color: var(--text-1); border-color: var(--border-mid); }
 
 .painel-title {
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text-1);
+  letter-spacing: .5px;
 }
 
 .mod-email {
@@ -190,38 +216,181 @@
   color: var(--text-3);
 }
 
-.painel-nav {
+/* ── Body (sidebar + content) ─────────────────────────────── */
+.painel-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── Sidebar ──────────────────────────────────────────────── */
+.painel-sidebar {
+  width: 224px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-1);
+  border-right: 1px solid var(--border);
+  overflow: hidden;
+  z-index: 30;
+}
+
+.painel-sidebar-overlay {
+  display: none;
+}
+
+/* top: back button */
+.painel-sidebar-top {
+  padding: 10px 10px 6px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.painel-sidebar-back {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 14px 20px;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.painel-tabs { display: flex; gap: 4px; }
-
-.painel-tab {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-3);
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
   font-family: var(--font-mono);
-  font-size: 14px;
-  padding: 8px 18px;
+  font-size: 13px;
+  color: var(--text-3);
+  background: none;
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  transition: all 0.15s;
+  transition: color .15s, border-color .15s, background .15s;
+  text-align: left;
 }
-.painel-tab:hover { color: var(--text-1); border-color: var(--border-mid); }
-.painel-tab.active {
+.painel-sidebar-back:hover {
+  color: var(--text-1);
+  border-color: var(--border-mid);
+  background: var(--bg-2);
+}
+
+/* nav scroll area */
+.painel-sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.painel-sidebar-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-bottom: 6px;
+}
+
+.painel-sidebar-group-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--text-4);
+  padding: 6px 10px 4px;
+}
+
+.painel-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-3);
+  background: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all .15s;
+  text-align: left;
+}
+.painel-sidebar-item .ti { font-size: 16px; flex-shrink: 0; }
+.painel-sidebar-item span { flex: 1; }
+.painel-sidebar-item:hover {
+  color: var(--text-1);
+  background: var(--bg-2);
+}
+.painel-sidebar-item.active {
   background: var(--amber-dim);
   border-color: var(--amber-border);
   color: #f0a050;
 }
+.painel-sidebar-item.active .ti { color: #f0a050; }
 
+/* footer */
+.painel-sidebar-footer {
+  padding: 10px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.painel-sidebar-rank-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.painel-sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-3);
+  overflow: hidden;
+}
+.painel-sidebar-user .ti { font-size: 15px; flex-shrink: 0; }
+.painel-sidebar-user-login {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.painel-sidebar-logout {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-3);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: color .15s, border-color .15s, background .15s;
+}
+.painel-sidebar-logout:hover {
+  color: var(--red);
+  border-color: rgba(224,64,64,0.4);
+  background: rgba(224,64,64,0.06);
+}
+
+/* ── Content area ─────────────────────────────────────────── */
+.painel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* legacy alias — preserved so components that reference painel-main still work */
 .painel-main { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
 
 .painel-section {
@@ -2016,16 +2185,45 @@
 }
 /* ══════════════════════════════════════════════════════════════
    PAINEL DE MODERADORES — RESPONSIVO
-   Breakpoints: ≤ 768px | ≤ 640px | ≤ 480px
+   Breakpoints: ≤ 768px | ≤ 480px
    ══════════════════════════════════════════════════════════════ */
 
 /*
- * ≤ 768px
- * Ações dos cards (player e entry) quebram para linha própria,
- * alinhadas à direita e separadas por um divisor fino.
- * Garante que nenhum botão seja cortado em telas médias.
+ * ≤ 768px — Sidebar vira drawer fixo; hamburger aparece
  */
 @media (max-width: 768px) {
+  /* Mostrar botão hamburger */
+  .painel-mobile-toggle { display: flex; }
+
+  /* E-mail do moderador some — espaço insuficiente */
+  .mod-email { display: none; }
+
+  /* Sidebar: drawer fixo fora da tela por padrão */
+  .painel-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+  }
+
+  /* Drawer aberto */
+  .painel-sidebar--open {
+    transform: translateX(0);
+  }
+
+  /* Overlay escuro quando sidebar está aberta */
+  .painel-sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 49;
+  }
+
+  /* Ações dos cards quebram para linha própria */
   .player-card-actions {
     width: 100%;
     justify-content: flex-end;
@@ -2043,39 +2241,7 @@
     flex-shrink: 0;
   }
 
-  /* Stats ganham espaço total da linha quando ações descem */
   .painel-entry-stats { flex: 1 1 auto; }
-}
-
-/*
- * ≤ 640px
- * Header e nav do painel colapsam verticalmente.
- * Abas do painel ocupam largura total e o botão de atualizar
- * também fica em linha própria.
- */
-@media (max-width: 640px) {
-  /* Header: empilha esquerda / direita */
-  .painel-header-inner {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-  }
-  .painel-header-right {
-    justify-content: space-between;
-    flex-wrap: wrap;
-  }
-  /* E-mail do moderador some — espaço insuficiente */
-  .mod-email { display: none; }
-
-  /* Nav: tabs em cima, botão embaixo */
-  .painel-nav {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 10px 16px;
-    gap: 8px;
-  }
-  .painel-tabs       { width: 100%; gap: 6px; }
-  .painel-nav > .btn-primary { width: 100%; justify-content: center; }
 
   /* Filtros: gap menor para caber melhor */
   .painel-section-filter .filter-bar { gap: 4px; }
@@ -2084,16 +2250,11 @@
 
 /*
  * ≤ 480px
- * Botões de ação viram icon-only (font-size: 0 oculta o texto;
- * o ícone .ti é restaurado explicitamente).
- * Entry card: cada região ocupa sua própria linha.
- * Tabs: distribuídas uniformemente.
+ * Botões de ação viram icon-only. Entry card: cada região em sua linha.
  */
 @media (max-width: 480px) {
-  .painel-main { padding: 10px; gap: 10px; }
-
-  /* Tabs uniformes */
-  .painel-tab { flex: 1; justify-content: center; font-size: 14px; padding: 8px 6px; }
+  .painel-content { padding: 10px; gap: 10px; }
+  .painel-main    { padding: 10px; gap: 10px; }
 
   /* Entry card: coluna por região */
   .painel-entry-identity { width: 100%; flex: none; min-width: 0; }
@@ -2103,10 +2264,7 @@
   .painel-section-filter .sort-btn .rank-tab-badge { display: none; }
   .painel-section-filter .sort-btn { font-size: 14px; padding: 5px 8px; }
 
-  /* ── Botões icon-only ──────────────────────────────────────
-   * font-size: 0 no botão oculta o texto e redimensiona o ícone.
-   * O ícone .ti é restaurado em 16px para manter legibilidade.
-   */
+  /* Botões icon-only */
   .player-card-actions .btn-sm,
   .painel-entry-actions .btn-sm {
     font-size: 0 !important;

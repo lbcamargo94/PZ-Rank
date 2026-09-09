@@ -256,6 +256,7 @@ function DisqualifyModal({ entry, onConfirm, onCancel }: DisqualifyModalProps) {
 
 export function PainelPage({ session, onSession, onBack }: Props) {
   const [tab,            setTab]            = useState<Tab>('players');
+  const [sidebarOpen,    setSidebarOpen]    = useState(false);
   const [entryFilter,    setEntryFilter]    = useState<EntryFilter>('all');
   const [entrySearch,    setEntrySearch]    = useState('');
   const [showUpdateRank,       setShowUpdateRank]       = useState(false);
@@ -525,14 +526,56 @@ export function PainelPage({ session, onSession, onBack }: Props) {
     );
   }
 
+  function navTo(next: Tab, action?: () => void) {
+    setTab(next);
+    if (action) action();
+    setSidebarOpen(false);
+  }
+
+  const NAV_GROUPS = [
+    {
+      label: 'Competição',
+      items: [
+        { key: 'players'    as Tab, icon: 'ti-users',        label: 'Jogadores' },
+        { key: 'entries'    as Tab, icon: 'ti-list-numbers', label: 'Entradas',  badge: entries.length || null, action: fetchEntries },
+      ],
+    },
+    {
+      label: 'Administração',
+      items: [
+        { key: 'moderators' as Tab, icon: 'ti-shield-star', label: 'Moderadores' },
+        ...(session.role === 'master' ? [{ key: 'seasons' as Tab, icon: 'ti-trophy',      label: 'Temporadas' }] : []),
+        { key: 'jornal'     as Tab, icon: 'ti-news',        label: 'Jornal' },
+      ],
+    },
+    {
+      label: 'Ferramentas',
+      items: [
+        { key: 'decoder'    as Tab, icon: 'ti-zoom-code', label: 'Decoder' },
+        { key: 'mods'       as Tab, icon: 'ti-puzzle',    label: 'Mods'    },
+      ],
+    },
+    ...(session.role === 'master' ? [{
+      label: 'Financeiro',
+      items: [
+        { key: 'financas' as Tab, icon: 'ti-cash', label: 'Finanças' },
+      ],
+    }] : []),
+  ];
+
   return (
     <div className="painel-wrap">
-      {/* ── Header do painel ── */}
+
+      {/* ── Header compacto ──────────────────────────────────────── */}
       <header className="painel-header">
-        <div className="container painel-header-inner">
+        <div className="painel-header-inner">
           <div className="painel-header-left">
-            <button className="btn-primary btn-sm" onClick={onBack}>
-              <i className="ti ti-arrow-left" /> Voltar ao Ranking
+            <button
+              className="painel-mobile-toggle"
+              onClick={() => setSidebarOpen(o => !o)}
+              aria-label="Menu"
+            >
+              <i className={`ti ${sidebarOpen ? 'ti-x' : 'ti-menu-2'}`} />
             </button>
             <span className="painel-title">Painel de Moderadores</span>
           </div>
@@ -541,61 +584,71 @@ export function PainelPage({ session, onSession, onBack }: Props) {
             <span className={`player-status status-badge-${session.role}`}>
               {session.role === 'master' ? 'Master' : 'Moderador'}
             </span>
-            <button className="btn-secondary btn-sm" onClick={handleLogout}>
-              <i className="ti ti-logout" /> Sair
-            </button>
           </div>
         </div>
       </header>
 
-      {/* ── Navegação ── */}
-      <div className="container painel-nav">
-        <div className="painel-tabs">
-          <button className={`painel-tab${tab === 'players' ? ' active' : ''}`}
-            onClick={() => setTab('players')}>
-            <i className="ti ti-users" /> Jogadores
-          </button>
-          <button className={`painel-tab${tab === 'entries' ? ' active' : ''}`}
-            onClick={() => { setTab('entries'); fetchEntries(); }}>
-            <i className="ti ti-list-numbers" /> Entradas
-            {entries.length > 0 && <span className="rank-tab-badge">{entries.length}</span>}
-          </button>
-          <button className={`painel-tab${tab === 'moderators' ? ' active' : ''}`}
-            onClick={() => setTab('moderators')}>
-            <i className="ti ti-shield-star" /> Moderadores
-          </button>
-          <button className={`painel-tab${tab === 'mods' ? ' active' : ''}`}
-            onClick={() => setTab('mods')}>
-            <i className="ti ti-puzzle" /> Mods
-          </button>
-          <button className={`painel-tab${tab === 'decoder' ? ' active' : ''}`}
-            onClick={() => setTab('decoder')}>
-            <i className="ti ti-zoom-code" /> Decoder
-          </button>
-          {session.role === 'master' && (
-            <button className={`painel-tab${tab === 'seasons' ? ' active' : ''}`}
-              onClick={() => setTab('seasons')}>
-              <i className="ti ti-trophy" /> Temporadas
-            </button>
-          )}
-          <button className={`painel-tab${tab === 'jornal' ? ' active' : ''}`}
-            onClick={() => setTab('jornal')}>
-            <i className="ti ti-news" /> Jornal
-          </button>
-          {session.role === 'master' && (
-            <button className={`painel-tab${tab === 'financas' ? ' active' : ''}`}
-              onClick={() => setTab('financas')}>
-              <i className="ti ti-cash" /> Finanças
-            </button>
-          )}
-        </div>
-        <button className="btn-primary" onClick={() => { fetchEntries(); setShowUpdateRank(true); }}>
-          <i className="ti ti-trophy" /> Atualizar Rank
-        </button>
-      </div>
+      {/* ── Body (sidebar + content) ─────────────────────────────── */}
+      <div className="painel-body">
 
-      {/* ── Conteúdo ── */}
-      <main className="container painel-main">
+        {/* Overlay mobile */}
+        {sidebarOpen && (
+          <div className="painel-sidebar-overlay" onClick={() => setSidebarOpen(false)} />
+        )}
+
+        {/* ── Sidebar ──────────────────────────────────────────── */}
+        <nav className={`painel-sidebar${sidebarOpen ? ' painel-sidebar--open' : ''}`}>
+
+          <div className="painel-sidebar-top">
+            <button className="painel-sidebar-back" onClick={() => { onBack(); setSidebarOpen(false); }}>
+              <i className="ti ti-arrow-left" />
+              <span>Voltar ao Ranking</span>
+            </button>
+          </div>
+
+          <div className="painel-sidebar-nav">
+            {NAV_GROUPS.map(group => (
+              <div key={group.label} className="painel-sidebar-group">
+                <span className="painel-sidebar-group-label">{group.label}</span>
+                {group.items.map(item => (
+                  <button
+                    key={item.key}
+                    className={`painel-sidebar-item${tab === item.key ? ' active' : ''}`}
+                    onClick={() => navTo(item.key, item.action)}
+                  >
+                    <i className={`ti ${item.icon}`} />
+                    <span>{item.label}</span>
+                    {item.badge != null && item.badge > 0 && (
+                      <span className="rank-tab-badge">{item.badge}</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            ))}
+          </div>
+
+          <div className="painel-sidebar-footer">
+            <button
+              className="btn-primary painel-sidebar-rank-btn"
+              onClick={() => { fetchEntries(); setShowUpdateRank(true); setSidebarOpen(false); }}
+            >
+              <i className="ti ti-refresh" /> Atualizar Rank
+            </button>
+            <div className="painel-sidebar-user">
+              <i className="ti ti-user-shield" />
+              <span className="painel-sidebar-user-login">{session.login}</span>
+              <span className={`status-badge-${session.role}`}>
+                {session.role === 'master' ? 'Master' : 'Mod'}
+              </span>
+            </div>
+            <button className="painel-sidebar-logout" onClick={handleLogout}>
+              <i className="ti ti-logout" /> Sair
+            </button>
+          </div>
+        </nav>
+
+        {/* ── Content ──────────────────────────────────────────── */}
+        <main className="painel-content">
         {tab === 'players' && (
           <PendingPlayers token={session.token} showToast={showToast} />
         )}
@@ -763,7 +816,8 @@ export function PainelPage({ session, onSession, onBack }: Props) {
             )}
           </div>
         )}
-      </main>
+        </main>
+      </div>{/* /painel-body */}
 
       <Toast {...toast} onClose={clearToast} />
 
