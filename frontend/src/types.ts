@@ -260,6 +260,50 @@ export interface FinanceEntry {
   updated_at: string;
 }
 
+// ── Transparência financeira v2 ──────────────────────────────────────────────
+
+export interface FinancialTransaction {
+  id:              number;
+  type:            'income' | 'expense' | 'adjustment';
+  category:        string;
+  description:     string;
+  amount:          number;
+  fundingSource:   string;
+  isPrizeFund:     boolean;
+  transactionDate: string;
+}
+
+export interface PrizeDistributionItem {
+  position:    number;
+  percentage:  number | null;
+  fixedAmount: number | null;
+  description: string | null;
+}
+
+export interface FinancialTransparencyData {
+  season: { id: number; name: string };
+  summary: {
+    amountRaised:             number;
+    targetAmount:             number;
+    remainingAmount:          number;
+    progressPercent:          number;
+    operationalExpenses:      number;
+    organizationContribution: number;
+  };
+  prizeFund: {
+    currentAmount:      number;
+    targetAmount:       number;
+    locked:             boolean;
+    distributionStatus: string;
+  };
+  resourceSources:   { category: string; amount: number }[];
+  expenses:          { category: string; description: string; amount: number; fundingSource: string }[];
+  transactions:      FinancialTransaction[];
+  prizeDistribution: PrizeDistributionItem[];
+  partners:          unknown[];
+  lastUpdatedAt:     string;
+}
+
 export type AchievementTier = 'bronze' | 'silver' | 'gold' | 'platinum' | 'legendary';
 
 export interface Achievement {

@@ -264,6 +264,44 @@ CREATE TABLE IF NOT EXISTS journal_events (
 );
 CREATE INDEX IF NOT EXISTS idx_journal_created ON journal_events(created_at DESC);
 
+-- ── Transparência Financeira v2 ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS financial_transactions (
+  id               INTEGER PRIMARY KEY AUTOINCREMENT,
+  season_id        INTEGER NOT NULL REFERENCES seasons(id) ON DELETE CASCADE,
+  type             TEXT    NOT NULL CHECK(type IN ('income','expense','adjustment')),
+  category         TEXT    NOT NULL,
+  description      TEXT    NOT NULL,
+  amount_brl       REAL    NOT NULL DEFAULT 0,
+  funding_source   TEXT    NOT NULL DEFAULT 'organization'
+                   CHECK(funding_source IN ('organization','operational_fund','sponsor','prize_fund','other')),
+  is_prize_fund    INTEGER NOT NULL DEFAULT 0,
+  is_public        INTEGER NOT NULL DEFAULT 1,
+  transaction_date TEXT    NOT NULL,
+  created_at       TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+  updated_at       TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+  deleted_at       TEXT    DEFAULT NULL
+);
+
+CREATE TABLE IF NOT EXISTS prize_fund (
+  id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+  season_id           INTEGER NOT NULL UNIQUE REFERENCES seasons(id) ON DELETE CASCADE,
+  target_amount_brl   REAL    NOT NULL DEFAULT 1000,
+  locked              INTEGER NOT NULL DEFAULT 1,
+  distribution_status TEXT    NOT NULL DEFAULT 'draft'
+                       CHECK(distribution_status IN ('draft','defined','published','paid')),
+  updated_at          TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+);
+
+CREATE TABLE IF NOT EXISTS prize_distribution (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  season_id    INTEGER NOT NULL REFERENCES seasons(id) ON DELETE CASCADE,
+  position     INTEGER NOT NULL,
+  percentage   REAL    DEFAULT NULL,
+  fixed_amount REAL    DEFAULT NULL,
+  description  TEXT    DEFAULT NULL,
+  UNIQUE(season_id, position)
+);
+
 -- ═══════════════════════════════════════════════════════
 -- CONQUISTAS — 5 raridades, 75 conquistas
 -- stats rastreados: kills, days, hours_without_sleep,

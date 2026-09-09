@@ -22,10 +22,12 @@ import fs from 'node:fs';
 // ── Metadados por tabela ────────────────────────────────────────────────────
 
 const BOOL_COLS: Record<string, string[]> = {
-  players:      ['blocked', 'is_supporter', 'is_test_mod', 'is_featured_streamer', 'is_moderator'],
-  entries:      ['is_alive', 'sandbox_ok'],
-  mods:         ['is_required'],
-  seasons:      ['is_active'],
+  players:                 ['blocked', 'is_supporter', 'is_test_mod', 'is_featured_streamer', 'is_moderator'],
+  entries:                 ['is_alive', 'sandbox_ok'],
+  mods:                    ['is_required'],
+  seasons:                 ['is_active'],
+  financial_transactions:  ['is_prize_fund', 'is_public'],
+  prize_fund:              ['locked'],
 };
 
 const JSON_COLS: Record<string, string[]> = {
@@ -42,7 +44,7 @@ const UUID_DEFAULTS: Record<string, string[]> = {
 
 // Allowlist de tabelas e colunas válidas para evitar SQL injection
 // via interpolação de nomes de tabela/coluna no adapter.
-const ALLOWED_TABLES = new Set(['players', 'moderators', 'moderator_tokens', 'entries', 'mods', 'mod_dependencies', 'player_tokens', 'seasons', 'hall_of_fame', 'daily_news', 'season_finances', 'achievements', 'player_achievements', 'heatmap_events', 'player_likes', 'journal_events']);
+const ALLOWED_TABLES = new Set(['players', 'moderators', 'moderator_tokens', 'entries', 'mods', 'mod_dependencies', 'player_tokens', 'seasons', 'hall_of_fame', 'daily_news', 'season_finances', 'achievements', 'player_achievements', 'heatmap_events', 'player_likes', 'journal_events', 'financial_transactions', 'prize_fund', 'prize_distribution']);
 
 const ALLOWED_COLS: Record<string, Set<string>> = {
   players:          new Set(['id','nick','email','password_hash','email_verified_at','twitch_url','youtube_url','kick_url','tiktok_url','status','blocked','is_supporter','supporter_until','is_test_mod','is_featured_streamer','is_moderator','player_token','created_at','deleted_at','gender','yt_channel_id','yt_sub_expires_at','yt_last_live_video_id','yt_live_confirmed_at','twitch_last_live_id','terms_accepted_at']),
@@ -60,7 +62,10 @@ const ALLOWED_COLS: Record<string, Set<string>> = {
   player_achievements: new Set(['id','player_id','achievement_id','entry_id','unlocked_at']),
   player_likes:        new Set(['id','liker_player_id','liked_player_id','created_at']),
   heatmap_events:      new Set(['id','season_id','event_type','grid_x','grid_y','count']),
-  journal_events:      new Set(['id','type','player_id','player_nick','char_name','data','created_at']),
+  journal_events:          new Set(['id','type','player_id','player_nick','char_name','data','created_at']),
+  financial_transactions:  new Set(['id','season_id','type','category','description','amount_brl','funding_source','is_prize_fund','is_public','transaction_date','created_at','updated_at','deleted_at']),
+  prize_fund:              new Set(['id','season_id','target_amount_brl','locked','distribution_status','updated_at']),
+  prize_distribution:      new Set(['id','season_id','position','percentage','fixed_amount','description']),
 };
 
 function assertTable(table: string): void {

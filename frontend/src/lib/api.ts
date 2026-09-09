@@ -539,6 +539,46 @@ export function apiDeleteFinanceEntry(token: string, id: number): Promise<void> 
   return request<void>(`/finances/${id}`, { method: 'DELETE', ...auth(token) });
 }
 
+export function apiGetFinancialTransparency(season?: number): Promise<import('../types').FinancialTransparencyData> {
+  const qs = season ? `?season=${season}` : '';
+  return request<import('../types').FinancialTransparencyData>(`/finances/transparency${qs}`);
+}
+
+export function apiCreateFinancialTransaction(
+  token: string,
+  data: {
+    season_id: number; type: string; category: string; description: string;
+    amount_brl: number; funding_source?: string; is_prize_fund?: boolean;
+    is_public?: boolean; transaction_date: string;
+  },
+): Promise<unknown> {
+  return request<unknown>('/finances/transactions', { method: 'POST', ...json(token, data) });
+}
+
+export function apiUpdateFinancialTransaction(
+  token: string, id: number, data: Record<string, unknown>,
+): Promise<unknown> {
+  return request<unknown>(`/finances/transactions/${id}`, { method: 'PATCH', ...json(token, data) });
+}
+
+export function apiDeleteFinancialTransaction(token: string, id: number): Promise<void> {
+  return request<void>(`/finances/transactions/${id}`, { method: 'DELETE', ...auth(token) });
+}
+
+export function apiUpsertPrizeFund(
+  token: string,
+  data: { season_id: number; target_amount_brl: number; locked?: boolean; distribution_status?: string },
+): Promise<unknown> {
+  return request<unknown>('/finances/prize-fund', { method: 'PUT', ...json(token, data) });
+}
+
+export function apiSetPrizeDistribution(
+  token: string,
+  data: { season_id: number; distribution: { position: number; percentage?: number | null; fixed_amount?: number | null; description?: string | null }[] },
+): Promise<unknown> {
+  return request<unknown>('/finances/prize-distribution', { method: 'PUT', ...json(token, data) });
+}
+
 export function apiSetSupporter(
   token: string,
   playerId: number,

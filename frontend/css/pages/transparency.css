@@ -1,66 +1,199 @@
 ﻿/* PZ Rank - Transparencia financeira */
 
+/* ── Page shell ──────────────────────────────────────────────────────────── */
 
 .transp-page {
   flex: 1;
   background: var(--bg-0);
 }
 
+/* ── Header ──────────────────────────────────────────────────────────────── */
+
 .transp-header {
   background: var(--bg-1);
   border-bottom: 1px solid var(--border);
-  padding: 24px 20px 20px;
-  text-align: center;
+  padding: 20px 20px 18px;
 }
 
-.transp-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--text-3);
-  text-decoration: none;
-  font-size: 14px;
-  margin-bottom: 16px;
-  transition: color .15s;
+.transp-header-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
 }
-.transp-back:hover { color: var(--text-1); }
+
+.transp-header-text { flex: 1; min-width: 0; }
 
 .transp-title {
   font-family: var(--font-display);
-  font-size: 28px;
+  font-size: 26px;
   letter-spacing: 2px;
   color: var(--text-1);
   text-transform: uppercase;
-  margin-bottom: 6px;
+  margin: 0 0 4px;
 }
 
 .transp-subtitle {
-  font-size: 14px;
+  font-size: 15px;
   color: var(--text-3);
   font-family: var(--font-mono);
+  margin: 0 0 8px;
 }
 
+.transp-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.transp-season-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--green-light);
+  background: rgba(94,144,64,0.12);
+  border: 1px solid rgba(94,144,64,0.3);
+  border-radius: 99px;
+  padding: 2px 10px;
+}
+
+.transp-last-updated {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-4);
+}
+
+/* ── Main ────────────────────────────────────────────────────────────────── */
+
 .transp-main {
-  padding: 32px 20px;
+  padding: 24px 20px 60px;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  max-width: 640px;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 
-.transp-loading,
-.transp-error,
+/* ── States ──────────────────────────────────────────────────────────────── */
+
+.transp-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 48px 20px;
+  color: var(--text-3);
+  font-size: 16px;
+  font-family: var(--font-mono);
+  justify-content: center;
+}
+
+.transp-error-state {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 24px 20px;
+  color: var(--red);
+  font-size: 15px;
+  background: rgba(224,64,64,0.06);
+  border: 1px solid rgba(224,64,64,0.2);
+  border-radius: var(--radius-lg);
+}
+.transp-error-state > .ti { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+
 .transp-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  padding: 48px 20px;
+  padding: 60px 20px;
   color: var(--text-3);
   font-size: 16px;
 }
-.transp-error { color: var(--red); }
-.transp-empty .ti { font-size: 32px; opacity: .4; }
+.transp-empty .ti { font-size: 36px; opacity: .3; }
+
+.transp-empty-inline {
+  padding: 16px 20px;
+  font-size: 15px;
+  color: var(--text-3);
+  margin: 0;
+}
+
+/* ── Summary cards ───────────────────────────────────────────────────────── */
+
+.transp-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.transp-summary-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px;
+  overflow: hidden;
+  position: relative;
+}
+
+.transp-sc-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius);
+  background: var(--bg-3);
+  flex-shrink: 0;
+}
+.transp-sc-icon .ti { font-size: 20px; color: var(--text-3); }
+
+.transp-sc-body { flex: 1; min-width: 0; }
+
+.transp-sc-title {
+  font-size: 12px;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  margin-bottom: 4px;
+  font-family: var(--font-mono);
+}
+
+.transp-sc-value {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-1);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.transp-sc-desc {
+  font-size: 13px;
+  color: var(--text-4);
+  margin-top: 2px;
+}
+
+.transp-sc--prize .transp-sc-icon .ti { color: var(--gold); }
+.transp-sc--prize .transp-sc-value     { color: var(--gold); }
+.transp-sc--target .transp-sc-icon .ti { color: var(--green); }
+.transp-sc--remaining .transp-sc-icon .ti { color: var(--text-3); }
+.transp-sc--ops .transp-sc-icon .ti    { color: var(--red); }
+
+/* ── Card ────────────────────────────────────────────────────────────────── */
 
 .transp-card {
   background: var(--bg-2);
@@ -82,21 +215,58 @@
 
 .transp-card-header h2 {
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: 15px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--text-2);
+  margin: 0;
 }
 
-/* Prize card */
+.transp-header-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+/* ── Badges ──────────────────────────────────────────────────────────────── */
+
+.transp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  border-radius: 99px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+.transp-badge--locked {
+  background: rgba(94,144,64,0.15);
+  color: var(--green-light);
+  border: 1px solid rgba(94,144,64,0.35);
+}
+
+.transp-badge--dist-draft     { background: rgba(100,100,100,0.15); color: var(--text-3); border: 1px solid rgba(100,100,100,0.3); }
+.transp-badge--dist-defined   { background: rgba(94,144,64,0.12);   color: var(--green);  border: 1px solid rgba(94,144,64,0.3); }
+.transp-badge--dist-published { background: rgba(94,144,64,0.18);   color: var(--green-light); border: 1px solid rgba(94,144,64,0.4); }
+.transp-badge--dist-paid      { background: rgba(200,168,42,0.15);  color: var(--gold);   border: 1px solid rgba(200,168,42,0.35); }
+
+.transp-badge--ml { margin-left: auto; }
+
+/* ── Prize fund card ─────────────────────────────────────────────────────── */
+
 .transp-card--prize .transp-card-header .ti { color: var(--gold); }
-.transp-card--prize .transp-card-header h2   { color: var(--gold); }
+.transp-card--prize .transp-card-header h2  { color: var(--gold); }
+
+.transp-prize-body { padding: 0 20px 20px; }
 
 .transp-prize-amounts {
   display: flex;
   align-items: baseline;
-  gap: 12px;
-  padding: 20px 20px 8px;
+  gap: 10px;
+  padding: 20px 0 8px;
 }
 
 .transp-prize-current {
@@ -106,42 +276,75 @@
   letter-spacing: 1px;
 }
 
+.transp-prize-sep {
+  font-size: 22px;
+  color: var(--text-4);
+}
+
 .transp-prize-goal {
-  font-size: 15px;
+  font-size: 16px;
   color: var(--text-3);
   font-family: var(--font-mono);
 }
 
 .transp-prize-bar-wrap {
-  margin: 4px 20px 0;
   height: 8px;
   background: var(--bg-4);
   border-radius: 4px;
   overflow: hidden;
+  margin-bottom: 6px;
 }
 
 .transp-prize-bar-fill {
   height: 100%;
   background: linear-gradient(90deg, var(--gold), var(--green-light));
   border-radius: 4px;
-  transition: width .4s ease;
+  transition: width .5s ease;
   min-width: 4px;
 }
 
+.transp-prize-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .transp-prize-pct {
-  padding: 6px 20px 0;
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text-3);
   font-family: var(--font-mono);
 }
 
-.transp-prize-label {
-  padding: 8px 20px 16px;
-  font-size: 14px;
-  color: var(--text-3);
+.transp-prize-remaining {
+  font-size: 13px;
+  color: var(--text-4);
+  font-family: var(--font-mono);
 }
 
-/* Entry rows */
+.transp-prize-note {
+  margin-top: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-3);
+  line-height: 1.5;
+  background: rgba(94,144,64,0.07);
+  border: 1px solid rgba(94,144,64,0.2);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+}
+
+/* ── Two-col layout ──────────────────────────────────────────────────────── */
+
+.transp-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* ── Entry rows ──────────────────────────────────────────────────────────── */
+
 .transp-entries {
   display: flex;
   flex-direction: column;
@@ -149,7 +352,7 @@
 
 .transp-entry {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   padding: 12px 20px;
   border-bottom: 1px solid var(--border);
@@ -164,7 +367,7 @@
 }
 
 .transp-entry-cat {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text-3);
   font-family: var(--font-mono);
   text-transform: uppercase;
@@ -172,15 +375,29 @@
 }
 
 .transp-entry-detail {
-  font-size: 15px;
+  font-size: 14px;
   color: var(--text-2);
+}
+
+.transp-funding-tag {
+  display: inline-block;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--text-4);
+  font-family: var(--font-mono);
+  background: var(--bg-3);
+  border: 1px solid var(--border-mid);
+  border-radius: 4px;
+  padding: 1px 6px;
 }
 
 .transp-entry-value {
   font-family: var(--font-mono);
-  font-size: 16px;
+  font-size: 15px;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+  margin-top: 2px;
+  flex-shrink: 0;
 }
 .transp-entry-value--income  { color: var(--green-light); }
 .transp-entry-value--expense { color: var(--red); }
@@ -198,9 +415,255 @@
 }
 
 .transp-total-value {
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 600;
 }
+
+/* ── Filter bar ──────────────────────────────────────────────────────────── */
+
+.transp-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.transp-filter-btn {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 5px 12px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  background: var(--bg-3);
+  color: var(--text-3);
+  cursor: pointer;
+  transition: all .15s;
+}
+.transp-filter-btn:hover  { color: var(--text-1); border-color: var(--border-mid); }
+.transp-filter-btn.active { background: rgba(94,144,64,0.15); color: var(--green-light); border-color: rgba(94,144,64,0.4); }
+
+/* ── Transaction history ─────────────────────────────────────────────────── */
+
+.transp-tx-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.transp-tx-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  transition: background .12s;
+}
+.transp-tx-row:last-child { border-bottom: none; }
+.transp-tx-row:hover { background: var(--bg-3); }
+
+.transp-tx-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--bg-3);
+}
+.transp-tx--income  .transp-tx-icon .ti { color: var(--green); }
+.transp-tx--expense .transp-tx-icon .ti { color: var(--red); }
+.transp-tx--adjustment .transp-tx-icon .ti { color: var(--text-3); }
+
+.transp-tx-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.transp-tx-desc {
+  font-size: 15px;
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.transp-tx-meta {
+  font-size: 13px;
+  color: var(--text-4);
+  font-family: var(--font-mono);
+}
+
+.transp-tx-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.transp-tx-amount {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.transp-tx-amount--income     { color: var(--green-light); }
+.transp-tx-amount--expense    { color: var(--red); }
+.transp-tx-amount--adjustment { color: var(--text-2); }
+
+.transp-tx-date {
+  font-size: 13px;
+  color: var(--text-4);
+  font-family: var(--font-mono);
+}
+
+/* ── Prize distribution ──────────────────────────────────────────────────── */
+
+.transp-dist-list {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+}
+
+.transp-dist-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.transp-dist-row:last-child { border-bottom: none; }
+
+.transp-dist-pos {
+  font-family: var(--font-display);
+  font-size: 15px;
+  letter-spacing: .5px;
+}
+
+.transp-dist-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.transp-dist-pct {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-3);
+  background: var(--bg-3);
+  border: 1px solid var(--border-mid);
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+
+.transp-dist-amount {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.transp-dist-desc {
+  font-size: 13px;
+  color: var(--text-4);
+}
+
+/* ── Commitment card ─────────────────────────────────────────────────────── */
+
+.transp-card--commitment { border-color: rgba(94,144,64,0.25); }
+.transp-card--commitment .transp-card-header .ti { color: var(--green); }
+.transp-card--commitment .transp-card-header h2  { color: var(--green-light); }
+
+.transp-commitment-body {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.transp-commitment-body p {
+  font-size: 15px;
+  color: var(--text-2);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── Sponsor CTA ─────────────────────────────────────────────────────────── */
+
+.transp-card--sponsor-cta { border-color: var(--amber-border, rgba(200,130,32,0.3)); }
+.transp-card--sponsor-cta .transp-card-header .ti { color: var(--amber, #d4891a); }
+.transp-card--sponsor-cta .transp-card-header h2  { color: var(--amber-light, #e09a2a); }
+
+.transp-sponsor-desc {
+  padding: 14px 20px;
+  font-size: 15px;
+  color: var(--text-2);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.btn-sponsor-contact {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 20px 20px;
+  padding: 10px 20px;
+  background: rgba(200,130,32,0.1);
+  border: 1px solid rgba(200,130,32,0.35);
+  border-radius: var(--radius);
+  color: var(--amber-light, #e09a2a);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+.btn-sponsor-contact:hover {
+  background: rgba(200,130,32,0.18);
+  border-color: rgba(200,130,32,0.55);
+}
+
+/* ── FAQ ─────────────────────────────────────────────────────────────────── */
+
+.transp-faq { display: flex; flex-direction: column; }
+
+.transp-faq-item {
+  border-bottom: 1px solid var(--border);
+}
+.transp-faq-item:last-child { border-bottom: none; }
+
+.transp-faq-q {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-size: 15px;
+  color: var(--text-2);
+  transition: color .12s;
+}
+.transp-faq-q:hover { color: var(--text-1); }
+.transp-faq-q .ti   { font-size: 16px; color: var(--text-4); flex-shrink: 0; }
+
+.transp-faq-a {
+  padding: 0 20px 14px;
+  font-size: 15px;
+  color: var(--text-3);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── Legacy note block ───────────────────────────────────────────────────── */
 
 .transp-note {
   display: flex;
@@ -211,55 +674,20 @@
   border-radius: var(--radius-lg);
   align-items: flex-start;
 }
+.transp-note .ti { color: var(--red); font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+.transp-note p   { font-size: 15px; color: var(--text-2); line-height: 1.5; }
 
-.transp-note .ti {
-  color: var(--red);
-  font-size: 20px;
-  flex-shrink: 0;
-  margin-top: 2px;
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 860px) {
+  .transp-summary-grid   { grid-template-columns: 1fr 1fr; }
+  .transp-two-col        { grid-template-columns: 1fr; }
 }
 
-.transp-note p {
-  font-size: 15px;
-  color: var(--text-2);
-  line-height: 1.5;
-}
-
-/* Card CTA de patrocínio */
-.transp-card--sponsor-cta {
-  border-color: var(--amber-border);
-}
-
-.transp-card--sponsor-cta .transp-card-header .ti { color: var(--amber); }
-.transp-card--sponsor-cta .transp-card-header h2  { color: var(--amber-light); }
-
-.transp-sponsor-desc {
-  padding: 14px 20px;
-  font-size: 15px;
-  color: var(--text-2);
-  line-height: 1.6;
-}
-
-.btn-sponsor-contact {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0 20px 20px;
-  padding: 10px 20px;
-  background: var(--amber-dim);
-  border: 1px solid var(--amber-border);
-  border-radius: var(--radius);
-  color: var(--amber-light);
-  font-family: var(--font-mono);
-  font-size: 15px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: background 0.15s, border-color 0.15s;
-}
-
-.btn-sponsor-contact:hover {
-  background: rgba(200,120,32,0.15);
-  border-color: var(--amber);
+@media (max-width: 560px) {
+  .transp-summary-grid { grid-template-columns: 1fr 1fr; }
+  .transp-prize-current { font-size: 28px; }
+  .transp-tx-meta { display: none; }
 }
 
 
