@@ -117,6 +117,56 @@ interface DistRow {
   description:  string;
 }
 
+// ── Tips per sub-tab ──────────────────────────────────────────────────────
+
+const TIPS_TRANSACTIONS = [
+  'Entradas com "Fundo de premiação" ✓ compõem o valor arrecadado para o prêmio visível na página pública.',
+  'Entradas SEM esse marcador são contadas como custo operacional (hospedagem, domínio, serviços).',
+  'A Data deve ser o dia em que a movimentação aconteceu, não a data de cadastro.',
+  'Remover uma transação faz soft-delete — ela some do histórico público mas permanece no banco.',
+  'Tipo "Ajuste" aparece no histórico mas não afeta nenhum total calculado (fundo nem operacional).',
+];
+const TIPS_FUND = [
+  'A Meta de arrecadação é exibida na página pública com barra de progresso para a comunidade acompanhar.',
+  '"Fundo protegido" garante que os valores do prêmio não se misturam com custos operacionais.',
+  'Evolução de status: Não definida → Definida → Publicada → Paga. Avance gradualmente ao longo da temporada.',
+  'Use % OU valor fixo por posição — não é necessário preencher os dois campos ao mesmo tempo.',
+  'Salvar a distribuição apaga e recria todas as posições — sempre confira antes de clicar em Salvar.',
+];
+const TIPS_LEGACY = [
+  'Este sistema legado (season_finances) é mantido apenas por compatibilidade com dados históricos antigos.',
+  'NÃO alimenta a página pública de transparência — use a aba Transações para novos registros.',
+  'Se você é um moderador novo: ignore esta aba — tudo que você precisa está em Transações e Fundo.',
+];
+const TIPS_SUPPORTERS = [
+  'Apoiadores NÃO têm qualquer vantagem competitiva — é reconhecimento público pela contribuição.',
+  'Use o nick exato do jogador (case-insensitive). O jogador precisa estar com status aprovado.',
+  'Remover um apoiador não apaga dados históricos — apenas remove a marcação ativa.',
+];
+
+function TipsBox({ tips }: { tips: string[] }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="fm-tips-box">
+      <button className="fm-tips-toggle" onClick={() => setOpen(o => !o)}>
+        <i className="ti ti-info-circle" />
+        <span>Como usar este módulo</span>
+        <i className={`ti ${open ? 'ti-chevron-up' : 'ti-chevron-down'} fm-tips-chevron`} />
+      </button>
+      {open && (
+        <div className="fm-tips-body">
+          {tips.map((tip, i) => (
+            <div key={i} className="fm-tip-item">
+              <i className="ti ti-point-filled" />
+              <span>{tip}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main Component ─────────────────────────────────────────────────────────
 
 export function FinancesManager({ token, showToast }: Props) {
@@ -445,6 +495,7 @@ export function FinancesManager({ token, showToast }: Props) {
       {/* ── TRANSACTIONS ─────────────────────────────────────────────────── */}
       {season && tab === 'transactions' && (
         <>
+          <TipsBox tips={TIPS_TRANSACTIONS} />
           <div className="fm-form-card">
             <h3 className="fm-form-title">
               {editTxId !== null ? 'Editar transação' : 'Nova transação'}
@@ -554,7 +605,7 @@ export function FinancesManager({ token, showToast }: Props) {
             <div className="fm-entries-list">
               {transactions.map(t => (
                 <div key={t.id} className={`fm-entry-card fm-tx--${t.type}`}>
-                  <div className="fm-tx-type-badge fm-tx-badge--${t.type}">
+                  <div className={`fm-tx-type-badge fm-tx-badge--${t.type}`}>
                     <i className={`ti ${t.type === 'income' ? 'ti-arrow-up' : t.type === 'expense' ? 'ti-arrow-down' : 'ti-adjustments'}`} />
                   </div>
                   <div className="fm-entry-info">
@@ -586,6 +637,7 @@ export function FinancesManager({ token, showToast }: Props) {
       {/* ── FUND & DISTRIBUTION ──────────────────────────────────────────── */}
       {season && tab === 'fund' && (
         <>
+          <TipsBox tips={TIPS_FUND} />
           {/* Prize fund config */}
           <div className="fm-form-card">
             <h3 className="fm-form-title">
@@ -707,6 +759,7 @@ export function FinancesManager({ token, showToast }: Props) {
       {/* ── LEGACY ENTRIES ────────────────────────────────────────────────── */}
       {season && tab === 'entries' && (
         <>
+          <TipsBox tips={TIPS_LEGACY} />
           <div className="fm-form-card">
             <h3 className="fm-form-title">
               {editEntryId !== null ? 'Editar entrada' : 'Nova entrada'}
@@ -793,6 +846,7 @@ export function FinancesManager({ token, showToast }: Props) {
       {/* ── SUPPORTERS ────────────────────────────────────────────────────── */}
       {tab === 'supporters' && (
         <>
+          <TipsBox tips={TIPS_SUPPORTERS} />
           <div className="fm-form-card">
             <h3 className="fm-form-title">Adicionar apoiador</h3>
             <div className="fm-supp-add-row">

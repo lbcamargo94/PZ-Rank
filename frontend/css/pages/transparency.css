@@ -1000,6 +1000,55 @@
 
 .fm-dist-del { align-self: flex-end; margin-bottom: 1px; }
 
+/* ── TipsBox — dicas contextuais por sub-aba ────────────────────────────── */
+
+.fm-tips-box {
+  background: rgba(94, 144, 64, 0.05);
+  border: 1px solid rgba(94, 144, 64, 0.22);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.fm-tips-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px 14px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--green-light);
+  text-align: left;
+  transition: color 0.15s, background 0.15s;
+}
+.fm-tips-toggle:hover { color: var(--text-1); background: rgba(94, 144, 64, 0.06); }
+.fm-tips-toggle .ti:first-child { font-size: 14px; flex-shrink: 0; }
+
+.fm-tips-chevron { margin-left: auto; font-size: 12px; }
+
+.fm-tips-body {
+  padding: 4px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-top: 1px solid rgba(94, 144, 64, 0.15);
+}
+
+.fm-tip-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-3);
+  line-height: 1.45;
+}
+.fm-tip-item > i { color: var(--green); font-size: 10px; margin-top: 4px; flex-shrink: 0; }
+
 /* ── Mapa de calor ──────────────────────────────────────────────────────── */
 .map-page {
   display: flex;
