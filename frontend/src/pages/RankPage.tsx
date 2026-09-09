@@ -201,7 +201,7 @@ export function RankPage() {
     <>
       <main>
         <div className="container rank-page-top">
-          <button className="btn-ghost btn-sm" onClick={() => navigate(-1)} type="button">
+          <button className="btn-primary btn-sm" onClick={() => navigate(-1)} type="button">
             <i className="ti ti-arrow-left" /> {t('rank.back')}
           </button>
           <div className="rank-search-wrap">
