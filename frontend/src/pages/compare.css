@@ -160,6 +160,22 @@
 .cmp-hero-prog-fill { height: 100%; border-radius: 3px; transition: width .4s ease; }
 .cmp-hero-prog-pct { font-size: .72rem; color: var(--text-4); white-space: nowrap; }
 
+.cmp-hero-profile-btn {
+  display: inline-flex; align-items: center; gap: .35rem;
+  margin-top: .65rem; padding: .38rem .85rem;
+  border-radius: 6px; font-size: .8rem; font-weight: 600;
+  text-decoration: none; transition: all .15s; cursor: pointer;
+  border: 1.5px solid transparent;
+}
+.cmp-hero-profile-btn.c-a-btn {
+  background: var(--ca-dim); border-color: var(--ca-bd); color: var(--ca-txt);
+}
+.cmp-hero-profile-btn.c-a-btn:hover { background: var(--ca); color: #000; border-color: var(--ca); }
+.cmp-hero-profile-btn.c-b-btn {
+  background: var(--cb-dim); border-color: var(--cb-bd); color: var(--cb-txt);
+}
+.cmp-hero-profile-btn.c-b-btn:hover { background: var(--cb); color: #000; border-color: var(--cb); }
+
 .cmp-hero-mid {
   display: flex; flex-direction: column; align-items: center;
   justify-content: center; gap: .75rem; padding-top: .75rem;
@@ -399,10 +415,25 @@
   padding: .45rem 0; border-bottom: 1px solid var(--border);
 }
 .cmp-row:last-child { border-bottom: none; }
-.cmp-sk-row { grid-template-columns: 1fr 120px 1fr; }
+.cmp-sk-row { grid-template-columns: 1fr 140px 1fr; }
 
 .cmp-row-a { display: flex; flex-direction: column; align-items: flex-end;  gap: .25rem; }
 .cmp-row-b { display: flex; flex-direction: column; align-items: flex-start; gap: .25rem; }
+
+/* Segmented skill bar */
+.cmp-seg-bar {
+  display: flex; gap: 2px; align-items: center;
+}
+.cmp-seg-bar.seg-a { flex-direction: row-reverse; }
+.cmp-seg-bar.seg-b { flex-direction: row; }
+.cmp-seg {
+  width: 8px; height: 14px; border-radius: 2px; flex-shrink: 0;
+  transition: opacity .15s;
+}
+.cmp-seg.seg-off { background: var(--bg-4); border: 1px solid var(--border); }
+.cmp-seg.seg-on.seg-a { background: var(--ca); border: 1px solid var(--ca); }
+.cmp-seg.seg-on.seg-b { background: var(--cb); border: 1px solid var(--cb); }
+.cmp-seg.seg-on.dim   { opacity: .35; }
 .cmp-row-lbl {
   display: flex; flex-direction: column; align-items: center;
   gap: .15rem; text-align: center; font-size: .8rem; color: var(--text-3);

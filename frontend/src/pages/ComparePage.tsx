@@ -275,6 +275,11 @@ function HeroCard({ entry, side, rank }: { entry: Entry; side: 'a' | 'b'; rank: 
           </div>
           <span className="cmp-hero-prog-pct">{prog}%</span>
         </div>
+        {entry.player_id != null && (
+          <Link to={`/player/${entry.player_id}`} className={`cmp-hero-profile-btn c-${side}-btn`}>
+            <i className="ti ti-user" /> Ver Perfil
+          </Link>
+        )}
       </div>
     </div>
   );
@@ -656,16 +661,12 @@ function SkillsCard({ eA, eB, nameA, nameB, skillsA, skillsB }: {
                 <div key={sk.id} className="cmp-row cmp-sk-row">
                   <div className="cmp-row-a">
                     <span className={`cmp-rval ${aW ? 'win-a' : bW ? 'lose' : 'tie'}`}>{a}{a === 10 && <i className="ti ti-star-filled cmp-max-star" />}</span>
-                    <div className="cmp-bar-wrap">
-                      <div className={`cmp-bar bar-a${!aW && bW ? ' dim' : ''}`} style={{ width: `${pct(a, b)}%`, minWidth: a > 0 ? '4px' : '0' }} />
-                    </div>
+                    <SegBar level={a} side="a" dim={!aW && bW} />
                   </div>
                   <div className="cmp-row-lbl cmp-sk-name">{sk.name}</div>
                   <div className="cmp-row-b">
                     <span className={`cmp-rval ${bW ? 'win-b' : aW ? 'lose' : 'tie'}`}>{b}{b === 10 && <i className="ti ti-star-filled cmp-max-star" />}</span>
-                    <div className="cmp-bar-wrap">
-                      <div className={`cmp-bar bar-b${!bW && aW ? ' dim' : ''}`} style={{ width: `${pct(b, a)}%`, minWidth: b > 0 ? '4px' : '0' }} />
-                    </div>
+                    <SegBar level={b} side="b" dim={!bW && aW} />
                   </div>
                 </div>
               );
@@ -673,6 +674,18 @@ function SkillsCard({ eA, eB, nameA, nameB, skillsA, skillsB }: {
           </div>
         );
       })}
+    </div>
+  );
+}
+
+// ── Segmented level bar (skills) ──────────────────────────────────────────
+
+function SegBar({ level, side, dim }: { level: number; side: 'a' | 'b'; dim: boolean }) {
+  return (
+    <div className={`cmp-seg-bar seg-${side}`}>
+      {Array.from({ length: 10 }, (_, i) => (
+        <div key={i} className={`cmp-seg ${i < level ? `seg-on seg-${side}${dim ? ' dim' : ''}` : 'seg-off'}`} />
+      ))}
     </div>
   );
 }
