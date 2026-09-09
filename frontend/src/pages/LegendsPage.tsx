@@ -205,7 +205,7 @@ export function LegendsPage() {
     <div className="legends-page">
       <div className="container">
         <div className="legends-header">
-          <button type="button" className="legends-back" onClick={() => navigate(-1)}>
+          <button type="button" className="btn-primary btn-sm" onClick={() => navigate(-1)} style={{ marginBottom: '20px' }}>
             <i className="ti ti-arrow-left" /> Voltar
           </button>
           <h1 className="legends-title">

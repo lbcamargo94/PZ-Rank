@@ -92,12 +92,10 @@ function QuickNav() {
 }
 
 function MainView() {
-  const navigate = useNavigate();
   const { toast, clearToast } = useToast();
 
   return (
     <>
-      <Header onPainel={() => navigate('/painel')} />
       <CommunityStats />
       <main>
         <div className="container home-layout">
@@ -136,6 +134,7 @@ export default function App() {
   return (
     <>
       <div className="page-body">
+        {!isOverlay && <Header onPainel={() => navigate('/painel')} />}
         <Suspense fallback={null}>
           <Routes>
             <Route path="/" element={<MainView />} />

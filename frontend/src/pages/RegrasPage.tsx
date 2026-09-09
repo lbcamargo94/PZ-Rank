@@ -84,7 +84,7 @@ export function RegrasPage() {
     <div className="rg-page" style={{ '--rg-bg-img': `url(${regrasBg})` } as React.CSSProperties}>
       <header className="rg-header">
         <div className="rg-header-inner">
-          <button type="button" className="rg-back-link" onClick={() => navigate(-1)}>
+          <button type="button" className="btn-primary btn-sm" onClick={() => navigate(-1)}>
             <i className="ti ti-arrow-left" />
             <span>{t('regras.back')}</span>
           </button>
