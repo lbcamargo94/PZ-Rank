@@ -241,7 +241,7 @@ function ppDisqTooltip(t: TFunction, reason: string | null | undefined): string 
 
 function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | null; live?: LiveStatus[] }) {
   const { t } = useTranslation();
-  const [tab, setTab] = useState<'stats' | 'skills' | 'traits' | 'achievements'>('stats');
+  const [tab, setTab] = useState<'profile' | 'stats' | 'skills' | 'traits' | 'achievements'>('profile');
   const [showGuide, setShowGuide] = useState(false);
   const isDisqualified = entry.sandbox_ok === false;
 
@@ -357,100 +357,101 @@ function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | nul
         );
       })()}
 
-      {/* Perfil Psicológico */}
-      {(() => {
-        const { primary, secondary, traits, tags } = resolveArchetype(entry);
-        return (
-          <div className="pp-archetype" style={{ '--arch-color': primary.color } as React.CSSProperties}>
-            <div className="pp-arch-badge">
-              <span className="pp-arch-icon">{primary.icon}</span>
-            </div>
-            <div className="pp-arch-info">
-              <span className="pp-arch-eyebrow">{t('player.archetype.eyebrow')}</span>
-              <div className="pp-arch-names">
-                <span className="pp-arch-name">{primary.name}</span>
-                {secondary && (
-                  <span
-                    className="pp-arch-secondary"
-                    style={{ '--secondary-color': secondary.color } as React.CSSProperties}
-                    data-tip={secondary.desc}
-                  >
-                    {secondary.icon} {secondary.name}
-                  </span>
-                )}
-              </div>
-              <span className="pp-arch-desc">{primary.desc}</span>
-              {traits.length > 0 && (
-                <div className="pp-arch-traits">
-                  {traits.map(t => {
-                    const pct = Math.round((t.score / t.max) * 100);
-                    return (
-                      <div key={t.key} className="pp-arch-trait">
-                        <span className="pp-arch-trait-label">
-                          <span className="pp-arch-trait-icon">{t.icon}</span>
-                          {t.label}
-                        </span>
-                        <div className="pp-arch-trait-track">
-                          <div
-                            className="pp-arch-trait-fill"
-                            style={{
-                              width: `${pct}%`,
-                              '--trait-glow': t.color,
-                            } as React.CSSProperties}
-                          />
-                        </div>
-                        <span className="pp-arch-trait-pct">{pct}%</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-              {tags.length > 0 && (
-                <div className="pp-arch-tags">
-                  {tags.map(tag => (
-                    <span
-                      key={tag.id}
-                      className="pp-arch-tag"
-                      style={{ '--tag-color': tag.color } as React.CSSProperties}
-                    >
-                      {tag.icon} {tag.label}
-                    </span>
-                  ))}
-                </div>
-              )}
-              <button
-                className="pp-arch-guide-btn"
-                onClick={() => setShowGuide(true)}
-              >
-                <i className="ti ti-books" />
-                <span>{t('player.archetype.guide_btn')}</span>
-                <i className="ti ti-arrow-right pp-arch-guide-arrow" />
-              </button>
-            </div>
-          </div>
-        );
-      })()}
-
-      {/* Tabs */}
+      {/* Tabs — imediatamente após os stats, antes do conteúdo profundo */}
       <div className="pp-tabs">
+        <button className={`pp-tab${tab === 'profile' ? ' active' : ''}`} onClick={() => setTab('profile')}>
+          <i className="ti ti-user-circle" /><span>Perfil</span>
+        </button>
         <button className={`pp-tab${tab === 'stats' ? ' active' : ''}`} onClick={() => setTab('stats')}>
-          {t('player.tabs.objectives')}
+          <i className="ti ti-target" /><span>{t('player.tabs.objectives')}</span>
         </button>
         <button className={`pp-tab${tab === 'skills' ? ' active' : ''}`} onClick={() => setTab('skills')}>
-          {t('player.tabs.skills')}
+          <i className="ti ti-sword" /><span>{t('player.tabs.skills')}</span>
         </button>
         <button className={`pp-tab${tab === 'traits' ? ' active' : ''}`} onClick={() => setTab('traits')}>
-          {t('player.tabs.traits')}
+          <i className="ti ti-dna" /><span>{t('player.tabs.traits')}</span>
         </button>
         <button className={`pp-tab${tab === 'achievements' ? ' active' : ''}`} onClick={() => setTab('achievements')}>
-          Conquistas
+          <i className="ti ti-trophy" /><span>Conquistas</span>
         </button>
       </div>
 
       <div className="pp-tab-body">
+        {tab === 'profile' && (() => {
+          const { primary, secondary, traits: archTraits, tags } = resolveArchetype(entry);
+          return (
+            <div className="pp-archetype" style={{ '--arch-color': primary.color } as React.CSSProperties}>
+              <div className="pp-arch-badge">
+                <span className="pp-arch-icon">{primary.icon}</span>
+              </div>
+              <div className="pp-arch-info">
+                <span className="pp-arch-eyebrow">{t('player.archetype.eyebrow')}</span>
+                <div className="pp-arch-names">
+                  <span className="pp-arch-name">{primary.name}</span>
+                  {secondary && (
+                    <span
+                      className="pp-arch-secondary"
+                      style={{ '--secondary-color': secondary.color } as React.CSSProperties}
+                      data-tip={secondary.desc}
+                    >
+                      {secondary.icon} {secondary.name}
+                    </span>
+                  )}
+                </div>
+                <span className="pp-arch-desc">{primary.desc}</span>
+                {archTraits.length > 0 && (
+                  <div className="pp-arch-traits">
+                    {archTraits.map(tr => {
+                      const pct = Math.round((tr.score / tr.max) * 100);
+                      return (
+                        <div key={tr.key} className="pp-arch-trait">
+                          <span className="pp-arch-trait-label">
+                            <span className="pp-arch-trait-icon">{tr.icon}</span>
+                            {tr.label}
+                          </span>
+                          <div className="pp-arch-trait-track">
+                            <div
+                              className="pp-arch-trait-fill"
+                              style={{
+                                width: `${pct}%`,
+                                '--trait-glow': tr.color,
+                              } as React.CSSProperties}
+                            />
+                          </div>
+                          <span className="pp-arch-trait-pct">{pct}%</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                {tags.length > 0 && (
+                  <div className="pp-arch-tags">
+                    {tags.map(tag => (
+                      <span
+                        key={tag.id}
+                        className="pp-arch-tag"
+                        style={{ '--tag-color': tag.color } as React.CSSProperties}
+                      >
+                        {tag.icon} {tag.label}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <button
+                  className="pp-arch-guide-btn"
+                  onClick={() => setShowGuide(true)}
+                >
+                  <i className="ti ti-books" />
+                  <span>{t('player.archetype.guide_btn')}</span>
+                  <i className="ti ti-arrow-right pp-arch-guide-arrow" />
+                </button>
+              </div>
+            </div>
+          );
+        })()}
         {tab === 'stats'  && <ObjectivesSection objectives={entry.objectives} kills={entry.kills} />}
         {tab === 'skills' && <SkillsSection skillsStr={entry.skills} />}
-        {tab === 'traits'        && <TraitsSection traitsRaw={entry.traits} />}
+        {tab === 'traits' && <TraitsSection traitsRaw={entry.traits} />}
         {tab === 'achievements' && entry.player_id != null && (
           <AchievementsSection
             playerId={entry.player_id}

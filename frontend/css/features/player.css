@@ -1421,29 +1421,48 @@
 /* Tabs */
 .pp-tabs {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   border-bottom: 1px solid var(--border);
   border-top: 1px solid var(--border);
   background: var(--bg-3);
 }
+.pp-tabs::-webkit-scrollbar { display: none; }
+
 .pp-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   background: none;
   border: none;
   cursor: pointer;
   font-family: var(--font-mono);
   font-size: 16px;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   color: var(--text-3);
-  padding: 10px 20px;
+  padding: 10px 16px;
   transition: color 0.15s, background 0.15s;
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .pp-tab:hover  { color: var(--text-2); background: var(--bg-4); }
 .pp-tab.active { color: var(--green); border-bottom-color: var(--green); }
 
 .pp-tab-body { padding: 16px 20px 20px; }
+
+/* Arquétipo dentro da aba Perfil — sem frosted glass redundante */
+.player-page .pp-tab-body .pp-archetype {
+  margin: 0;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: rgba(255, 255, 255, 0.02);
+  box-shadow: none;
+}
 
 /* Objectives */
 .pp-objectives { display: flex; flex-direction: column; gap: 20px; }
@@ -1917,7 +1936,6 @@ body.overlay-page-active::before { display: none; }
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 24px;
   text-decoration: none;
 }
 
@@ -1956,21 +1974,7 @@ body.overlay-page-active::before { display: none; }
 }
 .pp-obj-pending-banner i { font-size: 16px; flex-shrink: 0; }
 
-/* ── PlayerPage — abas distribuídas em mobile ────────────────── */
-@media (max-width: 560px) {
-  .pp-tabs { justify-content: flex-start; }
-  .pp-tab  {
-    flex: 1;
-    text-align: center;
-    text-transform: none;
-    letter-spacing: 0;
-    padding: 8px 2px;
-    white-space: normal;
-    overflow-wrap: anywhere;
-    hyphens: auto;
-    line-height: 1.25;
-  }
-}
+/* Tabs scrolláveis horizontalmente em mobile — sem hack de texto quebrado */
 
 /* ── 3. Modal "Configurações" — overflow correto em mobile ─── */
 .settings-modal-body {
