@@ -101,6 +101,44 @@
   padding-bottom: 16px;
 }
 
+/* ── Search bar ── */
+.wiki-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  max-width: 440px;
+}
+
+.wiki-search-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--text-3);
+  font-size: 16px;
+  pointer-events: none;
+}
+
+.wiki-search {
+  width: 100%;
+  background: var(--bg-2);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  color: var(--text-1);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  padding: 9px 12px 9px 38px;
+  outline: none;
+  transition: border-color 0.18s;
+}
+
+.wiki-search:focus {
+  border-color: var(--green);
+}
+
+.wiki-search::placeholder {
+  color: var(--text-3);
+}
+
 .mods-list {
   display: flex;
   flex-direction: column;

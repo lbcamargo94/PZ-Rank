@@ -10,7 +10,7 @@
   background: rgba(8, 11, 6, 0.95);
   backdrop-filter: blur(12px);
   position: sticky;
-  top: 0;
+  top: 62px; /* abaixo do site-header fixo */
   z-index: 40;
 }
 
@@ -172,7 +172,7 @@
 
 .guia-top {
   position: sticky;
-  top: 0;
+  top: 62px; /* abaixo do site-header fixo */
   z-index: 50;
   background: rgba(8, 11, 6, 0.95);
   backdrop-filter: blur(14px);
@@ -246,8 +246,8 @@
 /* Sidebar */
 .guia-side {
   position: sticky;
-  top: 62px;
-  height: calc(100vh - 78px);
+  top: 120px; /* site-header (62px) + guia-top (~56px) */
+  height: calc(100vh - 120px);
   overflow-y: auto;
   background: var(--bg-1, rgba(12,17,10,0.92));
   border: 1px solid var(--border, #222820);
