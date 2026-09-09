@@ -61,6 +61,48 @@ ALTER TABLE entries    ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "public_read_entries" ON entries    FOR SELECT USING (true);
 CREATE POLICY "public_read_players" ON players    FOR SELECT USING (true);
 
+-- ── Tabelas financeiras v2 (2026-09-09) ─────────────────────
+
+CREATE TABLE IF NOT EXISTS financial_transactions (
+  id               SERIAL PRIMARY KEY,
+  season_id        INTEGER NOT NULL REFERENCES seasons(id) ON DELETE CASCADE,
+  type             TEXT    NOT NULL CHECK(type IN ('income','expense','adjustment')),
+  category         TEXT    NOT NULL,
+  description      TEXT    NOT NULL,
+  amount_brl       NUMERIC(12,2) NOT NULL DEFAULT 0,
+  funding_source   TEXT    NOT NULL DEFAULT 'organization'
+                   CHECK(funding_source IN ('organization','operational_fund','sponsor','prize_fund','other')),
+  is_prize_fund    BOOLEAN NOT NULL DEFAULT FALSE,
+  is_public        BOOLEAN NOT NULL DEFAULT TRUE,
+  transaction_date TEXT    NOT NULL,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  deleted_at       TIMESTAMPTZ DEFAULT NULL
+);
+
+CREATE TABLE IF NOT EXISTS prize_fund (
+  id                  SERIAL PRIMARY KEY,
+  season_id           INTEGER NOT NULL UNIQUE REFERENCES seasons(id) ON DELETE CASCADE,
+  target_amount_brl   NUMERIC(12,2) NOT NULL DEFAULT 1000,
+  locked              BOOLEAN NOT NULL DEFAULT TRUE,
+  distribution_status TEXT    NOT NULL DEFAULT 'draft'
+                       CHECK(distribution_status IN ('draft','defined','published','paid')),
+  updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS prize_distribution (
+  id           SERIAL PRIMARY KEY,
+  season_id    INTEGER NOT NULL REFERENCES seasons(id) ON DELETE CASCADE,
+  position     INTEGER NOT NULL,
+  percentage   NUMERIC(5,2) DEFAULT NULL,
+  fixed_amount NUMERIC(12,2) DEFAULT NULL,
+  description  TEXT DEFAULT NULL,
+  UNIQUE(season_id, position)
+);
+
+CREATE INDEX IF NOT EXISTS idx_fin_tx_season  ON financial_transactions(season_id);
+CREATE INDEX IF NOT EXISTS idx_fin_tx_deleted ON financial_transactions(deleted_at) WHERE deleted_at IS NULL;
+
 -- Migration v17 (2026-07-24): tipo 'activate' em player_tokens para ativação de contas legadas
 -- ALTER TABLE player_tokens DROP CONSTRAINT IF EXISTS player_tokens_type_check;
 -- ALTER TABLE player_tokens ADD CONSTRAINT player_tokens_type_check CHECK (type IN ('verify', 'reset', 'activate'));
