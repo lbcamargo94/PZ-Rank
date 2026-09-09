@@ -597,6 +597,53 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     });
   }
 
+  // Fire-and-forget: avalia conquistas do jogador após cada sync bem-sucedido.
+  void (async () => {
+    try {
+      const { evaluateAchievements } = await import('../lib/achievements');
+      await evaluateAchievements(player.id, decoded.characterName, (data as { id: number }).id, {
+        kills:             decoded.kills,
+        days:              decoded.days,
+        animalsKilled:     decoded.animalsKilled,
+        fishCaught:        decoded.fishCaught,
+        cropsHarvested:    decoded.cropsHarvested,
+        itemsCrafted:      decoded.itemsCrafted,
+        housesLooted:      decoded.housesLooted,
+        hoursWithoutSleep: decoded.hoursWithoutSleep,
+        treesCut:          decoded.treesCut,
+        booksRead:         decoded.booksRead,
+        structuresBuilt:   decoded.structuresBuilt,
+        cropsPlanted:      decoded.cropsPlanted,
+        spiffoVisited:     decoded.spiffoVisited,
+        eggsCollected:     decoded.eggsCollected,
+        milkProduced:      decoded.milkProduced,
+        stoneStructures:   decoded.stoneStructures,
+        ceramicItems:      decoded.ceramicItems,
+        forgedWeapons:     decoded.forgedWeapons,
+        kmDriven:          decoded.kmDriven,
+        citiesVisited:     decoded.citiesVisited,
+        militaryVisited:   decoded.militaryVisited,
+        mealsCooked:       decoded.mealsCooked,
+        waterCollected:    decoded.waterCollected,
+        materialsCrafted:  decoded.materialsCrafted,
+        animalTracks:      decoded.animalTracks,
+        weaponsCrafted:    decoded.weaponsCrafted,
+        furnitureCrafted:  decoded.furnitureCrafted,
+        clothesCrafted:    decoded.clothesCrafted,
+        cheeseProduced:    decoded.cheeseProduced,
+        doorsOpened:       decoded.doorsOpened,
+        sleepLocations:    decoded.sleepLocations,
+        basementsExplored: decoded.basementsExplored,
+        stationsUsed:      decoded.stationsUsed,
+        animalSpecies:     decoded.animalSpecies,
+        daysNoCanned:      decoded.daysNoCanned,
+        skillLevels:       decoded.skillLevels,
+      });
+    } catch (e) {
+      console.error('[achievements]', e);
+    }
+  })();
+
   // Jornal do Apocalipse: detecta eventos notáveis e persiste em journal_events.
   void (async () => {
     try {

@@ -59,7 +59,7 @@ const ALLOWED_COLS: Record<string, Set<string>> = {
   daily_news:       new Set(['id','date','headline','stats','created_at']),
   season_finances:     new Set(['id','season_id','category','label','amount_brl','goal_brl','updated_at','created_at']),
   achievements:        new Set(['id','slug','name','description','icon','tier','stat','threshold']),
-  player_achievements: new Set(['id','player_id','achievement_id','entry_id','unlocked_at']),
+  player_achievements: new Set(['id','player_id','achievement_id','entry_id','character_name','unlocked_at']),
   player_likes:        new Set(['id','liker_player_id','liked_player_id','created_at']),
   heatmap_events:      new Set(['id','season_id','event_type','grid_x','grid_y','count']),
   journal_events:          new Set(['id','type','player_id','player_nick','char_name','data','created_at']),

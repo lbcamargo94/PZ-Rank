@@ -10,6 +10,7 @@ import { parseTraitList, resolveTrait, getTraitImageUrl } from '../lib/traits';
 import { getProfessionImageUrl } from '../lib/professions';
 import { SPIFFOS_RESTAURANTS, BASE_ITEMS, initObjectives } from '../lib/objectives';
 import { ProgressBar } from '../components/ProgressBar';
+import { AchievementsSection } from '../components/AchievementsSection';
 import { resolveArchetype } from '../lib/archetype';
 import { ArchetypeGuideModal } from '../components/ArchetypeGuideModal';
 import { LiveBadges } from '../components/LiveBadges';
@@ -240,9 +241,45 @@ function ppDisqTooltip(t: TFunction, reason: string | null | undefined): string 
 
 function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | null; live?: LiveStatus[] }) {
   const { t } = useTranslation();
-  const [tab, setTab] = useState<'stats' | 'skills' | 'traits'>('stats');
+  const [tab, setTab] = useState<'stats' | 'skills' | 'traits' | 'achievements'>('stats');
   const [showGuide, setShowGuide] = useState(false);
   const isDisqualified = entry.sandbox_ok === false;
+
+  const spiffoBasesCount = (() => {
+    const obj = entry.objectives as Record<string, unknown> | null;
+    if (!obj) return 0;
+    const bases = (obj.bases ?? {}) as Record<string, { has_base?: boolean }>;
+    return Object.values(bases).filter(b => b?.has_base).length;
+  })();
+  const playerStats: Record<string, number> = {
+    kills: entry.kills ?? 0, days: entry.days ?? 0,
+    hours_without_sleep: entry.hours_without_sleep ?? 0,
+    animals_killed:      entry.animals_killed      ?? 0,
+    fish_caught:         entry.fish_caught          ?? 0,
+    crops_harvested:     entry.crops_harvested      ?? 0,
+    items_crafted:       entry.items_crafted        ?? 0,
+    houses_looted:       entry.houses_looted        ?? 0,
+    trees_cut:           entry.trees_cut            ?? 0,
+    books_read:          entry.books_read           ?? 0,
+    structures_built:    entry.structures_built     ?? 0,
+    crops_planted:       entry.crops_planted        ?? 0,
+    spiffo_visited:      entry.spiffo_visited       ?? 0,
+    spiffo_base_any:     spiffoBasesCount,
+    spiffo_base_five:    spiffoBasesCount,
+    all_spiffo_bases:    spiffoBasesCount,
+    eggs_collected:      entry.eggs_collected       ?? 0,
+    milk_produced:       entry.milk_produced        ?? 0,
+    stone_structures:    entry.stone_structures     ?? 0,
+    ceramic_items:       entry.ceramic_items        ?? 0,
+    forged_weapons:      entry.forged_weapons       ?? 0,
+    km_driven:           entry.km_driven            ?? 0,
+    cities_visited:      entry.cities_visited       ?? 0,
+    military_visited:    entry.military_visited     ?? 0,
+    meals_cooked:        entry.meals_cooked         ?? 0,
+    water_collected:     entry.water_collected      ?? 0,
+    materials_crafted:   entry.materials_crafted    ?? 0,
+    animal_tracks:       entry.animal_tracks        ?? 0,
+  };
 
   return (
     <div className={`pp-char-card${isDisqualified ? ' pp-char-dead' : entry.is_alive ? '' : ' pp-char-dead'}`}>
@@ -405,12 +442,22 @@ function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | nul
         <button className={`pp-tab${tab === 'traits' ? ' active' : ''}`} onClick={() => setTab('traits')}>
           {t('player.tabs.traits')}
         </button>
+        <button className={`pp-tab${tab === 'achievements' ? ' active' : ''}`} onClick={() => setTab('achievements')}>
+          Conquistas
+        </button>
       </div>
 
       <div className="pp-tab-body">
         {tab === 'stats'  && <ObjectivesSection objectives={entry.objectives} kills={entry.kills} />}
         {tab === 'skills' && <SkillsSection skillsStr={entry.skills} />}
-        {tab === 'traits' && <TraitsSection traitsRaw={entry.traits} />}
+        {tab === 'traits'        && <TraitsSection traitsRaw={entry.traits} />}
+        {tab === 'achievements' && entry.player_id != null && (
+          <AchievementsSection
+            playerId={entry.player_id}
+            characterName={entry.character_name ?? ''}
+            playerStats={playerStats}
+          />
+        )}
       </div>
 
       {showGuide && <ArchetypeGuideModal onClose={() => setShowGuide(false)} />}
