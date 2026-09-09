@@ -868,6 +868,138 @@
   font-family: var(--font-mono);
 }
 
+/* ── FinancesManager sub-tabs ────────────────────────────────────────────── */
+
+.fm-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 0 16px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.fm-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 6px 14px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  background: var(--bg-3);
+  color: var(--text-3);
+  cursor: pointer;
+  transition: all .15s;
+}
+.fm-tab:hover  { color: var(--text-1); border-color: var(--border-mid); }
+.fm-tab.active { background: rgba(94,144,64,0.15); color: var(--green-light); border-color: rgba(94,144,64,0.4); }
+
+/* ── 3-col form grid ─────────────────────────────────────────────────────── */
+
+.fm-form-grid--3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+@media (max-width: 700px) {
+  .fm-form-grid--3 { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 500px) {
+  .fm-form-grid--3 { grid-template-columns: 1fr; }
+}
+
+/* checkbox label */
+.fm-form-label--check {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--text-3);
+}
+.fm-form-label--check > span:first-of-type {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  color: var(--text-2);
+}
+.fm-form-label--check input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--green); }
+
+.fm-form-hint--inline {
+  color: var(--text-4);
+  font-size: 12px;
+  font-family: var(--font-mono);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  margin-left: 6px;
+}
+
+/* ── Transaction list ────────────────────────────────────────────────────── */
+
+.fm-tx--income  { border-left-color: var(--green-light); }
+.fm-tx--expense { border-left-color: var(--red); }
+.fm-tx--adjustment { border-left-color: var(--text-3); }
+
+.fm-tx-type-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg-3);
+  flex-shrink: 0;
+}
+.fm-tx--income  .fm-tx-type-badge .ti { color: var(--green); }
+.fm-tx--expense .fm-tx-type-badge .ti { color: var(--red); }
+.fm-tx--adjustment .fm-tx-type-badge .ti { color: var(--text-3); }
+
+.fm-tx-amount--income     { color: var(--green-light); }
+.fm-tx-amount--expense    { color: var(--red); }
+.fm-tx-amount--adjustment { color: var(--text-2); }
+
+.fm-prize-tag {
+  color: var(--gold);
+  font-size: 12px;
+}
+
+/* ── Distribution editor ─────────────────────────────────────────────────── */
+
+.fm-dist-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.fm-dist-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.fm-dist-pos {
+  font-family: var(--font-display);
+  font-size: 15px;
+  color: var(--gold);
+  min-width: 30px;
+  padding-bottom: 9px;
+  flex-shrink: 0;
+}
+
+.fm-form-label--sm {
+  min-width: 80px;
+  max-width: 120px;
+  font-size: 13px;
+}
+.fm-form-label--sm span { font-size: 12px; color: var(--text-4); }
+
+.fm-form-label--grow { flex: 1; min-width: 140px; max-width: unset; }
+
+.fm-dist-del { align-self: flex-end; margin-bottom: 1px; }
+
 /* ── Mapa de calor ──────────────────────────────────────────────────────── */
 .map-page {
   display: flex;
