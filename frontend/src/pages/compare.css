@@ -352,29 +352,51 @@
   border-bottom: 1px solid var(--border); text-align: center;
   border-radius: 4px;
 }
-.cmp-obj-status.done { color: var(--green-light); background: var(--green-dim); }
-.cmp-obj-status.pend { color: var(--text-4); background: var(--bg-4); }
+.cmp-obj-status.done-a { color: var(--ca-txt); background: var(--ca-dim); border: 1px solid var(--ca-bd); }
+.cmp-obj-status.done-b { color: var(--cb-txt); background: var(--cb-dim); border: 1px solid var(--cb-bd); }
+.cmp-obj-status.pend   { color: var(--text-4); background: var(--bg-4); border: 1px solid var(--border); opacity: .6; }
 
 /* ── Spiffo's grid ─────────────────────────────────────────────────────── */
 .cmp-spiffo-grid {
-  display: grid; grid-template-columns: 1fr auto auto;
-  gap: .2rem; align-items: center; margin-top: .25rem;
+  display: grid; grid-template-columns: 1fr 90px 90px;
+  gap: 0 .4rem; align-items: stretch; margin-top: .25rem;
 }
-.cmp-spiffo-hdr { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text-4); padding-bottom: .35rem; text-align: center; }
+.cmp-spiffo-hdr {
+  font-size: .7rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--text-4); padding-bottom: .45rem;
+  text-align: center;
+}
 .cmp-spiffo-hdr:first-child { text-align: left; }
+
 .cmp-spiffo-row { display: contents; }
+
 .cmp-spiffo-row .cmp-spiffo-name {
-  display: flex; align-items: center; gap: .35rem;
-  font-size: .82rem; color: var(--text-3); padding: .3rem 0;
+  display: flex; align-items: center; gap: .4rem;
+  font-size: .82rem; color: var(--text-3); padding: .4rem .2rem;
   border-bottom: 1px solid var(--border);
+  transition: color .15s;
 }
+/* name highlight by state */
+.cmp-spiffo-row.sp-both   .cmp-spiffo-name { color: var(--text-1); font-weight: 600; }
+.cmp-spiffo-row.sp-only-a .cmp-spiffo-name { color: var(--ca-txt); }
+.cmp-spiffo-row.sp-only-b .cmp-spiffo-name { color: var(--cb-txt); }
+
 .cmp-spiffo-status {
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.1rem; padding: .3rem .5rem;
+  display: flex; align-items: center; justify-content: center; gap: .3rem;
+  font-size: .75rem; font-weight: 700; padding: .3rem .4rem;
   border-bottom: 1px solid var(--border);
+  border-radius: 0;
 }
-.cmp-spiffo-status.done { color: var(--green-light); }
-.cmp-spiffo-status.pend { color: var(--text-4); opacity: .4; }
+.cmp-spiffo-status.done-a {
+  color: var(--ca-txt); background: var(--ca-dim);
+}
+.cmp-spiffo-status.done-b {
+  color: var(--cb-txt); background: var(--cb-dim);
+}
+.cmp-spiffo-status.pend {
+  color: var(--text-4); background: transparent; opacity: .45;
+}
+.cmp-spiffo-lbl { letter-spacing: .02em; }
 
 /* ── Skill section ─────────────────────────────────────────────────────── */
 .cmp-skill-summary {
@@ -472,7 +494,9 @@
   .cmp-comp-header, .cmp-comp-row { grid-template-columns: 1fr 80px 80px; }
   .cmp-comp-bar-name { min-width: 70px; font-size: .72rem; }
   .cmp-obj-grid   { grid-template-columns: 1fr 90px 90px; }
-  .cmp-spiffo-grid { grid-template-columns: 1fr 50px 50px; }
+  .cmp-spiffo-grid { grid-template-columns: 1fr 68px 68px; }
+  .cmp-spiffo-lbl { display: none; }
+  .cmp-spiffo-status { font-size: .85rem; }
   .cmp-skill-summary { gap: .5rem; }
   .cmp-skill-sum-n { font-size: 1.5rem; }
   .cmp-filter-chips { gap: .3rem; }

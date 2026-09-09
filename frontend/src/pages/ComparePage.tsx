@@ -559,8 +559,8 @@ function ObjectivesCard({ oA, oB, nameA, nameB, eA, eB }: {
           return (
             <div key={o.key} className="cmp-obj-row">
               <span className="cmp-obj-name"><i className={`ti ${o.icon}`} /> {o.label}<span className="cmp-obj-pts">+{fmtNum(o.pts)}</span></span>
-              <span className={`cmp-obj-status ${dA ? 'done' : 'pend'}`}>{dA ? <><i className="ti ti-check" /> Concluído</> : <><i className="ti ti-clock" /> Pendente</>}</span>
-              <span className={`cmp-obj-status ${dB ? 'done' : 'pend'}`}>{dB ? <><i className="ti ti-check" /> Concluído</> : <><i className="ti ti-clock" /> Pendente</>}</span>
+              <span className={`cmp-obj-status ${dA ? 'done-a' : 'pend'}`}>{dA ? <><i className="ti ti-check" /> Concluído</> : <><i className="ti ti-x" /> Pendente</>}</span>
+              <span className={`cmp-obj-status ${dB ? 'done-b' : 'pend'}`}>{dB ? <><i className="ti ti-check" /> Concluído</> : <><i className="ti ti-x" /> Pendente</>}</span>
             </div>
           );
         })}
@@ -577,11 +577,20 @@ function ObjectivesCard({ oA, oB, nameA, nameB, eA, eB }: {
         {SPIFFOS_RESTAURANTS.map(r => {
           const dA = !!oA.bases?.[r.id]?.has_base;
           const dB = !!oB.bases?.[r.id]?.has_base;
+          const rowCls = dA && dB ? 'sp-both' : dA ? 'sp-only-a' : dB ? 'sp-only-b' : '';
           return (
-            <div key={r.id} className="cmp-spiffo-row">
-              <span className="cmp-spiffo-name"><i className="ti ti-map-pin" /> {r.name}</span>
-              <span className={`cmp-spiffo-status ${dA ? 'done' : 'pend'}`}>{dA ? <i className="ti ti-check-circle" /> : <i className="ti ti-circle" />}</span>
-              <span className={`cmp-spiffo-status ${dB ? 'done' : 'pend'}`}>{dB ? <i className="ti ti-check-circle" /> : <i className="ti ti-circle" />}</span>
+            <div key={r.id} className={`cmp-spiffo-row ${rowCls}`}>
+              <span className="cmp-spiffo-name">
+                <i className="ti ti-map-pin" /> {r.name}
+              </span>
+              <span className={`cmp-spiffo-status ${dA ? 'done-a' : 'pend'}`}>
+                <i className={`ti ${dA ? 'ti-check' : 'ti-x'}`} />
+                <span className="cmp-spiffo-lbl">{dA ? 'Feito' : 'Falta'}</span>
+              </span>
+              <span className={`cmp-spiffo-status ${dB ? 'done-b' : 'pend'}`}>
+                <i className={`ti ${dB ? 'ti-check' : 'ti-x'}`} />
+                <span className="cmp-spiffo-lbl">{dB ? 'Feito' : 'Falta'}</span>
+              </span>
             </div>
           );
         })}
