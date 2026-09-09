@@ -673,9 +673,79 @@
   font-size: 13px;
 }
 
+/* ── guia-header / guia-wrap / guia-main (guias novos) ─────────── */
+
+/* Header sticky dos guias novos — igual ao .guia-top */
+.guia-header {
+  position: sticky;
+  top: 62px; /* abaixo do site-header fixo */
+  z-index: 50;
+  background: rgba(8, 11, 6, 0.95);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border, #222820);
+}
+
+.guia-header-inner {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.guia-header-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* Layout principal dos guias novos — igual ao .guia-layout */
+.guia-wrap {
+  max-width: 1440px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 272px minmax(0, 1fr);
+  gap: 20px;
+  padding: 20px 20px 80px;
+}
+
+/* Área de conteúdo principal — sem estilos especiais, o grid já cuida */
+.guia-main {
+  min-width: 0;
+}
+
+/* Links do TOC na sidebar (guias novos) */
+.guia-side-label {
+  font-size: 11px;
+  color: var(--green-light, #7EC255);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+
+.guia-side-link {
+  display: block;
+  color: var(--text-3, #8C8C8C);
+  font-size: 13px;
+  text-decoration: none;
+  padding: 4px 0;
+  border-left: 2px solid transparent;
+  padding-left: 8px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.guia-side-link:hover {
+  color: var(--text-1, #F5F5F5);
+  border-left-color: var(--green, #5E9040);
+}
+
 /* ── Responsive ──────────────────────────────────────────────────── */
 @media (max-width: 1080px) {
-  .guia-layout { grid-template-columns: 1fr; }
+  .guia-layout,
+  .guia-wrap { grid-template-columns: 1fr; }
   .guia-side { display: none; }
   .guia-grid4 { grid-template-columns: repeat(2, 1fr); }
   .guia-calc { grid-template-columns: repeat(2, 1fr); }
@@ -687,14 +757,16 @@
   .guia-grid4,
   .guia-checks { grid-template-columns: 1fr; }
   .guia-calc { grid-template-columns: 1fr; }
-  .guia-actions .guia-btn:nth-child(2) { display: none; }
-  .guia-top-inner { align-items: flex-start; }
+  .guia-actions .guia-btn:nth-child(2),
+  .guia-header-actions .guia-btn:nth-child(2) { display: none; }
+  .guia-top-inner,
+  .guia-header-inner { align-items: flex-start; }
   .tips-grid { grid-template-columns: 1fr; }
 }
 
 @media print {
-  .guia-top, .guia-side, .guia-actions, .guia-no-print { display: none !important; }
-  .guia-layout { display: block; max-width: none; padding: 0; }
+  .guia-top, .guia-header, .guia-side, .guia-actions, .guia-header-actions, .guia-no-print { display: none !important; }
+  .guia-layout, .guia-wrap { display: block; max-width: none; padding: 0; }
   .guia-page { background: white; color: #111; }
   .guia-section, .guia-hero, .guia-card, .guia-details {
     background: white; color: #111; box-shadow: none; border-color: #bbb;
