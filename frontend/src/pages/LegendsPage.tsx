@@ -159,7 +159,7 @@ const SEASON_CARDS: CardDef[] = [
   },
   {
     icon:      '🧬',
-    category:  'Mais Habilidades Maxadas',
+    category:  'Habilidades Maxadas',
     color:     '#6eb5ff',
     key:       'most_skills_10',
     statLabel: 'habilidades no nível 10',

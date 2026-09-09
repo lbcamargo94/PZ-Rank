@@ -173,12 +173,14 @@
 
 .legend-category {
   font-family: var(--font-mono);
-  font-size: 14px;
-  letter-spacing: 2px;
+  font-size: 13px;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--legend-color, var(--text-2));
-  text-shadow: 0 0 12px var(--legend-color, transparent);
+  text-shadow: 0 0 10px var(--legend-color, transparent);
   opacity: 0.9;
+  word-break: break-word;
+  line-height: 1.4;
 }
 
 .legend-player-block {
