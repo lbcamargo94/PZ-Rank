@@ -45,6 +45,7 @@ const GuiaRastreamento      = lazy(() => import('./pages/GuiaRastreamento').then
 const GuiaArmadilhas        = lazy(() => import('./pages/GuiaArmadilhas').then(m => ({ default: m.GuiaArmadilhas })));
 const GuiaLascamento        = lazy(() => import('./pages/GuiaLascamento').then(m => ({ default: m.GuiaLascamento })));
 const GuiaAlvenaria         = lazy(() => import('./pages/GuiaAlvenaria').then(m => ({ default: m.GuiaAlvenaria })));
+const ComparePage           = lazy(() => import('./pages/ComparePage').then(m => ({ default: m.ComparePage })));
 const VerifyEmailPage       = lazy(() => import('./pages/VerifyEmailPage').then(m => ({ default: m.VerifyEmailPage })));
 const ResetPasswordPage     = lazy(() => import('./pages/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
 const ActivateAccountPage   = lazy(() => import('./pages/ActivateAccountPage').then(m => ({ default: m.ActivateAccountPage })));
@@ -69,6 +70,7 @@ const QUICK_NAV = [
   { to: '/lendas',        icon: 'ti-medal',            key: 'legends'       },
   { to: '/links',         icon: 'ti-link',             key: 'links'         },
   { to: '/transparencia', icon: 'ti-file-certificate', key: 'transparency'  },
+  { to: '/comparar',     icon: 'ti-arrows-diff',      key: 'compare'       },
 ] as const;
 
 function QuickNav() {
@@ -163,6 +165,7 @@ export default function App() {
             <Route path="/dicas/armadilhas" element={<GuiaArmadilhas />} />
             <Route path="/dicas/lascamento" element={<GuiaLascamento />} />
             <Route path="/dicas/alvenaria" element={<GuiaAlvenaria />} />
+            <Route path="/comparar" element={<ComparePage />} />
             <Route path="/regras" element={<RegrasPage />} />
             <Route path="/verificar-email"  element={<VerifyEmailPage />} />
             <Route path="/redefinir-senha"  element={<ResetPasswordPage />} />

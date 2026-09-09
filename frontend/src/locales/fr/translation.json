@@ -42,7 +42,8 @@
       "tips":          { "label": "Astuces",          "sub": "Guide de survie" },
       "legends":       { "label": "Légendes",         "sub": "Temple de la renommée" },
       "links":         { "label": "Liens Utiles",     "sub": "Ressources du championnat" },
-      "transparency":  { "label": "Transparence",     "sub": "Données du serveur" }
+      "transparency":  { "label": "Transparence",     "sub": "Données du serveur" },
+      "compare":       { "label": "Comparer",         "sub": "Joueur vs Joueur" }
     },
     "stats": {
       "season_active_days_one": "{{count}} jour active",

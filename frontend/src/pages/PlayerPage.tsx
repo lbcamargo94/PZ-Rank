@@ -530,9 +530,18 @@ export function PlayerPage() {
     <div className="player-page" style={{ '--pp-bg-img': `url(${perfilBg})` } as React.CSSProperties}>
       <div className="container">
         {/* Back link */}
-        <button className="btn-primary btn-sm back-btn-rank" onClick={() => navigate(-1)}>
-          <i className="ti ti-arrow-left" /> {t('player.back')}
-        </button>
+        <div style={{ display: 'flex', gap: '.5rem', alignItems: 'center', marginBottom: '.75rem' }}>
+          <button className="btn-primary btn-sm back-btn-rank" onClick={() => navigate(-1)}>
+            <i className="ti ti-arrow-left" /> {t('player.back')}
+          </button>
+          <Link
+            to={`/comparar?a=${profile.player.id}`}
+            className="btn-primary btn-sm"
+            style={{ textDecoration: 'none' }}
+          >
+            <i className="ti ti-arrows-diff" /> Comparar
+          </Link>
+        </div>
 
         {/* Player header */}
         <div className="pp-header">

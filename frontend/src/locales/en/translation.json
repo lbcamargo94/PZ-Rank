@@ -42,7 +42,8 @@
       "tips":          { "label": "Tips",           "sub": "Survival guide" },
       "legends":       { "label": "Legends",        "sub": "Hall of fame" },
       "links":         { "label": "Useful Links",   "sub": "Championship resources" },
-      "transparency":  { "label": "Transparency",   "sub": "Server data" }
+      "transparency":  { "label": "Transparency",   "sub": "Server data" },
+      "compare":       { "label": "Compare",        "sub": "Player vs Player" }
     },
     "stats": {
       "season_active_days_one": "{{count}} day active",
