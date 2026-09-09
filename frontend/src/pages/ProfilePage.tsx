@@ -16,7 +16,6 @@ import {
 } from '../lib/api';
 import { clearPlayerSession } from './AccountPage';
 import { OtpInput } from '../components/OtpInput';
-import { Header } from '../components/Header';
 import type { PlayerSession, PlayerAccount, Entry, LikedPlayer } from '../types';
 
 type AccountTab = 'conta' | 'links' | 'runs' | 'curtidos';
@@ -550,8 +549,6 @@ export function ProfilePage() {
 
   return (
     <>
-      <Header onPainel={() => navigate('/painel')} />
-
       <div className="profile-page" style={bgStyle}>
         <div className="profile-inner">
           {!session || (!profile && !loadError) ? (

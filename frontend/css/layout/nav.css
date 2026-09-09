@@ -94,15 +94,7 @@
 .header-hamburger:hover { color: var(--text-1); border-color: var(--text-3); }
 .header-hamburger.is-open { color: var(--text-1); border-color: var(--text-3); background: var(--bg-3); }
 
-.header-subtitle {
-  font-family: var(--font-mono);
-  font-size: 14px;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: var(--gold);
-  opacity: 0.75;
-  display: block;
-}
+.header-subtitle { display: none; }
 
 .site-nav {
   display: none;

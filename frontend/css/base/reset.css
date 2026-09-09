@@ -27,6 +27,7 @@ html { scroll-behavior: smooth; }
   flex: 1;
   display: flex;
   flex-direction: column;
+  padding-top: 62px; /* altura do header fixo */
 }
 
 body {

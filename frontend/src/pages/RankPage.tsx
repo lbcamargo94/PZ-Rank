@@ -9,7 +9,6 @@ import { buildLiveMap } from '../lib/live';
 import { translateApiError } from '../lib/apiErrors';
 import { useToast } from '../hooks/useToast';
 import { Toast } from '../components/Toast';
-import { Header } from '../components/Header';
 import { RankTable } from '../components/RankTable';
 
 const TAB_CONFIG: { key: RankTab; labelKey: string; icon: string }[] = [
@@ -200,8 +199,6 @@ export function RankPage() {
 
   return (
     <>
-      <Header onPainel={() => navigate('/painel')} />
-
       <main>
         <div className="container rank-page-top">
           <button className="btn-ghost btn-sm" onClick={() => navigate(-1)} type="button">

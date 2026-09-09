@@ -73,6 +73,12 @@ const QUICK_NAV = [
   { to: '/comparar',     icon: 'ti-arrows-diff',      key: 'compare'       },
 ] as const;
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  return null;
+}
+
 function QuickNav() {
   const { t } = useTranslation();
   return (
@@ -136,6 +142,7 @@ export default function App() {
       <div className="page-body">
         {!isOverlay && <Header onPainel={() => navigate('/painel')} />}
         <Suspense fallback={null}>
+          <ScrollToTop />
           <Routes>
             <Route path="/" element={<MainView />} />
             <Route path="/rank" element={<RankPage />} />
