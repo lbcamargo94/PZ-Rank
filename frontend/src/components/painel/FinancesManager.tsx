@@ -104,9 +104,10 @@ const EMPTY_TX: TxFormState = {
 
 // prize fund form
 interface FundFormState {
-  target_amount_brl:   string;
-  locked:              boolean;
-  distribution_status: string;
+  target_amount_brl:    string;
+  op_target_amount_brl: string;
+  locked:               boolean;
+  distribution_status:  string;
 }
 
 // distribution row
@@ -187,7 +188,7 @@ export function FinancesManager({ token, showToast }: Props) {
 
   // prize fund
   const [fundForm, setFundForm] = useState<FundFormState>({
-    target_amount_brl: '1000', locked: true, distribution_status: 'draft',
+    target_amount_brl: '1000', op_target_amount_brl: '0', locked: true, distribution_status: 'draft',
   });
   const [fundExists, setFundExists] = useState(false);
 
@@ -220,9 +221,10 @@ export function FinancesManager({ token, showToast }: Props) {
         if (transp.prizeFund) {
           setFundExists(true);
           setFundForm({
-            target_amount_brl:   String(transp.prizeFund.targetAmount),
-            locked:              transp.prizeFund.locked,
-            distribution_status: transp.prizeFund.distributionStatus,
+            target_amount_brl:    String(transp.prizeFund.targetAmount),
+            op_target_amount_brl: String(transp.prizeFund.opTargetAmount ?? 0),
+            locked:               transp.prizeFund.locked,
+            distribution_status:  transp.prizeFund.distributionStatus,
           });
         }
 
@@ -361,12 +363,14 @@ export function FinancesManager({ token, showToast }: Props) {
 
   async function handleSaveFund() {
     if (!season) return;
-    const target = parseFloat(fundForm.target_amount_brl.replace(',', '.'));
-    if (isNaN(target) || target < 0) { showToast('Meta inválida.', 'error'); return; }
+    const target   = parseFloat(fundForm.target_amount_brl.replace(',', '.'));
+    const opTarget = parseFloat(fundForm.op_target_amount_brl.replace(',', '.'));
+    if (isNaN(target)   || target < 0)   { showToast('Meta do prêmio inválida.', 'error'); return; }
+    if (isNaN(opTarget) || opTarget < 0) { showToast('Meta de custos inválida.', 'error'); return; }
     setSaving(true);
     try {
       await apiUpsertPrizeFund(token, {
-        season_id: season.id, target_amount_brl: target,
+        season_id: season.id, target_amount_brl: target, op_target_amount_brl: opTarget,
         locked: fundForm.locked, distribution_status: fundForm.distribution_status,
       });
       setFundExists(true);
@@ -646,7 +650,7 @@ export function FinancesManager({ token, showToast }: Props) {
             </h3>
             <div className="fm-form-grid">
               <label className="fm-form-label">
-                Meta de arrecadação (R$)
+                Meta do prêmio (R$)
                 <input
                   type="text"
                   inputMode="decimal"
@@ -654,6 +658,17 @@ export function FinancesManager({ token, showToast }: Props) {
                   placeholder="1000.00"
                   value={fundForm.target_amount_brl}
                   onChange={e => setFundForm(f => ({ ...f, target_amount_brl: e.target.value }))}
+                />
+              </label>
+              <label className="fm-form-label">
+                Meta de custos operacionais (R$)
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  className="fm-form-input"
+                  placeholder="0.00"
+                  value={fundForm.op_target_amount_brl}
+                  onChange={e => setFundForm(f => ({ ...f, op_target_amount_brl: e.target.value }))}
                 />
               </label>
               <label className="fm-form-label">

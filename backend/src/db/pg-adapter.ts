@@ -40,7 +40,7 @@ const ALLOWED_COLS: Record<string, Set<string>> = {
   heatmap_events:      new Set(['id','season_id','event_type','grid_x','grid_y','count']),
   journal_events:      new Set(['id','type','player_id','player_nick','char_name','data','created_at']),
   financial_transactions: new Set(['id','season_id','type','category','description','amount_brl','funding_source','is_prize_fund','is_public','transaction_date','created_at','updated_at','deleted_at']),
-  prize_fund:             new Set(['id','season_id','target_amount_brl','locked','distribution_status','updated_at']),
+  prize_fund:             new Set(['id','season_id','target_amount_brl','op_target_amount_brl','locked','distribution_status','updated_at']),
   prize_distribution:     new Set(['id','season_id','position','percentage','fixed_amount','description']),
 };
 

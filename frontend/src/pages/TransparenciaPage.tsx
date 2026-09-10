@@ -222,8 +222,11 @@ function ResourcesSection({ sources, total }: { sources: FinancialTransparencyDa
 
 // ── Operational Expenses ─────────────────────────────────────────────────────
 
-function ExpensesSection({ expenses }: { expenses: FinancialTransparencyData['expenses'] }) {
-  const total = expenses.reduce((s, e) => s + e.amount, 0);
+function ExpensesSection({ expenses, opTargetAmount }: { expenses: FinancialTransparencyData['expenses']; opTargetAmount: number }) {
+  const total   = expenses.reduce((s, e) => s + e.amount, 0);
+  const hasMeta = opTargetAmount > 0;
+  const pct     = hasMeta ? Math.min(100, Math.round((total / opTargetAmount) * 100)) : 0;
+  const exceeded = hasMeta && total > opTargetAmount;
 
   return (
     <section className="transp-card">
@@ -231,6 +234,27 @@ function ExpensesSection({ expenses }: { expenses: FinancialTransparencyData['ex
         <i className="ti ti-server" />
         <h2>Custos Operacionais</h2>
       </div>
+
+      {hasMeta && (
+        <div className="transp-op-progress">
+          <div className="transp-op-amounts">
+            <span className="transp-op-current">{fmtBrl(total)}</span>
+            <span className="transp-op-sep">/</span>
+            <span className="transp-op-target">{fmtBrl(opTargetAmount)}</span>
+          </div>
+          <div className="transp-progress-track">
+            <div
+              className={`transp-progress-fill transp-progress-fill--op${exceeded ? ' transp-progress-fill--exceeded' : ''}`}
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+          {exceeded
+            ? <span className="transp-prize-note transp-prize-note--warn">Custo acima da meta!</span>
+            : <span className="transp-prize-note">{pct}% da meta de custeio utilizado</span>
+          }
+        </div>
+      )}
+
       {expenses.length === 0 ? (
         <p className="transp-empty-inline">Nenhuma despesa registrada.</p>
       ) : (
@@ -577,7 +601,7 @@ export function TransparenciaPage() {
 
             <div className="transp-two-col">
               <ResourcesSection sources={data.resourceSources} total={data.summary.amountRaised} />
-              <ExpensesSection expenses={data.expenses} />
+              <ExpensesSection expenses={data.expenses} opTargetAmount={data.prizeFund.opTargetAmount} />
             </div>
 
             <HistorySection transactions={data.transactions} />

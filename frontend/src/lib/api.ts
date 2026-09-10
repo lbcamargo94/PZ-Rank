@@ -571,7 +571,7 @@ export function apiDeleteFinancialTransaction(token: string, id: number): Promis
 
 export function apiUpsertPrizeFund(
   token: string,
-  data: { season_id: number; target_amount_brl: number; locked?: boolean; distribution_status?: string },
+  data: { season_id: number; target_amount_brl: number; op_target_amount_brl?: number; locked?: boolean; distribution_status?: string },
 ): Promise<unknown> {
   return request<unknown>('/finances/prize-fund', { method: 'PUT', ...json(token, data) });
 }

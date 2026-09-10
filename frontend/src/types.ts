@@ -293,6 +293,7 @@ export interface FinancialTransparencyData {
   prizeFund: {
     currentAmount:      number;
     targetAmount:       number;
+    opTargetAmount:     number;
     locked:             boolean;
     distributionStatus: string;
   };

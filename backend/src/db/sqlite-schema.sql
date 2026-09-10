@@ -286,6 +286,7 @@ CREATE TABLE IF NOT EXISTS prize_fund (
   id                  INTEGER PRIMARY KEY AUTOINCREMENT,
   season_id           INTEGER NOT NULL UNIQUE REFERENCES seasons(id) ON DELETE CASCADE,
   target_amount_brl   REAL    NOT NULL DEFAULT 1000,
+  op_target_amount_brl REAL   NOT NULL DEFAULT 0,
   locked              INTEGER NOT NULL DEFAULT 1,
   distribution_status TEXT    NOT NULL DEFAULT 'draft'
                        CHECK(distribution_status IN ('draft','defined','published','paid')),

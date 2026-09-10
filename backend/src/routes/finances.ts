@@ -41,6 +41,7 @@ interface PrizeFundRow {
   id: number;
   season_id: number;
   target_amount_brl: number;
+  op_target_amount_brl: number;
   locked: boolean | number;
   distribution_status: string;
   updated_at: string;
@@ -272,7 +273,8 @@ router.get('/transparency', async (req: Request, res: Response): Promise<void> =
     const orgContrib = opExpenses.filter(t => t.funding_source === 'organization')
                                  .reduce((s, t) => s + Number(t.amount_brl), 0);
 
-    const targetAmount = Number(prizeFundRow?.target_amount_brl ?? 0);
+    const targetAmount   = Number(prizeFundRow?.target_amount_brl ?? 0);
+    const opTargetAmount = Number(prizeFundRow?.op_target_amount_brl ?? 0);
 
     // Origem dos recursos (categorias das entradas do fundo)
     const sourceMap = new Map<string, number>();
@@ -297,6 +299,7 @@ router.get('/transparency', async (req: Request, res: Response): Promise<void> =
       prizeFund: {
         currentAmount:      amountRaised,
         targetAmount,
+        opTargetAmount,
         locked:             bool(prizeFundRow?.locked ?? true),
         distributionStatus: prizeFundRow?.distribution_status ?? 'draft',
       },
@@ -442,16 +445,20 @@ router.delete('/transactions/:id', requireMaster, async (req: ModRequest, res: R
 
 // PUT /finances/prize-fund — master: criar ou atualizar configuração do fundo
 router.put('/prize-fund', requireMaster, async (req: ModRequest, res: Response): Promise<void> => {
-  const { season_id, target_amount_brl, locked, distribution_status } = req.body as {
-    season_id?:          number;
-    target_amount_brl?:  number;
-    locked?:             boolean;
-    distribution_status?: string;
+  const { season_id, target_amount_brl, op_target_amount_brl, locked, distribution_status } = req.body as {
+    season_id?:             number;
+    target_amount_brl?:     number;
+    op_target_amount_brl?:  number;
+    locked?:                boolean;
+    distribution_status?:   string;
   };
 
   if (!season_id || isNaN(Number(season_id))) { res.status(400).json({ error: 'season_id inválido.' }); return; }
   if (target_amount_brl !== undefined && (typeof target_amount_brl !== 'number' || target_amount_brl < 0)) {
     res.status(400).json({ error: 'target_amount_brl deve ser um número positivo.' }); return;
+  }
+  if (op_target_amount_brl !== undefined && (typeof op_target_amount_brl !== 'number' || op_target_amount_brl < 0)) {
+    res.status(400).json({ error: 'op_target_amount_brl deve ser um número positivo.' }); return;
   }
   if (distribution_status && !VALID_DIST_STATUS.includes(distribution_status as typeof VALID_DIST_STATUS[number])) {
     res.status(400).json({ error: 'distribution_status inválido.' }); return;
@@ -459,11 +466,12 @@ router.put('/prize-fund', requireMaster, async (req: ModRequest, res: Response):
 
   try {
     const { data, error } = await supabase.from('prize_fund').upsert([{
-      season_id:          Number(season_id),
-      target_amount_brl:  target_amount_brl ?? 1000,
-      locked:             locked ?? true,
-      distribution_status: distribution_status ?? 'draft',
-      updated_at:         new Date().toISOString(),
+      season_id:            Number(season_id),
+      target_amount_brl:    target_amount_brl ?? 1000,
+      op_target_amount_brl: op_target_amount_brl ?? 0,
+      locked:               locked ?? true,
+      distribution_status:  distribution_status ?? 'draft',
+      updated_at:           new Date().toISOString(),
     }], { onConflict: 'season_id' }).select().single();
 
     if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }

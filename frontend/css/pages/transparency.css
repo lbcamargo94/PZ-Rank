@@ -335,6 +335,50 @@
   padding: 10px 14px;
 }
 
+/* ── Barra de progresso de custos operacionais ───────────────────────────── */
+.transp-op-progress {
+  padding: 0 0 16px;
+}
+.transp-op-amounts {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.transp-op-current {
+  font-family: var(--font-display);
+  font-size: 24px;
+  color: var(--red);
+}
+.transp-op-sep { font-size: 16px; color: var(--text-4); }
+.transp-op-target {
+  font-size: 14px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+}
+.transp-progress-track {
+  height: 6px;
+  background: var(--bg-4);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.transp-progress-fill--op {
+  height: 100%;
+  background: linear-gradient(90deg, var(--red), var(--amber));
+  border-radius: 4px;
+  transition: width .5s ease;
+  min-width: 4px;
+}
+.transp-progress-fill--exceeded { background: var(--red); }
+.transp-prize-note--warn {
+  background: rgba(220, 50, 50, 0.07);
+  border-color: rgba(220, 50, 50, 0.25);
+  color: var(--red);
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
 /* ── Two-col layout ──────────────────────────────────────────────────────── */
 
 .transp-two-col {
