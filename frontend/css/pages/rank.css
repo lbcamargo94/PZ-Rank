@@ -190,8 +190,22 @@ body.rank-page-active .rank-table tbody tr:hover {
 }
 
 .rank-page-top {
+  position: relative;
   padding-top: 20px;
   padding-bottom: 4px;
+}
+
+.rank-mascot {
+  position: absolute;
+  top: -8px;
+  right: 0;
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+  z-index: 10;
 }
 
 .rank-search-wrap {
