@@ -75,42 +75,56 @@ router.get('/backfill-yt-subs', async (req: Request, res: Response): Promise<voi
 });
 
 // GET /cron/renew-yt-subs
+// Até 30 jogadores por chamada, em paralelo (lotes de 10).
+// Timeout de 8s por canal sem retry — se falhar hoje, pega amanhã.
+// O cron diário às 6h garante que todos passem pelo ciclo em ~N dias.
 router.get('/renew-yt-subs', async (req: Request, res: Response): Promise<void> => {
   if (!requireCronSecret(req, res)) return;
 
-  // Busca jogadores com channel_id mas sem assinatura ativa, OU com assinatura expirando em 48h
-  const threshold = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+  const BATCH      = 30;  // jogadores por chamada
+  const CONCURRENT = 5;   // paralelo por lote — mais causa rate-limit no hub do Google
+  const threshold  = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString();
 
   const { data: players, error } = await supabase
     .from('players')
     .select('id, nick, yt_channel_id, yt_sub_expires_at')
+    .eq('status', 'approved')
     .not('yt_channel_id', 'is', null)
     .is('deleted_at', null)
-    .or(`yt_sub_expires_at.is.null,yt_sub_expires_at.lt.${threshold}`);
+    .or(`yt_sub_expires_at.is.null,yt_sub_expires_at.lt.${threshold}`)
+    .limit(BATCH);
 
   if (error) {
     res.status(500).json({ error: 'Erro ao buscar jogadores.' });
     return;
   }
 
+  type PlayerRow = { id: number; nick: string; yt_channel_id: string };
+  const list = (players ?? []) as PlayerRow[];
   const results: Array<{ nick: string; ok: boolean; error?: string }> = [];
 
-  for (const player of (players ?? []) as Array<{ id: number; nick: string; yt_channel_id: string }>) {
-    const result = await subscribePubSub(player.yt_channel_id);
-    results.push({ nick: player.nick, ok: result.ok, error: result.error });
-
-    if (result.ok) {
-      await supabase
-        .from('players')
-        .update({ yt_sub_expires_at: result.expiresAt })
-        .eq('id', player.id);
+  for (let i = 0; i < list.length; i += CONCURRENT) {
+    const chunk = list.slice(i, i + CONCURRENT);
+    const settled = await Promise.allSettled(
+      chunk.map(async (player) => {
+        const result = await subscribePubSub(player.yt_channel_id);
+        if (result.ok) {
+          await supabase
+            .from('players')
+            .update({ yt_sub_expires_at: result.expiresAt })
+            .eq('id', player.id);
+        }
+        return { nick: player.nick, ok: result.ok, error: result.error };
+      }),
+    );
+    for (const s of settled) {
+      results.push(s.status === 'fulfilled' ? s.value : { nick: '?', ok: false, error: String(s.reason) });
     }
-
-    // Pausa entre requisições para não acionar rate limiting do PubSub hub.
-    await new Promise(r => setTimeout(r, 300));
+    // pausa entre lotes para não disparar rate-limit do hub do Google
+    if (i + CONCURRENT < list.length) await new Promise(r => setTimeout(r, 500));
   }
 
-  res.json({ renewed: results.length, results });
+  res.json({ renewed: results.filter(r => r.ok).length, total: results.length, results });
 });
 
 // GET /cron/scan-lives — verifica quem está ao vivo agora e notifica o Discord

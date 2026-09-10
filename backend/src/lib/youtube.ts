@@ -188,39 +188,25 @@ export async function subscribePubSub(channelId: string): Promise<SubscribeResul
     ...(process.env.PUBSUB_SECRET ? { 'hub.secret': process.env.PUBSUB_SECRET } : {}),
   });
 
-  // O hub do Google pode levar até ~20s para responder em períodos de alta carga.
-  // 3 tentativas com backoff para absorver 503 transitórios.
-  const MAX_ATTEMPTS = 3;
-  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-    try {
-      const res = await fetch(PUBSUB_HUB, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body:    body.toString(),
-        signal:  AbortSignal.timeout(30_000),
-      });
+  // Timeout curto: chamadas em paralelo, falhas pegam no próximo cron diário.
+  try {
+    const res = await fetch(PUBSUB_HUB, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body:    body.toString(),
+      signal:  AbortSignal.timeout(12_000),
+    });
 
-      if (res.status === 202) {
-        const expiresAt = new Date(Date.now() + LEASE_SECONDS * 1000).toISOString();
-        return { ok: true, expiresAt };
-      }
-
-      const text = await res.text().catch(() => '');
-      // 503 = hub sobrecarregado, tenta de novo após backoff
-      if (res.status === 503 && attempt < MAX_ATTEMPTS) {
-        await new Promise(r => setTimeout(r, attempt * 2_000));
-        continue;
-      }
-      return { ok: false, expiresAt: '', error: `Hub retornou ${res.status}: ${text.slice(0, 200)}` };
-    } catch (err) {
-      if (attempt < MAX_ATTEMPTS) {
-        await new Promise(r => setTimeout(r, attempt * 2_000));
-        continue;
-      }
-      return { ok: false, expiresAt: '', error: String(err) };
+    if (res.status === 202) {
+      const expiresAt = new Date(Date.now() + LEASE_SECONDS * 1000).toISOString();
+      return { ok: true, expiresAt };
     }
+
+    const text = await res.text().catch(() => '');
+    return { ok: false, expiresAt: '', error: `Hub retornou ${res.status}: ${text.slice(0, 200)}` };
+  } catch (err) {
+    return { ok: false, expiresAt: '', error: String(err) };
   }
-  return { ok: false, expiresAt: '', error: 'Máximo de tentativas atingido' };
 }
 
 // ── Verificação HMAC da notificação ──────────────────────────────────────────
