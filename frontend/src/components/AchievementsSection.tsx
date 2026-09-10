@@ -130,6 +130,14 @@ function ProgressBar({ value, max }: { value: number; max: number }) {
   );
 }
 
+const TIER_COLORS: Record<string, string> = {
+  legendary: '#dc2626',
+  platinum:  '#a855f7',
+  gold:      '#c8a82a',
+  silver:    '#b4c0c8',
+  bronze:    '#b48250',
+};
+
 function AchCard({
   a, unlocked, playerStats,
 }: {
@@ -137,14 +145,22 @@ function AchCard({
   unlocked: PlayerAchievement | undefined;
   playerStats: PlayerStats;
 }) {
-  const isTracked  = TRACKED_STATS.has(a.stat);
-  const current    = isTracked ? (playerStats[a.stat] ?? 0) : 0;
-  const rawLabel   = STAT_LABELS[a.stat];
-  const statLabel  = rawLabel !== undefined ? rawLabel : a.stat;
-  const isBinary   = rawLabel === '';
+  const isTracked = TRACKED_STATS.has(a.stat);
+  const current   = isTracked ? (playerStats[a.stat] ?? 0) : 0;
+  const statLabel = STAT_LABELS[a.stat];
+  // conquista binária: threshold=1 e sem tracker de progresso
+  const isBinary  = !isTracked && a.threshold === 1;
+
+  const tierColor = TIER_COLORS[a.tier];
+  const style = unlocked && tierColor
+    ? { '--tier-color': tierColor } as React.CSSProperties
+    : undefined;
 
   return (
-    <div className={`pp-ach-card${unlocked ? ` pp-ach-unlocked pp-ach-${a.tier}` : ' pp-ach-locked'}`}>
+    <div
+      className={`pp-ach-card${unlocked ? ` pp-ach-unlocked pp-ach-${a.tier}` : ' pp-ach-locked'}`}
+      style={style}
+    >
       <span className="pp-ach-icon">{a.icon}</span>
       <span className="pp-ach-name">{a.name}</span>
       <span className="pp-ach-desc">{a.description}</span>
@@ -164,10 +180,10 @@ function AchCard({
               <span className="pp-ach-progress-label">
                 {current.toLocaleString('pt-BR')}
                 <span className="pp-ach-progress-sep">/</span>
-                {a.threshold.toLocaleString('pt-BR')} {statLabel}
+                {a.threshold.toLocaleString('pt-BR')} {statLabel ?? ''}
               </span>
             </>
-          ) : !isBinary ? (
+          ) : !isBinary && statLabel ? (
             <span className="pp-ach-threshold">
               {a.threshold.toLocaleString('pt-BR')} {statLabel}
             </span>

@@ -1367,20 +1367,35 @@
   border: 1px solid var(--border-mid);
   background: rgba(20, 28, 16, 0.85);
   text-align: center;
-  transition: border-color 0.15s, background 0.15s;
+  transition: border-color 0.18s, background 0.18s, transform 0.18s, box-shadow 0.18s;
+  cursor: default;
+}
+
+.pp-ach-card:hover {
+  transform: translateY(-3px);
 }
 
 .pp-ach-locked {
   opacity: 0.72;
   filter: grayscale(0.3);
 }
+.pp-ach-locked:hover {
+  opacity: 0.85;
+  filter: grayscale(0.1);
+}
 
-/* Unlocked — borda colorida por tier */
-.pp-ach-unlocked.pp-ach-legendary { border-color: rgba(220,38,38,0.7);   background: rgba(220,38,38,0.10); }
-.pp-ach-unlocked.pp-ach-platinum  { border-color: rgba(168,85,247,0.65); background: rgba(168,85,247,0.10); }
-.pp-ach-unlocked.pp-ach-gold      { border-color: rgba(200,168,42,0.65); background: rgba(200,168,42,0.10); }
-.pp-ach-unlocked.pp-ach-silver    { border-color: rgba(180,192,200,0.60); background: rgba(180,192,200,0.07); }
-.pp-ach-unlocked.pp-ach-bronze    { border-color: rgba(180,130,80,0.60); background: rgba(180,130,80,0.08); }
+/* Unlocked — borda + fundo colorido por tier */
+.pp-ach-unlocked.pp-ach-legendary { border-color: rgba(220,38,38,0.75);   background: rgba(220,38,38,0.14);  box-shadow: 0 0 0 0 rgba(220,38,38,0); }
+.pp-ach-unlocked.pp-ach-platinum  { border-color: rgba(168,85,247,0.70);  background: rgba(168,85,247,0.14); box-shadow: 0 0 0 0 rgba(168,85,247,0); }
+.pp-ach-unlocked.pp-ach-gold      { border-color: rgba(200,168,42,0.70);  background: rgba(200,168,42,0.14); box-shadow: 0 0 0 0 rgba(200,168,42,0); }
+.pp-ach-unlocked.pp-ach-silver    { border-color: rgba(180,192,200,0.65); background: rgba(180,192,200,0.11); box-shadow: 0 0 0 0 rgba(180,192,200,0); }
+.pp-ach-unlocked.pp-ach-bronze    { border-color: rgba(180,130,80,0.65);  background: rgba(180,130,80,0.12);  box-shadow: 0 0 0 0 rgba(180,130,80,0); }
+
+/* Hover nos cards conquistados — glow suave com a cor do tier */
+.pp-ach-unlocked:hover {
+  box-shadow: 0 4px 18px color-mix(in srgb, var(--tier-color, #fff) 30%, transparent);
+  border-color: color-mix(in srgb, var(--tier-color, #fff) 80%, transparent);
+}
 
 .pp-ach-icon {
   font-size: 30px;
