@@ -1,29 +1,41 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ARCHETYPE_GUIDE, TAG_GROUPS_INFO } from '../lib/archetype';
 
 type Tab = 'archetypes' | 'tags';
 
 export function ArchetypeGuideModal({ onClose }: { onClose: () => void }) {
   const [tab, setTab] = useState<Tab>('archetypes');
+  const ref = useRef<HTMLDialogElement>(null);
 
-  // fecha com Escape
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    const el = ref.current;
+    if (!el) return;
+    el.showModal();
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const onCancel = (e: Event) => { e.preventDefault(); onClose(); };
+    el.addEventListener('cancel', onCancel);
+    return () => el.removeEventListener('cancel', onCancel);
   }, [onClose]);
 
-  return (
-    <div className="ag-backdrop" onClick={onClose}>
-      <div className="ag-modal" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
+  const onBackdropClick = (e: React.MouseEvent<HTMLDialogElement>) => {
+    if (e.target === ref.current) onClose();
+  };
 
-        {/* Header */}
+  return (
+    <dialog ref={ref} className="ag-dialog" onClick={onBackdropClick} aria-label="Guia de Perfis Psicológicos">
+      <div className="ag-modal">
+
         <div className="ag-header">
           <span className="ag-title">📖 Perfil Psicológico — Guia</span>
           <button className="ag-close" onClick={onClose} aria-label="Fechar">✕</button>
         </div>
 
-        {/* Tabs */}
         <div className="ag-tabs">
           <button
             className={`ag-tab${tab === 'archetypes' ? ' active' : ''}`}
@@ -39,7 +51,6 @@ export function ArchetypeGuideModal({ onClose }: { onClose: () => void }) {
           </button>
         </div>
 
-        {/* Body */}
         <div className="ag-body">
 
           {tab === 'archetypes' && (
@@ -107,6 +118,6 @@ export function ArchetypeGuideModal({ onClose }: { onClose: () => void }) {
 
         </div>
       </div>
-    </div>
+    </dialog>
   );
 }
