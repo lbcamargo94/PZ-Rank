@@ -37,7 +37,7 @@ export function ArchetypeGuideModal({ onClose }: { onClose: () => void }) {
             className={`ag-tab${tab === 'tags' ? ' active' : ''}`}
             onClick={() => setTab('tags')}
           >
-            Conquistas
+            Medalhas
           </button>
         </div>
 
