@@ -873,11 +873,18 @@
 .fm-tabs {
   display: flex;
   gap: 4px;
-  padding: 0 0 16px;
+  padding: 16px 16px 16px;
   border-bottom: 1px solid var(--border);
-  margin-bottom: 16px;
+  margin-bottom: 0;
   flex-wrap: wrap;
 }
+
+/* Espaçamento horizontal do conteúdo abaixo das tabs */
+.painel-section .fm-tips-box    { margin: 16px 16px 0; }
+.painel-section .fm-form-card   { margin: 16px; }
+.painel-section .fm-entries-list,
+.painel-section .fm-supporters-list { margin: 0 16px 16px; }
+.painel-section > .painel-empty-state { margin: 0 16px 16px; }
 
 .fm-tab {
   display: inline-flex;
