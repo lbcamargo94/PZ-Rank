@@ -1,35 +1,25 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { ARCHETYPE_GUIDE, TAG_GROUPS_INFO } from '../lib/archetype';
 
 type Tab = 'archetypes' | 'tags';
 
 export function ArchetypeGuideModal({ onClose }: { onClose: () => void }) {
   const [tab, setTab] = useState<Tab>('archetypes');
-  const ref = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    el.showModal();
     document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = ''; };
-  }, []);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const onCancel = (e: Event) => { e.preventDefault(); onClose(); };
-    el.addEventListener('cancel', onCancel);
-    return () => el.removeEventListener('cancel', onCancel);
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', handler);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handler);
+    };
   }, [onClose]);
 
-  const onBackdropClick = (e: React.MouseEvent<HTMLDialogElement>) => {
-    if (e.target === ref.current) onClose();
-  };
-
-  return (
-    <dialog ref={ref} className="ag-dialog" onClick={onBackdropClick} aria-label="Guia de Perfis Psicológicos">
-      <div className="ag-modal">
+  return createPortal(
+    <div className="ag-backdrop" onClick={onClose} role="dialog" aria-modal="true" aria-label="Guia de Perfis Psicológicos">
+      <div className="ag-modal" onClick={e => e.stopPropagation()}>
 
         <div className="ag-header">
           <span className="ag-title">📖 Perfil Psicológico — Guia</span>
@@ -118,6 +108,7 @@ export function ArchetypeGuideModal({ onClose }: { onClose: () => void }) {
 
         </div>
       </div>
-    </dialog>
+    </div>,
+    document.body,
   );
 }
