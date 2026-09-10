@@ -1371,8 +1371,8 @@
 }
 
 .pp-ach-locked {
-  opacity: 0.50;
-  filter: grayscale(0.5);
+  opacity: 0.72;
+  filter: grayscale(0.3);
 }
 
 /* Unlocked — borda colorida por tier */

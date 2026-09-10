@@ -55,6 +55,66 @@ const STAT_LABELS: Record<string, string> = {
   water_collected:     'litros',
   materials_crafted:   'materiais',
   animal_tracks:       'rastros',
+  // conquistas de contagem sem tracker de entrada
+  animal_species:         'espécies',
+  meat_butchered:         'animais',
+  bases_built:            'bases',
+  animals_alive:          'animais vivos',
+  doors_opened:           'portas',
+  sleep_locations:        'locais',
+  basements_explored:     'porões',
+  days_no_canned:         'dias s/ enlatados',
+  weapons_crafted:        'armas',
+  clothes_crafted:        'roupas',
+  furniture_crafted:      'móveis',
+  cheese_produced:        'queijos',
+  // conquistas binárias — não exibem threshold
+  all_skills_10:          '',
+  all_gold_achievements:  '',
+  full_map_revealed:      '',
+  all_cities_visited:     '',
+  all_stations_used:      '',
+  all_bases_equipped:     '',
+  kentucky_explorer:      '',
+  season_01_complete:     '',
+  military_cleared:       '',
+  cities_rebuilt:         '',
+  // skills individuais
+  skill_aiming:        'mira',
+  skill_axe:           'machado',
+  skill_blacksmith:    'forja',
+  skill_blunt:         'contundente longo',
+  skill_butchering:    'abate',
+  skill_carving:       'entalhamento',
+  skill_cooking:       'culinária',
+  skill_doctor:        'primeiros socorros',
+  skill_electricity:   'eletricidade',
+  skill_farming:       'agricultura',
+  skill_fishing:       'pescaria',
+  skill_fitness:       'aptidão física',
+  skill_flintknapping: 'lascamento',
+  skill_glassmaking:   'vidraria',
+  skill_husbandry:     'pecuária',
+  skill_lightfoot:     'pés leves',
+  skill_longblade:     'lâmina longa',
+  skill_maintenance:   'manutenção',
+  skill_masonry:       'alvenaria',
+  skill_mechanics:     'mecânica',
+  skill_metalwelding:  'soldagem',
+  skill_nimble:        'agilidade',
+  skill_plantscavenging: 'coleta',
+  skill_pottery:       'cerâmica',
+  skill_reloading:     'recarga',
+  skill_smallblade:    'lâmina curta',
+  skill_smallblunt:    'contundente curto',
+  skill_sneak:         'furtividade',
+  skill_spear:         'lança',
+  skill_sprinting:     'corrida',
+  skill_strength:      'força',
+  skill_tailoring:     'costura',
+  skill_tracking:      'rastreamento',
+  skill_trapping:      'armadilhas',
+  skill_woodwork:      'marcenaria',
 };
 
 type PlayerStats = Record<string, number>;
@@ -77,7 +137,9 @@ function AchCard({
 }) {
   const isTracked  = TRACKED_STATS.has(a.stat);
   const current    = isTracked ? (playerStats[a.stat] ?? 0) : 0;
-  const statLabel  = STAT_LABELS[a.stat] ?? a.stat;
+  const rawLabel   = STAT_LABELS[a.stat];
+  const statLabel  = rawLabel !== undefined ? rawLabel : a.stat;
+  const isBinary   = rawLabel === '';
 
   return (
     <div className={`pp-ach-card${unlocked ? ` pp-ach-unlocked pp-ach-${a.tier}` : ' pp-ach-locked'}`}>
@@ -103,11 +165,11 @@ function AchCard({
                 {a.threshold.toLocaleString('pt-BR')} {statLabel}
               </span>
             </>
-          ) : (
+          ) : !isBinary ? (
             <span className="pp-ach-threshold">
               {a.threshold.toLocaleString('pt-BR')} {statLabel}
             </span>
-          )}
+          ) : null}
         </div>
       )}
     </div>
