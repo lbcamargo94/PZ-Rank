@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import pzrankLogo from '../../assets/logo/pzrank-logo.webp';
 import { COMPANION_TAG } from '../lib/companion';
+import { NAV_ITEMS } from '../lib/nav';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { ThanksCelebration } from './ThanksCelebration';
 
@@ -71,13 +72,7 @@ export function Header({ onPainel }: HeaderProps) {
           className={`site-nav${menuOpen ? ' site-nav-open' : ''}`}
           aria-label={t('header.nav_aria')}
         >
-          {navLink('/rank',          'ti-trophy',    t('nav.rank'))}
-          {navLink('/regras',        'ti-book',      t('nav.rules'))}
-          {navLink('/wiki',          'ti-book-2',    t('nav.wiki'))}
-          {navLink('/links',         'ti-link',      t('nav.links'))}
-          {navLink('/mods',          'ti-puzzle',    t('nav.mods'))}
-          {navLink('/lendas',        'ti-award',     t('nav.legends'))}
-          {navLink('/transparencia', 'ti-chart-pie', t('nav.transparency'))}
+          {NAV_ITEMS.map(item => navLink(item.to, item.icon, t(`nav.${item.navKey}`)))}
 
           {/* Itens exclusivos do menu mobile */}
           <div className="site-nav-divider nav-mobile-only" aria-hidden="true" />

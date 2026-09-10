@@ -7,6 +7,7 @@ import { useToast } from './hooks/useToast';
 import { Toast } from './components/Toast';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
+import { NAV_ITEMS } from './lib/nav';
 import { DonationButton } from './components/DonationButton';
 import { CommunityStats }      from './components/CommunityStats';
 import { NewsInline }     from './components/NewsCard';
@@ -61,17 +62,7 @@ const LinksUteisPage        = lazy(() => import('./pages/LinksUteisPage').then(m
 const ModeratorRegisterPage = lazy(() => import('./pages/ModeratorRegisterPage').then(m => ({ default: m.ModeratorRegisterPage })));
 const ModResetPasswordPage  = lazy(() => import('./pages/ModResetPasswordPage').then(m => ({ default: m.ModResetPasswordPage })));
 
-const QUICK_NAV = [
-  { to: '/rank',          icon: 'ti-trophy',           key: 'rank'          },
-  { to: '/regras',        icon: 'ti-book',             key: 'rules'         },
-  { to: '/wiki',          icon: 'ti-book-2',           key: 'wiki'          },
-  { to: '/mods',          icon: 'ti-puzzle',           key: 'mods'          },
-  { to: '/dicas',         icon: 'ti-bulb',             key: 'tips'          },
-  { to: '/lendas',        icon: 'ti-medal',            key: 'legends'       },
-  { to: '/links',         icon: 'ti-link',             key: 'links'         },
-  { to: '/transparencia', icon: 'ti-file-certificate', key: 'transparency'  },
-  { to: '/comparar',     icon: 'ti-arrows-diff',      key: 'compare'       },
-] as const;
+// NAV_ITEMS importado de lib/nav.ts — fonte única de verdade para nav + quick access
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -85,11 +76,11 @@ function QuickNav() {
     <section className="home-quick-nav" aria-label={t('home.quick_nav.aria')}>
       <p className="home-quick-nav-title">{t('home.quick_nav.title')}</p>
       <div className="quick-nav-grid">
-        {QUICK_NAV.map(item => (
+        {NAV_ITEMS.map(item => (
           <Link key={item.to} to={item.to} className="quick-nav-card">
             <i className={`ti ${item.icon} quick-nav-icon`} aria-hidden="true" />
-            <span className="quick-nav-label">{t(`home.quick_nav.${item.key}.label`)}</span>
-            <span className="quick-nav-sub">{t(`home.quick_nav.${item.key}.sub`)}</span>
+            <span className="quick-nav-label">{t(`home.quick_nav.${item.quickKey}.label`)}</span>
+            <span className="quick-nav-sub">{t(`home.quick_nav.${item.quickKey}.sub`)}</span>
           </Link>
         ))}
       </div>

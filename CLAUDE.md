@@ -60,6 +60,19 @@ Trait images live in `frontend/assets/caracteristicas/Positivos/` and `Negativos
 ### Objectives
 `frontend/src/lib/objectives.ts` defines `SPIFFOS_RESTAURANTS` (list of Spiffo's locations by `id` and `name`) and `BASE_ITEMS`. The `id` field is the DB key inside `entry.objectives.bases`; never change an `id` after data exists in production.
 
+## Navegação — regra obrigatória
+
+`frontend/src/lib/nav.ts` é a **fonte única de verdade** para páginas públicas do site. Esse array alimenta simultaneamente:
+- O menu do header (`Header.tsx`)
+- Os cards de Acesso Rápido na home (`App.tsx → QuickNav`)
+
+**Ao adicionar uma nova página pública**, é obrigatório:
+1. Adicionar um item em `NAV_ITEMS` em `frontend/src/lib/nav.ts`
+2. Adicionar `nav.<navKey>` nos 4 arquivos de tradução (`frontend/src/locales/{pt,en,es,fr}/translation.json`)
+3. Adicionar `home.quick_nav.<quickKey>` com `label` e `sub` nos mesmos 4 arquivos
+
+Não criar listas separadas no Header ou no QuickNav — tudo parte do mesmo `NAV_ITEMS`.
+
 ## Key conventions
 
 - **Version tags**: commits use `(vX.Y.Z)` suffix in message; every feature/fix gets a `git tag vX.Y.Z` + GitHub release via `gh release create`.
