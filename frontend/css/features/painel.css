@@ -768,7 +768,7 @@
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
-  padding: 0 0 12px;
+  padding: 10px 14px 12px;
 }
 .dead-zone-header h3 {
   font-family: var(--font-mono);
