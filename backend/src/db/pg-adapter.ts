@@ -218,6 +218,7 @@ class PgQueryBuilder {
 
       if (this.mode === 'upsert') {
         const conflictCols = (this.upsertConflict ?? '').split(',').map(c => c.trim()).filter(Boolean);
+        const out: unknown[] = [];
         for (const raw of this.insertRows) {
           const row  = Object.fromEntries(Object.entries(raw).filter(([, v]) => v !== undefined));
           const hasPk = 'id' in row && row['id'] !== undefined && row['id'] !== null;
@@ -228,11 +229,14 @@ class PgQueryBuilder {
           const setCols  = cols.filter(c => !conflictCols.includes(c) && c !== 'id');
           const setClause = setCols.map(c => `${c} = EXCLUDED.${c}`).join(', ');
           const conflict  = conflictCols.length > 0 ? conflictCols.join(', ') : 'id';
+          const ret = this.hasReturn ? this.returnCols : '*';
           const sql = `INSERT INTO ${this.table} (${cols.join(', ')}) VALUES (${ph})` +
-            (setClause ? ` ON CONFLICT(${conflict}) DO UPDATE SET ${setClause}` : ` ON CONFLICT(${conflict}) DO NOTHING`);
-          await client.query(sql, vals);
+            (setClause ? ` ON CONFLICT(${conflict}) DO UPDATE SET ${setClause}` : ` ON CONFLICT(${conflict}) DO NOTHING`) +
+            ` RETURNING ${ret}`;
+          const res = await client.query(sql, vals);
+          out.push(...res.rows);
         }
-        return { data: [], error: null };
+        return { data: out, error: null };
       }
 
       if (this.mode === 'update') {
