@@ -230,6 +230,28 @@
       "eyebrow": "Perfil Psicológico",
       "guide_btn": "Ver guía completa de perfiles"
     },
+    "highlights": {
+      "heading": "Destacados",
+      "kills": "Eliminaciones",
+      "days": "Días",
+      "looted": "Saqueos",
+      "books": "Libros",
+      "animals": "Cazados",
+      "fish": "Peces",
+      "crops": "Cosechas",
+      "crafted": "Fabricados",
+      "sleep": "Sin dormir",
+      "km": "Km recorridos",
+      "trees": "Árboles",
+      "built": "Construcciones",
+      "cities": "Ciudades",
+      "military": "Bases militares",
+      "forged": "Forjados",
+      "meals": "Comidas",
+      "water": "Agua (L)",
+      "ceramic": "Cerámica",
+      "tracks": "Rastros"
+    },
     "objectives": {
       "pending_banner": "Objetivos aún no registrados por el moderador. Mostrando estado inicial.",
       "special_title": "Objetivos Especiales",

@@ -378,39 +378,85 @@ function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | nul
 
       <div className="pp-tab-body">
         {tab === 'profile' && (() => {
-          const { primary, tags } = resolveArchetype(entry);
+          const { primary, secondary, tags } = resolveArchetype(entry);
+          const n = (v: number | null | undefined) => Math.max(0, v ?? 0);
+          const highlights = [
+            { key: 'kills',    icon: '💀', label: t('player.highlights.kills'),    v: entry.kills,                suffix: ''  },
+            { key: 'days',     icon: '📅', label: t('player.highlights.days'),     v: entry.days,                 suffix: ''  },
+            { key: 'looted',   icon: '🏚️', label: t('player.highlights.looted'),  v: entry.houses_looted,        suffix: ''  },
+            { key: 'animals',  icon: '🐗', label: t('player.highlights.animals'),  v: entry.animals_killed,       suffix: ''  },
+            { key: 'fish',     icon: '🎣', label: t('player.highlights.fish'),     v: entry.fish_caught,          suffix: ''  },
+            { key: 'crops',    icon: '🌾', label: t('player.highlights.crops'),    v: entry.crops_harvested,      suffix: ''  },
+            { key: 'crafted',  icon: '🔨', label: t('player.highlights.crafted'),  v: entry.items_crafted,        suffix: ''  },
+            { key: 'books',    icon: '📖', label: t('player.highlights.books'),    v: entry.books_read,           suffix: ''  },
+            { key: 'meals',    icon: '🍳', label: t('player.highlights.meals'),    v: entry.meals_cooked,         suffix: ''  },
+            { key: 'km',       icon: '🚗', label: t('player.highlights.km'),       v: entry.km_driven,            suffix: ''  },
+            { key: 'trees',    icon: '🌲', label: t('player.highlights.trees'),    v: entry.trees_cut,            suffix: ''  },
+            { key: 'built',    icon: '🏗️', label: t('player.highlights.built'),   v: entry.structures_built,     suffix: ''  },
+            { key: 'forged',   icon: '⚒️', label: t('player.highlights.forged'),  v: entry.forged_weapons,       suffix: ''  },
+            { key: 'ceramic',  icon: '🏺', label: t('player.highlights.ceramic'),  v: entry.ceramic_items,        suffix: ''  },
+            { key: 'cities',   icon: '🧭', label: t('player.highlights.cities'),   v: entry.cities_visited,       suffix: ''  },
+            { key: 'military', icon: '🪖', label: t('player.highlights.military'), v: entry.military_visited,     suffix: ''  },
+            { key: 'sleep',    icon: '😴', label: t('player.highlights.sleep'),    v: entry.hours_without_sleep,  suffix: 'h' },
+            { key: 'water',    icon: '💧', label: t('player.highlights.water'),    v: entry.water_collected,      suffix: ''  },
+            { key: 'tracks',   icon: '🐾', label: t('player.highlights.tracks'),   v: entry.animal_tracks,        suffix: ''  },
+          ].filter(h => n(h.v) > 0);
+
           return (
-            <div className="pp-archetype" style={{ '--arch-color': primary.color } as React.CSSProperties}>
-              <span className="pp-arch-eyebrow">{t('player.archetype.eyebrow')}</span>
-              <div className="pp-arch-identity">
-                <span className="pp-arch-icon">{primary.icon}</span>
-                <span className="pp-arch-name">{primary.name}</span>
-                {tags.length > 0 && (
-                  <>
-                    <span className="pp-arch-sep" aria-hidden="true">┊</span>
-                    <div className="pp-arch-tags">
-                      {tags.map(tag => (
-                        <span
-                          key={tag.id}
-                          className="pp-arch-tag"
-                          style={{ '--tag-color': tag.color } as React.CSSProperties}
-                        >
-                          {tag.icon} {tag.label}
-                        </span>
-                      ))}
-                    </div>
-                  </>
-                )}
+            <div className="pp-profile-tab">
+              <div className="pp-archetype" style={{ '--arch-color': primary.color } as React.CSSProperties}>
+                <span className="pp-arch-eyebrow">{t('player.archetype.eyebrow')}</span>
+                <div className="pp-arch-identity">
+                  <span className="pp-arch-icon">{primary.icon}</span>
+                  <span className="pp-arch-name">{primary.name}</span>
+                  {secondary && (
+                    <span
+                      className="pp-arch-secondary"
+                      style={{ '--secondary-color': secondary.color } as React.CSSProperties}
+                      title={secondary.desc}
+                    >
+                      {secondary.icon} {secondary.name}
+                    </span>
+                  )}
+                  {tags.length > 0 && (
+                    <>
+                      <span className="pp-arch-sep" aria-hidden="true">┊</span>
+                      <div className="pp-arch-tags">
+                        {tags.map(tag => (
+                          <span
+                            key={tag.id}
+                            className="pp-arch-tag"
+                            style={{ '--tag-color': tag.color } as React.CSSProperties}
+                          >
+                            {tag.icon} {tag.label}
+                          </span>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+                <span className="pp-arch-desc">{primary.desc}</span>
+                <button className="pp-arch-guide-btn" onClick={() => setShowGuide(true)}>
+                  <i className="ti ti-books" />
+                  <span>{t('player.archetype.guide_btn')}</span>
+                  <i className="ti ti-arrow-right pp-arch-guide-arrow" />
+                </button>
               </div>
-              <span className="pp-arch-desc">{primary.desc}</span>
-              <button
-                className="pp-arch-guide-btn"
-                onClick={() => setShowGuide(true)}
-              >
-                <i className="ti ti-books" />
-                <span>{t('player.archetype.guide_btn')}</span>
-                <i className="ti ti-arrow-right pp-arch-guide-arrow" />
-              </button>
+
+              {highlights.length > 0 && (
+                <div className="pp-highlights">
+                  <span className="pp-highlights-heading">{t('player.highlights.heading')}</span>
+                  <div className="pp-highlights-grid">
+                    {highlights.map(h => (
+                      <div key={h.key} className="pp-highlight-item">
+                        <span className="pp-highlight-icon">{h.icon}</span>
+                        <span className="pp-highlight-value">{formatNumber(n(h.v))}{h.suffix}</span>
+                        <span className="pp-highlight-label">{h.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           );
         })()}

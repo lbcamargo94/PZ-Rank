@@ -72,10 +72,10 @@ export const ARCHETYPE_GUIDE: ArchetypeGuide[] = [
   {
     ...ARCHETYPES['hunter']!,
     how: [
-      'Soma de skills de caça ≥ 5',
+      'Soma de skills de caça/coleta ≥ 5',
       'Bônus: animais abatidos, peixes, rastros de animais',
     ],
-    skills: ['Armadilhas', 'Rastreamento', 'Abate', 'Pescaria'],
+    skills: ['Armadilhas', 'Rastreamento', 'Abate', 'Pescaria', 'Coleta'],
   },
   {
     ...ARCHETYPES['builder']!,
@@ -83,7 +83,7 @@ export const ARCHETYPE_GUIDE: ArchetypeGuide[] = [
       'Soma de skills de construção ≥ 5',
       'Bônus: estruturas construídas, estruturas de pedra',
     ],
-    skills: ['Marcenaria', 'Soldagem', 'Alvenaria', 'Eletricidade', 'Costura'],
+    skills: ['Marcenaria', 'Soldagem', 'Alvenaria', 'Eletricidade'],
   },
   {
     ...ARCHETYPES['artisan']!,
@@ -91,7 +91,7 @@ export const ARCHETYPE_GUIDE: ArchetypeGuide[] = [
       'Soma de skills de artesanato ≥ 5 (skills B42)',
       'Bônus: itens forjados, cerâmica, materiais artesanais',
     ],
-    skills: ['Forja', 'Cerâmica', 'Lascamento', 'Entalhamento', 'Vidraria'],
+    skills: ['Forja', 'Cerâmica', 'Lascamento', 'Entalhamento', 'Vidraria', 'Costura'],
   },
   {
     ...ARCHETYPES['farmer']!,
@@ -99,7 +99,7 @@ export const ARCHETYPE_GUIDE: ArchetypeGuide[] = [
       'Soma de skills de fazenda ≥ 5',
       'Bônus: colheitas, plantações, refeições, ovos e leite',
     ],
-    skills: ['Agricultura', 'Culinária', 'Coleta', 'Pecuária'],
+    skills: ['Agricultura', 'Culinária', 'Pecuária'],
   },
   {
     ...ARCHETYPES['explorer']!,
@@ -343,12 +343,15 @@ export function resolveArchetype(entry: ArchetypeEntry): ArchetypeResult {
   // ── Skill scores ─────────────────────────────────────────────────────────
   const combatScore  = g('Machado') + g('Contundente Longo') + g('Lâmina Longa') + g('Lança')
                      + g('Mira') + g('Contundente Curto') + g('Lâmina Curta') + g('Manutenção');
-  const buildScore   = g('Marcenaria') + g('Soldagem') + g('Alvenaria') + g('Eletricidade') + g('Costura');
-  const artisanScore = g('Forja') + g('Cerâmica') + g('Lascamento') + g('Entalhamento') + g('Vidraria');
-  const huntScore    = g('Armadilhas') + g('Rastreamento') + g('Abate') + g('Pescaria');
+  // Costura → artesanato (confecção de roupas/armaduras, não construção civil)
+  const buildScore   = g('Marcenaria') + g('Soldagem') + g('Alvenaria') + g('Eletricidade');
+  const artisanScore = g('Forja') + g('Cerâmica') + g('Lascamento') + g('Entalhamento') + g('Vidraria') + g('Costura');
+  // Coleta → caçador (sobrevivência na natureza, não agricultura cultivada)
+  const huntScore    = g('Armadilhas') + g('Rastreamento') + g('Abate') + g('Pescaria') + g('Coleta');
   const stealthScore = g('Furtividade') + g('Pés Leves') + g('Agilidade');
   const medicScore   = g('Primeiros Socorros');
-  const farmScore    = g('Agricultura') + g('Culinária') + g('Coleta') + g('Pecuária');
+  // Fazendeiro = cultivo intencional: agricultura, culinária e pecuária
+  const farmScore    = g('Agricultura') + g('Culinária') + g('Pecuária');
   const mechScore    = g('Mecânica');
 
   // ── Behavioral bonuses ───────────────────────────────────────────────────

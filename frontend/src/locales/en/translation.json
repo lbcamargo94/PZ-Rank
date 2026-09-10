@@ -230,6 +230,28 @@
       "eyebrow": "Psychological Profile",
       "guide_btn": "View full profile guide"
     },
+    "highlights": {
+      "heading": "Highlights",
+      "kills": "Kills",
+      "days": "Days",
+      "looted": "Looted",
+      "books": "Books",
+      "animals": "Hunted",
+      "fish": "Fish",
+      "crops": "Crops",
+      "crafted": "Crafted",
+      "sleep": "No sleep",
+      "km": "Km driven",
+      "trees": "Trees",
+      "built": "Built",
+      "cities": "Cities",
+      "military": "Military bases",
+      "forged": "Forged",
+      "meals": "Meals",
+      "water": "Water (L)",
+      "ceramic": "Pottery",
+      "tracks": "Tracks"
+    },
     "objectives": {
       "pending_banner": "Objectives not yet registered by a moderator. Showing initial state.",
       "special_title": "Special Objectives",
