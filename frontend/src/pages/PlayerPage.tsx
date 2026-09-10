@@ -378,74 +378,39 @@ function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | nul
 
       <div className="pp-tab-body">
         {tab === 'profile' && (() => {
-          const { primary, secondary, traits: archTraits, tags } = resolveArchetype(entry);
+          const { primary, tags } = resolveArchetype(entry);
           return (
             <div className="pp-archetype" style={{ '--arch-color': primary.color } as React.CSSProperties}>
-              <div className="pp-arch-badge">
+              <span className="pp-arch-eyebrow">{t('player.archetype.eyebrow')}</span>
+              <div className="pp-arch-identity">
                 <span className="pp-arch-icon">{primary.icon}</span>
-              </div>
-              <div className="pp-arch-info">
-                <span className="pp-arch-eyebrow">{t('player.archetype.eyebrow')}</span>
-                <div className="pp-arch-names">
-                  <span className="pp-arch-name">{primary.name}</span>
-                  {secondary && (
-                    <span
-                      className="pp-arch-secondary"
-                      style={{ '--secondary-color': secondary.color } as React.CSSProperties}
-                      data-tip={secondary.desc}
-                    >
-                      {secondary.icon} {secondary.name}
-                    </span>
-                  )}
-                </div>
-                <span className="pp-arch-desc">{primary.desc}</span>
-                {archTraits.length > 0 && (
-                  <div className="pp-arch-traits">
-                    {archTraits.map(tr => {
-                      const pct = Math.round((tr.score / tr.max) * 100);
-                      return (
-                        <div key={tr.key} className="pp-arch-trait">
-                          <span className="pp-arch-trait-label">
-                            <span className="pp-arch-trait-icon">{tr.icon}</span>
-                            {tr.label}
-                          </span>
-                          <div className="pp-arch-trait-track">
-                            <div
-                              className="pp-arch-trait-fill"
-                              style={{
-                                width: `${pct}%`,
-                                '--trait-glow': tr.color,
-                              } as React.CSSProperties}
-                            />
-                          </div>
-                          <span className="pp-arch-trait-pct">{pct}%</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
+                <span className="pp-arch-name">{primary.name}</span>
                 {tags.length > 0 && (
-                  <div className="pp-arch-tags">
-                    {tags.map(tag => (
-                      <span
-                        key={tag.id}
-                        className="pp-arch-tag"
-                        style={{ '--tag-color': tag.color } as React.CSSProperties}
-                      >
-                        {tag.icon} {tag.label}
-                      </span>
-                    ))}
-                  </div>
+                  <>
+                    <span className="pp-arch-sep" aria-hidden="true">┊</span>
+                    <div className="pp-arch-tags">
+                      {tags.map(tag => (
+                        <span
+                          key={tag.id}
+                          className="pp-arch-tag"
+                          style={{ '--tag-color': tag.color } as React.CSSProperties}
+                        >
+                          {tag.icon} {tag.label}
+                        </span>
+                      ))}
+                    </div>
+                  </>
                 )}
-                <button
-                  className="pp-arch-guide-btn"
-                  onClick={() => setShowGuide(true)}
-                >
-                  <i className="ti ti-books" />
-                  <span>{t('player.archetype.guide_btn')}</span>
-                  <i className="ti ti-arrow-right pp-arch-guide-arrow" />
-                </button>
               </div>
+              <span className="pp-arch-desc">{primary.desc}</span>
+              <button
+                className="pp-arch-guide-btn"
+                onClick={() => setShowGuide(true)}
+              >
+                <i className="ti ti-books" />
+                <span>{t('player.archetype.guide_btn')}</span>
+                <i className="ti ti-arrow-right pp-arch-guide-arrow" />
+              </button>
             </div>
           );
         })()}
@@ -551,8 +516,16 @@ export function PlayerPage() {
     );
   }
 
-  // Sort this player's entries by score desc
-  const entries = [...profile.entries].sort((a, b) => b.score - a.score);
+  // Melhor entry por score (independente de estar vivo) — para summary de score/kills
+  const bestEntry = [...profile.entries].sort((a, b) => b.score - a.score)[0] ?? null;
+
+  // Vivos sempre primeiro, depois mortos, dentro de cada grupo ordena por score desc
+  const entries = [...profile.entries].sort((a, b) => {
+    const aAlive = a.sandbox_ok !== false && a.is_alive ? 1 : 0;
+    const bAlive = b.sandbox_ok !== false && b.is_alive ? 1 : 0;
+    if (bAlive !== aAlive) return bAlive - aAlive;
+    return b.score - a.score;
+  });
 
   const filteredEntries = entries.filter(e => {
     if (charFilter === 'alive')        return e.sandbox_ok !== false && e.is_alive;
@@ -565,10 +538,9 @@ export function PlayerPage() {
   const deadCount   = entries.filter(e => e.sandbox_ok !== false && !e.is_alive).length;
   const descCount   = entries.filter(e => e.sandbox_ok === false).length;
 
-  // Melhor entry viva para mostrar posição no rank público; se não houver viva, usa a melhor geral
+  // Melhor vivo para posição no rank público; sem vivo, usa melhor entry geral
   const bestAliveEntry = entries.find(e => e.sandbox_ok !== false && e.is_alive) ?? null;
-  const bestEntry      = entries[0] ?? null;
-  const bestRank       = bestAliveEntry?.rank ?? null;
+  const bestRank       = bestAliveEntry?.rank ?? bestEntry?.rank ?? null;
 
   const hasSocials = SOCIALS.some(
     s => !!(profile.player[s.field as keyof typeof profile.player])
