@@ -105,6 +105,7 @@
   text-decoration: none;
   color: inherit;
   display: block;
+  flex-shrink: 0; /* logo nunca encolhe — o nav centralizado absorve o espaço */
 }
 .header-brand:hover .site-title { color: var(--green-light); }
 

@@ -51,10 +51,11 @@ export function Header({ onPainel }: HeaderProps) {
       to={to}
       className={`nav-item${active(to) ? ' nav-item-active' : ''}`}
       aria-current={active(to) ? 'page' : undefined}
+      title={label}
       onClick={close}
     >
       <i className={`ti ${icon}`} aria-hidden="true" />
-      {label}
+      <span className="nav-item-label">{label}</span>
     </Link>
   );
 

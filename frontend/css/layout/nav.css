@@ -99,7 +99,9 @@
   align-items: center;
   gap: 2px;
   flex: 1;
+  min-width: 0;       /* permite encolher sem estourar o flex pai */
   justify-content: center;
+  overflow: hidden;   /* impede que os itens empurrem logo / header-right */
 }
 
 .site-nav-divider { display: none; }
@@ -108,7 +110,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 6px 10px;
+  padding: 6px 9px;
   font-family: var(--font-mono);
   font-size: 13px;
   color: var(--text-2);
@@ -121,6 +123,7 @@
   transition: color 0.15s, background 0.15s;
   line-height: 1;
   letter-spacing: 0.2px;
+  flex-shrink: 0;
 }
 .nav-item:hover { color: var(--text-1); background: rgba(255,255,255,0.06); }
 
@@ -129,7 +132,13 @@
   background: var(--green-dim) !important;
 }
 
-.nav-item .ti { font-size: 14px; }
+.nav-item .ti { font-size: 15px; }
+
+/* Label de texto: oculta em desktop médio, visível em desktop largo */
+.nav-item-label { display: none; }
+@media (min-width: 1200px) {
+  .nav-item-label { display: inline; }
+}
 
 .nav-item-logged       { color: var(--green-light); }
 .nav-item-logged:hover { background: var(--green-dim); }
