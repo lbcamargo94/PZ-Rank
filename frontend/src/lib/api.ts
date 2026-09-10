@@ -233,6 +233,10 @@ export function apiRestorePlayer(token: string, id: number): Promise<Player> {
   return request(`/players/${id}/restore`, { method: 'PATCH', ...auth(token) });
 }
 
+export function apiPermanentDeletePlayer(token: string, id: number): Promise<void> {
+  return request(`/players/${id}/permanent`, { method: 'DELETE', ...auth(token) });
+}
+
 export function apiUpdatePlayerLinks(
   token: string,
   id: number,

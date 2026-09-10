@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { apiGetPlayers, apiUpdatePlayerStatus, apiBlockPlayer, apiUnblockPlayer, apiDeletePlayer, apiRestorePlayer, apiSetPlayerEmail, apiVerifyPlayerEmail, apiSetFeaturedStreamer, apiSetModerator } from '../../lib/api';
+import { apiGetPlayers, apiUpdatePlayerStatus, apiBlockPlayer, apiUnblockPlayer, apiDeletePlayer, apiRestorePlayer, apiPermanentDeletePlayer, apiSetPlayerEmail, apiVerifyPlayerEmail, apiSetFeaturedStreamer, apiSetModerator } from '../../lib/api';
 import type { Player, PlayerStatus, PlayerFilter } from '../../types';
 import { ConfirmModal } from './ConfirmModal';
 import { EditLinksModal } from './EditLinksModal';
@@ -130,7 +130,8 @@ export function PendingPlayers({ token, showToast }: Props) {
   const [updating,        setUpdating]        = useState<number | null>(null);
   const [banTargetId,     setBanTargetId]     = useState<number | null>(null);
   const [unbanTargetId,   setUnbanTargetId]   = useState<number | null>(null);
-  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+  const [confirmDeleteId,    setConfirmDeleteId]    = useState<number | null>(null);
+  const [confirmPermDeleteId, setConfirmPermDeleteId] = useState<number | null>(null);
   const [editLinksPlayer, setEditLinksPlayer] = useState<Player | null>(null);
   const [emailInputs,     setEmailInputs]     = useState<Record<number, string>>({});
   const [sendingEmail,    setSendingEmail]    = useState<number | null>(null);
@@ -214,6 +215,20 @@ export function PendingPlayers({ token, showToast }: Props) {
     try {
       await apiDeletePlayer(token, id);
       showToast('Jogador excluído do rank.', 'success');
+      fetchPlayers();
+    } catch (err) {
+      showToast((err as Error).message, 'error');
+    } finally {
+      setUpdating(null);
+    }
+  }
+
+  async function doPermanentDelete(id: number) {
+    setConfirmPermDeleteId(null);
+    setUpdating(id);
+    try {
+      await apiPermanentDeletePlayer(token, id);
+      showToast('Jogador excluído permanentemente.', 'success');
       fetchPlayers();
     } catch (err) {
       showToast((err as Error).message, 'error');
@@ -449,10 +464,17 @@ export function PendingPlayers({ token, showToast }: Props) {
 
             <div className="player-card-actions">
               {isDeleted ? (
-                <button className="btn-success btn-sm" disabled={updating === p.id}
-                  onClick={() => handleRestore(p.id)}>
-                  <i className="ti ti-refresh" /> Restaurar
-                </button>
+                <>
+                  <button className="btn-success btn-sm" disabled={updating === p.id}
+                    onClick={() => handleRestore(p.id)}>
+                    <i className="ti ti-refresh" /> Restaurar
+                  </button>
+                  <button className="btn-danger btn-sm" disabled={updating === p.id}
+                    title="Excluir permanentemente — ação irreversível"
+                    onClick={() => setConfirmPermDeleteId(p.id)}>
+                    <i className="ti ti-trash-x" /> Excluir permanentemente
+                  </button>
+                </>
               ) : (
                 <>
                   {p.status !== 'approved' && (
@@ -595,6 +617,17 @@ export function PendingPlayers({ token, showToast }: Props) {
           danger
           onConfirm={() => doDelete(confirmDeleteId)}
           onCancel={() => setConfirmDeleteId(null)}
+        />
+      )}
+
+      {confirmPermDeleteId !== null && (
+        <ConfirmModal
+          title="Excluir permanentemente"
+          message="Esta ação é irreversível. O jogador e todos os seus dados serão apagados do banco de dados e não poderão ser recuperados. Tem certeza?"
+          confirmLabel="Excluir permanentemente"
+          danger
+          onConfirm={() => doPermanentDelete(confirmPermDeleteId)}
+          onCancel={() => setConfirmPermDeleteId(null)}
         />
       )}
 

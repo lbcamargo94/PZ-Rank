@@ -733,6 +733,32 @@ router.patch('/:id/verify-email', requireModerator, async (req: ModRequest, res:
   }
 });
 
+// DELETE /players/:id/permanent — master: exclusão permanente (hard delete)
+router.delete('/:id/permanent', requireMaster, async (req: ModRequest, res: Response): Promise<void> => {
+  const id = parseInt(String(req.params.id), 10);
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
+
+  try {
+    // Garante que só exclui jogadores já em soft-delete
+    const { data: player, error: findErr } = await supabase
+      .from('players')
+      .select('id, nick, deleted_at')
+      .eq('id', id)
+      .not('deleted_at', 'is', null)
+      .maybeSingle();
+
+    if (findErr) { const e = dbError(findErr); res.status(e.httpStatus).json({ error: e.message }); return; }
+    if (!player) { res.status(404).json({ error: 'Jogador não encontrado na lista de excluídos.' }); return; }
+
+    const { error } = await supabase.from('players').delete().eq('id', id);
+    if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
+    res.status(204).send();
+  } catch (err) {
+    console.error('[DELETE /players/:id/permanent] Erro inesperado:', err);
+    res.status(500).json({ error: 'Erro interno ao excluir jogador permanentemente.' });
+  }
+});
+
 // PATCH /players/:id/restore — moderador: restaura soft-delete
 router.patch('/:id/restore', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
   const id = parseInt(String(req.params.id), 10);
