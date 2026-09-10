@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import pzrankLogo from '../../assets/logo/pzrank-logo.webp';
 import { COMPANION_TAG } from '../lib/companion';
@@ -19,10 +19,43 @@ function readPlayerSession(): { nick: string; player_id: number } | null {
 
 export function Header({ onPainel }: HeaderProps) {
   const { t } = useTranslation();
+  const { pathname } = useLocation();
   const [playerSession] = useState(readPlayerSession);
   const [menuOpen, setMenuOpen] = useState(false);
+  const navRef   = useRef<HTMLElement>(null);
+  const btnRef   = useRef<HTMLButtonElement>(null);
 
   const close = () => setMenuOpen(false);
+
+  useEffect(() => {
+    const onKey     = (e: KeyboardEvent) => { if (e.key === 'Escape') close(); };
+    const onOutside = (e: MouseEvent) => {
+      if (!menuOpen) return;
+      const t = e.target as Node;
+      if (!navRef.current?.contains(t) && !btnRef.current?.contains(t)) close();
+    };
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('mousedown', onOutside);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('mousedown', onOutside);
+    };
+  }, [menuOpen]);
+
+  const active = (path: string) =>
+    pathname === path || (path !== '/' && pathname.startsWith(path));
+
+  const navLink = (to: string, icon: string, label: string) => (
+    <Link
+      to={to}
+      className={`nav-item${active(to) ? ' nav-item-active' : ''}`}
+      aria-current={active(to) ? 'page' : undefined}
+      onClick={close}
+    >
+      <i className={`ti ${icon}`} aria-hidden="true" />
+      {label}
+    </Link>
+  );
 
   return (
     <header className="site-header">
@@ -30,15 +63,45 @@ export function Header({ onPainel }: HeaderProps) {
 
         <Link to="/" className="header-brand" aria-label={t('header.home_aria')} onClick={close}>
           <img src={pzrankLogo} alt="PZ Rank" className="header-logo" />
-          <span className="header-subtitle">{t('header.tagline')}</span>
         </Link>
+
+        <nav
+          ref={navRef}
+          id="site-nav"
+          className={`site-nav${menuOpen ? ' site-nav-open' : ''}`}
+          aria-label={t('header.nav_aria')}
+        >
+          {navLink('/rank',          'ti-trophy',    t('nav.rank'))}
+          {navLink('/regras',        'ti-book',      t('nav.rules'))}
+          {navLink('/wiki',          'ti-book-2',    t('nav.wiki'))}
+          {navLink('/links',         'ti-link',      t('nav.links'))}
+          {navLink('/mods',          'ti-puzzle',    t('nav.mods'))}
+          {navLink('/lendas',        'ti-award',     t('nav.legends'))}
+          {navLink('/transparencia', 'ti-chart-pie', t('nav.transparency'))}
+
+          {/* Itens exclusivos do menu mobile */}
+          <div className="site-nav-divider nav-mobile-only" aria-hidden="true" />
+          <Link
+            to={playerSession ? '/perfil' : '/login'}
+            className={`nav-item nav-mobile-only${playerSession ? ' nav-item-logged' : ''}`}
+            aria-current={active('/perfil') || active('/login') ? 'page' : undefined}
+            onClick={close}
+          >
+            <i className={`ti ${playerSession ? 'ti-user-filled' : 'ti-user-circle'}`} aria-hidden="true" />
+            {playerSession ? playerSession.nick : t('header.login')}
+          </Link>
+          <button className="nav-item nav-item-mod nav-mobile-only" onClick={() => { onPainel(); close(); }}>
+            <i className="ti ti-shield-half" aria-hidden="true" /> {t('nav.moderators')}
+          </button>
+        </nav>
 
         <div className="header-right">
           <ThanksCelebration />
           <LanguageSwitcher />
 
           <div className="header-auth">
-            <Link to="/links" className="btn-header btn-header-companion" title={t('header.download_companion_title')}>
+            {/* Companion visível só no mobile (no desktop usa o link /links do nav) */}
+            <Link to="/links" className="btn-header btn-header-companion nav-mobile-only" title={t('header.download_companion_title')}>
               <i className="ti ti-download" aria-hidden="true" />
               <span className="btn-header-companion-text">{t('header.companion')} {COMPANION_TAG}</span>
             </Link>
@@ -62,56 +125,18 @@ export function Header({ onPainel }: HeaderProps) {
           </div>
 
           <button
+            ref={btnRef}
             className={`header-hamburger${menuOpen ? ' is-open' : ''}`}
             onClick={() => setMenuOpen(o => !o)}
             aria-label={menuOpen ? t('header.menu_close') : t('header.menu_open')}
             aria-expanded={menuOpen}
+            aria-controls="site-nav"
           >
             <i className={`ti ${menuOpen ? 'ti-x' : 'ti-menu-2'}`} aria-hidden="true" />
           </button>
         </div>
-      </div>
 
-      <nav className={`site-nav${menuOpen ? ' site-nav-open' : ''}`} aria-label={t('header.nav_aria')}>
-        <div className="container site-nav-inner">
-          <Link to="/rank" className="nav-item" onClick={close}>
-            <i className="ti ti-trophy" aria-hidden="true" /> {t('nav.rank')}
-          </Link>
-          <Link to="/regras" className="nav-item" onClick={close}>
-            <i className="ti ti-book" aria-hidden="true" /> {t('nav.rules')}
-          </Link>
-          <Link to="/wiki" className="nav-item" onClick={close}>
-            <i className="ti ti-book-2" aria-hidden="true" /> {t('nav.wiki')}
-          </Link>
-          <Link to="/links" className="nav-item" onClick={close}>
-            <i className="ti ti-link" aria-hidden="true" /> {t('nav.links')}
-          </Link>
-          <Link to="/mods" className="nav-item" onClick={close}>
-            <i className="ti ti-puzzle" aria-hidden="true" /> {t('nav.mods')}
-          </Link>
-          <Link to="/lendas" className="nav-item" onClick={close}>
-            <i className="ti ti-award" aria-hidden="true" /> {t('nav.legends')}
-          </Link>
-          <Link to="/transparencia" className="nav-item" onClick={close}>
-            <i className="ti ti-chart-pie" aria-hidden="true" /> {t('nav.transparency')}
-          </Link>
-          <Link to="/regras#sandbox" className="nav-item" onClick={close}>
-            <i className="ti ti-settings" aria-hidden="true" /> {t('nav.settings')}
-          </Link>
-          <div className="site-nav-divider" />
-          <Link
-            to={playerSession ? '/perfil' : '/login'}
-            className={`nav-item${playerSession ? ' nav-item-logged' : ''}`}
-            onClick={close}
-          >
-            <i className={`ti ${playerSession ? 'ti-user-filled' : 'ti-user-circle'}`} aria-hidden="true" />
-            {playerSession ? playerSession.nick : t('header.login')}
-          </Link>
-          <button className="nav-item nav-item-mod" onClick={() => { onPainel(); close(); }}>
-            <i className="ti ti-shield-half" aria-hidden="true" /> {t('nav.moderators')}
-          </button>
-        </div>
-      </nav>
+      </div>
     </header>
   );
 }

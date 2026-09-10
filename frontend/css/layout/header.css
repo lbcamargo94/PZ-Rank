@@ -8,8 +8,10 @@
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 900;
-  padding: 6px 0 0;
+  padding: 6px 0;
   box-shadow: 0 2px 16px rgba(0,0,0,0.45);
+  /* necessário para o dropdown mobile (position: absolute no .site-nav) */
+  overflow: visible;
 }
 
 .site-header::before {
@@ -24,8 +26,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding-bottom: 6px;
+  gap: 12px;
+  padding-bottom: 0;
 }
 
 .game-label {
@@ -115,6 +117,8 @@
   transition: opacity 0.2s;
 }
 .header-brand:hover .header-logo { opacity: 0.85; }
+
+.header-subtitle { display: none; }
 
 @media (max-width: 460px) {
   .header-logo { height: 36px; }
