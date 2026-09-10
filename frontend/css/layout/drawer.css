@@ -1,0 +1,183 @@
+/* ── NavDrawer — painel lateral deslizante ─────────────────────────── */
+
+/* <dialog> nativo: ocupa todo o viewport, fundo transparente */
+.nd {
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  position: fixed;
+  inset: 0;
+  outline: none;
+}
+
+/* Backdrop escurecido via ::backdrop do <dialog showModal()> */
+.nd::backdrop {
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  animation: nd-backdrop-in 0.2s ease;
+}
+
+@keyframes nd-backdrop-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Painel lateral — desliza da direita */
+.nd-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 300px;
+  max-width: 88vw;
+  background: var(--bg-1);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  animation: nd-slide-in 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes nd-slide-in {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+/* ── Cabeçalho do drawer ─────────────────────────────────────────── */
+.nd-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.nd-title {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.nd-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: 1px solid var(--border-mid);
+  border-radius: 6px;
+  color: var(--text-3);
+  font-size: 16px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.nd-close:hover { color: var(--text-1); border-color: var(--text-3); background: var(--bg-3); }
+
+/* ── Links de navegação ──────────────────────────────────────────── */
+.nd-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* ── Item base (link e button compartilham) ──────────────────────── */
+.nd-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--text-2);
+  background: none;
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.12s, background 0.12s;
+  line-height: 1;
+  width: 100%;
+  text-align: left;
+  position: relative;
+  border-left: 2px solid transparent;
+  margin: 0 0 0 0;
+  letter-spacing: 0.2px;
+}
+.nd-item:hover {
+  color: var(--text-1);
+  background: var(--bg-2);
+  border-left-color: var(--border-mid);
+}
+
+.nd-item-active {
+  color: var(--green-light);
+  background: var(--green-dim);
+  border-left-color: var(--green);
+}
+.nd-item-active:hover {
+  color: var(--green-light);
+  background: var(--green-dim);
+  border-left-color: var(--green);
+}
+
+.nd-item-icon {
+  font-size: 18px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+  opacity: 0.75;
+}
+.nd-item-active  .nd-item-icon,
+.nd-item:hover   .nd-item-icon { opacity: 1; }
+
+.nd-item-label { flex: 1; }
+
+/* Ponto indicador de página ativa */
+.nd-item-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  flex-shrink: 0;
+}
+
+/* ── Rodapé (conta + moderadores) ───────────────────────────────── */
+.nd-footer {
+  border-top: 1px solid var(--border);
+  padding: 8px 0;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nd-item-logged { color: var(--green-light); }
+.nd-item-logged:hover { background: var(--green-dim); border-left-color: var(--green-light); }
+
+.nd-item-mod { color: var(--text-4); font-size: 14px; }
+.nd-item-mod:hover { color: var(--text-3); }
+
+/* ── Animação de saída (opcional via JS toggle de classe) ─────────── */
+.nd[data-closing] .nd-panel {
+  animation: nd-slide-out 0.2s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+.nd[data-closing]::backdrop {
+  animation: nd-backdrop-out 0.2s ease forwards;
+}
+@keyframes nd-slide-out   { to { transform: translateX(100%); } }
+@keyframes nd-backdrop-out { to { opacity: 0; } }

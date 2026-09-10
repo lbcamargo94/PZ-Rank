@@ -75,9 +75,11 @@
 }
 .btn-header-companion:hover { background: #3a2010; }
 
-/* ── Hamburger (só mobile) ─────────────────────────── */
+/* ── Hamburger — sempre visível, abre o Drawer ────── */
 .header-hamburger {
-  display: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: 1px solid var(--border-mid);
   color: var(--text-2);
@@ -85,134 +87,10 @@
   cursor: pointer;
   padding: 7px 9px;
   border-radius: var(--radius);
-  align-items: center;
-  justify-content: center;
   transition: color 0.15s, border-color 0.15s, background 0.15s;
   flex-shrink: 0;
 }
-.header-hamburger:hover      { color: var(--text-1); border-color: var(--text-3); }
-.header-hamburger.is-open    { color: var(--text-1); border-color: var(--text-3); background: var(--bg-3); }
-
-/* ── Nav — desktop: links horizontais no header ────── */
-.site-nav {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  flex: 1;
-  min-width: 0;       /* permite encolher sem estourar o flex pai */
-  justify-content: center;
-  overflow: hidden;   /* impede que os itens empurrem logo / header-right */
-}
-
-.site-nav-divider { display: none; }
-
-.nav-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 6px 9px;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  color: var(--text-2);
-  background: none;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: color 0.15s, background 0.15s;
-  line-height: 1;
-  letter-spacing: 0.2px;
-  flex-shrink: 0;
-}
-.nav-item:hover { color: var(--text-1); background: rgba(255,255,255,0.06); }
-
-.nav-item-active {
-  color: var(--green-light) !important;
-  background: var(--green-dim) !important;
-}
-
-.nav-item .ti { font-size: 15px; }
-
-/* Label de texto: oculta em desktop médio, visível em desktop largo */
-.nav-item-label { display: none; }
-@media (min-width: 1200px) {
-  .nav-item-label { display: inline; }
-}
-
-.nav-item-logged       { color: var(--green-light); }
-.nav-item-logged:hover { background: var(--green-dim); }
-
-.nav-item-mod       { color: var(--text-4); }
-.nav-item-mod:hover { color: var(--text-3); background: rgba(255,255,255,0.04); }
-
-/* Itens só do mobile: ocultos no desktop */
-.nav-mobile-only { display: none !important; }
-
-/* ── Nav — mobile: dropdown com slide ─────────────── */
-@media (max-width: 860px) {
-  .nav-mobile-only { display: flex !important; }
-
-  .header-hamburger { display: inline-flex; }
-
-  .site-nav {
-    display: none;
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 100%;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0;
-    background: rgba(8,11,6,0.97);
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border-mid);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.55);
-    z-index: 800;
-    padding: 6px 0;
-  }
-
-  .site-nav.site-nav-open {
-    display: flex;
-    animation: nav-slide-in 0.18s ease;
-  }
-
-  @keyframes nav-slide-in {
-    from { opacity: 0; transform: translateY(-6px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  .nav-item {
-    padding: 13px 20px;
-    font-size: 15px;
-    border-radius: 0;
-    border-left: 2px solid transparent;
-    width: 100%;
-    gap: 10px;
-  }
-  .nav-item:hover {
-    border-left-color: var(--green);
-    background: var(--bg-2);
-  }
-  .nav-item-active {
-    border-left-color: var(--green) !important;
-    background: var(--bg-2) !important;
-    color: var(--green-light) !important;
-  }
-  .nav-item .ti { font-size: 16px; width: 18px; text-align: center; }
-
-  .site-nav-divider {
-    display: block;
-    height: 1px;
-    background: var(--border);
-    margin: 4px 0;
-  }
-
-  .nav-item-logged:hover { border-left-color: var(--green-light); }
-
-  .nav-item-mod         { color: var(--text-4); font-size: 14px; }
-  .nav-item-mod:hover   { border-left-color: var(--border-mid); background: var(--bg-2); }
-}
+.header-hamburger:hover { color: var(--text-1); border-color: var(--text-3); }
 
 /* ── Texto oculto em telas muito pequenas ──────────── */
 @media (max-width: 540px) {
