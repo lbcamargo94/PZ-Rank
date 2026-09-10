@@ -71,14 +71,16 @@ const STAT_LABELS: Record<string, string> = {
   // conquistas binárias — não exibem threshold
   all_skills_10:          '',
   all_gold_achievements:  '',
+  all_objectives_complete: '',
+  all_animal_species:     '',
   full_map_revealed:      '',
   all_cities_visited:     '',
   all_stations_used:      '',
   all_bases_equipped:     '',
-  kentucky_explorer:      '',
   season_01_complete:     '',
   military_cleared:       '',
   cities_rebuilt:         '',
+  spiffo_statues:         '',
   // skills individuais
   skill_aiming:        'mira',
   skill_axe:           'machado',
