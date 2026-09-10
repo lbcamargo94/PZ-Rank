@@ -148,8 +148,9 @@ function AchCard({
   const isTracked = TRACKED_STATS.has(a.stat);
   const current   = isTracked ? (playerStats[a.stat] ?? 0) : 0;
   const statLabel = STAT_LABELS[a.stat];
-  // conquista binária: threshold=1 e sem tracker de progresso
-  const isBinary  = !isTracked && a.threshold === 1;
+  // conquistas binárias: threshold=1 sem tracker, ou skills individuais
+  // (a description já explica o nível, o número é redundante)
+  const isBinary  = (!isTracked && a.threshold === 1) || a.stat.startsWith('skill_');
 
   const tierColor = TIER_COLORS[a.tier];
   const style = unlocked && tierColor
@@ -161,13 +162,13 @@ function AchCard({
       className={`pp-ach-card${unlocked ? ` pp-ach-unlocked pp-ach-${a.tier}` : ' pp-ach-locked'}`}
       style={style}
     >
+      {unlocked && <span className="pp-ach-badge"><i className="ti ti-check" /></span>}
       <span className="pp-ach-icon">{a.icon}</span>
       <span className="pp-ach-name">{a.name}</span>
       <span className="pp-ach-desc">{a.description}</span>
 
       {unlocked ? (
         <div className="pp-ach-meta">
-          <span className="pp-ach-check"><i className="ti ti-check" /></span>
           <span className="pp-ach-date">
             {new Date(unlocked.unlocked_at).toLocaleDateString('pt-BR')}
           </span>
