@@ -158,6 +158,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // Se MIN_MOD_VERSION estiver configurado, rejeita syncs de versões antigas.
   // HTTP 426 (Upgrade Required) — sem escrita no banco, jogador não é desclassificado.
   if (config.minModVersion && !isVersionAtLeast(decoded.modVersion, config.minModVersion)) {
+    console.warn(`[426] mod desatualizado | player=${player.nick} | modVersion=${decoded.modVersion ?? 'null'} | required=${config.minModVersion}`);
     res.status(426).json({
       error: `Mod desatualizado (${decoded.modVersion ?? 'desconhecido'}). Atualize o mod PZ Community Rank na Oficina da Steam.`,
       outdated_mod:     true,
