@@ -341,7 +341,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // ── Verificação server-side de mods bloqueados (v2.18.0+) ─────────────────
   // Quando o código traz active_mods, cruza contra a tabela mods no banco.
   // Mods com status='blocked': desclassifica imediatamente (sandbox_ok=false).
-  // Mods não cadastrados: apenas flag para revisão do moderador.
+  // Mods não cadastrados: flag para revisão do moderador.
   let blockedModFound: string | null = null;
   let unknownModIds:   string[]      = [];
 
@@ -351,34 +351,62 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       .select('mod_id, name, status')
       .not('mod_id', 'is', null);
 
-    if (knownMods && knownMods.length > 0) {
-      type KnownMod = { mod_id: string; name: string; status: string };
-      const blockedSet  = new Map<string, string>();
-      const allowedSet  = new Set<string>();
-      for (const m of knownMods as KnownMod[]) {
-        if (m.status === 'blocked') blockedSet.set(m.mod_id, m.name);
-        else allowedSet.add(m.mod_id);
+    // Mesmo com tabela vazia, todo mod enviado é desconhecido e vira flag.
+    type KnownMod = { mod_id: string; name: string; status: string };
+    const blockedSet = new Map<string, string>();
+    const allowedSet = new Set<string>();
+    for (const m of (knownMods ?? []) as KnownMod[]) {
+      if (m.status === 'blocked') blockedSet.set(m.mod_id, m.name);
+      else allowedSet.add(m.mod_id);
+    }
+    for (const modId of decoded.activeMods) {
+      if (blockedSet.has(modId)) {
+        blockedModFound = blockedSet.get(modId) ?? modId;
+        break;
       }
-      for (const modId of decoded.activeMods) {
-        if (blockedSet.has(modId)) {
-          blockedModFound = blockedSet.get(modId) ?? modId;
-          break;
-        }
-        if (!allowedSet.has(modId)) {
-          unknownModIds.push(modId);
-        }
+      if (!allowedSet.has(modId)) {
+        unknownModIds.push(modId);
       }
     }
   }
 
-  // Mod bloqueado detectado server-side: desclassifica imediatamente
+  // Mod bloqueado detectado server-side: desclassifica imediatamente e persiste no banco
   if (blockedModFound) {
-    const reason = `blocked_mod:${blockedModFound}`;
+    const reason     = `blocked_mod:${blockedModFound}`;
+    const modPayload = {
+      sandbox_ok:               false,
+      score:                    0,
+      is_alive:                 decoded.isAlive,
+      disqualification_reason:  reason,
+      disqualified_at:          new Date().toISOString(),
+      mod_version:              decoded.modVersion ?? null,
+      active_mods:              JSON.stringify(decoded.activeMods),
+    };
     if (prev) {
-      await supabase
-        .from(config.tableName)
-        .update({ sandbox_ok: false, score: 0, is_alive: decoded.isAlive, disqualification_reason: reason, disqualified_at: new Date().toISOString() })
-        .eq('id', (prev as { id: number }).id);
+      await supabase.from(config.tableName).update(modPayload).eq('id', (prev as { id: number }).id);
+    } else {
+      // Primeira sync já com mod bloqueado: cria a entrada desclassificada para auditoria.
+      await supabase.from(config.tableName).insert([{
+        player_id:      player.id,
+        moderator_id:   null,
+        name:           player.nick,
+        character_name: decoded.characterName,
+        profession:     decoded.profession,
+        days:           decoded.days,
+        time_raw:       decoded.timeRaw,
+        time_str:       decoded.timeStr,
+        kills:          decoded.kills,
+        skills:         decoded.skills.join(', ') || null,
+        live_url:       null,
+        traits:         decoded.traits.length > 0 ? decoded.traits.join(',') : null,
+        objectives:     null,
+        record_score:   0,
+        flagged_reason: null,
+        flagged_at:     null,
+        updated_at:     new Date().toISOString(),
+        no_live_streak: 0,
+        ...modPayload,
+      }]);
     }
     res.status(200).json({
       success: true, character_name: decoded.characterName,
@@ -394,11 +422,10 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   const codeReasonRaw = decoded.disqualificationReason;
   const hasModsFlag = !!codeReasonRaw && isModsReason(codeReasonRaw) && codeReasonRaw !== 'mod_removed';
 
-  // Mods desconhecidos viram flag para revisão do moderador
+  // Mods desconhecidos viram flag para revisão do moderador (corrigido: flagStr era void'd)
+  let unknownModsFlag: string | null = null;
   if (unknownModIds.length > 0 && !hasModsFlag) {
-    const flagStr = `unknown_mods:${unknownModIds.slice(0, 3).join(',')}`;
-    // atualiza flaggedReason logo abaixo no bloco de anomalias; guardamos aqui
-    void flagStr; // usado no bloco hasModsFlag abaixo se necessário
+    unknownModsFlag = `unknown_mods:${unknownModIds.slice(0, 5).join(',')}`;
   }
 
   // ── Detecção de anomalias estatísticas ─────────────────────────────────────
@@ -409,8 +436,8 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // (score=0, kills potencialmente desatualizados), então qualquer comparação
   // geraria falso-positivo e congelaria o score em 0.
 
-  let flaggedReason: string | null = null;
-  let flaggedAt:     string | null = null;
+  let flaggedReason: string | null = unknownModsFlag;
+  let flaggedAt:     string | null = unknownModsFlag ? new Date().toISOString() : null;
 
   if (hasModsFlag) {
     // Formato do mod Lua: "mods:NAO_PERMITIDO:<Nome>" — "NAO_PERMITIDO" é um marcador
@@ -420,7 +447,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       : '';
     flaggedReason = modName ? `unauthorized_mod:${modName}` : 'unauthorized_mod';
     flaggedAt     = new Date().toISOString();
-  } else if (prev && decoded.sandboxOk && !justReactivated) {
+  } else if (!flaggedReason && prev && decoded.sandboxOk && !justReactivated) {
     // timeRaw (minutos totais) nunca retrocede numa run legítima — se diminuiu,
     // o personagem morreu e iniciou nova partida com o mesmo nome.
     // Usa timeRaw em vez de days para capturar o caso em que ambas as runs
