@@ -247,27 +247,37 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     return;
   }
 
+  // Verifica separadamente se há entry soft-deleted para este personagem.
+  // Feito antes da busca principal para retornar erro claro sem maybeSingle() pegar a row deletada.
+  const { data: deletedEntry } = await supabase
+    .from(config.tableName)
+    .select('id')
+    .eq('player_id', player.id)
+    .eq('character_name', decoded.characterName)
+    .not('deleted_at', 'is', null)
+    .limit(1)
+    .maybeSingle();
+
+  if (deletedEntry) {
+    res.status(409).json({ error: 'Seu personagem foi removido do rank. Contate um moderador para reativação.', code: 'PLAYER_REMOVED' });
+    return;
+  }
+
   // Busca entrada existente para preservar objectives, live_url e estado de desclassificação.
-  // Inclui deleted_at para detectar entradas soft-deleted (não devem ser atualizadas silenciosamente).
+  // Filtra deleted_at IS NULL para nunca confundir entries soft-deletadas com a ativa.
   const { data: existingRaw, error: existingError } = await supabase
     .from(config.tableName)
     .select('id, objectives, live_url, sandbox_ok, disqualification_reason, kills, time_raw, days, flagged_reason, flagged_at, updated_at, score, record_score, character_name, is_alive, deleted_at, no_live_streak, skills')
     .eq('player_id', player.id)
     .eq('character_name', decoded.characterName)
+    .is('deleted_at', null)
     .maybeSingle();
 
-  // Erro indica múltiplas linhas para o mesmo personagem (race condition anterior).
+  // Erro indica múltiplas linhas ativas para o mesmo personagem (race condition anterior).
   // Rejeita o sync para não adicionar mais um duplicado — o estado fica congelado
   // até que um moderador master remova as entradas duplicadas.
   if (existingError) {
     res.status(409).json({ error: 'Entrada duplicada detectada. Sync pausado até limpeza pelo moderador.' });
-    return;
-  }
-
-  // Entrada soft-deleted: não atualiza silenciosamente — informa o jogador para contatar moderador.
-  // Antes deste fix, o sync atualizava a entrada deletada mas ela nunca aparecia no rank (bug PIGZEIRA).
-  if (existingRaw && (existingRaw as { deleted_at?: string | null }).deleted_at) {
-    res.status(409).json({ error: 'Seu personagem foi removido do rank. Contate um moderador para reativação.' });
     return;
   }
 
