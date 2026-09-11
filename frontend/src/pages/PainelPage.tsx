@@ -85,17 +85,27 @@ const ANOMALY_INFO: Record<string, { label: string; detail: string }> = {
 };
 
 // Mod não permitido detectado pelo próprio mod Lua (checagem contra a whitelist) — não
-// desclassifica sozinho, só avisa o moderador. Formato dinâmico "unauthorized_mod:<Nome>",
-// por isso não cabe no dicionário estático ANOMALY_INFO acima.
-function unauthorizedModAnomaly(flaggedReason: string): { label: string; detail: string } | null {
-  if (!flaggedReason.startsWith('unauthorized_mod')) return null;
-  const modName = flaggedReason.startsWith('unauthorized_mod:') ? flaggedReason.slice('unauthorized_mod:'.length) : '';
-  return {
-    label:  'Mod não permitido detectado',
-    detail: modName
-      ? `O mod "${modName}" não está na whitelist do campeonato. Não foi desclassificado automaticamente — revise e decida manualmente.`
-      : 'Um mod fora da whitelist foi detectado, mas o código não trouxe o nome. Não foi desclassificado automaticamente — revise e decida manualmente.',
-  };
+// Formatos dinâmicos de flaggedReason que não cabem no dicionário estático:
+//   "unauthorized_mod:<Nome>"  — mod ativo fora da whitelist (mod legado < v2.18.0)
+//   "unknown_mods:<id1>,<id2>" — mods enviados pelo v2.18.0+ que não estão cadastrados na tabela mods
+function parseFlaggedReason(flaggedReason: string): { label: string; detail: string } | null {
+  if (flaggedReason.startsWith('unauthorized_mod')) {
+    const modName = flaggedReason.startsWith('unauthorized_mod:') ? flaggedReason.slice('unauthorized_mod:'.length) : '';
+    return {
+      label:  'Mod não permitido detectado',
+      detail: modName
+        ? `O mod "${modName}" não está na whitelist do campeonato. Não foi desclassificado automaticamente — revise e decida manualmente.`
+        : 'Um mod fora da whitelist foi detectado, mas o código não trouxe o nome. Revise e decida manualmente.',
+    };
+  }
+  if (flaggedReason.startsWith('unknown_mods:')) {
+    const ids = flaggedReason.slice('unknown_mods:'.length).split(',').filter(Boolean);
+    return {
+      label:  `Mods desconhecidos (${ids.length})`,
+      detail: `IDs não cadastrados na tabela de mods: ${ids.map(id => `"${id}"`).join(', ')}. Verifique se são mods permitidos e cadastre-os, ou desclassifique o jogador.`,
+    };
+  }
+  return null;
 }
 
 function DisqDetail({ entry }: { entry: Entry }) {
@@ -106,7 +116,7 @@ function DisqDetail({ entry }: { entry: Entry }) {
 
   const disq    = DISQ_INFO[entry.disqualification_reason ?? 'sandbox'] ?? DISQ_INFO.sandbox;
   const anomaly = entry.flagged_reason
-    ? (unauthorizedModAnomaly(entry.flagged_reason) ?? ANOMALY_INFO[entry.flagged_reason] ?? { label: entry.flagged_reason, detail: '' })
+    ? (parseFlaggedReason(entry.flagged_reason) ?? ANOMALY_INFO[entry.flagged_reason] ?? { label: entry.flagged_reason, detail: '' })
     : null;
 
   return (
