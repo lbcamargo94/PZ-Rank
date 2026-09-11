@@ -672,3 +672,7 @@ export async function apiGetJournal(limit = 30, before?: number): Promise<Journa
 export function apiGetPlayerActiveMods(playerId: number): Promise<import('../types').PlayerActiveMods> {
   return request<import('../types').PlayerActiveMods>(`/players/${playerId}/active-mods`);
 }
+
+export function apiGetHealth(): Promise<{ ok: boolean; ts: number; min_mod_version: string | null }> {
+  return request('/health');
+}

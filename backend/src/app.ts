@@ -102,7 +102,7 @@ export function createApp() {
 
   app.use(express.json({ limit: '1mb' }));
 
-  app.get('/health', (_req, res) => res.json({ ok: true, ts: Date.now() }));
+  app.get('/health', (_req, res) => res.json({ ok: true, ts: Date.now(), min_mod_version: config.minModVersion || null }));
 
   // Rate limiting em endpoints de autenticação
   app.use('/auth/login',                          authLimiter);
