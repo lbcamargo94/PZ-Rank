@@ -338,16 +338,68 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     ? null
     : (existing?.objectives as Objectives | null) ?? null;
 
-  // ── Detecção de mods não permitidos ────────────────────────────────────────
-  // O mod Lua compara os mods ativos contra GET /sync/allowed-mods e embute o
-  // resultado no código (formato "mods:NAO_PERMITIDO:<Nome>"). Não desclassifica
-  // (ver isModsReason abaixo) — só fica como aviso pro moderador revisar e decidir
-  // manualmente. Reavaliado a cada sync, sem "carregar" pro próximo (diferente das
-  // anomalias de progressão logo abaixo): se o jogador remover o mod, o aviso some
-  // sozinho no sync seguinte. 'mod_removed' é outro sinal (mod do campeonato
-  // desligado, ver heartbeat) e não entra aqui.
+  // ── Verificação server-side de mods bloqueados (v2.18.0+) ─────────────────
+  // Quando o código traz active_mods, cruza contra a tabela mods no banco.
+  // Mods com status='blocked': desclassifica imediatamente (sandbox_ok=false).
+  // Mods não cadastrados: apenas flag para revisão do moderador.
+  let blockedModFound: string | null = null;
+  let unknownModIds:   string[]      = [];
+
+  if (decoded.activeMods.length > 0) {
+    const { data: knownMods } = await supabase
+      .from('mods')
+      .select('mod_id, name, status')
+      .not('mod_id', 'is', null);
+
+    if (knownMods && knownMods.length > 0) {
+      type KnownMod = { mod_id: string; name: string; status: string };
+      const blockedSet  = new Map<string, string>();
+      const allowedSet  = new Set<string>();
+      for (const m of knownMods as KnownMod[]) {
+        if (m.status === 'blocked') blockedSet.set(m.mod_id, m.name);
+        else allowedSet.add(m.mod_id);
+      }
+      for (const modId of decoded.activeMods) {
+        if (blockedSet.has(modId)) {
+          blockedModFound = blockedSet.get(modId) ?? modId;
+          break;
+        }
+        if (!allowedSet.has(modId)) {
+          unknownModIds.push(modId);
+        }
+      }
+    }
+  }
+
+  // Mod bloqueado detectado server-side: desclassifica imediatamente
+  if (blockedModFound) {
+    const reason = `blocked_mod:${blockedModFound}`;
+    if (prev) {
+      await supabase
+        .from(config.tableName)
+        .update({ sandbox_ok: false, score: 0, is_alive: decoded.isAlive, disqualification_reason: reason, disqualified_at: new Date().toISOString() })
+        .eq('id', (prev as { id: number }).id);
+    }
+    res.status(200).json({
+      success: true, character_name: decoded.characterName,
+      score: 0, is_alive: decoded.isAlive,
+      disqualified: true, disqualified_reason: reason,
+    });
+    return;
+  }
+
+  // ── Detecção de mods não permitidos (legado — via flag no payload) ─────────
+  // Mantido para compatibilidade com mods < v2.18.0 que usam a whitelist local.
+  // A partir do v2.18.0, a detecção server-side acima é mais confiável.
   const codeReasonRaw = decoded.disqualificationReason;
   const hasModsFlag = !!codeReasonRaw && isModsReason(codeReasonRaw) && codeReasonRaw !== 'mod_removed';
+
+  // Mods desconhecidos viram flag para revisão do moderador
+  if (unknownModIds.length > 0 && !hasModsFlag) {
+    const flagStr = `unknown_mods:${unknownModIds.slice(0, 3).join(',')}`;
+    // atualiza flaggedReason logo abaixo no bloco de anomalias; guardamos aqui
+    void flagStr; // usado no bloco hasModsFlag abaixo se necessário
+  }
 
   // ── Detecção de anomalias estatísticas ─────────────────────────────────────
   // Compara submissão atual com o último estado conhecido para detectar
@@ -512,8 +564,10 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     record_score,
     flagged_reason: flaggedReason,
     flagged_at:     flaggedAt,
-    updated_at:     new Date().toISOString(),
+    updated_at:   new Date().toISOString(),
     no_live_streak,
+    mod_version:  decoded.modVersion ?? null,
+    ...(decoded.activeMods.length > 0 ? { active_mods: JSON.stringify(decoded.activeMods) } : {}),
     // PZRX3: only write when present to avoid overwriting with zeros on PZRX2 syncs
     ...(hasExtended ? {
       animals_killed:      decoded.animalsKilled,

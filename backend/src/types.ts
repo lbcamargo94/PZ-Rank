@@ -118,7 +118,9 @@ export interface DecodedCode {
   animalSpecies:     number;
   daysNoCanned:      number;
   // PZRX9 — causa da morte (null quando ausente / código anterior)
-  deathCause:        string | null;
+  deathCause:  string | null;
+  // v2.18.0 — lista de mod IDs ativos (excl. IDs internos do engine)
+  activeMods:  string[];
   // Mapa de skill ID em inglês (lowercase) → nível; derivado do campo skills do payload
-  skillLevels:       Record<string, number>;
+  skillLevels: Record<string, number>;
 }

@@ -890,4 +890,64 @@ router.patch('/:id/supporter', requireMaster, async (req: ModRequest, res: Respo
   }
 });
 
+// GET /players/:id/active-mods — público
+// Retorna os mods ativos do último entry do jogador, cruzados com a tabela mods.
+// known: mods cadastrados (com name, workshop_url, image_url, status)
+// unknown: IDs de mods não cadastrados (sem link)
+router.get('/:id/active-mods', async (req: Request, res: Response): Promise<void> => {
+  const id = Number(req.params.id);
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
+
+  try {
+    // Busca o entry mais recente e ativo do jogador
+    const { data: entry } = await supabase
+      .from(config.tableName)
+      .select('active_mods, mod_version, updated_at')
+      .eq('player_id', id)
+      .eq('is_alive', true)
+      .is('deleted_at', null)
+      .order('score', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!entry || !(entry as { active_mods?: string | null }).active_mods) {
+      res.json({ mods: [], mod_version: null, updated_at: null });
+      return;
+    }
+
+    type EntryRow = { active_mods: string | null; mod_version: string | null; updated_at: string | null };
+    const row = entry as EntryRow;
+    let activeModIds: string[] = [];
+    try { activeModIds = JSON.parse(row.active_mods ?? '[]'); } catch { activeModIds = []; }
+
+    if (activeModIds.length === 0) {
+      res.json({ mods: [], mod_version: row.mod_version, updated_at: row.updated_at });
+      return;
+    }
+
+    // Cruza com a tabela mods
+    const { data: knownMods } = await supabase
+      .from('mods')
+      .select('mod_id, name, workshop_url, image_url, status, is_required')
+      .in('mod_id', activeModIds);
+
+    type KnownMod = { mod_id: string; name: string; workshop_url: string; image_url: string | null; status: string; is_required: boolean };
+    const knownMap = new Map<string, KnownMod>(
+      ((knownMods ?? []) as KnownMod[]).map(m => [m.mod_id, m])
+    );
+
+    const mods = activeModIds.map(modId => {
+      const known = knownMap.get(modId);
+      return known
+        ? { mod_id: modId, name: known.name, workshop_url: known.workshop_url, image_url: known.image_url, status: known.status, is_required: known.is_required, known: true }
+        : { mod_id: modId, name: modId, workshop_url: null, image_url: null, status: 'unknown', is_required: false, known: false };
+    });
+
+    res.json({ mods, mod_version: row.mod_version, updated_at: row.updated_at });
+  } catch (err) {
+    console.error('[GET /players/:id/active-mods]', err);
+    res.status(500).json({ error: 'Erro interno.' });
+  }
+});
+
 export default router;

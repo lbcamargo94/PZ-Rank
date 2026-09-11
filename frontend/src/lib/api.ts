@@ -664,3 +664,7 @@ export async function apiGetJournal(limit = 30, before?: number): Promise<Journa
   const result = await request<{ events: JournalEvent[] }>(`/journal?${params}`);
   return result.events;
 }
+
+export function apiGetPlayerActiveMods(playerId: number): Promise<import('../types').PlayerActiveMods> {
+  return request<import('../types').PlayerActiveMods>(`/players/${playerId}/active-mods`);
+}

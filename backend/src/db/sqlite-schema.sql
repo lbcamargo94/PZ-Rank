@@ -140,6 +140,9 @@ CREATE TABLE IF NOT EXISTS entries (
   pending_new_character_since TEXT     DEFAULT NULL,
   -- Syncs consecutivos sem live confirmada no YouTube (transmissão obrigatória pelas regras)
   no_live_streak               INTEGER  NOT NULL DEFAULT 0,
+  -- v2.18.0: mods ativos e versão do mod PZCommunityRank no momento do sync
+  active_mods                  TEXT     DEFAULT NULL,
+  mod_version                  TEXT     DEFAULT NULL,
   UNIQUE (player_id, character_name)
 );
 

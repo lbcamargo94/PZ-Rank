@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import avatarDefault from '../../assets/avatar.png';
 import perfilBg from '../../assets/background/perfil-usuario.webp';
-import { apiGetPlayerProfile, apiGetLiveStatus, apiGetPlayerLikes, apiLikePlayer, apiUnlikePlayer } from '../lib/api';
+import { apiGetPlayerProfile, apiGetLiveStatus, apiGetPlayerLikes, apiLikePlayer, apiUnlikePlayer, apiGetPlayerActiveMods } from '../lib/api';
 import { parseSkillMap, SKILL_CATEGORIES, MAX_SKILL_LEVEL, TOTAL_SKILLS } from '../lib/skills';
 import { parseTraitList, resolveTrait, getTraitImageUrl } from '../lib/traits';
 import { getProfessionImageUrl } from '../lib/professions';
@@ -18,7 +18,7 @@ import { useToast } from '../hooks/useToast';
 import { Toast } from '../components/Toast';
 import { formatNumber } from '../lib/format';
 import { translateApiError } from '../lib/apiErrors';
-import type { PlayerProfile, Entry, LiveStatus, PlayerSession, PlayerLikeStatus } from '../types';
+import type { PlayerProfile, Entry, LiveStatus, PlayerSession, PlayerLikeStatus, PlayerActiveMods, ActiveModInfo } from '../types';
 import type { Objectives } from '../lib/objectives';
 
 function readPlayerSession(): PlayerSession | null {
@@ -239,9 +239,97 @@ function ppDisqTooltip(t: TFunction, reason: string | null | undefined): string 
   }
 }
 
+function ActiveModsSection({ playerId }: { playerId: number }) {
+  const [data, setData]       = useState<PlayerActiveMods | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError]     = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    setError(false);
+    apiGetPlayerActiveMods(playerId)
+      .then(setData)
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
+  }, [playerId]);
+
+  if (loading) return <div className="pp-mods-state"><i className="ti ti-loader-2 spin" /> Carregando mods...</div>;
+  if (error)   return <div className="pp-mods-state pp-mods-error"><i className="ti ti-alert-circle" /> Não foi possível carregar os mods.</div>;
+  if (!data || data.mods.length === 0) return (
+    <div className="pp-mods-state pp-mods-empty">
+      <i className="ti ti-puzzle-off" />
+      <span>Nenhum mod reportado ainda.</span>
+      {data?.mod_version && <span className="pp-mods-modver">PZCommunityRank <strong>v{data.mod_version}</strong></span>}
+    </div>
+  );
+
+  const known   = data.mods.filter(m => m.known);
+  const unknown = data.mods.filter(m => !m.known);
+
+  const statusClass = (s: ActiveModInfo['status']) =>
+    s === 'blocked' ? 'pp-mod-badge-blocked' : s === 'active' ? 'pp-mod-badge-ok' : 'pp-mod-badge-unknown';
+  const statusLabel = (s: ActiveModInfo['status']) =>
+    s === 'blocked' ? 'Bloqueado' : s === 'active' ? 'Permitido' : 'Desconhecido';
+
+  return (
+    <div className="pp-mods-section">
+      {data.mod_version && (
+        <div className="pp-mods-modver-banner">
+          <i className="ti ti-puzzle" />
+          PZCommunityRank <strong>v{data.mod_version}</strong>
+          {data.updated_at && (
+            <span className="pp-mods-updated">
+              · atualizado {new Date(data.updated_at).toLocaleDateString('pt-BR')}
+            </span>
+          )}
+        </div>
+      )}
+
+      {known.length > 0 && (
+        <div className="pp-mods-group">
+          <span className="pp-mods-group-label">Mods identificados</span>
+          <div className="pp-mods-cards">
+            {known.map(mod => (
+              <div key={mod.mod_id} className={`pp-mod-card${mod.status === 'blocked' ? ' pp-mod-card-blocked' : ''}`}>
+                {mod.image_url
+                  ? <img src={mod.image_url} alt="" className="pp-mod-thumb" />
+                  : <div className="pp-mod-thumb pp-mod-thumb-placeholder"><i className="ti ti-puzzle" /></div>
+                }
+                <div className="pp-mod-info">
+                  <span className="pp-mod-name">{mod.name}</span>
+                  <span className={`pp-mod-badge ${statusClass(mod.status)}`}>{statusLabel(mod.status)}</span>
+                </div>
+                {mod.workshop_url && (
+                  <a href={mod.workshop_url} target="_blank" rel="noopener noreferrer" className="pp-mod-steam-btn">
+                    <i className="ti ti-brand-steam" />
+                    <span>Oficina</span>
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {unknown.length > 0 && (
+        <div className="pp-mods-group">
+          <span className="pp-mods-group-label">Mods não cadastrados</span>
+          <div className="pp-mods-unknown-list">
+            {unknown.map(mod => (
+              <span key={mod.mod_id} className="pp-mod-unknown-chip">
+                <i className="ti ti-puzzle-off" /> {mod.mod_id}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | null; live?: LiveStatus[] }) {
   const { t } = useTranslation();
-  const [tab, setTab] = useState<'profile' | 'stats' | 'skills' | 'traits' | 'achievements'>('profile');
+  const [tab, setTab] = useState<'profile' | 'stats' | 'skills' | 'traits' | 'achievements' | 'mods'>('profile');
   const [showGuide, setShowGuide] = useState(false);
   const isDisqualified = entry.sandbox_ok === false;
 
@@ -374,6 +462,9 @@ function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | nul
         <button className={`pp-tab${tab === 'achievements' ? ' active' : ''}`} onClick={() => setTab('achievements')}>
           <i className="ti ti-trophy" /><span>Conquistas</span>
         </button>
+        <button className={`pp-tab${tab === 'mods' ? ' active' : ''}`} onClick={() => setTab('mods')}>
+          <i className="ti ti-puzzle" /><span>Mods</span>
+        </button>
       </div>
 
       <div className="pp-tab-body">
@@ -469,6 +560,9 @@ function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | nul
             characterName={entry.character_name ?? ''}
             playerStats={playerStats}
           />
+        )}
+        {tab === 'mods' && entry.player_id != null && (
+          <ActiveModsSection playerId={entry.player_id} />
         )}
       </div>
 

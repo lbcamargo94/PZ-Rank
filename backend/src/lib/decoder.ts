@@ -13,7 +13,9 @@ const PZR_PREFIX_RE = /^PZRX[123456789]:([\s\S]+)$/;
 // Grupo 35 (PZRX7): weapons_crafted
 // Grupos 36-44 (PZRX8): furniture_crafted|clothes_crafted|cheese_produced|doors_opened|sleep_locations|
 //                        basements_explored|stations_used|animal_species|days_no_canned
-const PZR_PAYLOAD_RE = /^PZR\|([^|]*)\|([^|]*)\|(\d+)\|(\d+)\|([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?(\d*)\|?([^|]*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?([^|]*)$/;
+// Grupo 45 (PZRX9): death_cause
+// Grupo 46 (v2.18.0): active_mods (IDs separados por ";")
+const PZR_PAYLOAD_RE = /^PZR\|([^|]*)\|([^|]*)\|(\d+)\|(\d+)\|([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?(\d*)\|?([^|]*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?([^|]*)\|?([^|]*)$/;
 
 function xorBuffer(data: Buffer, key: string): Buffer {
   const keyBuf = Buffer.from(key, 'utf8');
@@ -68,7 +70,7 @@ export function parsePzrCode(raw: string): DecodedCode | null {
     weaponsCraftedRaw,
     furnitureCraftedRaw, clothesCraftedRaw, cheeseProducedRaw, doorsOpenedRaw, sleepLocationsRaw,
     basementsExploredRaw, stationsUsedRaw, animalSpeciesRaw, daysNoCannedRaw,
-    deathCauseRaw] = match;
+    deathCauseRaw, activeModsRaw] = match;
   const timeRawNum = parseInt(timeRaw!, 10);
 
   // Traduz tokens de skill: mod v1.7+ exporta IDs em inglês ("Axe 6"), versões anteriores
@@ -161,7 +163,10 @@ export function parsePzrCode(raw: string): DecodedCode | null {
     stationsUsed:      parseExt(stationsUsedRaw),
     animalSpecies:     parseExt(animalSpeciesRaw),
     daysNoCanned:      parseExt(daysNoCannedRaw),
-    deathCause:        (deathCauseRaw && deathCauseRaw.trim()) ? deathCauseRaw.trim() : null,
+    deathCause:  (deathCauseRaw && deathCauseRaw.trim()) ? deathCauseRaw.trim() : null,
+    activeMods:  (activeModsRaw && activeModsRaw.trim())
+                   ? activeModsRaw.trim().split(';').map(s => s.trim()).filter(Boolean)
+                   : [],
     skillLevels,
   };
 }

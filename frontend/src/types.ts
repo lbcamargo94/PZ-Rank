@@ -188,6 +188,22 @@ export interface Mod {
   dependencies: ModDependency[];
 }
 
+export interface ActiveModInfo {
+  mod_id:       string;
+  name:         string;
+  workshop_url: string | null;
+  image_url:    string | null;
+  status:       'active' | 'blocked' | 'unknown';
+  is_required:  boolean;
+  known:        boolean;
+}
+
+export interface PlayerActiveMods {
+  mods:        ActiveModInfo[];
+  mod_version: string | null;
+  updated_at:  string | null;
+}
+
 export interface PlayerProfile {
   player: Pick<Player, 'id' | 'nick' | 'twitch_url' | 'youtube_url' | 'kick_url' | 'tiktok_url' | 'gender'>;
   entries: Entry[];
