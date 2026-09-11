@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { apiLogout, apiDeleteEntry, apiGetEntries, apiUpdateEntryStatus, apiSetTestMod, apiConfirmDeath } from '../lib/api';
+import { apiLogout, apiDeleteEntry, apiGetEntries, apiUpdateEntryStatus, apiSetTestMod, apiConfirmDeath, apiClearAnomaly } from '../lib/api';
 import type { Entry, SortKey } from '../types';
 import type { ModSession } from '../types';
 import { hasLiveWarning } from '../lib/live';
@@ -81,7 +81,6 @@ const DISQ_INFO: Record<string, { icon: string; label: string; detail: string; c
 const ANOMALY_INFO: Record<string, { label: string; detail: string }> = {
   kills_regression: { label: 'Regressão de kills',              detail: 'O total de kills diminuiu entre dois syncs — impossível legitimamente.' },
   days_regression:  { label: 'Regressão de dias sobrevividos',  detail: 'Os dias sobrevividos diminuíram entre dois syncs.' },
-  kills_spike:      { label: 'Ritmo de kills impossível',       detail: 'Mais de 2 kills/segundo registrados entre syncs — inatingível no PZ.' },
   code_replay:      { label: 'Replay de código antigo',         detail: 'O timestamp do código é anterior ao último sync gravado — possível reenvio de código desatualizado.' },
 };
 
@@ -402,6 +401,20 @@ export function PainelPage({ session, onSession, onBack }: Props) {
     }
   }
 
+  async function handleClearAnomaly(id: number) {
+    if (!session) return;
+    setUpdatingEntry(id);
+    try {
+      await apiClearAnomaly(session.token, id);
+      showToast('Anomalia removida.', 'success');
+      fetchEntries();
+    } catch (err) {
+      showToast((err as Error).message, 'error');
+    } finally {
+      setUpdatingEntry(null);
+    }
+  }
+
   async function handleToggleTestMod(entry: Entry) {
     if (!session || !entry.player_id) return;
     const next = !entry.is_test_mod;
@@ -502,6 +515,16 @@ export function PainelPage({ session, onSession, onBack }: Props) {
           >
             <i className="ti ti-ban" /> Desc.
           </button>
+          {entry.flagged_reason && (
+            <button
+              className="btn-secondary btn-sm"
+              disabled={busy}
+              title="Remover flag de anomalia"
+              onClick={() => handleClearAnomaly(entry.id!)}
+            >
+              <i className="ti ti-flag-off" /> Anomalia
+            </button>
+          )}
           <button
             className="btn-secondary btn-sm"
             disabled={busy}

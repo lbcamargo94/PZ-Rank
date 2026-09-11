@@ -297,6 +297,10 @@ export function apiConfirmDeath(token: string, id: number): Promise<Entry> {
   return request(`/entries/${id}/confirm-death`, { method: 'PATCH', ...auth(token) });
 }
 
+export function apiClearAnomaly(token: string, id: number): Promise<Entry> {
+  return request(`/entries/${id}/clear-anomaly`, { method: 'PATCH', ...auth(token) });
+}
+
 export function apiSetPlayerEmail(token: string, id: number, email: string): Promise<{ message: string }> {
   return request(`/players/${id}/email`, { method: 'PATCH', ...json(token, { email }) });
 }
