@@ -9,7 +9,8 @@ import {
   COMPANION_LINUX_DEB_URL as COMPANION_LINUX_DEB,
 } from '../lib/companion';
 
-const DISCORD_URL = 'https://discord.gg/ebhts347WJ';
+const DISCORD_URL        = 'https://discord.gg/ebhts347WJ';
+const WORKSHOP_MOD_URL   = 'https://steamcommunity.com/sharedfiles/filedetails/?id=3746228308';
 
 export function LinksUteisPage() {
   const navigate = useNavigate();
@@ -46,6 +47,29 @@ export function LinksUteisPage() {
             >
               <i className="ti ti-brand-discord" aria-hidden="true" />
               Entrar no Discord
+            </a>
+          </div>
+
+          {/* Mod PZCommunityRank */}
+          <div className="lu-card">
+            <div className="lu-card-icon lu-card-icon--steam">
+              <i className="ti ti-brand-steam" aria-hidden="true" />
+            </div>
+            <div className="lu-card-body">
+              <h2 className="lu-card-title">Mod PZCommunityRank</h2>
+              <p className="lu-card-desc">
+                Mod obrigatório para participar do campeonato. Instale pela Oficina Steam
+                e ative-o no seu save junto com o PZ Rank Companion.
+              </p>
+            </div>
+            <a
+              href={WORKSHOP_MOD_URL}
+              className="btn-lu btn-lu--steam"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <i className="ti ti-brand-steam" aria-hidden="true" />
+              Oficina Steam
             </a>
           </div>
 
