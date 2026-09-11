@@ -44,14 +44,15 @@ function fmtEntryDate(iso: string | null | undefined): string {
 }
 
 type Tab         = 'players' | 'entries' | 'moderators' | 'mods' | 'decoder' | 'seasons' | 'jornal' | 'financas';
-type EntryFilter = 'all' | 'alive' | 'dead' | 'disqualified' | 'conflicts' | 'no_live';
+type EntryFilter = 'all' | 'alive' | 'dead' | 'disqualified' | 'anomalies' | 'conflicts' | 'no_live';
 
 const ENTRY_FILTER_CONFIG: { key: EntryFilter; label: string; icon: string }[] = [
   { key: 'all',          label: 'Todos',           icon: 'ti-list'           },
   { key: 'alive',        label: 'Vivos',            icon: 'ti-heartbeat'      },
   { key: 'dead',         label: 'Mortos',           icon: 'ti-skull'          },
   { key: 'disqualified', label: 'Desclassificados', icon: 'ti-ban'            },
-  { key: 'conflicts',    label: 'Conflitos',        icon: 'ti-alert-triangle' },
+  { key: 'anomalies',    label: 'Anomalias',        icon: 'ti-alert-triangle' },
+  { key: 'conflicts',    label: 'Conflitos',        icon: 'ti-users-group'    },
   { key: 'no_live',      label: 'Sem transmissão',  icon: 'ti-broadcast-off'  },
 ];
 
@@ -295,6 +296,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
   const deadEntries     = useMemo(() => entries.filter(e => e.sandbox_ok !== false && !e.is_alive),  [entries]);
   const discEntries     = useMemo(() => entries.filter(e => e.sandbox_ok === false && !isInDeadZone(e)), [entries]);
   const deadZoneEntries = useMemo(() => entries.filter(e => isInDeadZone(e)), [entries]);
+  const anomalyEntries  = useMemo(() => entries.filter(e => !!e.flagged_reason), [entries]);
   const conflictEntries = useMemo(() => entries.filter(e => !!e.pending_new_character && e.is_alive), [entries]);
   // Vivos e classificados sem transmissão confirmada há um tempo — mesmo critério do
   // badge público (hasLiveWarning), restrito a quem ainda está competindo de verdade.
@@ -306,10 +308,11 @@ export function PainelPage({ session, onSession, onBack }: Props) {
       case 'alive':        return aliveEntries;
       case 'dead':         return deadEntries;
       case 'disqualified': return discEntries;
+      case 'anomalies':    return anomalyEntries;
       case 'conflicts':    return conflictEntries;
       case 'no_live':      return noLiveEntries;
     }
-  }, [entryFilter, entries, aliveEntries, deadEntries, discEntries, conflictEntries, noLiveEntries]);
+  }, [entryFilter, entries, aliveEntries, deadEntries, discEntries, anomalyEntries, conflictEntries, noLiveEntries]);
 
   const searchedEntries = useMemo(() => {
     const q = entrySearch.trim().toLowerCase();
@@ -333,6 +336,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
     alive:        aliveEntries.length,
     dead:         deadEntries.length,
     disqualified: discEntries.length,
+    anomalies:    anomalyEntries.length,
     conflicts:    conflictEntries.length,
     no_live:      noLiveEntries.length,
   };

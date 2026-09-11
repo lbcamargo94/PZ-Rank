@@ -1370,7 +1370,11 @@
   color: var(--text-3);
 }
 
-.filter-entry-conflicts.active { border-color: #f59e0b; color: #f59e0b; }
+.filter-entry-anomalies.active  { border-color: #ef4444; color: #ef4444; }
+.filter-entry-conflicts.active  { border-color: #f59e0b; color: #f59e0b; }
+
+/* Badge de anomalias em destaque quando há registros */
+.filter-entry-anomalies .rank-tab-badge:not(:empty):not([data-zero]) { background: color-mix(in srgb, #ef4444 20%, transparent); color: #ef4444; }
 
 /* ── PendingPlayers — melhorias UX task 12 ───────────────── */
 .player-card {
