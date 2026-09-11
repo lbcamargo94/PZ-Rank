@@ -71,6 +71,22 @@ export function parsePzrCode(raw: string): DecodedCode | null {
     furnitureCraftedRaw, clothesCraftedRaw, cheeseProducedRaw, doorsOpenedRaw, sleepLocationsRaw,
     basementsExploredRaw, stationsUsedRaw, animalSpeciesRaw, daysNoCannedRaw,
     deathCauseRaw, activeModsRaw] = match;
+
+  // PZRX9 slim tem exatamente 14 segmentos: "PZR" + 13 campos (sem stats estendidas).
+  // O regex esperava stats estendidas nos grupos 12-44, então para PZRX9:
+  //   - grupo 45 (deathCauseRaw) captura o modsStr por engano
+  //   - grupo 46 (activeModsRaw) fica vazio
+  // Fix: para o formato slim, usar split por posição fixa.
+  const plainParts = plain.split('|');
+  const isSlimFormat = plainParts.length <= 14;
+  const resolvedDeathCause = isSlimFormat
+    ? (plainParts[12]?.trim() || null)
+    : ((deathCauseRaw && deathCauseRaw.trim()) ? deathCauseRaw.trim() : null);
+  const resolvedActiveMods = isSlimFormat
+    ? (plainParts[13]?.trim() || '').split(';').map(s => s.trim()).filter(Boolean)
+    : ((activeModsRaw && activeModsRaw.trim())
+        ? activeModsRaw.trim().split(';').map(s => s.trim()).filter(Boolean)
+        : []);
   const timeRawNum = parseInt(timeRaw!, 10);
 
   // Traduz tokens de skill: mod v1.7+ exporta IDs em inglês ("Axe 6"), versões anteriores
@@ -163,10 +179,8 @@ export function parsePzrCode(raw: string): DecodedCode | null {
     stationsUsed:      parseExt(stationsUsedRaw),
     animalSpecies:     parseExt(animalSpeciesRaw),
     daysNoCanned:      parseExt(daysNoCannedRaw),
-    deathCause:  (deathCauseRaw && deathCauseRaw.trim()) ? deathCauseRaw.trim() : null,
-    activeMods:  (activeModsRaw && activeModsRaw.trim())
-                   ? activeModsRaw.trim().split(';').map(s => s.trim()).filter(Boolean)
-                   : [],
+    deathCause:  resolvedDeathCause,
+    activeMods:  resolvedActiveMods,
     skillLevels,
   };
 }
