@@ -27,6 +27,8 @@ body.rank-page-active .rank-table thead th {
    do painel; a separação visual fica por conta de suas bordas internas. */
 
 body.rank-page-active .rank-tabs-bar {
+  position: relative;
+  z-index: 2;
   background: rgba(10,14,8,0.88);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -197,15 +199,15 @@ body.rank-page-active .rank-table tbody tr:hover {
 
 .rank-mascot {
   position: absolute;
-  top: -8px;
+  top: 8px;
   right: 0;
-  width: 100px;
-  height: 100px;
+  width: 130px;
+  height: 130px;
   object-fit: contain;
   pointer-events: none;
   user-select: none;
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
-  z-index: 10;
+  /* sem z-index: rank-tabs-bar (z-index:2) cobre a borda inferior */
 }
 
 .rank-search-wrap {
