@@ -252,7 +252,8 @@ function ppDisqTooltip(t: TFunction, reason: string | null | undefined): string 
     case 'debug':       return t('rank.disq.debug');
     case 'manual':      return t('rank.disq.manual');
     case 'mod_removed': return t('rank.disq.mod_removed_row');
-    default:             return t('rank.disq.mods');
+    case 'sandbox':      return t('rank.disq.sandbox');
+    default:             return t('rank.disq.sandbox');
   }
 }
 
