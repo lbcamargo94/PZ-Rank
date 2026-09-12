@@ -20,10 +20,10 @@ interface Props {
 }
 
 function ModRow({
-  mod, siblings, busy, onEdit, onToggleBlock, onDelete, onAddSibling,
+  mod, siblings, busy, onEdit, onToggleBlock, onDelete,
 }: {
   mod: Mod; siblings: Mod[]; busy: boolean;
-  onEdit: () => void; onToggleBlock: () => void; onDelete: () => void; onAddSibling: () => void;
+  onEdit: () => void; onToggleBlock: () => void; onDelete: () => void;
 }) {
   const wasUpdated = mod.updated_at && mod.updated_at !== mod.created_at;
   return (
@@ -93,14 +93,6 @@ function ModRow({
           <i className="ti ti-pencil" /> Editar
         </button>
         <button
-          className="btn-secondary btn-sm"
-          disabled={busy}
-          title="Cadastrar outro mod que vem junto neste mesmo item da Oficina Steam"
-          onClick={onAddSibling}
-        >
-          <i className="ti ti-copy-plus" /> Outro ID deste item
-        </button>
-        <button
           className={`${mod.status === 'active' ? 'btn-warning' : 'btn-success'} btn-sm`}
           disabled={busy}
           onClick={onToggleBlock}
@@ -116,61 +108,119 @@ function ModRow({
   );
 }
 
-interface EditFormProps {
-  mod:          Mod;
-  allMods:      Mod[];
-  onSave:       (data: { name: string; mod_id: string | null; workshop_url: string; is_required: boolean; dependency_ids: number[] }) => Promise<void>;
-  onCancel:     () => void;
-  onAddSibling: () => void;
-  submitting:   boolean;
+// Um mod_id dentro do formulario de grupo. `dbId` presente = linha ja existe no banco;
+// ausente = ainda nao salva (sera criada via apiAddMod no submit).
+interface ModIdEntry {
+  key:    string;
+  dbId?:  number;
+  modId:  string;
+  status: 'active' | 'blocked';
 }
 
-function EditModForm({ mod, allMods, onSave, onCancel, onAddSibling, submitting }: EditFormProps) {
-  const [name,        setName]        = useState(mod.name);
-  const [modId,       setModId]       = useState(mod.mod_id ?? '');
-  const [workshopUrl, setWorkshopUrl] = useState(mod.workshop_url);
-  const [isRequired,  setIsRequired]  = useState(mod.is_required);
-  const [depIds,      setDepIds]      = useState<number[]>(mod.dependencies.map(d => d.id));
+interface GroupSavePayload {
+  name:           string;
+  workshop_url:   string;
+  is_required:    boolean;
+  dependency_ids: number[];
+  entries:        Array<{ dbId?: number; mod_id: string; status: 'active' | 'blocked' }>;
+  removedIds:     number[];
+}
+
+interface GroupFormProps {
+  mode:       'add' | 'edit';
+  groupMods:  Mod[];
+  allMods:    Mod[];
+  onSave:     (payload: GroupSavePayload) => Promise<void>;
+  onCancel:   () => void;
+  submitting: boolean;
+}
+
+// Um item da Oficina Steam pode empacotar mais de um mod (mod_ids diferentes), cada um
+// podendo ter status independente (permitido/bloqueado). Este formulario trata o grupo
+// inteiro como uma unica entidade: campos compartilhados (nome, URL, obrigatorio,
+// dependencias) + uma lista de IDs, cada um com seu proprio seletor de status.
+function ModGroupForm({ mode, groupMods, allMods, onSave, onCancel, submitting }: GroupFormProps) {
+  const primary = groupMods[0] as Mod | undefined;
+  const [name,        setName]        = useState(primary?.name ?? '');
+  const [workshopUrl, setWorkshopUrl] = useState(primary?.workshop_url ?? '');
+  const [isRequired,  setIsRequired]  = useState(primary?.is_required ?? false);
+  const [entries,     setEntries]     = useState<ModIdEntry[]>(() =>
+    groupMods.map(m => ({ key: `db-${m.id}`, dbId: m.id, modId: m.mod_id ?? '', status: m.status }))
+  );
+  const [removedIds, setRemovedIds] = useState<number[]>([]);
+  const [newModId,   setNewModId]   = useState('');
+  const [newStatus,  setNewStatus]  = useState<'active' | 'blocked'>('active');
+  const [depIds,     setDepIds]     = useState<number[]>(() =>
+    Array.from(new Set(groupMods.flatMap(m => m.dependencies.map(d => d.id))))
+  );
+
+  const groupIds  = new Set(groupMods.map(m => m.id));
+  const otherMods = allMods.filter(m => !groupIds.has(m.id) && m.status === 'active');
+
+  function updateEntry(key: string, patch: Partial<ModIdEntry>) {
+    setEntries(prev => prev.map(e => (e.key === key ? { ...e, ...patch } : e)));
+  }
+
+  function removeEntry(entry: ModIdEntry) {
+    if (entry.dbId) setRemovedIds(prev => [...prev, entry.dbId!]);
+    setEntries(prev => prev.filter(e => e.key !== entry.key));
+  }
+
+  function addEntry() {
+    const trimmed = newModId.trim();
+    if (!trimmed) return;
+    setEntries(prev => [...prev, { key: `new-${Date.now()}-${Math.random()}`, modId: trimmed, status: newStatus }]);
+    setNewModId('');
+    setNewStatus('active');
+  }
 
   function toggleDep(id: number, checked: boolean) {
-    setDepIds(prev => checked ? [...prev, id] : prev.filter(d => d !== id));
+    setDepIds(prev => (checked ? [...prev, id] : prev.filter(d => d !== id)));
   }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    onSave({ name: name.trim(), mod_id: modId.trim() || null, workshop_url: workshopUrl.trim(), is_required: isRequired, dependency_ids: depIds });
+    onSave({
+      name:           name.trim(),
+      workshop_url:   workshopUrl.trim(),
+      is_required:    isRequired,
+      dependency_ids: depIds,
+      entries:        entries.map(en => ({ dbId: en.dbId, mod_id: en.modId.trim(), status: en.status })),
+      removedIds,
+    });
   }
 
-  const otherMods = allMods.filter(m => m.id !== mod.id && m.status === 'active');
+  const canSubmit = !!name.trim() && !!workshopUrl.trim() && entries.length > 0 && entries.every(en => en.modId.trim());
 
   return (
     <form className="mod-add-form mod-edit-form" onSubmit={handleSubmit}>
       <div className="mod-edit-form-title">
-        <i className="ti ti-pencil" /> Editando mod
+        <i className={`ti ${mode === 'add' ? 'ti-plus' : 'ti-pencil'}`} />
+        {mode === 'add' ? 'Adicionando mod' : `Editando item (${entries.length} ID${entries.length !== 1 ? 's' : ''})`}
       </div>
-      <div className="mod-info-banner">
-        <i className="ti ti-info-circle" />
-        <div>
-          <strong>Este cadastro representa um único ID de mod.</strong> Se o item da Oficina
-          empacota mais de um mod (mod_ids diferentes, possivelmente com status diferentes), edite
-          aqui apenas o <code>ID do mod no PZ</code> deste registro.
-          <div className="mod-info-banner-example">
-            Para cadastrar o(s) outro(s) mod(s) do mesmo item, clique no botão abaixo — ele abre um
-            novo cadastro já com a mesma URL da Oficina preenchida, só falta trocar o ID.
-            <div className="mod-info-banner-action">
-              <button type="button" className="btn-secondary btn-sm" onClick={onAddSibling}>
-                <i className="ti ti-copy-plus" /> Cadastrar outro mod deste item
-              </button>
+      {mode === 'add' && (
+        <div className="mod-info-banner">
+          <i className="ti ti-info-circle" />
+          <div>
+            <strong>Um item da Oficina Steam pode empacotar mais de um mod.</strong> Cada mod tem
+            seu próprio <code>id=</code> dentro do <code>mod.info</code>, e cada um pode ter um
+            status diferente — um permitido, outro bloqueado.
+            <div className="mod-info-banner-example">
+              Cadastre todos os IDs desse item de uma vez: preencha o nome e a URL, use{' '}
+              <strong>Adicionar</strong> para incluir cada ID (com seu próprio status), e clique em{' '}
+              <strong>Salvar</strong> só uma vez no final. Ex: o item "TWISTV Bug Fix" tem os IDs{' '}
+              <code>twistvbugfix</code> e <code>twistvbugfixwmodloadorder</code>.
             </div>
           </div>
         </div>
-      </div>
+      )}
       <div className="mod-add-fields">
         <div className="mod-field">
           <label className="mod-field-label">Nome do mod</label>
           <input
             type="text"
             className="mod-input"
+            placeholder="Ex: Braven's Firearms"
             value={name}
             onChange={e => setName(e.target.value)}
             required
@@ -178,25 +228,66 @@ function EditModForm({ mod, allMods, onSave, onCancel, onAddSibling, submitting 
         </div>
         <div className="mod-field">
           <label className="mod-field-label">
-            ID do mod no PZ
-            <span className="mod-field-hint"> — valor do campo <code>id=</code> em mod.info (ex: BraveFirearms)</span>
+            IDs do mod no PZ
+            <span className="mod-field-hint"> — campo <code>id=</code> em mod.info; cada ID tem seu próprio status</span>
           </label>
-          <input
-            type="text"
-            className="mod-input"
-            placeholder="Ex: PZCommunityRank"
-            value={modId}
-            onChange={e => setModId(e.target.value)}
-          />
+          <div className="mod-id-list">
+            {entries.map(entry => (
+              <div key={entry.key} className="mod-id-entry">
+                <input
+                  type="text"
+                  className="mod-input mod-id-entry-input"
+                  placeholder="Ex: PZCommunityRank"
+                  value={entry.modId}
+                  onChange={e => updateEntry(entry.key, { modId: e.target.value })}
+                />
+                <select
+                  className="mod-input mod-id-entry-status"
+                  value={entry.status}
+                  onChange={e => updateEntry(entry.key, { status: e.target.value as 'active' | 'blocked' })}
+                >
+                  <option value="active">Permitido</option>
+                  <option value="blocked">Bloqueado</option>
+                </select>
+                <button
+                  type="button"
+                  className="mod-id-entry-remove"
+                  title="Remover este ID"
+                  onClick={() => removeEntry(entry)}
+                >
+                  <i className="ti ti-x" />
+                </button>
+              </div>
+            ))}
+            <div className="mod-id-entry mod-id-entry-add">
+              <input
+                type="text"
+                className="mod-input mod-id-entry-input"
+                placeholder="Ex: ModId003"
+                value={newModId}
+                onChange={e => setNewModId(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addEntry(); } }}
+              />
+              <select
+                className="mod-input mod-id-entry-status"
+                value={newStatus}
+                onChange={e => setNewStatus(e.target.value as 'active' | 'blocked')}
+              >
+                <option value="active">Permitido</option>
+                <option value="blocked">Bloqueado</option>
+              </select>
+              <button type="button" className="btn-secondary btn-sm" onClick={addEntry}>
+                <i className="ti ti-plus" /> Adicionar
+              </button>
+            </div>
+          </div>
         </div>
         <div className="mod-field">
-          <label className="mod-field-label">
-            URL da Oficina Steam
-            <span className="mod-field-hint"> — item com mais de um mod: use a mesma URL nos dois cadastros</span>
-          </label>
+          <label className="mod-field-label">URL da Oficina Steam</label>
           <input
             type="url"
             className="mod-input"
+            placeholder="https://steamcommunity.com/sharedfiles/filedetails/?id=..."
             value={workshopUrl}
             onChange={e => setWorkshopUrl(e.target.value)}
             required
@@ -237,7 +328,7 @@ function EditModForm({ mod, allMods, onSave, onCancel, onAddSibling, submitting 
           <button type="button" className="btn-secondary btn-sm" onClick={onCancel} disabled={submitting}>
             Cancelar
           </button>
-          <button type="submit" className="btn-success btn-sm" disabled={submitting}>
+          <button type="submit" className="btn-success btn-sm" disabled={submitting || !canSubmit}>
             <i className="ti ti-check" /> {submitting ? 'Salvando...' : 'Salvar'}
           </button>
         </div>
@@ -247,18 +338,14 @@ function EditModForm({ mod, allMods, onSave, onCancel, onAddSibling, submitting 
 }
 
 export function ModManagement({ token, showToast }: Props) {
-  const [mods,          setMods]          = useState<Mod[]>([]);
-  const [loading,       setLoading]       = useState(false);
-  const [submitting,    setSubmitting]    = useState(false);
-  const [actionId,      setActionId]      = useState<number | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState<Mod | null>(null);
-  const [showForm,      setShowForm]      = useState(false);
-  const [editingId,     setEditingId]     = useState<number | null>(null);
-  const [refreshing,    setRefreshing]    = useState(false);
-  const [name,          setName]          = useState('');
-  const [addModId,      setAddModId]      = useState('');
-  const [workshopUrl,   setWorkshopUrl]   = useState('');
-  const [isRequired,    setIsRequired]    = useState(false);
+  const [mods,           setMods]           = useState<Mod[]>([]);
+  const [loading,        setLoading]        = useState(false);
+  const [submitting,     setSubmitting]     = useState(false);
+  const [actionId,       setActionId]       = useState<number | null>(null);
+  const [confirmDelete,  setConfirmDelete]  = useState<Mod | null>(null);
+  const [showAddForm,    setShowAddForm]    = useState(false);
+  const [editingGroupId, setEditingGroupId] = useState<number | null>(null);
+  const [refreshing,     setRefreshing]     = useState(false);
 
   const fetchMods = useCallback(async () => {
     setLoading(true);
@@ -269,31 +356,63 @@ export function ModManagement({ token, showToast }: Props) {
 
   useEffect(() => { fetchMods(); }, [fetchMods]);
 
-  async function handleAdd(e: React.FormEvent) {
-    e.preventDefault();
+  // Salva um grupo inteiro (1..N mod_ids do mesmo item da Oficina) numa unica acao:
+  // remove os IDs excluidos, atualiza os existentes (nome/URL/obrigatorio/dependencias
+  // compartilhados + texto do proprio ID), cria os novos, e por fim aplica bloqueio/
+  // desbloqueio conforme o status escolhido em cada linha do formulario.
+  async function handleGroupSave(payload: {
+    name: string; workshop_url: string; is_required: boolean; dependency_ids: number[];
+    entries: Array<{ dbId?: number; mod_id: string; status: 'active' | 'blocked' }>;
+    removedIds: number[];
+  }) {
     setSubmitting(true);
     try {
-      await apiAddMod(token, { name: name.trim(), mod_id: addModId.trim() || null, workshop_url: workshopUrl.trim(), is_required: isRequired });
-      showToast('Mod adicionado com sucesso.', 'success');
-      setName('');
-      setAddModId('');
-      setWorkshopUrl('');
-      setIsRequired(false);
-      setShowForm(false);
-      fetchMods();
-    } catch (err) {
-      showToast((err as Error).message, 'error');
-    } finally {
-      setSubmitting(false);
-    }
-  }
+      for (const id of payload.removedIds) {
+        await apiDeleteMod(token, id);
+      }
 
-  async function handleUpdate(mod: Mod, data: { name: string; mod_id: string | null; workshop_url: string; is_required: boolean; dependency_ids: number[] }) {
-    setSubmitting(true);
-    try {
-      await apiUpdateMod(token, mod.id, data);
-      showToast('Mod atualizado com sucesso.', 'success');
-      setEditingId(null);
+      for (const entry of payload.entries) {
+        if (entry.dbId) {
+          await apiUpdateMod(token, entry.dbId, {
+            name:           payload.name,
+            mod_id:         entry.mod_id || null,
+            workshop_url:   payload.workshop_url,
+            is_required:    payload.is_required,
+            dependency_ids: payload.dependency_ids,
+          });
+        }
+      }
+
+      const created: Array<{ id: number; status: 'active' | 'blocked' }> = [];
+      for (const entry of payload.entries) {
+        if (!entry.dbId) {
+          const mod = await apiAddMod(token, {
+            name:           payload.name,
+            mod_id:         entry.mod_id || null,
+            workshop_url:   payload.workshop_url,
+            is_required:    payload.is_required,
+            dependency_ids: payload.dependency_ids,
+          });
+          created.push({ id: mod.id, status: entry.status });
+        }
+      }
+
+      for (const entry of payload.entries) {
+        if (entry.dbId) {
+          const original = mods.find(m => m.id === entry.dbId);
+          if (original && original.status !== entry.status) {
+            if (entry.status === 'blocked') await apiBlockMod(token, entry.dbId);
+            else await apiUnblockMod(token, entry.dbId);
+          }
+        }
+      }
+      for (const c of created) {
+        if (c.status === 'blocked') await apiBlockMod(token, c.id);
+      }
+
+      showToast('Mods salvos com sucesso.', 'success');
+      setEditingGroupId(null);
+      setShowAddForm(false);
       fetchMods();
     } catch (err) {
       showToast((err as Error).message, 'error');
@@ -353,27 +472,16 @@ export function ModManagement({ token, showToast }: Props) {
   }
 
   function startEdit(mod: Mod) {
-    setShowForm(false);
-    setEditingId(mod.id);
-  }
-
-  // Abre o formulario de Adicionar Mod ja preenchido com nome e URL do mod
-  // clicado — usado quando o mesmo item da Oficina empacota mais de um mod
-  // (workshop_id compartilhado, mod_id diferente). So falta trocar o ID.
-  function startAddSibling(mod: Mod) {
-    setEditingId(null);
-    setName(mod.name);
-    setAddModId('');
-    setWorkshopUrl(mod.workshop_url);
-    setIsRequired(mod.is_required);
-    setShowForm(true);
+    setShowAddForm(false);
+    setEditingGroupId(mod.id);
   }
 
   const activeMods  = mods.filter(m => m.status === 'active');
   const blockedMods = mods.filter(m => m.status === 'blocked');
 
   // Um mesmo item da Workshop pode empacotar mais de um mod (mod_id diferente),
-  // cada um com seu próprio status — agrupa por workshop_id para exibir no card.
+  // cada um com seu próprio status — agrupa por workshop_id para exibir no card
+  // e para reunir o grupo inteiro ao abrir o formulario de edicao.
   const siblingsByWorkshop = useMemo(() => {
     const map = new Map<string, Mod[]>();
     for (const m of mods) {
@@ -389,17 +497,26 @@ export function ModManagement({ token, showToast }: Props) {
     return (siblingsByWorkshop.get(mod.workshop_id) ?? []).filter(s => s.id !== mod.id);
   }
 
+  function getGroup(mod: Mod): Mod[] {
+    if (!mod.workshop_id) return [mod];
+    return siblingsByWorkshop.get(mod.workshop_id) ?? [mod];
+  }
+
   function renderMod(mod: Mod) {
-    if (editingId === mod.id) {
+    const group = getGroup(mod);
+    if (editingGroupId !== null && group.some(m => m.id === editingGroupId)) {
+      // O grupo pode ter membros em "Ativos" e em "Bloqueados" ao mesmo tempo —
+      // renderiza o formulario uma unica vez, ancorado no primeiro membro do grupo.
+      if (mod.id !== group[0].id) return null;
       return (
-        <EditModForm
-          key={mod.id}
-          mod={mod}
+        <ModGroupForm
+          key={`group-${group[0].id}`}
+          mode="edit"
+          groupMods={group}
           allMods={mods}
           submitting={submitting}
-          onSave={data => handleUpdate(mod, data)}
-          onCancel={() => setEditingId(null)}
-          onAddSibling={() => startAddSibling(mod)}
+          onSave={handleGroupSave}
+          onCancel={() => setEditingGroupId(null)}
         />
       );
     }
@@ -412,7 +529,6 @@ export function ModManagement({ token, showToast }: Props) {
         onEdit={() => startEdit(mod)}
         onToggleBlock={() => handleToggleBlock(mod)}
         onDelete={() => setConfirmDelete(mod)}
-        onAddSibling={() => startAddSibling(mod)}
       />
     );
   }
@@ -433,9 +549,9 @@ export function ModManagement({ token, showToast }: Props) {
             <i className={`ti ${refreshing ? 'ti-loader-2' : 'ti-photo-search'}`} />
             {refreshing ? 'Buscando...' : 'Atualizar imagens'}
           </button>
-          <button className="btn-primary btn-sm" onClick={() => { setShowForm(v => !v); setEditingId(null); }}>
-            <i className={`ti ${showForm ? 'ti-x' : 'ti-plus'}`} />
-            {showForm ? 'Cancelar' : 'Adicionar Mod'}
+          <button className="btn-primary btn-sm" onClick={() => { setShowAddForm(v => !v); setEditingGroupId(null); }}>
+            <i className={`ti ${showAddForm ? 'ti-x' : 'ti-plus'}`} />
+            {showAddForm ? 'Cancelar' : 'Adicionar Mod'}
           </button>
         </div>
       </div>
@@ -443,80 +559,15 @@ export function ModManagement({ token, showToast }: Props) {
       {/* ── Corpo ── */}
       <div className="mod-mgmt-body">
 
-        {showForm && (
-          <form className="mod-add-form" onSubmit={handleAdd}>
-            <div className="mod-info-banner">
-              <i className="ti ti-info-circle" />
-              <div>
-                <strong>Um item da Oficina Steam pode empacotar mais de um mod.</strong> Cada mod
-                tem seu próprio <code>id=</code> dentro do <code>mod.info</code>, e cada um pode ter
-                um status diferente no site — um permitido, outro bloqueado.
-                <div className="mod-info-banner-example">
-                  Para cadastrar cada mod desse item separadamente: preencha este formulário uma vez
-                  para o primeiro <code>ID do mod no PZ</code>, salve, depois clique em{' '}
-                  <strong>Adicionar Mod</strong> de novo e repita usando a <strong>mesma URL da
-                  Oficina</strong> só trocando o ID. Ex: o item "TWISTV Bug Fix" tem os IDs{' '}
-                  <code>twistvbugfix</code> e <code>twistvbugfixwmodloadorder</code> — dois
-                  cadastros, mesma URL, IDs diferentes. O painel identifica automaticamente que são
-                  do mesmo item e mostra isso no card de cada um.
-                </div>
-              </div>
-            </div>
-            <div className="mod-add-fields">
-              <div className="mod-field">
-                <label className="mod-field-label">Nome do mod</label>
-                <input
-                  type="text"
-                  className="mod-input"
-                  placeholder="Ex: Braven's Firearms"
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="mod-field">
-                <label className="mod-field-label">
-                  ID do mod no PZ
-                  <span className="mod-field-hint"> — campo <code>id=</code> em mod.info</span>
-                </label>
-                <input
-                  type="text"
-                  className="mod-input"
-                  placeholder="Ex: PZCommunityRank"
-                  value={addModId}
-                  onChange={e => setAddModId(e.target.value)}
-                />
-              </div>
-              <div className="mod-field">
-                <label className="mod-field-label">
-                  URL da Oficina Steam
-                  <span className="mod-field-hint"> — item com mais de um mod: use a mesma URL nos dois cadastros</span>
-                </label>
-                <input
-                  type="url"
-                  className="mod-input"
-                  placeholder="https://steamcommunity.com/sharedfiles/filedetails/?id=..."
-                  value={workshopUrl}
-                  onChange={e => setWorkshopUrl(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-            <div className="mod-form-footer">
-              <label className="mod-check-label">
-                <input
-                  type="checkbox"
-                  className="mod-check"
-                  checked={isRequired}
-                  onChange={e => setIsRequired(e.target.checked)}
-                />
-                <span>Mod obrigatório</span>
-              </label>
-              <button type="submit" className="btn-success btn-sm" disabled={submitting}>
-                <i className="ti ti-check" /> {submitting ? 'Salvando...' : 'Salvar'}
-              </button>
-            </div>
-          </form>
+        {showAddForm && (
+          <ModGroupForm
+            mode="add"
+            groupMods={[]}
+            allMods={mods}
+            submitting={submitting}
+            onSave={handleGroupSave}
+            onCancel={() => setShowAddForm(false)}
+          />
         )}
 
         {loading && <p className="painel-loading">Carregando...</p>}

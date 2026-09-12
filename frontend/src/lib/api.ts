@@ -438,7 +438,8 @@ export function apiGetAllMods(token: string): Promise<Mod[]> {
 }
 
 export function apiAddMod(
-  token: string, data: { name: string; mod_id?: string | null; workshop_url: string; is_required: boolean }
+  token: string,
+  data: { name: string; mod_id?: string | null; workshop_url: string; is_required: boolean; dependency_ids?: number[] }
 ): Promise<Mod> {
   return request('/mods', { method: 'POST', ...json(token, data) });
 }
