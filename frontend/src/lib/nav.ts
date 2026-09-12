@@ -14,7 +14,7 @@ export const NAV_ITEMS = [
   { to: '/rank',          icon: 'ti-trophy',        navKey: 'rank',         quickKey: 'rank'         },
   { to: '/regras',        icon: 'ti-book',           navKey: 'rules',        quickKey: 'rules'        },
   { to: '/wiki',          icon: 'ti-book-2',         navKey: 'wiki',         quickKey: 'wiki'         },
-  { to: '/mods',          icon: 'ti-puzzle',         navKey: 'mods',         quickKey: 'mods'         },
+  { to: '/mods-lista',    icon: 'ti-puzzle',         navKey: 'mods',         quickKey: 'mods'         },
   { to: '/dicas',         icon: 'ti-bulb',           navKey: 'tips',         quickKey: 'tips'         },
   { to: '/lendas',        icon: 'ti-award',          navKey: 'legends',      quickKey: 'legends'      },
   { to: '/links',         icon: 'ti-link',           navKey: 'links',        quickKey: 'links'        },

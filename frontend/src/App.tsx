@@ -142,7 +142,7 @@ export default function App() {
             <Route path="/overlay/:id" element={<OverlayPage />} />
             <Route path="/wiki" element={<WikiPage />} />
             <Route path="/wiki/cacada" element={<WikiHuntingPage />} />
-            <Route path="/mods" element={<ModsPage />} />
+            <Route path="/mods-lista" element={<ModsPage />} />
             <Route path="/dicas" element={<TipsPage />} />
             <Route path="/dicas/ferraria" element={<GuiaFerraria />} />
             <Route path="/dicas/entalhamento" element={<GuiaEntalhamento />} />
