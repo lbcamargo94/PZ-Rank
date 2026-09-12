@@ -246,7 +246,7 @@ export function ModManagement({ token, showToast }: Props) {
     }
   }
 
-  async function handleUpdate(mod: Mod, data: { name: string; workshop_url: string; is_required: boolean; dependency_ids: number[] }) {
+  async function handleUpdate(mod: Mod, data: { name: string; mod_id: string | null; workshop_url: string; is_required: boolean; dependency_ids: number[] }) {
     setSubmitting(true);
     try {
       await apiUpdateMod(token, mod.id, data);

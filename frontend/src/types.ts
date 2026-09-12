@@ -180,6 +180,7 @@ export interface Mod {
   id:           number;
   name:         string;
   mod_id:       string | null;
+  workshop_id:  string | null;
   workshop_url: string;
   status:       ModStatus;
   is_required:  boolean;

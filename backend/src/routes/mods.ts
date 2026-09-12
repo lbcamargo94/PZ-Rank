@@ -7,8 +7,8 @@ import type { ModRequest } from '../middleware/moderator';
 
 const router = Router();
 
-const SELECT_PUBLIC = 'id, name, mod_id, workshop_url, is_required, image_url, created_at, updated_at';
-const SELECT_ALL    = 'id, name, mod_id, workshop_url, is_required, image_url, status, created_at, updated_at';
+const SELECT_PUBLIC = 'id, name, mod_id, workshop_id, workshop_url, is_required, image_url, created_at, updated_at';
+const SELECT_ALL    = 'id, name, mod_id, workshop_id, workshop_url, is_required, image_url, status, created_at, updated_at';
 
 async function fetchSteamModImage(workshopUrl: string): Promise<string | null> {
   try {
