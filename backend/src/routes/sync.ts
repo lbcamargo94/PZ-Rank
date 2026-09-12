@@ -609,7 +609,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     updated_at:   new Date().toISOString(),
     no_live_streak,
     mod_version:  decoded.modVersion ?? null,
-    ...(decoded.activeMods.length > 0 ? { active_mods: JSON.stringify(decoded.activeMods) } : {}),
+    active_mods: JSON.stringify(decoded.activeMods),
     // PZRX3: only write when present to avoid overwriting with zeros on PZRX2 syncs
     ...(hasExtended ? {
       animals_killed:      decoded.animalsKilled,

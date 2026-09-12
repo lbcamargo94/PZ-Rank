@@ -910,15 +910,24 @@ router.get('/:id/active-mods', async (req: Request, res: Response): Promise<void
       .limit(1)
       .maybeSingle();
 
-    if (!entry || !(entry as { active_mods?: string | null }).active_mods) {
+    if (!entry) {
       res.json({ mods: [], mod_version: null, updated_at: null });
       return;
     }
 
     type EntryRow = { active_mods: string | null; mod_version: string | null; updated_at: string | null };
     const row = entry as EntryRow;
+
+    // active_mods NULL + mod_version NULL  → sync antigo (antes do v2.18.0), sem dados
+    // active_mods NULL + mod_version set   → save limpo: sync escrevia active_mods só quando não-vazio (bug corrigido)
+    // active_mods '[]' + mod_version set   → save limpo (após correção do sync)
+    if (!row.active_mods) {
+      res.json({ mods: [], mod_version: row.mod_version, updated_at: row.updated_at });
+      return;
+    }
+
     let activeModIds: string[] = [];
-    try { activeModIds = JSON.parse(row.active_mods ?? '[]'); } catch { activeModIds = []; }
+    try { activeModIds = JSON.parse(row.active_mods); } catch { activeModIds = []; }
 
     if (activeModIds.length === 0) {
       res.json({ mods: [], mod_version: row.mod_version, updated_at: row.updated_at });
