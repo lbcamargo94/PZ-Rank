@@ -84,6 +84,36 @@ const ANOMALY_INFO: Record<string, { label: string; detail: string }> = {
   code_replay:      { label: 'Replay de código antigo',         detail: 'O timestamp do código é anterior ao último sync gravado — possível reenvio de código desatualizado.' },
 };
 
+// Formatos dinâmicos de disqualification_reason que não cabem no dicionário estático DISQ_INFO —
+// gerados pela checagem server-side v2.18.0+ (backend/src/routes/sync.ts):
+//   "blocked_mod:<Nome>"        — mod com status='blocked' no cadastro do site
+//   "unlisted_mods:<id1>,<id2>" — mods ativos no save que não estão cadastrados (nem permitidos nem bloqueados)
+function parseDisqReason(reason: string): { icon: string; label: string; detail: string; color: string } | null {
+  if (reason.startsWith('blocked_mod:')) {
+    const name = reason.slice('blocked_mod:'.length);
+    return {
+      icon:   'ti-shield-x',
+      label:  'Mod bloqueado detectado',
+      detail: name
+        ? `O jogador usou o mod "${name}", que está bloqueado no cadastro do site.`
+        : 'O jogador usou um mod bloqueado no cadastro do site.',
+      color:  '#ef4444',
+    };
+  }
+  if (reason.startsWith('unlisted_mods:')) {
+    const ids = reason.slice('unlisted_mods:'.length).split(',').map(v => v.trim()).filter(Boolean);
+    return {
+      icon:   'ti-puzzle-off',
+      label:  `Mod(s) não cadastrado(s) (${ids.length})`,
+      detail: ids.length > 0
+        ? `IDs ativos no save que não estão no cadastro de mods (nem permitidos, nem bloqueados): ${ids.map(id => `"${id}"`).join(', ')}. Cadastre-os no painel de mods para liberar ou bloquear.`
+        : 'Mod(s) ativo(s) no save que não estão no cadastro de mods.',
+      color:  '#ef4444',
+    };
+  }
+  return null;
+}
+
 // Mod não permitido detectado pelo próprio mod Lua (checagem contra a whitelist) — não
 // Formatos dinâmicos de flaggedReason que não cabem no dicionário estático:
 //   "unauthorized_mod:<Nome>"  — mod ativo fora da whitelist (mod legado < v2.18.0)
@@ -114,7 +144,8 @@ function DisqDetail({ entry }: { entry: Entry }) {
   const hasNoLive  = entry.sandbox_ok !== false && entry.is_alive && hasLiveWarning(entry);
   if (!hasDisq && !hasAnomaly && !hasNoLive) return null;
 
-  const disq    = DISQ_INFO[entry.disqualification_reason ?? 'sandbox'] ?? DISQ_INFO.sandbox;
+  const disqReason = entry.disqualification_reason ?? 'sandbox';
+  const disq        = DISQ_INFO[disqReason] ?? parseDisqReason(disqReason) ?? DISQ_INFO.sandbox;
   const anomaly = entry.flagged_reason
     ? (parseFlaggedReason(entry.flagged_reason) ?? ANOMALY_INFO[entry.flagged_reason] ?? { label: entry.flagged_reason, detail: '' })
     : null;

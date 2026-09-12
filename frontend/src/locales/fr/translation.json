@@ -178,7 +178,9 @@
       "manual": "Disqualifié manuellement par le modérateur",
       "mod_removed_row": "Le mod du défi a été retiré pendant la partie",
       "mod_removed": "Companion a détecté que le mod a été retiré pendant que le jeu tournait",
-      "mods_list": "Mods non autorisés : {{list}}"
+      "mods_list": "Mods non autorisés : {{list}}",
+      "blocked_mod": "Mod bloqué détecté : {{name}}",
+      "unlisted_mods": "Mod(s) non enregistré(s) : {{list}}"
     },
     "skills": {
       "title": "Compétences",

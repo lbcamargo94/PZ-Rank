@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { apiGetAllMods, apiAddMod, apiUpdateMod, apiBlockMod, apiUnblockMod, apiDeleteMod, apiRefreshModImages } from '../../lib/api';
 import type { Mod } from '../../types';
 import { ConfirmModal } from './ConfirmModal';
@@ -20,9 +20,9 @@ interface Props {
 }
 
 function ModRow({
-  mod, busy, onEdit, onToggleBlock, onDelete,
+  mod, siblings, busy, onEdit, onToggleBlock, onDelete,
 }: {
-  mod: Mod; busy: boolean;
+  mod: Mod; siblings: Mod[]; busy: boolean;
   onEdit: () => void; onToggleBlock: () => void; onDelete: () => void;
 }) {
   const wasUpdated = mod.updated_at && mod.updated_at !== mod.created_at;
@@ -65,6 +65,19 @@ function ModRow({
             <div className="mod-card-painel-deps">
               <i className="ti ti-link" />
               {mod.dependencies.map(d => d.name).join(', ')}
+            </div>
+          )}
+          {siblings.length > 0 && (
+            <div className="mod-card-painel-siblings">
+              <i className="ti ti-git-branch" /> Mesmo item Steam:
+              {siblings.map(s => (
+                <span key={s.id} className="mod-sibling-chip">
+                  {s.name}
+                  <span className={`mod-sibling-status ${s.status}`}>
+                    {s.status === 'blocked' ? 'Bloqueado' : 'Permitido'}
+                  </span>
+                </span>
+              ))}
             </div>
           )}
           <div className="mod-card-painel-dates">
@@ -151,7 +164,10 @@ function EditModForm({ mod, allMods, onSave, onCancel, submitting }: EditFormPro
           />
         </div>
         <div className="mod-field">
-          <label className="mod-field-label">URL da Oficina Steam</label>
+          <label className="mod-field-label">
+            URL da Oficina Steam
+            <span className="mod-field-hint"> — um item pode empacotar mais de um mod: repita a mesma URL com um ID diferente para cadastrar cada um separadamente</span>
+          </label>
           <input
             type="url"
             className="mod-input"
@@ -318,6 +334,23 @@ export function ModManagement({ token, showToast }: Props) {
   const activeMods  = mods.filter(m => m.status === 'active');
   const blockedMods = mods.filter(m => m.status === 'blocked');
 
+  // Um mesmo item da Workshop pode empacotar mais de um mod (mod_id diferente),
+  // cada um com seu próprio status — agrupa por workshop_id para exibir no card.
+  const siblingsByWorkshop = useMemo(() => {
+    const map = new Map<string, Mod[]>();
+    for (const m of mods) {
+      if (!m.workshop_id) continue;
+      if (!map.has(m.workshop_id)) map.set(m.workshop_id, []);
+      map.get(m.workshop_id)!.push(m);
+    }
+    return map;
+  }, [mods]);
+
+  function getSiblings(mod: Mod): Mod[] {
+    if (!mod.workshop_id) return [];
+    return (siblingsByWorkshop.get(mod.workshop_id) ?? []).filter(s => s.id !== mod.id);
+  }
+
   function renderMod(mod: Mod) {
     if (editingId === mod.id) {
       return (
@@ -335,6 +368,7 @@ export function ModManagement({ token, showToast }: Props) {
       <ModRow
         key={mod.id}
         mod={mod}
+        siblings={getSiblings(mod)}
         busy={actionId === mod.id}
         onEdit={() => startEdit(mod)}
         onToggleBlock={() => handleToggleBlock(mod)}
@@ -397,7 +431,10 @@ export function ModManagement({ token, showToast }: Props) {
                 />
               </div>
               <div className="mod-field">
-                <label className="mod-field-label">URL da Oficina Steam</label>
+                <label className="mod-field-label">
+                  URL da Oficina Steam
+                  <span className="mod-field-hint"> — um item pode empacotar mais de um mod: repita a mesma URL com um ID diferente para cadastrar cada um separadamente</span>
+                </label>
                 <input
                   type="url"
                   className="mod-input"

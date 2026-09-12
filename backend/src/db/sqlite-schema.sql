@@ -150,7 +150,8 @@ CREATE TABLE IF NOT EXISTS mods (
   id           INTEGER  PRIMARY KEY AUTOINCREMENT,
   name         TEXT     NOT NULL,
   mod_id       TEXT     UNIQUE DEFAULT NULL,
-  workshop_url TEXT     NOT NULL UNIQUE,
+  workshop_id  TEXT     DEFAULT NULL,
+  workshop_url TEXT     NOT NULL,
   status       TEXT     NOT NULL DEFAULT 'active'
                CHECK (status IN ('active', 'blocked')),
   is_required  INTEGER  NOT NULL DEFAULT 0,

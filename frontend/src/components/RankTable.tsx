@@ -50,9 +50,18 @@ const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
 function disqTooltip(t: TFunction, reason: string | null | undefined): string {
   const r = reason ?? '';
   if (r === 'debug'       || r.startsWith('debug:'))       return t('rank.disq.debug');
-  if (r === 'mods'        || r.startsWith('mods:'))        return t('rank.disq.mods');
   if (r === 'manual')                                        return t('rank.disq.manual');
   if (r === 'mod_removed' || r.startsWith('mod_removed:')) return t('rank.disq.mod_removed');
+  // Checagem server-side v2.18.0+ (sync.ts): mod bloqueado ou fora do cadastro do site.
+  if (r.startsWith('blocked_mod:')) {
+    const name = r.slice('blocked_mod:'.length);
+    return name ? t('rank.disq.blocked_mod', { name }) : t('rank.disq.mods');
+  }
+  if (r.startsWith('unlisted_mods:')) {
+    const ids = r.slice('unlisted_mods:'.length).split(',').map(v => v.trim()).filter(Boolean);
+    return ids.length > 0 ? t('rank.disq.unlisted_mods', { list: ids.join(', ') }) : t('rank.disq.mods');
+  }
+  if (r === 'mods' || r.startsWith('mods:')) return t('rank.disq.mods');
   return t('rank.disq.sandbox');
 }
 

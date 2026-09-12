@@ -217,7 +217,16 @@ function TraitsSection({ traitsRaw }: { traitsRaw: string | null | undefined }) 
 }
 
 function parseModViolations(reason: string | null | undefined): string[] {
-  if (!reason?.startsWith('mods:')) return [];
+  if (!reason) return [];
+  // Checagem server-side v2.18.0+ (sync.ts).
+  if (reason.startsWith('blocked_mod:')) {
+    const name = reason.slice('blocked_mod:'.length);
+    return name ? [name] : [];
+  }
+  if (reason.startsWith('unlisted_mods:')) {
+    return reason.slice('unlisted_mods:'.length).split(',').map(v => v.trim()).filter(Boolean);
+  }
+  if (!reason.startsWith('mods:')) return [];
   return reason.slice(5).split(',').map(v => {
     if (v.startsWith('NAO_PERMITIDO:')) return v.slice(14);
     if (v.startsWith('AUSENTE:'))       return `${v.slice(8)} (ausente)`;
@@ -227,6 +236,14 @@ function parseModViolations(reason: string | null | undefined): string[] {
 
 function ppDisqTooltip(t: TFunction, reason: string | null | undefined): string {
   if (!reason) return t('rank.disq.sandbox');
+  if (reason.startsWith('blocked_mod:')) {
+    const [name] = parseModViolations(reason);
+    return name ? t('rank.disq.blocked_mod', { name }) : t('rank.disq.mods');
+  }
+  if (reason.startsWith('unlisted_mods:')) {
+    const ids = parseModViolations(reason);
+    return ids.length > 0 ? t('rank.disq.unlisted_mods', { list: ids.join(', ') }) : t('rank.disq.mods');
+  }
   if (reason.startsWith('mods:')) {
     const ids = parseModViolations(reason);
     return ids.length > 0 ? t('rank.disq.mods_list', { list: ids.join(', ') }) : t('rank.disq.mods');

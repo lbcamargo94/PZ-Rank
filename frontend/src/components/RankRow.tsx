@@ -29,6 +29,15 @@ function disqTooltip(t: TFunction, reason: string | null | undefined): string {
   if (r === 'debug'       || r.startsWith('debug:'))       return t('rank.disq.debug');
   if (r === 'manual')                                        return t('rank.disq.manual');
   if (r === 'mod_removed' || r.startsWith('mod_removed:')) return t('rank.disq.mod_removed_row');
+  // Checagem server-side v2.18.0+ (sync.ts): mod bloqueado ou fora do cadastro do site.
+  if (r.startsWith('blocked_mod:')) {
+    const name = r.slice('blocked_mod:'.length);
+    return name ? t('rank.disq.blocked_mod', { name }) : t('rank.disq.mods');
+  }
+  if (r.startsWith('unlisted_mods:')) {
+    const ids = r.slice('unlisted_mods:'.length).split(',').map(v => v.trim()).filter(Boolean);
+    return ids.length > 0 ? t('rank.disq.unlisted_mods', { list: ids.join(', ') }) : t('rank.disq.mods');
+  }
   if (r.startsWith('mods:')) {
     const ids = r.slice(5).split(',').map(v => {
       if (v.startsWith('NAO_PERMITIDO:')) return v.slice(14);

@@ -178,7 +178,9 @@
       "manual": "Descalificado manualmente por el moderador",
       "mod_removed_row": "El mod del desafío fue eliminado durante la partida",
       "mod_removed": "Companion detectó que el mod fue eliminado mientras el juego estaba en ejecución",
-      "mods_list": "Mods no permitidos: {{list}}"
+      "mods_list": "Mods no permitidos: {{list}}",
+      "blocked_mod": "Mod bloqueado detectado: {{name}}",
+      "unlisted_mods": "Mod(s) no registrado(s): {{list}}"
     },
     "skills": {
       "title": "Habilidades",

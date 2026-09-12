@@ -624,6 +624,37 @@
 }
 .mod-card-painel-deps .ti { font-size: 14px; }
 
+.mod-card-painel-siblings {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-3);
+  flex-wrap: wrap;
+}
+.mod-card-painel-siblings .ti { font-size: 14px; margin-top: 1px; }
+
+.mod-sibling-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px 9px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.mod-sibling-status {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.mod-sibling-status.active  { color: var(--green); }
+.mod-sibling-status.blocked { color: var(--red); }
+
 .mod-deps-checklist {
   display: flex;
   flex-direction: column;
