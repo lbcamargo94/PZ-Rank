@@ -256,13 +256,16 @@ function ActiveModsSection({ playerId }: { playerId: number }) {
 
   if (loading) return <div className="pp-mods-state"><i className="ti ti-loader-2 spin" /> {t('player.mods.loading')}</div>;
   if (error)   return <div className="pp-mods-state pp-mods-error"><i className="ti ti-alert-circle" /> {t('player.mods.error')}</div>;
-  if (!data || data.mods.length === 0) return (
-    <div className="pp-mods-state pp-mods-empty">
-      <i className="ti ti-puzzle-off" />
-      <span>{t('player.mods.empty')}</span>
-      {data?.mod_version && <span className="pp-mods-modver">PZCommunityRank <strong>v{data.mod_version}</strong></span>}
-    </div>
-  );
+  if (!data || data.mods.length === 0) {
+    const isCleanSave = !!data && data.mod_version !== null;
+    return (
+      <div className={`pp-mods-state ${isCleanSave ? 'pp-mods-clean' : 'pp-mods-empty'}`}>
+        <i className={isCleanSave ? 'ti ti-shield-check' : 'ti ti-puzzle-off'} />
+        <span>{isCleanSave ? t('player.mods.clean_save') : t('player.mods.no_data')}</span>
+        {data?.mod_version && <span className="pp-mods-modver">PZCommunityRank <strong>v{data.mod_version}</strong></span>}
+      </div>
+    );
+  }
 
   const known   = data.mods.filter(m => m.known);
   const unknown = data.mods.filter(m => !m.known);

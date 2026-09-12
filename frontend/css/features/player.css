@@ -1986,6 +1986,7 @@ body.overlay-page-active::before { display: none; }
 .pp-mods-state .ti { font-size: 24px; }
 .pp-mods-error { color: var(--red); }
 .pp-mods-empty { color: var(--text-4); }
+.pp-mods-clean { color: var(--green); }
 
 .pp-mods-modver-banner {
   display: flex;

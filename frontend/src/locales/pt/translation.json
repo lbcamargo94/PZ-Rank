@@ -224,6 +224,8 @@
       "loading": "Carregando mods...",
       "error": "Não foi possível carregar os mods.",
       "empty": "Nenhum mod reportado ainda.",
+      "clean_save": "Save limpo — nenhum mod externo detectado.",
+      "no_data": "Dados de mods indisponíveis. Instale o mod v2.18.0+ e faça um novo sync.",
       "updated": "atualizado {{date}}",
       "known": "Mods identificados",
       "unknown": "Mods não cadastrados",
