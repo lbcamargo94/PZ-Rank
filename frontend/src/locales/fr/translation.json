@@ -451,20 +451,21 @@
       }
     },
     "conduta": {
-      "section_title": "10 Règles Fondamentales",
+      "section_title": "12 Règles Fondamentales",
       "section_sub": "Les règles régissant la participation au Brasileirão PZ. Le respect est obligatoire.",
       "rules": [
-        { "title": "Diffusion Obligatoire", "desc": "Toute participation au championnat doit être diffusée en direct dans un stream de gameplay." },
-        { "title": "YouTube ou Twitch comme Plateforme Officielle", "desc": "La diffusion doit être réalisée sur YouTube ou sur Twitch et rester sauvegardée pour de futurs audits. L'enregistrement d'une chaîne YouTube reste obligatoire au moment de l'inscription, mais le direct peut être fait sur l'une ou l'autre plateforme. Sur YouTube, les diffusions de moins de 12 heures sont archivées automatiquement. En cas de diffusion uniquement sur Twitch, il est de la responsabilité du participant de sauvegarder le VOD manuellement avant sa suppression : les streamers sans monétisation n'ont que 7 jours ; les Affiliés, 14 jours ; les Partenaires, utilisateurs Prime et Turbo, jusqu'à 60 jours." },
+        { "title": "Diffusion Obligatoire", "desc": "Toute participation au championnat doit être diffusée en direct." },
+        { "title": "Plateforme Officielle", "desc": "La diffusion doit être réalisée sur YouTube et rester sauvegardée sur la chaîne du participant pour de futurs audits. D'autres plateformes peuvent être utilisées simultanément, à condition que le direct YouTube soit maintenu." },
         { "title": "Configuration Officielle", "desc": "Il est obligatoire d'utiliser la version du jeu, le preset Sandbox et la Liste de Mods Officielle définis par le championnat. Toute modification entraînera l'invalidation de la tentative." },
         { "title": "Mods Autorisés", "desc": "Seuls les mods présents dans la Liste de Mods Officielle peuvent être utilisés. Les suggestions de nouveaux mods doivent être envoyées à l'équipe de modération pour évaluation." },
         { "title": "Interdiction des Triches", "desc": "Il est interdit d'utiliser des logiciels, scripts, macros, trainers, triches, exploits ou toute autre ressource conférant un avantage indu pendant la compétition." },
         { "title": "Intégrité de la Partie", "desc": "Il n'est pas permis de modifier les sauvegardes, de restaurer des sauvegardes après la mort, d'utiliser des commandes administratives ou de modifier des fichiers du jeu pour altérer l'expérience officielle." },
-        { "title": "Validation de la Tentative", "desc": "Toutes les parties doivent être valides selon les règles du championnat et pourront être auditées par l'organisation via les enregistrements et les informations fournies par PZ-Rank." },
+        { "title": "Validation de la Tentative", "desc": "Toutes les parties doivent être valides selon les règles du championnat et pourront être auditées par l'organisation via les enregistrements et les informations fournies par PZ-Rank et les diffusions." },
         { "title": "Esprit Sportif", "desc": "Les participants doivent maintenir une attitude respectueuse envers les autres concurrents, les spectateurs et l'équipe organisatrice. Les comportements antisportifs pourront entraîner des sanctions." },
         { "title": "Pénalités", "desc": "Le non-respect de toute règle pourra entraîner un avertissement, l'invalidation de la tentative, une disqualification ou un bannissement, selon la gravité de l'infraction." },
-        { "title": "Décision de l'Organisation", "desc": "Dans les cas non prévus par ce règlement, la décision finale reviendra exclusivement à l'équipe organisatrice du Brasileirão PZ." },
-        { "title": "Enregistrement de la Mort", "desc": "Chaque mort doit être enregistrée dans le classement par Companion. Si la mort n'est pas détectée automatiquement, le joueur sera bloqué pour synchroniser un nouveau personnage jusqu'à ce qu'un modérateur confirme le décès — après quoi les points du personnage précédent sont remis à zéro et la nouvelle partie peut commencer à zéro." }
+        { "title": "Décision de l'Organisation", "desc": "Dans les cas non prévus par ce règlement, la décision finale reviendra exclusivement à l'équipe organisatrice du Brasileirão." },
+        { "title": "Création de Personnage", "desc": "Un seul personnage est autorisé. Utilisez toujours le même nom pour votre personnage. Si vous êtes mordu ou souhaitez démarrer une nouvelle sauvegarde, terminez toujours de tuer votre ancien personnage en premier. Cela NE signifie PAS que vous n'avez qu'une seule chance de participer !" },
+        { "title": "Publication des Lives", "desc": "N'oubliez jamais de publier les liens de vos lives une fois terminées dans le canal envio-de-progresso sur Discord. Cela aide lors des analyses de VOD." }
       ],
       "footer": "Des questions ou des signalements ? Contactez la modération via Discord ou les réseaux sociaux du championnat."
     }

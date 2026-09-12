@@ -44,7 +44,8 @@ const FUNDAMENTAL_RULES_META = [
   { n: '08', icon: 'ti-users' },
   { n: '09', icon: 'ti-alert-triangle' },
   { n: '10', icon: 'ti-gavel' },
-  { n: '11', icon: 'ti-skull-crossed' },
+  { n: '11', icon: 'ti-user-circle' },
+  { n: '12', icon: 'ti-link' },
 ] as const;
 
 const SANDBOX_GROUPS_META = [

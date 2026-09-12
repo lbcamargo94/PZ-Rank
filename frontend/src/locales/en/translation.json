@@ -451,20 +451,21 @@
       }
     },
     "conduta": {
-      "section_title": "10 Fundamental Rules",
+      "section_title": "12 Fundamental Rules",
       "section_sub": "The rules governing participation in the Brazilian PZ Championship. Compliance is mandatory.",
       "rules": [
-        { "title": "Mandatory Streaming", "desc": "All participation in the championship must be streamed live in a gameplay stream." },
-        { "title": "YouTube or Twitch as Official Platform", "desc": "The stream must be done on YouTube or Twitch and remain saved for future audits. Registering a YouTube channel is still required at sign-up, but the stream itself can be done on either platform. On YouTube, streams under 12 hours are archived automatically. If streaming only on Twitch, it is the participant's responsibility to manually save the VOD before it is deleted: non-monetized streamers have only 7 days; Affiliates, 14 days; Partners, Prime and Turbo users, up to 60 days." },
+        { "title": "Mandatory Streaming", "desc": "All participation in the championship must be streamed live." },
+        { "title": "Official Platform", "desc": "The stream must be broadcast on YouTube and remain saved on the participant's channel for future audits. Other platforms may be used simultaneously, as long as the YouTube stream is maintained." },
         { "title": "Official Configuration", "desc": "It is mandatory to use the game version, Sandbox preset, and Official Mod List defined by the championship. Any change will result in the attempt being invalidated." },
         { "title": "Allowed Mods", "desc": "Only mods present in the Official Mod List may be used. Suggestions for new mods must be submitted to the moderation team for review." },
         { "title": "Cheat Prohibition", "desc": "It is forbidden to use software, scripts, macros, trainers, cheats, exploits or any resource that grants an unfair advantage during the competition." },
         { "title": "Match Integrity", "desc": "It is not allowed to edit saves, restore backups after death, use administrative commands, or modify game files to alter the official experience." },
-        { "title": "Attempt Validation", "desc": "All matches must be valid according to the championship rules and may be audited by the organization through recordings and information provided by PZ-Rank." },
+        { "title": "Attempt Validation", "desc": "All matches must be valid according to the championship rules and may be audited by the organization through recordings and information provided by PZ-Rank and the streams." },
         { "title": "Sportsmanship", "desc": "Participants must maintain a respectful attitude towards other competitors, viewers, and the organizing team. Unsportsmanlike conduct may result in penalties." },
         { "title": "Penalties", "desc": "Breaking any rule may result in a warning, invalidation of the attempt, disqualification, or ban, depending on the severity of the infraction." },
-        { "title": "Organization's Decision", "desc": "In omitted cases or situations not foreseen in these rules, the final decision rests exclusively with the Brasileirão PZ organizing team." },
-        { "title": "Death Registration", "desc": "Every death must be registered in the rank by Companion. If the death is not detected automatically, the player will be blocked from syncing a new character until a moderator confirms the death — after which the previous character's points are zeroed and the new run can start from scratch." }
+        { "title": "Organization's Decision", "desc": "In omitted cases or situations not foreseen in these rules, the final decision rests exclusively with the Brasileirão organizing team." },
+        { "title": "Character Creation", "desc": "Only 1 character is allowed. Always use the same name for your character. If you are bitten or want to start a new save, always finish killing your old character first. This does NOT mean you only have 1 chance to participate!" },
+        { "title": "Stream Posting", "desc": "Always remember to post your stream links when done in the envio-de-progresso channel on Discord. This helps in VOD analysis cases." }
       ],
       "footer": "Questions or reports? Contact the moderation team via Discord or the championship's social media."
     }
