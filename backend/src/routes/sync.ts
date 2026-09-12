@@ -194,6 +194,13 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // O campo codeTimestamp (campo 11 do payload) é gerado pelo mod no momento da
   // criação do código. Rejeita códigos com mais de 26h (cobre 24h de retry queue)
   // ou com timestamp futuro (mais de 5min de tolerância para skew de relógio).
+  // Mods v2.x+ sempre incluem codeTimestamp; exigir o campo para esses.
+  const modVerStr = decoded.modVersion || '';
+  const isV2Plus  = /^[2-9]\./.test(modVerStr);
+  if (isV2Plus && (!decoded.codeTimestamp || decoded.codeTimestamp <= 0)) {
+    res.status(400).json({ error: 'Código sem timestamp. Atualize o mod para a versão mais recente.' });
+    return;
+  }
   if (decoded.codeTimestamp && decoded.codeTimestamp > 0) {
     const nowSec  = Math.floor(Date.now() / 1000);
     const ageSec  = nowSec - decoded.codeTimestamp;
