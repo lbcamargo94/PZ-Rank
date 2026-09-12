@@ -223,17 +223,34 @@
     "mods": {
       "loading": "Cargando mods...",
       "error": "No se pudieron cargar los mods.",
-      "empty": "Ningún mod reportado aún.",
-      "clean_save": "Save limpio — ningún mod externo detectado.",
       "no_data": "Datos de mods no disponibles. Instala el mod v{{minVersion}}+ y sincroniza de nuevo.",
-      "updated": "actualizado {{date}}",
-      "known": "Mods identificados",
-      "unknown": "Mods no registrados",
+      "no_results": "Ningún mod encontrado.",
+      "updated": "Última verificación: {{date}}",
       "workshop": "Taller",
-      "status": {
+      "search": "Buscar mod...",
+      "integrity": {
+        "approved_title": "Integridad de Mods — Save aprobado",
+        "approved_sub": "Todos los mods detectados están en la lista oficial de mods permitidos.",
+        "rejected_title": "Integridad de Mods — Irregularidad detectada",
+        "rejected_sub": "Se encontraron mods no autorizados. Estado en el campeonato: DESCALIFICADO.",
+        "clean_save": "Save limpio — ningún mod externo detectado."
+      },
+      "class": {
+        "permitted": "Permitido",
         "blocked": "Bloqueado",
-        "active": "Permitido",
-        "unknown": "Desconocido"
+        "unlisted": "No autorizado"
+      },
+      "filter": {
+        "all": "Todos",
+        "permitted": "Permitidos",
+        "blocked": "Bloqueados",
+        "unlisted": "No autorizados"
+      },
+      "counters": {
+        "total": "{{n}} mods detectados",
+        "permitted": "{{n}} permitidos",
+        "blocked": "{{n}} bloqueados",
+        "unlisted": "{{n}} no autorizados"
       }
     },
     "score_label": "puntos",

@@ -360,34 +360,33 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     ? null
     : (existing?.objectives as Objectives | null) ?? null;
 
-  // ── Verificação server-side de mods bloqueados (v2.18.0+) ─────────────────
-  // Quando o código traz active_mods, cruza contra a tabela mods no banco.
-  // Mods com status='blocked': desclassifica imediatamente (sandbox_ok=false).
-  // Mods não cadastrados: flag para revisão do moderador.
-  let blockedModFound: string | null = null;
-  let unknownModIds:   string[]      = [];
+  // ── Verificação server-side de mods (v2.18.0+) ────────────────────────────
+  // BLOCKED  → desclassifica imediatamente (sandbox_ok=false)
+  // UNLISTED → também desclassifica (não está na whitelist = não pode usar)
+  // PERMITTED → ok
+  let blockedModFound:  string | null = null; // primeiro BLOCKED encontrado
+  let unlistedModIds:   string[]      = [];   // todos UNLISTED encontrados
 
   if (decoded.activeMods.length > 0) {
-    const { data: knownMods } = await supabase
+    const { data: catalogMods } = await supabase
       .from('mods')
       .select('mod_id, name, status')
       .not('mod_id', 'is', null);
 
-    // Mesmo com tabela vazia, todo mod enviado é desconhecido e vira flag.
-    type KnownMod = { mod_id: string; name: string; status: string };
-    const blockedSet = new Map<string, string>();
-    const allowedSet = new Set<string>();
-    for (const m of (knownMods ?? []) as KnownMod[]) {
+    type CatalogMod = { mod_id: string; name: string; status: string };
+    const blockedSet   = new Map<string, string>();
+    const permittedSet = new Set<string>();
+    for (const m of (catalogMods ?? []) as CatalogMod[]) {
       if (m.status === 'blocked') blockedSet.set(m.mod_id, m.name);
-      else allowedSet.add(m.mod_id);
+      else permittedSet.add(m.mod_id);
     }
     for (const modId of decoded.activeMods) {
       if (blockedSet.has(modId)) {
         blockedModFound = blockedSet.get(modId) ?? modId;
         break;
       }
-      if (!allowedSet.has(modId)) {
-        unknownModIds.push(modId);
+      if (!permittedSet.has(modId)) {
+        unlistedModIds.push(modId);
       }
     }
   }
@@ -438,17 +437,56 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     return;
   }
 
+  // Mods UNLISTED detectados server-side: desclassificam igual a BLOCKED
+  if (!blockedModFound && unlistedModIds.length > 0) {
+    const reason     = `unlisted_mods:${unlistedModIds.slice(0, 5).join(',')}`;
+    const modPayload = {
+      sandbox_ok:               false,
+      score:                    0,
+      is_alive:                 decoded.isAlive,
+      disqualification_reason:  reason,
+      disqualified_at:          new Date().toISOString(),
+      mod_version:              decoded.modVersion ?? null,
+      active_mods:              JSON.stringify(decoded.activeMods),
+    };
+    if (prev) {
+      await supabase.from(config.tableName).update(modPayload).eq('id', (prev as { id: number }).id);
+    } else {
+      await supabase.from(config.tableName).insert([{
+        player_id:      player.id,
+        moderator_id:   null,
+        name:           player.nick,
+        character_name: decoded.characterName,
+        profession:     decoded.profession,
+        days:           decoded.days,
+        time_raw:       decoded.timeRaw,
+        time_str:       decoded.timeStr,
+        kills:          decoded.kills,
+        skills:         decoded.skills.join(', ') || null,
+        live_url:       null,
+        traits:         decoded.traits.length > 0 ? decoded.traits.join(',') : null,
+        objectives:     null,
+        record_score:   0,
+        flagged_reason: null,
+        flagged_at:     null,
+        updated_at:     new Date().toISOString(),
+        no_live_streak: 0,
+        ...modPayload,
+      }]);
+    }
+    res.status(200).json({
+      success: true, character_name: decoded.characterName,
+      score: 0, is_alive: decoded.isAlive,
+      disqualified: true, disqualified_reason: reason,
+    });
+    return;
+  }
+
   // ── Detecção de mods não permitidos (legado — via flag no payload) ─────────
   // Mantido para compatibilidade com mods < v2.18.0 que usam a whitelist local.
   // A partir do v2.18.0, a detecção server-side acima é mais confiável.
   const codeReasonRaw = decoded.disqualificationReason;
   const hasModsFlag = !!codeReasonRaw && isModsReason(codeReasonRaw) && codeReasonRaw !== 'mod_removed';
-
-  // Mods desconhecidos viram flag para revisão do moderador (corrigido: flagStr era void'd)
-  let unknownModsFlag: string | null = null;
-  if (unknownModIds.length > 0 && !hasModsFlag) {
-    unknownModsFlag = `unknown_mods:${unknownModIds.slice(0, 5).join(',')}`;
-  }
 
   // ── Detecção de anomalias estatísticas ─────────────────────────────────────
   // Compara submissão atual com o último estado conhecido para detectar
@@ -458,8 +496,8 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // (score=0, kills potencialmente desatualizados), então qualquer comparação
   // geraria falso-positivo e congelaria o score em 0.
 
-  let flaggedReason: string | null = unknownModsFlag;
-  let flaggedAt:     string | null = unknownModsFlag ? new Date().toISOString() : null;
+  let flaggedReason: string | null = null;
+  let flaggedAt:     string | null = null;
 
   if (hasModsFlag) {
     // Formato do mod Lua: "mods:NAO_PERMITIDO:<Nome>" — "NAO_PERMITIDO" é um marcador

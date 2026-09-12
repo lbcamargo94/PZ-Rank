@@ -223,17 +223,34 @@
     "mods": {
       "loading": "Loading mods...",
       "error": "Could not load mods.",
-      "empty": "No mods reported yet.",
-      "clean_save": "Clean save — no external mods detected.",
       "no_data": "Mod data unavailable. Install mod v{{minVersion}}+ and sync again.",
-      "updated": "updated {{date}}",
-      "known": "Known mods",
-      "unknown": "Unregistered mods",
+      "no_results": "No mods found.",
+      "updated": "Last check: {{date}}",
       "workshop": "Workshop",
-      "status": {
+      "search": "Search mod...",
+      "integrity": {
+        "approved_title": "Mod Integrity — Save approved",
+        "approved_sub": "All detected mods are on the official permitted mods list.",
+        "rejected_title": "Mod Integrity — Irregularity detected",
+        "rejected_sub": "Unauthorized mods were found. Championship status: DISQUALIFIED.",
+        "clean_save": "Clean save — no external mods detected."
+      },
+      "class": {
+        "permitted": "Permitted",
         "blocked": "Blocked",
-        "active": "Allowed",
-        "unknown": "Unknown"
+        "unlisted": "Not authorized"
+      },
+      "filter": {
+        "all": "All",
+        "permitted": "Permitted",
+        "blocked": "Blocked",
+        "unlisted": "Not authorized"
+      },
+      "counters": {
+        "total": "{{n}} mods detected",
+        "permitted": "{{n}} permitted",
+        "blocked": "{{n}} blocked",
+        "unlisted": "{{n}} not authorized"
       }
     },
     "score_label": "points",

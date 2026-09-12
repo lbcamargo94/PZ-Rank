@@ -911,48 +911,77 @@ router.get('/:id/active-mods', async (req: Request, res: Response): Promise<void
       .maybeSingle();
 
     if (!entry) {
-      res.json({ mods: [], mod_version: null, updated_at: null });
+      res.json({ mods: [], mod_version: null, updated_at: null, integrityStatus: 'NO_DATA', summary: { total: 0, permitted: 0, blocked: 0, unlisted: 0 } });
       return;
     }
 
     type EntryRow = { active_mods: string | null; mod_version: string | null; updated_at: string | null };
     const row = entry as EntryRow;
 
-    // active_mods NULL + mod_version NULL  → sync antigo (antes do v2.18.0), sem dados
-    // active_mods NULL + mod_version set   → save limpo: sync escrevia active_mods só quando não-vazio (bug corrigido)
-    // active_mods '[]' + mod_version set   → save limpo (após correção do sync)
+    const emptyClean = (status: 'NO_DATA' | 'APPROVED') => res.json({
+      mods: [], mod_version: row.mod_version, updated_at: row.updated_at,
+      integrityStatus: status,
+      summary: { total: 0, permitted: 0, blocked: 0, unlisted: 0 },
+    });
+
+    // active_mods NULL + mod_version NULL  → sync antigo, sem dados
+    // active_mods NULL + mod_version set   → save limpo (bug legado corrigido no v4.21.16)
+    // active_mods '[]' + mod_version set   → save limpo
     if (!row.active_mods) {
-      res.json({ mods: [], mod_version: row.mod_version, updated_at: row.updated_at });
-      return;
+      return void emptyClean(row.mod_version ? 'APPROVED' : 'NO_DATA');
     }
 
     let activeModIds: string[] = [];
     try { activeModIds = JSON.parse(row.active_mods); } catch { activeModIds = []; }
 
     if (activeModIds.length === 0) {
-      res.json({ mods: [], mod_version: row.mod_version, updated_at: row.updated_at });
-      return;
+      return void emptyClean(row.mod_version ? 'APPROVED' : 'NO_DATA');
     }
 
-    // Cruza com a tabela mods
-    const { data: knownMods } = await supabase
+    // Carrega TODOS os mods cadastrados (sem filtrar por ID) para classificar corretamente
+    const { data: catalogMods } = await supabase
       .from('mods')
-      .select('mod_id, name, workshop_url, image_url, status, is_required')
-      .in('mod_id', activeModIds);
+      .select('mod_id, name, workshop_url, image_url, status')
+      .not('mod_id', 'is', null);
 
-    type KnownMod = { mod_id: string; name: string; workshop_url: string; image_url: string | null; status: string; is_required: boolean };
-    const knownMap = new Map<string, KnownMod>(
-      ((knownMods ?? []) as KnownMod[]).map(m => [m.mod_id, m])
+    type CatalogMod = { mod_id: string; name: string; workshop_url: string; image_url: string | null; status: string };
+    const catalogMap = new Map<string, CatalogMod>(
+      ((catalogMods ?? []) as CatalogMod[]).map(m => [m.mod_id, m])
     );
 
-    const mods = activeModIds.map(modId => {
-      const known = knownMap.get(modId);
-      return known
-        ? { mod_id: modId, name: known.name, workshop_url: known.workshop_url, image_url: known.image_url, status: known.status, is_required: known.is_required, known: true }
-        : { mod_id: modId, name: modId, workshop_url: null, image_url: null, status: 'unknown', is_required: false, known: false };
-    });
+    // Classifica: BLOCKED > PERMITTED > UNLISTED
+    const classify = (modId: string): 'PERMITTED' | 'BLOCKED' | 'UNLISTED' => {
+      const m = catalogMap.get(modId);
+      if (!m) return 'UNLISTED';
+      return m.status === 'blocked' ? 'BLOCKED' : 'PERMITTED';
+    };
 
-    res.json({ mods, mod_version: row.mod_version, updated_at: row.updated_at });
+    const ORDER = { BLOCKED: 0, UNLISTED: 1, PERMITTED: 2 } as const;
+
+    const mods = activeModIds
+      .map(modId => {
+        const m = catalogMap.get(modId);
+        const classification = classify(modId);
+        return {
+          mod_id:         modId,
+          name:           m?.name ?? modId,
+          workshop_url:   m?.workshop_url ?? null,
+          image_url:      m?.image_url ?? null,
+          classification,
+        };
+      })
+      .sort((a, b) => ORDER[a.classification] - ORDER[b.classification]);
+
+    const summary = {
+      total:    mods.length,
+      permitted: mods.filter(m => m.classification === 'PERMITTED').length,
+      blocked:  mods.filter(m => m.classification === 'BLOCKED').length,
+      unlisted: mods.filter(m => m.classification === 'UNLISTED').length,
+    };
+
+    const integrityStatus = (summary.blocked > 0 || summary.unlisted > 0) ? 'REJECTED' : 'APPROVED';
+
+    res.json({ mods, mod_version: row.mod_version, updated_at: row.updated_at, integrityStatus, summary });
   } catch (err) {
     console.error('[GET /players/:id/active-mods]', err);
     res.status(500).json({ error: 'Erro interno.' });

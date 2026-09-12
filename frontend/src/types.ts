@@ -189,20 +189,31 @@ export interface Mod {
   dependencies: ModDependency[];
 }
 
+export type ModClassification = 'PERMITTED' | 'BLOCKED' | 'UNLISTED';
+
 export interface ActiveModInfo {
-  mod_id:       string;
-  name:         string;
-  workshop_url: string | null;
-  image_url:    string | null;
-  status:       'active' | 'blocked' | 'unknown';
-  is_required:  boolean;
-  known:        boolean;
+  mod_id:         string;
+  name:           string;
+  workshop_url:   string | null;
+  image_url:      string | null;
+  classification: ModClassification;
 }
 
+export interface PlayerModsSummary {
+  total:    number;
+  permitted: number;
+  blocked:  number;
+  unlisted: number;
+}
+
+export type ModIntegrityStatus = 'APPROVED' | 'REJECTED' | 'NO_DATA';
+
 export interface PlayerActiveMods {
-  mods:        ActiveModInfo[];
-  mod_version: string | null;
-  updated_at:  string | null;
+  mods:            ActiveModInfo[];
+  mod_version:     string | null;
+  updated_at:      string | null;
+  integrityStatus: ModIntegrityStatus;
+  summary:         PlayerModsSummary;
 }
 
 export interface PlayerProfile {

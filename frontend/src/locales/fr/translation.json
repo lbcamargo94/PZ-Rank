@@ -223,17 +223,34 @@
     "mods": {
       "loading": "Chargement des mods...",
       "error": "Impossible de charger les mods.",
-      "empty": "Aucun mod signalé pour l'instant.",
-      "clean_save": "Save propre — aucun mod externe détecté.",
       "no_data": "Données de mods indisponibles. Installe le mod v{{minVersion}}+ et resynchronise.",
-      "updated": "mis à jour {{date}}",
-      "known": "Mods identifiés",
-      "unknown": "Mods non enregistrés",
+      "no_results": "Aucun mod trouvé.",
+      "updated": "Dernière vérification : {{date}}",
       "workshop": "Atelier",
-      "status": {
+      "search": "Rechercher un mod...",
+      "integrity": {
+        "approved_title": "Intégrité des Mods — Save approuvé",
+        "approved_sub": "Tous les mods détectés figurent sur la liste officielle des mods autorisés.",
+        "rejected_title": "Intégrité des Mods — Irrégularité détectée",
+        "rejected_sub": "Des mods non autorisés ont été trouvés. Statut au championnat : DISQUALIFIÉ.",
+        "clean_save": "Save propre — aucun mod externe détecté."
+      },
+      "class": {
+        "permitted": "Autorisé",
         "blocked": "Bloqué",
-        "active": "Autorisé",
-        "unknown": "Inconnu"
+        "unlisted": "Non autorisé"
+      },
+      "filter": {
+        "all": "Tous",
+        "permitted": "Autorisés",
+        "blocked": "Bloqués",
+        "unlisted": "Non autorisés"
+      },
+      "counters": {
+        "total": "{{n}} mods détectés",
+        "permitted": "{{n}} autorisés",
+        "blocked": "{{n}} bloqués",
+        "unlisted": "{{n}} non autorisés"
       }
     },
     "score_label": "points",

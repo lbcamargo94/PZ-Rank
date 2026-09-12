@@ -18,7 +18,7 @@ import { useToast } from '../hooks/useToast';
 import { Toast } from '../components/Toast';
 import { formatNumber } from '../lib/format';
 import { translateApiError } from '../lib/apiErrors';
-import type { PlayerProfile, Entry, LiveStatus, PlayerSession, PlayerLikeStatus, PlayerActiveMods, ActiveModInfo } from '../types';
+import type { PlayerProfile, Entry, LiveStatus, PlayerSession, PlayerLikeStatus, PlayerActiveMods, ModClassification } from '../types';
 import type { Objectives } from '../lib/objectives';
 
 function readPlayerSession(): PlayerSession | null {
@@ -239,12 +239,22 @@ function ppDisqTooltip(t: TFunction, reason: string | null | undefined): string 
   }
 }
 
+type ModFilter = 'all' | 'PERMITTED' | 'BLOCKED' | 'UNLISTED';
+
+function classificationMeta(c: ModClassification, t: TFunction) {
+  if (c === 'BLOCKED')   return { cls: 'pp-mod-badge-blocked',  label: t('player.mods.class.blocked'),   icon: 'ti-shield-x' };
+  if (c === 'UNLISTED')  return { cls: 'pp-mod-badge-unlisted', label: t('player.mods.class.unlisted'),  icon: 'ti-shield-question' };
+  return                        { cls: 'pp-mod-badge-permitted', label: t('player.mods.class.permitted'), icon: 'ti-shield-check' };
+}
+
 function ActiveModsSection({ playerId }: { playerId: number }) {
   const { t } = useTranslation();
-  const [data, setData]             = useState<PlayerActiveMods | null>(null);
-  const [loading, setLoading]       = useState(true);
-  const [error, setError]           = useState(false);
-  const [minModVersion, setMinMod]  = useState<string | null>(null);
+  const [data, setData]            = useState<PlayerActiveMods | null>(null);
+  const [loading, setLoading]      = useState(true);
+  const [error, setError]          = useState(false);
+  const [minModVersion, setMinMod] = useState<string | null>(null);
+  const [filter, setFilter]        = useState<ModFilter>('all');
+  const [search, setSearch]        = useState('');
 
   useEffect(() => {
     setLoading(true);
@@ -261,77 +271,131 @@ function ActiveModsSection({ playerId }: { playerId: number }) {
 
   if (loading) return <div className="pp-mods-state"><i className="ti ti-loader-2 spin" /> {t('player.mods.loading')}</div>;
   if (error)   return <div className="pp-mods-state pp-mods-error"><i className="ti ti-alert-circle" /> {t('player.mods.error')}</div>;
-  if (!data || data.mods.length === 0) {
-    const isCleanSave = !!data && data.mod_version !== null;
+
+  // Estados sem mods
+  if (!data || data.integrityStatus === 'NO_DATA') {
     return (
-      <div className={`pp-mods-state ${isCleanSave ? 'pp-mods-clean' : 'pp-mods-empty'}`}>
-        <i className={isCleanSave ? 'ti ti-shield-check' : 'ti ti-puzzle-off'} />
-        <span>{isCleanSave ? t('player.mods.clean_save') : t('player.mods.no_data', { minVersion: minModVersion ?? '?' })}</span>
-        {data?.mod_version && <span className="pp-mods-modver">PZCommunityRank <strong>v{data.mod_version}</strong></span>}
+      <div className="pp-mods-state pp-mods-empty">
+        <i className="ti ti-puzzle-off" />
+        <span>{t('player.mods.no_data', { minVersion: minModVersion ?? '?' })}</span>
       </div>
     );
   }
 
-  const known   = data.mods.filter(m => m.known);
-  const unknown = data.mods.filter(m => !m.known);
+  if (data.mods.length === 0) {
+    return (
+      <div className="pp-mods-integrity-banner pp-mods-integrity-approved">
+        <div className="pp-mods-integrity-icon"><i className="ti ti-shield-check" /></div>
+        <div>
+          <div className="pp-mods-integrity-title">{t('player.mods.integrity.approved_title')}</div>
+          <div className="pp-mods-integrity-sub">{t('player.mods.integrity.clean_save')}</div>
+          {data.updated_at && <div className="pp-mods-integrity-date">{t('player.mods.updated', { date: new Date(data.updated_at).toLocaleDateString() })}</div>}
+        </div>
+        {data.mod_version && <span className="pp-mods-modver-tag">v{data.mod_version}</span>}
+      </div>
+    );
+  }
 
-  const statusClass = (s: ActiveModInfo['status']) =>
-    s === 'blocked' ? 'pp-mod-badge-blocked' : s === 'active' ? 'pp-mod-badge-ok' : 'pp-mod-badge-unknown';
-  const statusLabel = (s: ActiveModInfo['status']) =>
-    s === 'blocked' ? t('player.mods.status.blocked') : s === 'active' ? t('player.mods.status.active') : t('player.mods.status.unknown');
+  const { summary } = data;
+  const isRejected  = data.integrityStatus === 'REJECTED';
+
+  const visibleMods = data.mods.filter(m => {
+    if (filter !== 'all' && m.classification !== filter) return false;
+    if (search) {
+      const q = search.toLowerCase();
+      return m.name.toLowerCase().includes(q) || m.mod_id.toLowerCase().includes(q);
+    }
+    return true;
+  });
+
+  const FILTERS: { key: ModFilter; label: string; count: number }[] = [
+    { key: 'all',       label: t('player.mods.filter.all'),       count: summary.total },
+    { key: 'PERMITTED', label: t('player.mods.filter.permitted'), count: summary.permitted },
+    { key: 'BLOCKED',   label: t('player.mods.filter.blocked'),   count: summary.blocked },
+    { key: 'UNLISTED',  label: t('player.mods.filter.unlisted'),  count: summary.unlisted },
+  ];
 
   return (
     <div className="pp-mods-section">
-      {data.mod_version && (
-        <div className="pp-mods-modver-banner">
-          <i className="ti ti-puzzle" />
-          PZCommunityRank <strong>v{data.mod_version}</strong>
+      {/* Banner de integridade */}
+      <div className={`pp-mods-integrity-banner ${isRejected ? 'pp-mods-integrity-rejected' : 'pp-mods-integrity-approved'}`}>
+        <div className="pp-mods-integrity-icon">
+          <i className={`ti ${isRejected ? 'ti-shield-x' : 'ti-shield-check'}`} />
+        </div>
+        <div className="pp-mods-integrity-body">
+          <div className="pp-mods-integrity-title">
+            {isRejected ? t('player.mods.integrity.rejected_title') : t('player.mods.integrity.approved_title')}
+          </div>
+          <div className="pp-mods-integrity-sub">
+            {isRejected ? t('player.mods.integrity.rejected_sub') : t('player.mods.integrity.approved_sub')}
+          </div>
           {data.updated_at && (
-            <span className="pp-mods-updated">
-              · {t('player.mods.updated', { date: new Date(data.updated_at).toLocaleDateString() })}
-            </span>
+            <div className="pp-mods-integrity-date">
+              {t('player.mods.updated', { date: new Date(data.updated_at).toLocaleDateString() })}
+            </div>
           )}
         </div>
-      )}
+        {data.mod_version && <span className="pp-mods-modver-tag">v{data.mod_version}</span>}
+      </div>
 
-      {known.length > 0 && (
-        <div className="pp-mods-group">
-          <span className="pp-mods-group-label">{t('player.mods.known')}</span>
-          <div className="pp-mods-cards">
-            {known.map(mod => (
-              <div key={mod.mod_id} className={`pp-mod-card${mod.status === 'blocked' ? ' pp-mod-card-blocked' : ''}`}>
-                {mod.image_url
-                  ? <img src={mod.image_url} alt="" className="pp-mod-thumb" />
-                  : <div className="pp-mod-thumb pp-mod-thumb-placeholder"><i className="ti ti-puzzle" /></div>
-                }
-                <div className="pp-mod-info">
-                  <span className="pp-mod-name">{mod.name}</span>
-                  <span className={`pp-mod-badge ${statusClass(mod.status)}`}>{statusLabel(mod.status)}</span>
-                </div>
-                {mod.workshop_url && (
-                  <a href={mod.workshop_url} target="_blank" rel="noopener noreferrer" className="pp-mod-steam-btn" title={t('player.mods.workshop')}>
-                    <i className="ti ti-brand-steam" />
-                    <span>{t('player.mods.workshop')}</span>
-                  </a>
-                )}
-              </div>
-            ))}
-          </div>
+      {/* Contadores */}
+      <div className="pp-mods-counters">
+        <span className="pp-mods-counter">{t('player.mods.counters.total', { n: summary.total })}</span>
+        <span className="pp-mods-counter pp-mods-counter-permitted">{t('player.mods.counters.permitted', { n: summary.permitted })}</span>
+        {summary.blocked  > 0 && <span className="pp-mods-counter pp-mods-counter-blocked">{t('player.mods.counters.blocked', { n: summary.blocked })}</span>}
+        {summary.unlisted > 0 && <span className="pp-mods-counter pp-mods-counter-unlisted">{t('player.mods.counters.unlisted', { n: summary.unlisted })}</span>}
+      </div>
+
+      {/* Filtros + busca */}
+      <div className="pp-mods-toolbar">
+        <div className="pp-mods-filters">
+          {FILTERS.filter(f => f.count > 0 || f.key === 'all').map(f => (
+            <button
+              key={f.key}
+              className={`pp-mods-filter-btn${filter === f.key ? ' active' : ''}`}
+              onClick={() => setFilter(f.key)}
+            >
+              {f.label} <span className="pp-mods-filter-count">{f.count}</span>
+            </button>
+          ))}
         </div>
-      )}
+        <input
+          className="pp-mods-search"
+          placeholder={t('player.mods.search')}
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+      </div>
 
-      {unknown.length > 0 && (
-        <div className="pp-mods-group">
-          <span className="pp-mods-group-label">{t('player.mods.unknown')}</span>
-          <div className="pp-mods-unknown-list">
-            {unknown.map(mod => (
-              <span key={mod.mod_id} className="pp-mod-unknown-chip">
-                <i className="ti ti-puzzle-off" /> {mod.mod_id}
+      {/* Lista de mods */}
+      <div className="pp-mods-list">
+        {visibleMods.length === 0 ? (
+          <div className="pp-mods-state pp-mods-empty"><i className="ti ti-search-off" />{t('player.mods.no_results')}</div>
+        ) : visibleMods.map(mod => {
+          const meta = classificationMeta(mod.classification, t);
+          return (
+            <div key={mod.mod_id} className={`pp-mod-row pp-mod-row-${mod.classification.toLowerCase()}`}>
+              <span className={`pp-mod-class-dot pp-mod-dot-${mod.classification.toLowerCase()}`} title={meta.label}>
+                <i className={`ti ${meta.icon}`} />
               </span>
-            ))}
-          </div>
-        </div>
-      )}
+              {mod.image_url
+                ? <img src={mod.image_url} alt="" className="pp-mod-thumb-sm" />
+                : <div className="pp-mod-thumb-sm pp-mod-thumb-placeholder"><i className="ti ti-puzzle" /></div>
+              }
+              <div className="pp-mod-row-info">
+                <span className="pp-mod-name">{mod.name}</span>
+                <span className="pp-mod-id-chip">{mod.mod_id}</span>
+              </div>
+              <span className={`pp-mod-badge ${meta.cls}`}>{meta.label}</span>
+              {mod.workshop_url && (
+                <a href={mod.workshop_url} target="_blank" rel="noopener noreferrer" className="pp-mod-steam-btn" title={t('player.mods.workshop')}>
+                  <i className="ti ti-brand-steam" />
+                </a>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
