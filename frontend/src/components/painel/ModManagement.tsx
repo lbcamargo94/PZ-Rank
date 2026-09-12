@@ -139,6 +139,20 @@ function EditModForm({ mod, allMods, onSave, onCancel, submitting }: EditFormPro
       <div className="mod-edit-form-title">
         <i className="ti ti-pencil" /> Editando mod
       </div>
+      <div className="mod-info-banner">
+        <i className="ti ti-info-circle" />
+        <div>
+          <strong>Este cadastro representa um único ID de mod.</strong> Se o item da Oficina
+          empacota mais de um mod (mod_ids diferentes, possivelmente com status diferentes), não dá
+          para juntar os dois aqui.
+          <div className="mod-info-banner-example">
+            Edite apenas o <code>ID do mod no PZ</code> <strong>deste</strong> registro. Para o(s)
+            outro(s) mod(s) do mesmo item, feche esta edição e use <strong>Adicionar Mod</strong> com
+            a <strong>mesma URL da Oficina</strong> e o outro ID — o painel os agrupa
+            automaticamente e mostra o status de cada um no card.
+          </div>
+        </div>
+      </div>
       <div className="mod-add-fields">
         <div className="mod-field">
           <label className="mod-field-label">Nome do mod</label>
@@ -166,7 +180,7 @@ function EditModForm({ mod, allMods, onSave, onCancel, submitting }: EditFormPro
         <div className="mod-field">
           <label className="mod-field-label">
             URL da Oficina Steam
-            <span className="mod-field-hint"> — um item pode empacotar mais de um mod: repita a mesma URL com um ID diferente para cadastrar cada um separadamente</span>
+            <span className="mod-field-hint"> — item com mais de um mod: use a mesma URL nos dois cadastros</span>
           </label>
           <input
             type="url"
@@ -405,6 +419,23 @@ export function ModManagement({ token, showToast }: Props) {
 
         {showForm && (
           <form className="mod-add-form" onSubmit={handleAdd}>
+            <div className="mod-info-banner">
+              <i className="ti ti-info-circle" />
+              <div>
+                <strong>Um item da Oficina Steam pode empacotar mais de um mod.</strong> Cada mod
+                tem seu próprio <code>id=</code> dentro do <code>mod.info</code>, e cada um pode ter
+                um status diferente no site — um permitido, outro bloqueado.
+                <div className="mod-info-banner-example">
+                  Para cadastrar cada mod desse item separadamente: preencha este formulário uma vez
+                  para o primeiro <code>ID do mod no PZ</code>, salve, depois clique em{' '}
+                  <strong>Adicionar Mod</strong> de novo e repita usando a <strong>mesma URL da
+                  Oficina</strong> só trocando o ID. Ex: o item "TWISTV Bug Fix" tem os IDs{' '}
+                  <code>twistvbugfix</code> e <code>twistvbugfixwmodloadorder</code> — dois
+                  cadastros, mesma URL, IDs diferentes. O painel identifica automaticamente que são
+                  do mesmo item e mostra isso no card de cada um.
+                </div>
+              </div>
+            </div>
             <div className="mod-add-fields">
               <div className="mod-field">
                 <label className="mod-field-label">Nome do mod</label>
@@ -433,7 +464,7 @@ export function ModManagement({ token, showToast }: Props) {
               <div className="mod-field">
                 <label className="mod-field-label">
                   URL da Oficina Steam
-                  <span className="mod-field-hint"> — um item pode empacotar mais de um mod: repita a mesma URL com um ID diferente para cadastrar cada um separadamente</span>
+                  <span className="mod-field-hint"> — item com mais de um mod: use a mesma URL nos dois cadastros</span>
                 </label>
                 <input
                   type="url"

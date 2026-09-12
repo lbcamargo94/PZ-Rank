@@ -624,6 +624,41 @@
 }
 .mod-card-painel-deps .ti { font-size: 14px; }
 
+.mod-info-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--green);
+  border-radius: var(--radius);
+  font-size: 14px;
+  color: var(--text-2);
+  line-height: 1.55;
+}
+.mod-info-banner i {
+  color: var(--green);
+  flex-shrink: 0;
+  margin-top: 2px;
+  font-size: 18px;
+}
+.mod-info-banner strong { color: var(--text-1); }
+.mod-info-banner code {
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 13px;
+}
+.mod-info-banner-example {
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+  font-size: 13px;
+  color: var(--text-3);
+}
+
 .mod-card-painel-siblings {
   display: flex;
   align-items: flex-start;
