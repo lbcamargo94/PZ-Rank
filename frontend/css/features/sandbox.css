@@ -659,6 +659,10 @@
   color: var(--text-3);
 }
 
+.mod-info-banner-action {
+  margin-top: 10px;
+}
+
 .mod-card-painel-siblings {
   display: flex;
   align-items: flex-start;

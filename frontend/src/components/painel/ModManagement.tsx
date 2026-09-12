@@ -20,10 +20,10 @@ interface Props {
 }
 
 function ModRow({
-  mod, siblings, busy, onEdit, onToggleBlock, onDelete,
+  mod, siblings, busy, onEdit, onToggleBlock, onDelete, onAddSibling,
 }: {
   mod: Mod; siblings: Mod[]; busy: boolean;
-  onEdit: () => void; onToggleBlock: () => void; onDelete: () => void;
+  onEdit: () => void; onToggleBlock: () => void; onDelete: () => void; onAddSibling: () => void;
 }) {
   const wasUpdated = mod.updated_at && mod.updated_at !== mod.created_at;
   return (
@@ -93,6 +93,14 @@ function ModRow({
           <i className="ti ti-pencil" /> Editar
         </button>
         <button
+          className="btn-secondary btn-sm"
+          disabled={busy}
+          title="Cadastrar outro mod que vem junto neste mesmo item da Oficina Steam"
+          onClick={onAddSibling}
+        >
+          <i className="ti ti-copy-plus" /> Outro ID deste item
+        </button>
+        <button
           className={`${mod.status === 'active' ? 'btn-warning' : 'btn-success'} btn-sm`}
           disabled={busy}
           onClick={onToggleBlock}
@@ -109,14 +117,15 @@ function ModRow({
 }
 
 interface EditFormProps {
-  mod:        Mod;
-  allMods:    Mod[];
-  onSave:     (data: { name: string; mod_id: string | null; workshop_url: string; is_required: boolean; dependency_ids: number[] }) => Promise<void>;
-  onCancel:   () => void;
-  submitting: boolean;
+  mod:          Mod;
+  allMods:      Mod[];
+  onSave:       (data: { name: string; mod_id: string | null; workshop_url: string; is_required: boolean; dependency_ids: number[] }) => Promise<void>;
+  onCancel:     () => void;
+  onAddSibling: () => void;
+  submitting:   boolean;
 }
 
-function EditModForm({ mod, allMods, onSave, onCancel, submitting }: EditFormProps) {
+function EditModForm({ mod, allMods, onSave, onCancel, onAddSibling, submitting }: EditFormProps) {
   const [name,        setName]        = useState(mod.name);
   const [modId,       setModId]       = useState(mod.mod_id ?? '');
   const [workshopUrl, setWorkshopUrl] = useState(mod.workshop_url);
@@ -143,13 +152,16 @@ function EditModForm({ mod, allMods, onSave, onCancel, submitting }: EditFormPro
         <i className="ti ti-info-circle" />
         <div>
           <strong>Este cadastro representa um único ID de mod.</strong> Se o item da Oficina
-          empacota mais de um mod (mod_ids diferentes, possivelmente com status diferentes), não dá
-          para juntar os dois aqui.
+          empacota mais de um mod (mod_ids diferentes, possivelmente com status diferentes), edite
+          aqui apenas o <code>ID do mod no PZ</code> deste registro.
           <div className="mod-info-banner-example">
-            Edite apenas o <code>ID do mod no PZ</code> <strong>deste</strong> registro. Para o(s)
-            outro(s) mod(s) do mesmo item, feche esta edição e use <strong>Adicionar Mod</strong> com
-            a <strong>mesma URL da Oficina</strong> e o outro ID — o painel os agrupa
-            automaticamente e mostra o status de cada um no card.
+            Para cadastrar o(s) outro(s) mod(s) do mesmo item, clique no botão abaixo — ele abre um
+            novo cadastro já com a mesma URL da Oficina preenchida, só falta trocar o ID.
+            <div className="mod-info-banner-action">
+              <button type="button" className="btn-secondary btn-sm" onClick={onAddSibling}>
+                <i className="ti ti-copy-plus" /> Cadastrar outro mod deste item
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -345,6 +357,18 @@ export function ModManagement({ token, showToast }: Props) {
     setEditingId(mod.id);
   }
 
+  // Abre o formulario de Adicionar Mod ja preenchido com nome e URL do mod
+  // clicado — usado quando o mesmo item da Oficina empacota mais de um mod
+  // (workshop_id compartilhado, mod_id diferente). So falta trocar o ID.
+  function startAddSibling(mod: Mod) {
+    setEditingId(null);
+    setName(mod.name);
+    setAddModId('');
+    setWorkshopUrl(mod.workshop_url);
+    setIsRequired(mod.is_required);
+    setShowForm(true);
+  }
+
   const activeMods  = mods.filter(m => m.status === 'active');
   const blockedMods = mods.filter(m => m.status === 'blocked');
 
@@ -375,6 +399,7 @@ export function ModManagement({ token, showToast }: Props) {
           submitting={submitting}
           onSave={data => handleUpdate(mod, data)}
           onCancel={() => setEditingId(null)}
+          onAddSibling={() => startAddSibling(mod)}
         />
       );
     }
@@ -387,6 +412,7 @@ export function ModManagement({ token, showToast }: Props) {
         onEdit={() => startEdit(mod)}
         onToggleBlock={() => handleToggleBlock(mod)}
         onDelete={() => setConfirmDelete(mod)}
+        onAddSibling={() => startAddSibling(mod)}
       />
     );
   }
