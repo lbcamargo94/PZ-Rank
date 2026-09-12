@@ -1009,10 +1009,15 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     }
   })();
 
-  // Posição no ranking: contagem de entradas com score mais alto (best-effort)
+  // Posição no ranking: só conta jogadores vivos, com sandbox válido e não deletados.
+  // Sem esses filtros a contagem inclui mortos/desclassificados e a posição retornada
+  // ao Companion (exibida in-game) é sempre pior do que a posição real no site.
   const { count: rankCount, error: rankError } = await supabase
     .from(config.tableName)
     .select('*', { count: 'exact', head: true })
+    .eq('is_alive', true)
+    .eq('sandbox_ok', true)
+    .is('deleted_at', null)
     .gt('score', finalScore);
 
   res.status(prev ? 200 : 201).json({
