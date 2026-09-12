@@ -25,9 +25,12 @@ interface RankRowProps {
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
 function disqTooltip(t: TFunction, reason: string | null | undefined): string {
-  if (!reason) return t('rank.disq.sandbox');
-  if (reason.startsWith('mods:')) {
-    const ids = reason.slice(5).split(',').map(v => {
+  const r = reason ?? '';
+  if (r === 'debug'       || r.startsWith('debug:'))       return t('rank.disq.debug');
+  if (r === 'manual')                                        return t('rank.disq.manual');
+  if (r === 'mod_removed' || r.startsWith('mod_removed:')) return t('rank.disq.mod_removed_row');
+  if (r.startsWith('mods:')) {
+    const ids = r.slice(5).split(',').map(v => {
       if (v.startsWith('NAO_PERMITIDO:')) return v.slice(14);
       if (v.startsWith('AUSENTE:'))       return v.slice(8) + ' (ausente)';
       return v;
@@ -36,13 +39,8 @@ function disqTooltip(t: TFunction, reason: string | null | undefined): string {
       ? t('rank.disq.mods_list', { list: ids.join(', ') })
       : t('rank.disq.mods');
   }
-  switch (reason) {
-    case 'debug':       return t('rank.disq.debug');
-    case 'manual':      return t('rank.disq.manual');
-    case 'mod_removed': return t('rank.disq.mod_removed_row');
-    case 'mods':        return t('rank.disq.mods');
-    default:             return t('rank.disq.mods');
-  }
+  if (r === 'mods') return t('rank.disq.mods');
+  return t('rank.disq.sandbox');
 }
 
 function SkillsModal({ skillMap, charName, onClose }: {
