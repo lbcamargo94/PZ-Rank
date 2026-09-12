@@ -47,7 +47,8 @@ router.post('/youtube', async (req: Request, res: Response): Promise<void> => {
   });
 
   // Valida HMAC (se PUBSUB_SECRET configurado)
-  if (rawBody && !verifyHmac(rawBody, signature)) {
+  // Gateamos ANTES de tentar parsear: rawBody ausente com segredo configurado = rejeita
+  if (!verifyHmac(rawBody ?? Buffer.alloc(0), signature)) {
     console.warn('[webhook/youtube] HMAC inválido — notificação ignorada');
     res.sendStatus(200); // sempre 200 para o hub não retentar
     return;

@@ -240,6 +240,7 @@ function ppDisqTooltip(t: TFunction, reason: string | null | undefined): string 
 }
 
 function ActiveModsSection({ playerId }: { playerId: number }) {
+  const { t } = useTranslation();
   const [data, setData]       = useState<PlayerActiveMods | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState(false);
@@ -253,12 +254,12 @@ function ActiveModsSection({ playerId }: { playerId: number }) {
       .finally(() => setLoading(false));
   }, [playerId]);
 
-  if (loading) return <div className="pp-mods-state"><i className="ti ti-loader-2 spin" /> Carregando mods...</div>;
-  if (error)   return <div className="pp-mods-state pp-mods-error"><i className="ti ti-alert-circle" /> Não foi possível carregar os mods.</div>;
+  if (loading) return <div className="pp-mods-state"><i className="ti ti-loader-2 spin" /> {t('player.mods.loading')}</div>;
+  if (error)   return <div className="pp-mods-state pp-mods-error"><i className="ti ti-alert-circle" /> {t('player.mods.error')}</div>;
   if (!data || data.mods.length === 0) return (
     <div className="pp-mods-state pp-mods-empty">
       <i className="ti ti-puzzle-off" />
-      <span>Nenhum mod reportado ainda.</span>
+      <span>{t('player.mods.empty')}</span>
       {data?.mod_version && <span className="pp-mods-modver">PZCommunityRank <strong>v{data.mod_version}</strong></span>}
     </div>
   );
@@ -269,7 +270,7 @@ function ActiveModsSection({ playerId }: { playerId: number }) {
   const statusClass = (s: ActiveModInfo['status']) =>
     s === 'blocked' ? 'pp-mod-badge-blocked' : s === 'active' ? 'pp-mod-badge-ok' : 'pp-mod-badge-unknown';
   const statusLabel = (s: ActiveModInfo['status']) =>
-    s === 'blocked' ? 'Bloqueado' : s === 'active' ? 'Permitido' : 'Desconhecido';
+    s === 'blocked' ? t('player.mods.status.blocked') : s === 'active' ? t('player.mods.status.active') : t('player.mods.status.unknown');
 
   return (
     <div className="pp-mods-section">
@@ -279,7 +280,7 @@ function ActiveModsSection({ playerId }: { playerId: number }) {
           PZCommunityRank <strong>v{data.mod_version}</strong>
           {data.updated_at && (
             <span className="pp-mods-updated">
-              · atualizado {new Date(data.updated_at).toLocaleDateString('pt-BR')}
+              · {t('player.mods.updated', { date: new Date(data.updated_at).toLocaleDateString() })}
             </span>
           )}
         </div>
@@ -287,7 +288,7 @@ function ActiveModsSection({ playerId }: { playerId: number }) {
 
       {known.length > 0 && (
         <div className="pp-mods-group">
-          <span className="pp-mods-group-label">Mods identificados</span>
+          <span className="pp-mods-group-label">{t('player.mods.known')}</span>
           <div className="pp-mods-cards">
             {known.map(mod => (
               <div key={mod.mod_id} className={`pp-mod-card${mod.status === 'blocked' ? ' pp-mod-card-blocked' : ''}`}>
@@ -300,9 +301,9 @@ function ActiveModsSection({ playerId }: { playerId: number }) {
                   <span className={`pp-mod-badge ${statusClass(mod.status)}`}>{statusLabel(mod.status)}</span>
                 </div>
                 {mod.workshop_url && (
-                  <a href={mod.workshop_url} target="_blank" rel="noopener noreferrer" className="pp-mod-steam-btn">
+                  <a href={mod.workshop_url} target="_blank" rel="noopener noreferrer" className="pp-mod-steam-btn" title={t('player.mods.workshop')}>
                     <i className="ti ti-brand-steam" />
-                    <span>Oficina</span>
+                    <span>{t('player.mods.workshop')}</span>
                   </a>
                 )}
               </div>
@@ -313,7 +314,7 @@ function ActiveModsSection({ playerId }: { playerId: number }) {
 
       {unknown.length > 0 && (
         <div className="pp-mods-group">
-          <span className="pp-mods-group-label">Mods não cadastrados</span>
+          <span className="pp-mods-group-label">{t('player.mods.unknown')}</span>
           <div className="pp-mods-unknown-list">
             {unknown.map(mod => (
               <span key={mod.mod_id} className="pp-mod-unknown-chip">
@@ -448,7 +449,7 @@ function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | nul
       {/* Tabs — imediatamente após os stats, antes do conteúdo profundo */}
       <div className="pp-tabs">
         <button className={`pp-tab${tab === 'profile' ? ' active' : ''}`} onClick={() => setTab('profile')}>
-          <i className="ti ti-user-circle" /><span>Perfil</span>
+          <i className="ti ti-user-circle" /><span>{t('player.tabs.profile')}</span>
         </button>
         <button className={`pp-tab${tab === 'stats' ? ' active' : ''}`} onClick={() => setTab('stats')}>
           <i className="ti ti-target" /><span>{t('player.tabs.objectives')}</span>
@@ -460,10 +461,10 @@ function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | nul
           <i className="ti ti-dna" /><span>{t('player.tabs.traits')}</span>
         </button>
         <button className={`pp-tab${tab === 'achievements' ? ' active' : ''}`} onClick={() => setTab('achievements')}>
-          <i className="ti ti-trophy" /><span>Conquistas</span>
+          <i className="ti ti-trophy" /><span>{t('player.tabs.achievements')}</span>
         </button>
         <button className={`pp-tab${tab === 'mods' ? ' active' : ''}`} onClick={() => setTab('mods')}>
-          <i className="ti ti-puzzle" /><span>Mods</span>
+          <i className="ti ti-puzzle" /><span>{t('player.tabs.mods')}</span>
         </button>
       </div>
 

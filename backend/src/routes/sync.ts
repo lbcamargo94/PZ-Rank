@@ -122,6 +122,10 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     res.status(400).json({ error: 'player_token e code são obrigatórios.' });
     return;
   }
+  if (code.length > 8192) {
+    res.status(400).json({ error: 'Código inválido (muito longo).' });
+    return;
+  }
 
   // Valida token
   const { data: player, error: playerError } = await supabase

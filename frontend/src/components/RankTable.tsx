@@ -48,13 +48,12 @@ const SORT_KEYS: { key: SortKey; labelKey: string }[] = [
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
 function disqTooltip(t: TFunction, reason: string | null | undefined): string {
-  switch (reason) {
-    case 'debug':       return t('rank.disq.debug');
-    case 'mods':        return t('rank.disq.mods');
-    case 'manual':      return t('rank.disq.manual');
-    case 'mod_removed': return t('rank.disq.mod_removed');
-    default:             return t('rank.disq.sandbox');
-  }
+  const r = reason ?? '';
+  if (r === 'debug'       || r.startsWith('debug:'))       return t('rank.disq.debug');
+  if (r === 'mods'        || r.startsWith('mods:'))        return t('rank.disq.mods');
+  if (r === 'manual')                                        return t('rank.disq.manual');
+  if (r === 'mod_removed' || r.startsWith('mod_removed:')) return t('rank.disq.mod_removed');
+  return t('rank.disq.sandbox');
 }
 
 function fmtDate(iso: string | null | undefined): string {
@@ -141,7 +140,7 @@ function RankCard({ entry, rank, onPlayerClick, hideStatus, live, isUpdated }: {
           <span className={`rc-stat${isUpdated ? ' stat-flash' : ''}`}><i className="ti ti-sword" />{formatNumber(entry.kills)} {t('rank.zombies_suffix')}</span>
           <MiniBar value={entry.kills} max={KILLS_TARGET} done={killsDone} />
         </div>
-        <span className="rc-stat"><i className="ti ti-calendar" />{entry.days}d</span>
+        <span className="rc-stat"><i className="ti ti-calendar" />{entry.days ?? 0}d</span>
         {entry.time_str && <span className="rc-stat"><i className="ti ti-clock" />{entry.time_str}</span>}
         {objCount > 0 && <span className="rc-stat rc-obj"><i className="ti ti-star" />{objCount} {t('rank.obj_suffix')}</span>}
       </div>

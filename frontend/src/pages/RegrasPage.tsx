@@ -139,6 +139,7 @@ export function RegrasPage() {
               <div className="rg-steps">
                 {PARTICIPATE_STEPS_META.map((step, i) => {
                   const text = stepTexts[i];
+                  if (!text) return null;
                   const actionLabel = text.action_label
                     ? text.action_label.replace('{{tag}}', COMPANION_TAG)
                     : null;
@@ -338,6 +339,7 @@ export function RegrasPage() {
               <div className="rg-steps">
                 {FUNDAMENTAL_RULES_META.map((rule, i) => {
                   const text = ruleTexts[i];
+                  if (!text) return null;
                   return (
                     <div key={rule.n} className="rg-step-card">
                       <div className="rg-step-n">{rule.n}</div>

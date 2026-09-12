@@ -1,5 +1,5 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
-import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { setOnUnauthorized, apiModMe } from './lib/api';
 import type { ModSession } from './types';
@@ -185,6 +185,7 @@ export default function App() {
             } />
             <Route path="/painel/convite/:token"     element={<ModeratorRegisterPage />} />
             <Route path="/painel/redefinir-senha"   element={<ModResetPasswordPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
       </div>

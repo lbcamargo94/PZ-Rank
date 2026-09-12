@@ -47,8 +47,8 @@ const UUID_DEFAULTS: Record<string, string[]> = {
 const ALLOWED_TABLES = new Set(['players', 'moderators', 'moderator_tokens', 'entries', 'mods', 'mod_dependencies', 'player_tokens', 'seasons', 'hall_of_fame', 'daily_news', 'season_finances', 'achievements', 'player_achievements', 'heatmap_events', 'player_likes', 'journal_events', 'financial_transactions', 'prize_fund', 'prize_distribution']);
 
 const ALLOWED_COLS: Record<string, Set<string>> = {
-  players:          new Set(['id','nick','email','password_hash','email_verified_at','twitch_url','youtube_url','kick_url','tiktok_url','status','blocked','is_supporter','supporter_until','is_test_mod','is_featured_streamer','is_moderator','player_token','created_at','deleted_at','gender','yt_channel_id','yt_sub_expires_at','yt_last_live_video_id','yt_live_confirmed_at','twitch_last_live_id','terms_accepted_at']),
-  moderators:       new Set(['id','login','email','email_verified_at','role','password_hash','created_at']),
+  players:          new Set(['id','nick','email','password_hash','email_verified_at','twitch_url','youtube_url','kick_url','tiktok_url','status','blocked','blocked_reason','blocked_at','blocked_by','blocked_note','is_supporter','supporter_until','is_test_mod','is_featured_streamer','is_moderator','player_token','created_at','deleted_at','gender','yt_channel_id','yt_sub_expires_at','yt_last_live_video_id','yt_live_confirmed_at','twitch_last_live_id','terms_accepted_at']),
+  moderators:       new Set(['id','login','email','email_verified_at','role','password_hash','reset_token','reset_token_expires_at','created_at']),
   moderator_tokens: new Set(['id','email','token','type','expires_at','used_at','created_at']),
   entries:          new Set(['id','player_id','moderator_id','name','character_name','profession','days','time_raw','time_str','kills','skills','live_url','is_alive','sandbox_ok','traits','objectives','score','record_score','created_at','updated_at','sandbox_config','sandbox_config_updated_at','disqualified_at','disqualification_reason','disqualification_note','disqualified_by','flagged_reason','flagged_at','deleted_at','season_id','animals_killed','fish_caught','crops_harvested','items_crafted','houses_looted','hours_without_sleep','trees_cut','books_read','structures_built','crops_planted','spiffo_visited','eggs_collected','milk_produced','stone_structures','ceramic_items','forged_weapons','km_driven','cities_visited','military_visited','meals_cooked','water_collected','materials_crafted','animal_tracks','weapons_crafted','furniture_crafted','clothes_crafted','cheese_produced','doors_opened','sleep_locations','basements_explored','stations_used','animal_species','days_no_canned','pending_new_character','pending_new_character_since','no_live_streak','active_mods','mod_version']),
   mods:             new Set(['id','name','mod_id','workshop_url','status','is_required','image_url','created_at','updated_at']),
@@ -64,7 +64,7 @@ const ALLOWED_COLS: Record<string, Set<string>> = {
   heatmap_events:      new Set(['id','season_id','event_type','grid_x','grid_y','count']),
   journal_events:          new Set(['id','type','player_id','player_nick','char_name','data','created_at']),
   financial_transactions:  new Set(['id','season_id','type','category','description','amount_brl','funding_source','is_prize_fund','is_public','transaction_date','created_at','updated_at','deleted_at']),
-  prize_fund:              new Set(['id','season_id','target_amount_brl','locked','distribution_status','updated_at']),
+  prize_fund:              new Set(['id','season_id','target_amount_brl','op_target_amount_brl','locked','distribution_status','updated_at']),
   prize_distribution:      new Set(['id','season_id','position','percentage','fixed_amount','description']),
 };
 

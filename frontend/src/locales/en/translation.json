@@ -213,9 +213,26 @@
     },
     "no_chars": "No characters in this category.",
     "tabs": {
+      "profile": "Profile",
       "objectives": "Objectives",
       "skills": "Skills",
-      "traits": "Traits"
+      "traits": "Traits",
+      "achievements": "Achievements",
+      "mods": "Mods"
+    },
+    "mods": {
+      "loading": "Loading mods...",
+      "error": "Could not load mods.",
+      "empty": "No mods reported yet.",
+      "updated": "updated {{date}}",
+      "known": "Known mods",
+      "unknown": "Unregistered mods",
+      "workshop": "Workshop",
+      "status": {
+        "blocked": "Blocked",
+        "active": "Allowed",
+        "unknown": "Unknown"
+      }
     },
     "score_label": "points",
     "extended_stats": {

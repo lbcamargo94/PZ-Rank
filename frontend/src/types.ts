@@ -102,6 +102,7 @@ export interface DecodedCode {
   spiffoVisited:          number;
   // PZRX9 slim
   deathCause:             string | null;
+  activeMods:             string[];
   skillLevels:            Record<string, number>;
 }
 
