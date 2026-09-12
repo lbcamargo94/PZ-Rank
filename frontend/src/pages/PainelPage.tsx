@@ -308,7 +308,9 @@ export function PainelPage({ session, onSession, onBack }: Props) {
   const [sandboxEntry,         setSandboxEntry]         = useState<Entry | null>(null);
   const [disqualifyEntry,      setDisqualifyEntry]      = useState<Entry | null>(null);
   const [entries,        setEntries]        = useState<Entry[]>([]);
-  const [sortKey]                           = useState<SortKey>('score');
+  // Mais recente -> mais antigo, valido para qualquer aba selecionada (filteredEntries
+  // so faz .filter() sobre este array, entao a ordem do fetch e a ordem exibida).
+  const [sortKey]                           = useState<SortKey>('updated_at');
   const [updatingEntry,  setUpdatingEntry]  = useState<number | null>(null);
   const [entryPage,      setEntryPage]      = useState(1);
   const [deadZonePage,   setDeadZonePage]   = useState(1);

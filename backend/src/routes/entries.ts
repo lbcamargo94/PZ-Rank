@@ -30,10 +30,11 @@ function isModRequest(req: Request): boolean {
 const router = Router();
 
 const SORT_COLS: Record<string, string> = {
-  days:  'days',
-  kills: 'kills',
-  time:  'time_raw',
-  score: 'score',
+  days:       'days',
+  kills:      'kills',
+  time:       'time_raw',
+  score:      'score',
+  updated_at: 'updated_at',
 };
 
 // GET /entries?sort=days|kills|time&all=true — público
