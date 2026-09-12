@@ -225,7 +225,7 @@
       "error": "Could not load mods.",
       "empty": "No mods reported yet.",
       "clean_save": "Clean save — no external mods detected.",
-      "no_data": "Mod data unavailable. Install mod v2.18.0+ and sync again.",
+      "no_data": "Mod data unavailable. Install mod v{{minVersion}}+ and sync again.",
       "updated": "updated {{date}}",
       "known": "Known mods",
       "unknown": "Unregistered mods",

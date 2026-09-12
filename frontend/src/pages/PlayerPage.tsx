@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import avatarDefault from '../../assets/avatar.png';
 import perfilBg from '../../assets/background/perfil-usuario.webp';
-import { apiGetPlayerProfile, apiGetLiveStatus, apiGetPlayerLikes, apiLikePlayer, apiUnlikePlayer, apiGetPlayerActiveMods } from '../lib/api';
+import { apiGetPlayerProfile, apiGetLiveStatus, apiGetPlayerLikes, apiLikePlayer, apiUnlikePlayer, apiGetPlayerActiveMods, apiGetHealth } from '../lib/api';
 import { parseSkillMap, SKILL_CATEGORIES, MAX_SKILL_LEVEL, TOTAL_SKILLS } from '../lib/skills';
 import { parseTraitList, resolveTrait, getTraitImageUrl } from '../lib/traits';
 import { getProfessionImageUrl } from '../lib/professions';
@@ -241,16 +241,21 @@ function ppDisqTooltip(t: TFunction, reason: string | null | undefined): string 
 
 function ActiveModsSection({ playerId }: { playerId: number }) {
   const { t } = useTranslation();
-  const [data, setData]       = useState<PlayerActiveMods | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState(false);
+  const [data, setData]             = useState<PlayerActiveMods | null>(null);
+  const [loading, setLoading]       = useState(true);
+  const [error, setError]           = useState(false);
+  const [minModVersion, setMinMod]  = useState<string | null>(null);
 
   useEffect(() => {
     setLoading(true);
     setError(false);
-    apiGetPlayerActiveMods(playerId)
-      .then(setData)
-      .catch(() => setError(true))
+    Promise.all([
+      apiGetPlayerActiveMods(playerId),
+      apiGetHealth().catch(() => ({ min_mod_version: null })),
+    ]).then(([mods, health]) => {
+      setData(mods);
+      setMinMod(health.min_mod_version);
+    }).catch(() => setError(true))
       .finally(() => setLoading(false));
   }, [playerId]);
 
@@ -261,7 +266,7 @@ function ActiveModsSection({ playerId }: { playerId: number }) {
     return (
       <div className={`pp-mods-state ${isCleanSave ? 'pp-mods-clean' : 'pp-mods-empty'}`}>
         <i className={isCleanSave ? 'ti ti-shield-check' : 'ti ti-puzzle-off'} />
-        <span>{isCleanSave ? t('player.mods.clean_save') : t('player.mods.no_data')}</span>
+        <span>{isCleanSave ? t('player.mods.clean_save') : t('player.mods.no_data', { minVersion: minModVersion ?? '?' })}</span>
         {data?.mod_version && <span className="pp-mods-modver">PZCommunityRank <strong>v{data.mod_version}</strong></span>}
       </div>
     );
