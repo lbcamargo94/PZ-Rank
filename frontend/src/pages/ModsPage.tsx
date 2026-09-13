@@ -10,6 +10,27 @@ const PAGE_SIZE = 15;
 
 type ModTab = 'allowed' | 'blocked';
 
+// Um mesmo item da Oficina Steam pode empacotar mais de um mod (mod_id diferente).
+// Sem isso, o item apareceria repetido N vezes na lista publica (mesmo nome/imagem/
+// link), uma vez por mod_id — agrupa por workshop_id para mostrar uma unica vez,
+// somando as dependencias de todos os IDs do item.
+function groupByWorkshop(list: Mod[]): Mod[] {
+  const map = new Map<string, Mod[]>();
+  const noWorkshop: Mod[] = [];
+  for (const m of list) {
+    if (!m.workshop_id) { noWorkshop.push(m); continue; }
+    if (!map.has(m.workshop_id)) map.set(m.workshop_id, []);
+    map.get(m.workshop_id)!.push(m);
+  }
+  const grouped: Mod[] = [];
+  for (const group of map.values()) {
+    const seen = new Set<number>();
+    const dependencies = group.flatMap(m => m.dependencies).filter(d => (seen.has(d.id) ? false : (seen.add(d.id), true)));
+    grouped.push({ ...group[0], dependencies });
+  }
+  return [...grouped, ...noWorkshop];
+}
+
 export function ModsPage() {
   const navigate = useNavigate();
   const [allowedMods, setAllowedMods] = useState<Mod[]>([]);
@@ -31,7 +52,7 @@ export function ModsPage() {
 
   useEffect(() => {
     Promise.all([apiGetMods('active'), apiGetMods('blocked')])
-      .then(([active, blocked]) => { setAllowedMods(active); setBlockedMods(blocked); })
+      .then(([active, blocked]) => { setAllowedMods(groupByWorkshop(active)); setBlockedMods(groupByWorkshop(blocked)); })
       .catch(err => setError((err as Error).message))
       .finally(() => setLoading(false));
   }, []);

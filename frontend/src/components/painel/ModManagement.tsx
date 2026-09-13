@@ -19,30 +19,54 @@ interface Props {
   showToast: (msg: string, type?: string) => void;
 }
 
-function ModRow({
-  mod, siblings, busy, onEdit, onToggleBlock, onDelete,
+// Um card por item da Oficina Steam (agrupado por workshop_id) — nao mais um card
+// por mod_id. Um item com N mod_ids aparece UMA vez, listando os N IDs e o status
+// de cada um dentro do mesmo card, em vez de repetir nome/imagem/link N vezes.
+function ModGroupCard({
+  group, busy, onEdit, onBulkToggle, onDelete,
 }: {
-  mod: Mod; siblings: Mod[]; busy: boolean;
-  onEdit: () => void; onToggleBlock: () => void; onDelete: () => void;
+  group: Mod[]; busy: boolean;
+  onEdit: () => void; onBulkToggle: () => void; onDelete: () => void;
 }) {
-  const wasUpdated = mod.updated_at && mod.updated_at !== mod.created_at;
+  const primary      = group[0];
+  const wasUpdated   = primary.updated_at && primary.updated_at !== primary.created_at;
+  const allActive    = group.every(m => m.status === 'active');
+  const allBlocked   = group.every(m => m.status === 'blocked');
+  const isMixed      = !allActive && !allBlocked;
+
+  const deps = useMemo(() => {
+    const seen = new Set<number>();
+    const out: Array<{ id: number; name: string }> = [];
+    for (const m of group) {
+      for (const d of m.dependencies) {
+        if (!seen.has(d.id)) { seen.add(d.id); out.push(d); }
+      }
+    }
+    return out;
+  }, [group]);
+
   return (
-    <div className={`mod-card-painel${mod.status === 'blocked' ? ' mod-blocked' : ''}`}>
+    <div className={`mod-card-painel${allBlocked ? ' mod-blocked' : ''}${isMixed ? ' mod-mixed' : ''}`}>
       <div className="mod-card-painel-info">
-        {mod.image_url
-          ? <img src={mod.image_url} alt="" className="mod-card-painel-thumb" loading="lazy" />
+        {primary.image_url
+          ? <img src={primary.image_url} alt="" className="mod-card-painel-thumb" loading="lazy" />
           : <i className="ti ti-puzzle" />
         }
         <div className="mod-card-painel-text">
           <div className="mod-card-painel-name-row">
-            <span className="mod-card-painel-name">{mod.name}</span>
-            {mod.is_required && (
+            <span className="mod-card-painel-name">{primary.name}</span>
+            {primary.is_required && (
               <span className="mod-badge-required mod-badge-sm">
                 <i className="ti ti-alert-circle" /> Obrigatório
               </span>
             )}
+            {isMixed && (
+              <span className="mod-badge-mixed mod-badge-sm">
+                <i className="ti ti-arrows-shuffle" /> Status misto
+              </span>
+            )}
             <a
-              href={mod.workshop_url}
+              href={primary.workshop_url}
               target="_blank"
               rel="noopener noreferrer"
               className="mod-card-painel-link"
@@ -51,56 +75,51 @@ function ModRow({
               <i className="ti ti-external-link" />
             </a>
           </div>
-          {mod.mod_id && (
-            <div className="mod-card-painel-modid">
-              <i className="ti ti-code" /> <code>{mod.mod_id}</code>
-            </div>
-          )}
-          {!mod.mod_id && (
-            <div className="mod-card-painel-modid mod-no-id">
-              <i className="ti ti-alert-triangle" /> ID do PZ não cadastrado
-            </div>
-          )}
-          {mod.dependencies.length > 0 && (
-            <div className="mod-card-painel-deps">
-              <i className="ti ti-link" />
-              {mod.dependencies.map(d => d.name).join(', ')}
-            </div>
-          )}
-          {siblings.length > 0 && (
-            <div className="mod-card-painel-siblings">
-              <i className="ti ti-git-branch" /> Mesmo item Steam:
-              {siblings.map(s => (
-                <span key={s.id} className="mod-sibling-chip">
-                  {s.name}
-                  <span className={`mod-sibling-status ${s.status}`}>
-                    {s.status === 'blocked' ? 'Bloqueado' : 'Permitido'}
+          <div className="mod-card-painel-idlist">
+            {group.map(m => (
+              m.mod_id ? (
+                <span key={m.id} className="mod-sibling-chip">
+                  <code>{m.mod_id}</code>
+                  <span className={`mod-sibling-status ${m.status}`}>
+                    {m.status === 'blocked' ? 'Bloqueado' : 'Permitido'}
                   </span>
                 </span>
-              ))}
+              ) : (
+                <span key={m.id} className="mod-sibling-chip mod-no-id">
+                  <i className="ti ti-alert-triangle" /> ID não cadastrado
+                </span>
+              )
+            ))}
+          </div>
+          {deps.length > 0 && (
+            <div className="mod-card-painel-deps">
+              <i className="ti ti-link" />
+              {deps.map(d => d.name).join(', ')}
             </div>
           )}
           <div className="mod-card-painel-dates">
-            <span><i className="ti ti-calendar-plus" /> {fmtDate(mod.created_at)}</span>
+            <span><i className="ti ti-calendar-plus" /> {fmtDate(primary.created_at)}</span>
             {wasUpdated && (
-              <span><i className="ti ti-calendar-edit" /> {fmtDate(mod.updated_at)}</span>
+              <span><i className="ti ti-calendar-edit" /> {fmtDate(primary.updated_at)}</span>
             )}
           </div>
         </div>
       </div>
       <div className="painel-entry-actions">
-        <button className="btn-secondary btn-sm" disabled={busy} title="Editar mod" onClick={onEdit}>
+        <button className="btn-secondary btn-sm" disabled={busy} title="Editar" onClick={onEdit}>
           <i className="ti ti-pencil" /> Editar
         </button>
-        <button
-          className={`${mod.status === 'active' ? 'btn-warning' : 'btn-success'} btn-sm`}
-          disabled={busy}
-          onClick={onToggleBlock}
-        >
-          <i className={`ti ${mod.status === 'active' ? 'ti-ban' : 'ti-circle-check'}`} />
-          {mod.status === 'active' ? 'Bloquear' : 'Ativar'}
-        </button>
-        <button className="btn-ghost btn-sm" disabled={busy} title="Remover mod" onClick={onDelete}>
+        {!isMixed && (
+          <button
+            className={`${allActive ? 'btn-warning' : 'btn-success'} btn-sm`}
+            disabled={busy}
+            onClick={onBulkToggle}
+          >
+            <i className={`ti ${allActive ? 'ti-ban' : 'ti-circle-check'}`} />
+            {allActive ? 'Bloquear' : 'Ativar'}
+          </button>
+        )}
+        <button className="btn-ghost btn-sm" disabled={busy} title="Remover" onClick={onDelete}>
           <i className="ti ti-trash" />
         </button>
       </div>
@@ -342,7 +361,7 @@ export function ModManagement({ token, showToast }: Props) {
   const [loading,        setLoading]        = useState(false);
   const [submitting,     setSubmitting]     = useState(false);
   const [actionId,       setActionId]       = useState<number | null>(null);
-  const [confirmDelete,  setConfirmDelete]  = useState<Mod | null>(null);
+  const [confirmDelete,  setConfirmDelete]  = useState<Mod[] | null>(null);
   const [showAddForm,    setShowAddForm]    = useState(false);
   const [editingGroupId, setEditingGroupId] = useState<number | null>(null);
   const [refreshing,     setRefreshing]     = useState(false);
@@ -421,16 +440,18 @@ export function ModManagement({ token, showToast }: Props) {
     }
   }
 
-  async function handleToggleBlock(mod: Mod) {
-    setActionId(mod.id);
+  // Bloqueia/ativa todos os IDs do grupo de uma vez — so faz sentido quando o grupo
+  // inteiro compartilha o mesmo status hoje (ModGroupCard esconde este botao quando
+  // o status ja esta misto; nesse caso o ajuste fino e feito pelo formulario de Editar).
+  async function handleBulkToggle(group: Mod[]) {
+    setActionId(group[0].id);
     try {
-      if (mod.status === 'active') {
-        await apiBlockMod(token, mod.id);
-        showToast(`Mod "${mod.name}" bloqueado.`, 'success');
-      } else {
-        await apiUnblockMod(token, mod.id);
-        showToast(`Mod "${mod.name}" ativado.`, 'success');
+      const toActive = group.every(m => m.status === 'blocked');
+      for (const m of group) {
+        if (toActive) await apiUnblockMod(token, m.id);
+        else await apiBlockMod(token, m.id);
       }
+      showToast(`"${group[0].name}" ${toActive ? 'ativado' : 'bloqueado'}.`, 'success');
       fetchMods();
     } catch (err) {
       showToast((err as Error).message, 'error');
@@ -439,12 +460,14 @@ export function ModManagement({ token, showToast }: Props) {
     }
   }
 
-  async function handleDelete(mod: Mod) {
+  async function handleDeleteGroup(group: Mod[]) {
     setConfirmDelete(null);
-    setActionId(mod.id);
+    setActionId(group[0].id);
     try {
-      await apiDeleteMod(token, mod.id);
-      showToast(`Mod "${mod.name}" removido.`, 'success');
+      for (const m of group) {
+        await apiDeleteMod(token, m.id);
+      }
+      showToast(`"${group[0].name}" removido.`, 'success');
       fetchMods();
     } catch (err) {
       showToast((err as Error).message, 'error');
@@ -476,38 +499,27 @@ export function ModManagement({ token, showToast }: Props) {
     setEditingGroupId(mod.id);
   }
 
-  const activeMods  = mods.filter(m => m.status === 'active');
-  const blockedMods = mods.filter(m => m.status === 'blocked');
-
-  // Um mesmo item da Workshop pode empacotar mais de um mod (mod_id diferente),
-  // cada um com seu próprio status — agrupa por workshop_id para exibir no card
-  // e para reunir o grupo inteiro ao abrir o formulario de edicao.
-  const siblingsByWorkshop = useMemo(() => {
-    const map = new Map<string, Mod[]>();
+  // Um mesmo item da Oficina Steam pode empacotar mais de um mod (mod_id diferente,
+  // status independente). Agrupa por workshop_id para exibir UM card por item, em
+  // vez de repetir nome/imagem/link uma vez por mod_id. Mods sem workshop_id viram
+  // grupos de 1 (comportamento antigo, mantido).
+  const groups = useMemo(() => {
+    const map   = new Map<string, Mod[]>();
+    const order: string[] = [];
     for (const m of mods) {
-      if (!m.workshop_id) continue;
-      if (!map.has(m.workshop_id)) map.set(m.workshop_id, []);
-      map.get(m.workshop_id)!.push(m);
+      const key = m.workshop_id ? `w-${m.workshop_id}` : `m-${m.id}`;
+      if (!map.has(key)) { map.set(key, []); order.push(key); }
+      map.get(key)!.push(m);
     }
-    return map;
+    return order.map(k => map.get(k)!);
   }, [mods]);
 
-  function getSiblings(mod: Mod): Mod[] {
-    if (!mod.workshop_id) return [];
-    return (siblingsByWorkshop.get(mod.workshop_id) ?? []).filter(s => s.id !== mod.id);
-  }
+  const activeGroups  = groups.filter(g => g.every(m => m.status === 'active'));
+  const blockedGroups = groups.filter(g => g.every(m => m.status === 'blocked'));
+  const mixedGroups   = groups.filter(g => !g.every(m => m.status === 'active') && !g.every(m => m.status === 'blocked'));
 
-  function getGroup(mod: Mod): Mod[] {
-    if (!mod.workshop_id) return [mod];
-    return siblingsByWorkshop.get(mod.workshop_id) ?? [mod];
-  }
-
-  function renderMod(mod: Mod) {
-    const group = getGroup(mod);
+  function renderGroup(group: Mod[]) {
     if (editingGroupId !== null && group.some(m => m.id === editingGroupId)) {
-      // O grupo pode ter membros em "Ativos" e em "Bloqueados" ao mesmo tempo —
-      // renderiza o formulario uma unica vez, ancorado no primeiro membro do grupo.
-      if (mod.id !== group[0].id) return null;
       return (
         <ModGroupForm
           key={`group-${group[0].id}`}
@@ -521,14 +533,13 @@ export function ModManagement({ token, showToast }: Props) {
       );
     }
     return (
-      <ModRow
-        key={mod.id}
-        mod={mod}
-        siblings={getSiblings(mod)}
-        busy={actionId === mod.id}
-        onEdit={() => startEdit(mod)}
-        onToggleBlock={() => handleToggleBlock(mod)}
-        onDelete={() => setConfirmDelete(mod)}
+      <ModGroupCard
+        key={`group-${group[0].id}`}
+        group={group}
+        busy={actionId === group[0].id}
+        onEdit={() => startEdit(group[0])}
+        onBulkToggle={() => handleBulkToggle(group)}
+        onDelete={() => setConfirmDelete(group)}
       />
     );
   }
@@ -579,23 +590,33 @@ export function ModManagement({ token, showToast }: Props) {
           </div>
         )}
 
-        {activeMods.length > 0 && (
+        {activeGroups.length > 0 && (
           <div className="mod-group">
             <div className="mod-group-label">
               <i className="ti ti-circle-check" /> Ativos
-              <span className="rank-tab-badge">{activeMods.length}</span>
+              <span className="rank-tab-badge">{activeGroups.length}</span>
             </div>
-            {activeMods.map(renderMod)}
+            {activeGroups.map(renderGroup)}
           </div>
         )}
 
-        {blockedMods.length > 0 && (
+        {mixedGroups.length > 0 && (
+          <div className="mod-group">
+            <div className="mod-group-label mod-group-label-mixed">
+              <i className="ti ti-arrows-shuffle" /> Status misto
+              <span className="rank-tab-badge">{mixedGroups.length}</span>
+            </div>
+            {mixedGroups.map(renderGroup)}
+          </div>
+        )}
+
+        {blockedGroups.length > 0 && (
           <div className="mod-group">
             <div className="mod-group-label mod-group-label-blocked">
               <i className="ti ti-ban" /> Bloqueados
-              <span className="rank-tab-badge">{blockedMods.length}</span>
+              <span className="rank-tab-badge">{blockedGroups.length}</span>
             </div>
-            {blockedMods.map(renderMod)}
+            {blockedGroups.map(renderGroup)}
           </div>
         )}
 
@@ -604,10 +625,14 @@ export function ModManagement({ token, showToast }: Props) {
       {confirmDelete && (
         <ConfirmModal
           title="Remover mod"
-          message={`Tem certeza que deseja remover "${confirmDelete.name}" permanentemente? Esta ação não pode ser desfeita.`}
+          message={
+            confirmDelete.length > 1
+              ? `Tem certeza que deseja remover "${confirmDelete[0].name}" e os ${confirmDelete.length} IDs deste item permanentemente? Esta ação não pode ser desfeita.`
+              : `Tem certeza que deseja remover "${confirmDelete[0].name}" permanentemente? Esta ação não pode ser desfeita.`
+          }
           confirmLabel="Remover"
           danger
-          onConfirm={() => handleDelete(confirmDelete)}
+          onConfirm={() => handleDeleteGroup(confirmDelete)}
           onCancel={() => setConfirmDelete(null)}
         />
       )}

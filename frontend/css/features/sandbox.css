@@ -555,6 +555,7 @@
   margin-bottom: 8px;
 }
 .mod-group-label-blocked { color: var(--text-3); }
+.mod-group-label-mixed   { color: var(--amber-light); }
 
 .mod-card-painel {
   background: var(--bg-1);
@@ -570,6 +571,27 @@
 .mod-blocked {
   opacity: 0.55;
   border-style: dashed;
+}
+.mod-mixed { border-color: var(--amber); }
+
+.mod-badge-mixed {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--amber-dim);
+  border: 1px solid var(--amber);
+  color: var(--amber-light);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.mod-card-painel-idlist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .mod-card-painel-info {
@@ -663,16 +685,6 @@
   margin-top: 10px;
 }
 
-.mod-card-painel-siblings {
-  display: flex;
-  align-items: flex-start;
-  gap: 6px;
-  font-size: 13px;
-  color: var(--text-3);
-  flex-wrap: wrap;
-}
-.mod-card-painel-siblings .ti { font-size: 14px; margin-top: 1px; }
-
 .mod-sibling-chip {
   display: inline-flex;
   align-items: center;
@@ -693,6 +705,7 @@
 }
 .mod-sibling-status.active  { color: var(--green); }
 .mod-sibling-status.blocked { color: var(--red); }
+.mod-sibling-chip.mod-no-id { color: var(--amber-light); border-color: var(--amber); }
 
 .mod-id-list {
   display: flex;
