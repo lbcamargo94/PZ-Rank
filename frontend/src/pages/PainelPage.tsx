@@ -86,16 +86,17 @@ const ANOMALY_INFO: Record<string, { label: string; detail: string }> = {
 
 // Formatos dinâmicos de disqualification_reason que não cabem no dicionário estático DISQ_INFO —
 // gerados pela checagem server-side v2.18.0+ (backend/src/routes/sync.ts):
-//   "blocked_mod:<Nome>"        — mod com status='blocked' no cadastro do site
-//   "unlisted_mods:<id1>,<id2>" — mods ativos no save que não estão cadastrados (nem permitidos nem bloqueados)
+//   "blocked_mod:<Nome>::<mod_id>" — mod com status='blocked' no cadastro do site
+//   "unlisted_mods:<id1>,<id2>"    — mods ativos no save que não estão cadastrados (nem permitidos nem bloqueados)
 function parseDisqReason(reason: string): { icon: string; label: string; detail: string; color: string } | null {
   if (reason.startsWith('blocked_mod:')) {
-    const name = reason.slice('blocked_mod:'.length);
+    const [name, modId] = reason.slice('blocked_mod:'.length).split('::');
+    const display = name ? (modId ? `${name} (${modId})` : name) : '';
     return {
       icon:   'ti-shield-x',
       label:  'Mod bloqueado detectado',
-      detail: name
-        ? `O jogador usou o mod "${name}", que está bloqueado no cadastro do site.`
+      detail: display
+        ? `O jogador usou o mod "${display}", que está bloqueado no cadastro do site.`
         : 'O jogador usou um mod bloqueado no cadastro do site.',
       color:  '#ef4444',
     };

@@ -218,10 +218,11 @@ function TraitsSection({ traitsRaw }: { traitsRaw: string | null | undefined }) 
 
 function parseModViolations(reason: string | null | undefined): string[] {
   if (!reason) return [];
-  // Checagem server-side v2.18.0+ (sync.ts).
+  // Checagem server-side v2.18.0+ (sync.ts). Formato "nome::mod_id".
   if (reason.startsWith('blocked_mod:')) {
-    const name = reason.slice('blocked_mod:'.length);
-    return name ? [name] : [];
+    const [name, modId] = reason.slice('blocked_mod:'.length).split('::');
+    if (!name) return [];
+    return [modId ? `${name} (${modId})` : name];
   }
   if (reason.startsWith('unlisted_mods:')) {
     return reason.slice('unlisted_mods:'.length).split(',').map(v => v.trim()).filter(Boolean);

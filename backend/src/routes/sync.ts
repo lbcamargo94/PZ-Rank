@@ -364,8 +364,8 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // BLOCKED  → desclassifica imediatamente (sandbox_ok=false)
   // UNLISTED → também desclassifica (não está na whitelist = não pode usar)
   // PERMITTED → ok
-  let blockedModFound:  string | null = null; // primeiro BLOCKED encontrado
-  let unlistedModIds:   string[]      = [];   // todos UNLISTED encontrados
+  let blockedModFound: { name: string; modId: string } | null = null; // primeiro BLOCKED encontrado
+  let unlistedModIds:  string[] = [];   // todos UNLISTED encontrados
 
   if (decoded.activeMods.length > 0) {
     const { data: catalogMods } = await supabase
@@ -382,7 +382,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     }
     for (const modId of decoded.activeMods) {
       if (blockedSet.has(modId)) {
-        blockedModFound = blockedSet.get(modId) ?? modId;
+        blockedModFound = { name: blockedSet.get(modId) ?? modId, modId };
         break;
       }
       if (!permittedSet.has(modId)) {
@@ -391,9 +391,11 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     }
   }
 
-  // Mod bloqueado detectado server-side: desclassifica imediatamente e persiste no banco
+  // Mod bloqueado detectado server-side: desclassifica imediatamente e persiste no banco.
+  // Formato "nome::mod_id" — o "::" separa os dois campos no reason armazenado; o
+  // frontend faz split('::') pra exibir "Nome (mod_id)" ao jogador/moderador.
   if (blockedModFound) {
-    const reason     = `blocked_mod:${blockedModFound}`;
+    const reason     = `blocked_mod:${blockedModFound.name}::${blockedModFound.modId}`;
     const modPayload = {
       sandbox_ok:               false,
       score:                    0,

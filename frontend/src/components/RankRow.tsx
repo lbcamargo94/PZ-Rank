@@ -30,9 +30,11 @@ function disqTooltip(t: TFunction, reason: string | null | undefined): string {
   if (r === 'manual')                                        return t('rank.disq.manual');
   if (r === 'mod_removed' || r.startsWith('mod_removed:')) return t('rank.disq.mod_removed_row');
   // Checagem server-side v2.18.0+ (sync.ts): mod bloqueado ou fora do cadastro do site.
+  // Formato "nome::mod_id" — mostra os dois: "Nome (mod_id)".
   if (r.startsWith('blocked_mod:')) {
-    const name = r.slice('blocked_mod:'.length);
-    return name ? t('rank.disq.blocked_mod', { name }) : t('rank.disq.mods');
+    const [name, modId] = r.slice('blocked_mod:'.length).split('::');
+    if (!name) return t('rank.disq.mods');
+    return t('rank.disq.blocked_mod', { name: modId ? `${name} (${modId})` : name });
   }
   if (r.startsWith('unlisted_mods:')) {
     const ids = r.slice('unlisted_mods:'.length).split(',').map(v => v.trim()).filter(Boolean);
