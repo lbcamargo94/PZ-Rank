@@ -646,6 +646,19 @@
 }
 .mod-card-painel-deps .ti { font-size: 14px; }
 
+.mod-card-painel-block-reason {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--red);
+  background: rgba(224, 64, 64, 0.08);
+  border: 1px solid rgba(224, 64, 64, 0.3);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+}
+.mod-card-painel-block-reason .ti { font-size: 15px; margin-top: 1px; flex-shrink: 0; }
+
 .mod-info-banner {
   display: flex;
   align-items: flex-start;
@@ -750,6 +763,30 @@
   border: 1px dashed var(--border-mid);
   border-radius: var(--radius);
   padding: 6px;
+}
+
+.mod-id-entry-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mod-id-reason-input {
+  font-size: 14px;
+  border-color: var(--amber);
+}
+
+.mod-id-entry-add-wrap {
+  border: 1px dashed var(--border-mid);
+  border-radius: var(--radius);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.mod-id-entry-add-wrap .mod-id-entry-add {
+  border: none;
+  padding: 0;
 }
 
 .mod-deps-checklist {

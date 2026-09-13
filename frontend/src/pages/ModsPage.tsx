@@ -26,7 +26,8 @@ function groupByWorkshop(list: Mod[]): Mod[] {
   for (const group of map.values()) {
     const seen = new Set<number>();
     const dependencies = group.flatMap(m => m.dependencies).filter(d => (seen.has(d.id) ? false : (seen.add(d.id), true)));
-    grouped.push({ ...group[0], dependencies });
+    const reasons = Array.from(new Set(group.map(m => m.block_reason).filter((r): r is string => !!r)));
+    grouped.push({ ...group[0], dependencies, block_reason: reasons.join(' | ') || null });
   }
   return [...grouped, ...noWorkshop];
 }
@@ -191,6 +192,11 @@ export function ModsPage() {
                       {mod.dependencies.length > 0 && (
                         <span className="mod-card-deps">
                           <i className="ti ti-link" /> Requer: {mod.dependencies.map(d => d.name).join(', ')}
+                        </span>
+                      )}
+                      {tab === 'blocked' && mod.block_reason && (
+                        <span className="mod-card-block-reason">
+                          <i className="ti ti-message-exclamation" /> {mod.block_reason}
                         </span>
                       )}
                     </div>

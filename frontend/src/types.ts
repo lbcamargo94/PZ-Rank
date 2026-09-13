@@ -177,17 +177,18 @@ export interface ModDependency {
 }
 
 export interface Mod {
-  id:           number;
-  name:         string;
-  mod_id:       string | null;
-  workshop_id:  string | null;
-  workshop_url: string;
-  status:       ModStatus;
-  is_required:  boolean;
-  image_url:    string | null;
-  created_at:   string;
-  updated_at:   string;
-  dependencies: ModDependency[];
+  id:            number;
+  name:          string;
+  mod_id:        string | null;
+  workshop_id:   string | null;
+  workshop_url:  string;
+  status:        ModStatus;
+  is_required:   boolean;
+  image_url:     string | null;
+  block_reason:  string | null;
+  created_at:    string;
+  updated_at:    string;
+  dependencies:  ModDependency[];
 }
 
 export type ModClassification = 'PERMITTED' | 'BLOCKED' | 'UNLISTED';

@@ -452,8 +452,8 @@ export function apiUpdateMod(
   return request(`/mods/${id}`, { method: 'PATCH', ...json(token, data) });
 }
 
-export function apiBlockMod(token: string, id: number): Promise<Mod> {
-  return request(`/mods/${id}/block`, { method: 'PATCH', ...auth(token) });
+export function apiBlockMod(token: string, id: number, reason?: string): Promise<Mod> {
+  return request(`/mods/${id}/block`, { method: 'PATCH', ...json(token, { reason: reason ?? null }) });
 }
 
 export function apiUnblockMod(token: string, id: number): Promise<Mod> {

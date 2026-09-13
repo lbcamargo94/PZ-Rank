@@ -23,10 +23,10 @@ interface Props {
 // por mod_id. Um item com N mod_ids aparece UMA vez, listando os N IDs e o status
 // de cada um dentro do mesmo card, em vez de repetir nome/imagem/link N vezes.
 function ModGroupCard({
-  group, busy, onEdit, onBulkToggle, onDelete,
+  group, busy, onEdit, onBlockClick, onUnblock, onDelete,
 }: {
   group: Mod[]; busy: boolean;
-  onEdit: () => void; onBulkToggle: () => void; onDelete: () => void;
+  onEdit: () => void; onBlockClick: () => void; onUnblock: () => void; onDelete: () => void;
 }) {
   const primary      = group[0];
   const wasUpdated   = primary.updated_at && primary.updated_at !== primary.created_at;
@@ -78,7 +78,11 @@ function ModGroupCard({
           <div className="mod-card-painel-idlist">
             {group.map(m => (
               m.mod_id ? (
-                <span key={m.id} className="mod-sibling-chip">
+                <span
+                  key={m.id}
+                  className="mod-sibling-chip"
+                  title={m.status === 'blocked' && m.block_reason ? `Motivo: ${m.block_reason}` : undefined}
+                >
                   <code>{m.mod_id}</code>
                   <span className={`mod-sibling-status ${m.status}`}>
                     {m.status === 'blocked' ? 'Bloqueado' : 'Permitido'}
@@ -91,6 +95,11 @@ function ModGroupCard({
               )
             ))}
           </div>
+          {allBlocked && primary.block_reason && (
+            <div className="mod-card-painel-block-reason">
+              <i className="ti ti-message-exclamation" /> {primary.block_reason}
+            </div>
+          )}
           {deps.length > 0 && (
             <div className="mod-card-painel-deps">
               <i className="ti ti-link" />
@@ -113,7 +122,7 @@ function ModGroupCard({
           <button
             className={`${allActive ? 'btn-warning' : 'btn-success'} btn-sm`}
             disabled={busy}
-            onClick={onBulkToggle}
+            onClick={allActive ? onBlockClick : onUnblock}
           >
             <i className={`ti ${allActive ? 'ti-ban' : 'ti-circle-check'}`} />
             {allActive ? 'Bloquear' : 'Ativar'}
@@ -130,10 +139,11 @@ function ModGroupCard({
 // Um mod_id dentro do formulario de grupo. `dbId` presente = linha ja existe no banco;
 // ausente = ainda nao salva (sera criada via apiAddMod no submit).
 interface ModIdEntry {
-  key:    string;
-  dbId?:  number;
-  modId:  string;
-  status: 'active' | 'blocked';
+  key:         string;
+  dbId?:       number;
+  modId:       string;
+  status:      'active' | 'blocked';
+  blockReason: string;
 }
 
 interface GroupSavePayload {
@@ -141,7 +151,7 @@ interface GroupSavePayload {
   workshop_url:   string;
   is_required:    boolean;
   dependency_ids: number[];
-  entries:        Array<{ dbId?: number; mod_id: string; status: 'active' | 'blocked' }>;
+  entries:        Array<{ dbId?: number; mod_id: string; status: 'active' | 'blocked'; block_reason: string | null }>;
   removedIds:     number[];
 }
 
@@ -164,11 +174,15 @@ function ModGroupForm({ mode, groupMods, allMods, onSave, onCancel, submitting }
   const [workshopUrl, setWorkshopUrl] = useState(primary?.workshop_url ?? '');
   const [isRequired,  setIsRequired]  = useState(primary?.is_required ?? false);
   const [entries,     setEntries]     = useState<ModIdEntry[]>(() =>
-    groupMods.map(m => ({ key: `db-${m.id}`, dbId: m.id, modId: m.mod_id ?? '', status: m.status }))
+    groupMods.map(m => ({
+      key: `db-${m.id}`, dbId: m.id, modId: m.mod_id ?? '', status: m.status,
+      blockReason: m.block_reason ?? '',
+    }))
   );
-  const [removedIds, setRemovedIds] = useState<number[]>([]);
-  const [newModId,   setNewModId]   = useState('');
-  const [newStatus,  setNewStatus]  = useState<'active' | 'blocked'>('active');
+  const [removedIds, setRemovedIds]     = useState<number[]>([]);
+  const [newModId,   setNewModId]       = useState('');
+  const [newStatus,  setNewStatus]      = useState<'active' | 'blocked'>('active');
+  const [newReason,  setNewReason]      = useState('');
   const [depIds,     setDepIds]     = useState<number[]>(() =>
     Array.from(new Set(groupMods.flatMap(m => m.dependencies.map(d => d.id))))
   );
@@ -188,9 +202,13 @@ function ModGroupForm({ mode, groupMods, allMods, onSave, onCancel, submitting }
   function addEntry() {
     const trimmed = newModId.trim();
     if (!trimmed) return;
-    setEntries(prev => [...prev, { key: `new-${Date.now()}-${Math.random()}`, modId: trimmed, status: newStatus }]);
+    setEntries(prev => [...prev, {
+      key: `new-${Date.now()}-${Math.random()}`, modId: trimmed, status: newStatus,
+      blockReason: newStatus === 'blocked' ? newReason.trim() : '',
+    }]);
     setNewModId('');
     setNewStatus('active');
+    setNewReason('');
   }
 
   function toggleDep(id: number, checked: boolean) {
@@ -204,12 +222,19 @@ function ModGroupForm({ mode, groupMods, allMods, onSave, onCancel, submitting }
       workshop_url:   workshopUrl.trim(),
       is_required:    isRequired,
       dependency_ids: depIds,
-      entries:        entries.map(en => ({ dbId: en.dbId, mod_id: en.modId.trim(), status: en.status })),
+      entries:        entries.map(en => ({
+        dbId:         en.dbId,
+        mod_id:       en.modId.trim(),
+        status:       en.status,
+        block_reason: en.status === 'blocked' ? (en.blockReason.trim() || null) : null,
+      })),
       removedIds,
     });
   }
 
-  const canSubmit = !!name.trim() && !!workshopUrl.trim() && entries.length > 0 && entries.every(en => en.modId.trim());
+  const canSubmit = !!name.trim() && !!workshopUrl.trim() && entries.length > 0
+    && entries.every(en => en.modId.trim())
+    && entries.every(en => en.status !== 'blocked' || en.blockReason.trim());
 
   return (
     <form className="mod-add-form mod-edit-form" onSubmit={handleSubmit}>
@@ -252,52 +277,74 @@ function ModGroupForm({ mode, groupMods, allMods, onSave, onCancel, submitting }
           </label>
           <div className="mod-id-list">
             {entries.map(entry => (
-              <div key={entry.key} className="mod-id-entry">
+              <div key={entry.key} className="mod-id-entry-wrap">
+                <div className="mod-id-entry">
+                  <input
+                    type="text"
+                    className="mod-input mod-id-entry-input"
+                    placeholder="Ex: PZCommunityRank"
+                    value={entry.modId}
+                    onChange={e => updateEntry(entry.key, { modId: e.target.value })}
+                  />
+                  <select
+                    className="mod-input mod-id-entry-status"
+                    value={entry.status}
+                    onChange={e => updateEntry(entry.key, { status: e.target.value as 'active' | 'blocked' })}
+                  >
+                    <option value="active">Permitido</option>
+                    <option value="blocked">Bloqueado</option>
+                  </select>
+                  <button
+                    type="button"
+                    className="mod-id-entry-remove"
+                    title="Remover este ID"
+                    onClick={() => removeEntry(entry)}
+                  >
+                    <i className="ti ti-x" />
+                  </button>
+                </div>
+                {entry.status === 'blocked' && (
+                  <input
+                    type="text"
+                    className="mod-input mod-id-reason-input"
+                    placeholder="Motivo do bloqueio — visível aos jogadores na página de mods"
+                    value={entry.blockReason}
+                    onChange={e => updateEntry(entry.key, { blockReason: e.target.value })}
+                  />
+                )}
+              </div>
+            ))}
+            <div className="mod-id-entry-wrap mod-id-entry-add-wrap">
+              <div className="mod-id-entry mod-id-entry-add">
                 <input
                   type="text"
                   className="mod-input mod-id-entry-input"
-                  placeholder="Ex: PZCommunityRank"
-                  value={entry.modId}
-                  onChange={e => updateEntry(entry.key, { modId: e.target.value })}
+                  placeholder="Ex: ModId003"
+                  value={newModId}
+                  onChange={e => setNewModId(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addEntry(); } }}
                 />
                 <select
                   className="mod-input mod-id-entry-status"
-                  value={entry.status}
-                  onChange={e => updateEntry(entry.key, { status: e.target.value as 'active' | 'blocked' })}
+                  value={newStatus}
+                  onChange={e => setNewStatus(e.target.value as 'active' | 'blocked')}
                 >
                   <option value="active">Permitido</option>
                   <option value="blocked">Bloqueado</option>
                 </select>
-                <button
-                  type="button"
-                  className="mod-id-entry-remove"
-                  title="Remover este ID"
-                  onClick={() => removeEntry(entry)}
-                >
-                  <i className="ti ti-x" />
+                <button type="button" className="btn-secondary btn-sm" onClick={addEntry}>
+                  <i className="ti ti-plus" /> Adicionar
                 </button>
               </div>
-            ))}
-            <div className="mod-id-entry mod-id-entry-add">
-              <input
-                type="text"
-                className="mod-input mod-id-entry-input"
-                placeholder="Ex: ModId003"
-                value={newModId}
-                onChange={e => setNewModId(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addEntry(); } }}
-              />
-              <select
-                className="mod-input mod-id-entry-status"
-                value={newStatus}
-                onChange={e => setNewStatus(e.target.value as 'active' | 'blocked')}
-              >
-                <option value="active">Permitido</option>
-                <option value="blocked">Bloqueado</option>
-              </select>
-              <button type="button" className="btn-secondary btn-sm" onClick={addEntry}>
-                <i className="ti ti-plus" /> Adicionar
-              </button>
+              {newStatus === 'blocked' && (
+                <input
+                  type="text"
+                  className="mod-input mod-id-reason-input"
+                  placeholder="Motivo do bloqueio — visível aos jogadores na página de mods"
+                  value={newReason}
+                  onChange={e => setNewReason(e.target.value)}
+                />
+              )}
             </div>
           </div>
         </div>
@@ -356,12 +403,66 @@ function ModGroupForm({ mode, groupMods, allMods, onSave, onCancel, submitting }
   );
 }
 
+// Pede o motivo antes de bloquear um item pelo botao rapido do card (fora do
+// formulario de edicao). O motivo fica visivel aos jogadores na pagina publica
+// de mods, entao e obrigatorio preencher.
+function BlockReasonModal({
+  targetName, onConfirm, onCancel,
+}: {
+  targetName: string; onConfirm: (reason: string) => void; onCancel: () => void;
+}) {
+  const [reason, setReason] = useState('');
+
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onCancel(); };
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
+  }, [onCancel]);
+
+  return (
+    <div className="modal-overlay active" role="alertdialog" aria-modal="true">
+      <div className="modal-box modal-box--sm" onClick={e => e.stopPropagation()}>
+        <button className="modal-close" aria-label="Fechar" onClick={onCancel}>
+          <i className="ti ti-x" />
+        </button>
+        <h2 className="modal-title">
+          <i className="ti ti-ban" /> Bloquear mod
+        </h2>
+        <p className="confirm-modal-msg">
+          Bloqueando <strong>{targetName}</strong>. O motivo abaixo fica visível para os
+          jogadores na página pública de mods.
+        </p>
+        <div className="mod-field">
+          <label className="mod-field-label">Motivo do bloqueio</label>
+          <textarea
+            className="mod-input"
+            rows={3}
+            placeholder="Ex: Dá vantagem injusta (radar de zumbis, aimbot, etc.)"
+            value={reason}
+            onChange={e => setReason(e.target.value)}
+            autoFocus
+          />
+        </div>
+        <div className="confirm-modal-actions">
+          <button className="btn-secondary" onClick={onCancel}>Cancelar</button>
+          <button className="btn-danger" disabled={!reason.trim()} onClick={() => onConfirm(reason.trim())}>
+            <i className="ti ti-ban" /> Bloquear
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function ModManagement({ token, showToast }: Props) {
   const [mods,           setMods]           = useState<Mod[]>([]);
   const [loading,        setLoading]        = useState(false);
   const [submitting,     setSubmitting]     = useState(false);
   const [actionId,       setActionId]       = useState<number | null>(null);
   const [confirmDelete,  setConfirmDelete]  = useState<Mod[] | null>(null);
+  const [blockPrompt,    setBlockPrompt]    = useState<Mod[] | null>(null);
   const [showAddForm,    setShowAddForm]    = useState(false);
   const [editingGroupId, setEditingGroupId] = useState<number | null>(null);
   const [refreshing,     setRefreshing]     = useState(false);
@@ -377,11 +478,12 @@ export function ModManagement({ token, showToast }: Props) {
 
   // Salva um grupo inteiro (1..N mod_ids do mesmo item da Oficina) numa unica acao:
   // remove os IDs excluidos, atualiza os existentes (nome/URL/obrigatorio/dependencias
-  // compartilhados + texto do proprio ID), cria os novos, e por fim aplica bloqueio/
-  // desbloqueio conforme o status escolhido em cada linha do formulario.
+  // compartilhados + texto do proprio ID), cria os novos, e por fim sincroniza status +
+  // motivo de bloqueio de cada linha (mesmo quando so o texto do motivo mudou, sem
+  // trocar o status em si).
   async function handleGroupSave(payload: {
     name: string; workshop_url: string; is_required: boolean; dependency_ids: number[];
-    entries: Array<{ dbId?: number; mod_id: string; status: 'active' | 'blocked' }>;
+    entries: Array<{ dbId?: number; mod_id: string; status: 'active' | 'blocked'; block_reason: string | null }>;
     removedIds: number[];
   }) {
     setSubmitting(true);
@@ -402,7 +504,7 @@ export function ModManagement({ token, showToast }: Props) {
         }
       }
 
-      const created: Array<{ id: number; status: 'active' | 'blocked' }> = [];
+      const created: Array<{ id: number; status: 'active' | 'blocked'; block_reason: string | null }> = [];
       for (const entry of payload.entries) {
         if (!entry.dbId) {
           const mod = await apiAddMod(token, {
@@ -412,21 +514,18 @@ export function ModManagement({ token, showToast }: Props) {
             is_required:    payload.is_required,
             dependency_ids: payload.dependency_ids,
           });
-          created.push({ id: mod.id, status: entry.status });
+          created.push({ id: mod.id, status: entry.status, block_reason: entry.block_reason });
         }
       }
 
       for (const entry of payload.entries) {
         if (entry.dbId) {
-          const original = mods.find(m => m.id === entry.dbId);
-          if (original && original.status !== entry.status) {
-            if (entry.status === 'blocked') await apiBlockMod(token, entry.dbId);
-            else await apiUnblockMod(token, entry.dbId);
-          }
+          if (entry.status === 'blocked') await apiBlockMod(token, entry.dbId, entry.block_reason ?? undefined);
+          else await apiUnblockMod(token, entry.dbId);
         }
       }
       for (const c of created) {
-        if (c.status === 'blocked') await apiBlockMod(token, c.id);
+        if (c.status === 'blocked') await apiBlockMod(token, c.id, c.block_reason ?? undefined);
       }
 
       showToast('Mods salvos com sucesso.', 'success');
@@ -440,18 +539,29 @@ export function ModManagement({ token, showToast }: Props) {
     }
   }
 
-  // Bloqueia/ativa todos os IDs do grupo de uma vez — so faz sentido quando o grupo
-  // inteiro compartilha o mesmo status hoje (ModGroupCard esconde este botao quando
-  // o status ja esta misto; nesse caso o ajuste fino e feito pelo formulario de Editar).
-  async function handleBulkToggle(group: Mod[]) {
+  // Bloqueia todos os IDs do grupo de uma vez, com o motivo informado no modal —
+  // so faz sentido quando o grupo inteiro compartilha o mesmo status hoje
+  // (ModGroupCard esconde este botao quando o status ja esta misto; nesse caso o
+  // ajuste fino, incluindo motivo por ID, e feito pelo formulario de Editar).
+  async function handleBulkBlock(group: Mod[], reason: string) {
     setActionId(group[0].id);
     try {
-      const toActive = group.every(m => m.status === 'blocked');
-      for (const m of group) {
-        if (toActive) await apiUnblockMod(token, m.id);
-        else await apiBlockMod(token, m.id);
-      }
-      showToast(`"${group[0].name}" ${toActive ? 'ativado' : 'bloqueado'}.`, 'success');
+      for (const m of group) await apiBlockMod(token, m.id, reason);
+      showToast(`"${group[0].name}" bloqueado.`, 'success');
+      setBlockPrompt(null);
+      fetchMods();
+    } catch (err) {
+      showToast((err as Error).message, 'error');
+    } finally {
+      setActionId(null);
+    }
+  }
+
+  async function handleBulkUnblock(group: Mod[]) {
+    setActionId(group[0].id);
+    try {
+      for (const m of group) await apiUnblockMod(token, m.id);
+      showToast(`"${group[0].name}" ativado.`, 'success');
       fetchMods();
     } catch (err) {
       showToast((err as Error).message, 'error');
@@ -538,7 +648,8 @@ export function ModManagement({ token, showToast }: Props) {
         group={group}
         busy={actionId === group[0].id}
         onEdit={() => startEdit(group[0])}
-        onBulkToggle={() => handleBulkToggle(group)}
+        onBlockClick={() => setBlockPrompt(group)}
+        onUnblock={() => handleBulkUnblock(group)}
         onDelete={() => setConfirmDelete(group)}
       />
     );
@@ -634,6 +745,14 @@ export function ModManagement({ token, showToast }: Props) {
           danger
           onConfirm={() => handleDeleteGroup(confirmDelete)}
           onCancel={() => setConfirmDelete(null)}
+        />
+      )}
+
+      {blockPrompt && (
+        <BlockReasonModal
+          targetName={blockPrompt[0].name}
+          onConfirm={reason => handleBulkBlock(blockPrompt, reason)}
+          onCancel={() => setBlockPrompt(null)}
         />
       )}
     </div>

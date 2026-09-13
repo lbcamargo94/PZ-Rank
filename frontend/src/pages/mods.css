@@ -281,6 +281,20 @@
 }
 .mod-card-deps .ti { font-size: 14px; color: var(--text-3); }
 
+.mod-card-block-reason {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--red);
+  background: rgba(224, 64, 64, 0.08);
+  border: 1px solid rgba(224, 64, 64, 0.3);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+  max-width: 100%;
+}
+.mod-card-block-reason .ti { font-size: 15px; margin-top: 1px; flex-shrink: 0; }
+
 @media (max-width: 460px) {
   .mods-filters-bar {
     flex-direction: column;

@@ -7,8 +7,8 @@ import type { ModRequest } from '../middleware/moderator';
 
 const router = Router();
 
-const SELECT_PUBLIC = 'id, name, mod_id, workshop_id, workshop_url, is_required, image_url, created_at, updated_at';
-const SELECT_ALL    = 'id, name, mod_id, workshop_id, workshop_url, is_required, image_url, status, created_at, updated_at';
+const SELECT_PUBLIC = 'id, name, mod_id, workshop_id, workshop_url, is_required, image_url, block_reason, created_at, updated_at';
+const SELECT_ALL    = 'id, name, mod_id, workshop_id, workshop_url, is_required, image_url, block_reason, status, created_at, updated_at';
 
 function extractWorkshopId(workshopUrl: string): string | null {
   const match = workshopUrl.match(/[?&]id=(\d+)/);
@@ -286,13 +286,15 @@ router.post('/refresh-images', requireModerator, async (_req: ModRequest, res: R
   }
 });
 
-// PATCH /mods/:id/block — moderator
+// PATCH /mods/:id/block — moderator. Aceita { reason? } — motivo exibido aos
+// players na pagina publica de mods, para que saibam por que esta bloqueado.
 router.patch('/:id/block', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
   const id = Number(req.params.id);
+  const { reason } = req.body as { reason?: string };
   try {
     const { data, error } = await supabase
       .from('mods')
-      .update({ status: 'blocked' })
+      .update({ status: 'blocked', block_reason: reason?.trim() || null })
       .eq('id', id)
       .select(SELECT_ALL)
       .single();
@@ -307,13 +309,13 @@ router.patch('/:id/block', requireModerator, async (req: ModRequest, res: Respon
   }
 });
 
-// PATCH /mods/:id/unblock — moderator
+// PATCH /mods/:id/unblock — moderator: limpa o motivo de bloqueio junto com o status.
 router.patch('/:id/unblock', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
   const id = Number(req.params.id);
   try {
     const { data, error } = await supabase
       .from('mods')
-      .update({ status: 'active' })
+      .update({ status: 'active', block_reason: null })
       .eq('id', id)
       .select(SELECT_ALL)
       .single();
