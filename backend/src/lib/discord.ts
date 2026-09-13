@@ -1,9 +1,10 @@
 /**
- * Discord webhook — notificação de início de live e morte de jogador
+ * Discord webhook — notificação de início de live, morte e desclassificação de jogador
  *
  * Env vars:
  *   DISCORD_WEBHOOK_URL       — webhook do canal de lives
  *   DISCORD_DEATH_WEBHOOK_URL — webhook do canal de mortes (usa DISCORD_WEBHOOK_URL se não definida)
+ *   DISCORD_DISQ_WEBHOOK_URL  — webhook do canal de desclassificações
  */
 
 const DEATH_CAUSE_PT: Record<string, string> = {
@@ -140,6 +141,72 @@ export async function sendLiveNotification(payload: LiveNotificationPayload): Pr
     }
   } catch (err) {
     console.error('[discord] Falha ao enviar notificação:', err);
+  }
+}
+
+// Traduz o disqualification_reason bruto (ver backend/src/routes/sync.ts e os
+// parsers equivalentes no frontend) para um texto legivel no embed do Discord.
+function formatDisqReason(reason: string): string {
+  if (reason.startsWith('blocked_mod:')) {
+    const [name, modId] = reason.slice('blocked_mod:'.length).split('::');
+    if (!name) return 'Mod bloqueado detectado';
+    return `Mod bloqueado: ${modId ? `${name} (${modId})` : name}`;
+  }
+  if (reason.startsWith('unlisted_mods:')) {
+    const ids = reason.slice('unlisted_mods:'.length).split(',').map(v => v.trim()).filter(Boolean);
+    return ids.length > 0 ? `Mod(s) não cadastrado(s): ${ids.join(', ')}` : 'Mod(s) não cadastrado(s) no site';
+  }
+  if (reason.startsWith('mods:')) return 'Uso de mods não permitidos';
+  switch (reason) {
+    case 'sandbox': return 'Configuração de sandbox divergente do preset oficial';
+    case 'debug':   return 'Modo debug ativado durante o desafio';
+    case 'manual':  return 'Desclassificação manual por um moderador';
+    default:        return reason;
+  }
+}
+
+export interface DisqualificationNotificationPayload {
+  nick:          string;
+  characterName: string;
+  reason:        string;         // disqualification_reason bruto — formatado aqui via formatDisqReason
+  note?:         string | null;  // nota livre do moderador (desclassificação manual)
+  moderator?:    string | null;  // login do moderador (desclassificação manual)
+}
+
+export async function sendDisqualificationNotification(payload: DisqualificationNotificationPayload): Promise<void> {
+  const webhookUrl = process.env.DISCORD_DISQ_WEBHOOK_URL;
+  if (!webhookUrl) return;
+
+  const { nick, characterName, reason, note, moderator } = payload;
+
+  const fields: { name: string; value: string; inline: boolean }[] = [
+    { name: 'Motivo', value: formatDisqReason(reason), inline: false },
+  ];
+  if (note?.trim())      fields.push({ name: 'Detalhes',   value: note.trim(),      inline: false });
+  if (moderator?.trim()) fields.push({ name: 'Moderador',  value: moderator.trim(), inline: true  });
+
+  const body = {
+    embeds: [{
+      title:       `🚫  ${nick} foi desclassificado!`,
+      description: `**${characterName}** foi removido do Ranking do Brasileirão.`,
+      color:       0xE04040,
+      fields,
+      footer:    { text: 'PZ Rank • Brasileirão de Sobrevivência' },
+      timestamp: new Date().toISOString(),
+    }],
+  };
+
+  try {
+    const res = await fetch(webhookUrl, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(body),
+      signal:  AbortSignal.timeout(8_000),
+    });
+    if (res.ok) console.log('[discord] notificação de desclassificação enviada para:', nick);
+    else console.error('[discord] disq webhook retornou', res.status, 'para:', nick);
+  } catch (err) {
+    console.error('[discord] falha ao enviar notificação de desclassificação:', err);
   }
 }
 

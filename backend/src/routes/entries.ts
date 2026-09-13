@@ -256,14 +256,19 @@ router.patch('/:id/status', requireModerator, async (req: ModRequest, res: Respo
 
   const { data: existing, error: fetchError } = await supabase
     .from(config.tableName)
-    .select('id, score, kills, skills, objectives, disqualified_at')
+    .select('id, name, character_name, score, kills, skills, objectives, disqualified_at, sandbox_ok')
     .eq('id', id)
     .single();
 
   if (fetchError || !existing) { res.status(404).json({ error: 'Entrada não encontrada.' }); return; }
 
-  const row = existing as { id: number; score: number; kills: number; skills: string | null; objectives: Objectives | null; disqualified_at?: string | null };
+  const row = existing as {
+    id: number; name: string; character_name: string; score: number; kills: number;
+    skills: string | null; objectives: Objectives | null; disqualified_at?: string | null;
+    sandbox_ok: boolean;
+  };
   const patch: Record<string, unknown> = {};
+  let moderatorLogin: string | null = null;
   if (is_alive  !== undefined) {
     patch.is_alive = is_alive;
     // Ao marcar como morto por qualquer via, limpa o marcador de conflito
@@ -285,7 +290,8 @@ router.patch('/:id/status', requireModerator, async (req: ModRequest, res: Respo
         .select('login')
         .eq('id', req.userId!)
         .single();
-      patch.disqualified_by = mod?.login ?? req.userId ?? 'moderador';
+      moderatorLogin = mod?.login ?? String(req.userId ?? 'moderador');
+      patch.disqualified_by = moderatorLogin;
     } else {
       patch.disqualified_at         = null;
       patch.disqualification_reason = null;
@@ -305,6 +311,23 @@ router.patch('/:id/status', requireModerator, async (req: ModRequest, res: Respo
     .single();
 
   if (error) { res.status(500).json({ error: dbError(error).message }); return; }
+
+  // Notifica Discord so quando uma desclassificacao manual e aplicada agora
+  // (row.sandbox_ok !== false = ainda nao estava desclassificado antes deste PATCH).
+  if (sandbox_ok === false && row.sandbox_ok !== false) {
+    void (async () => {
+      try {
+        const { sendDisqualificationNotification } = await import('../lib/discord');
+        await sendDisqualificationNotification({
+          nick: row.name, characterName: row.character_name, reason: 'manual',
+          note: note!.trim(), moderator: moderatorLogin,
+        });
+      } catch (e) {
+        console.error('[discord] disqualification notification error:', e);
+      }
+    })();
+  }
+
   res.json(data);
 });
 

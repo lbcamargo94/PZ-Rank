@@ -431,6 +431,22 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
         ...modPayload,
       }]);
     }
+
+    // Notifica Discord so na primeira vez que este jogador cai desclassificado —
+    // sem isso, cada sync subsequente com o mesmo mod ativo reenviaria a notificacao.
+    if (!prev || prev.sandbox_ok !== false) {
+      void (async () => {
+        try {
+          const { sendDisqualificationNotification } = await import('../lib/discord');
+          await sendDisqualificationNotification({
+            nick: player.nick, characterName: decoded.characterName, reason,
+          });
+        } catch (e) {
+          console.error('[discord] disqualification notification error:', e);
+        }
+      })();
+    }
+
     res.status(200).json({
       success: true, character_name: decoded.characterName,
       score: 0, is_alive: decoded.isAlive,
@@ -476,6 +492,20 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
         ...modPayload,
       }]);
     }
+
+    if (!prev || prev.sandbox_ok !== false) {
+      void (async () => {
+        try {
+          const { sendDisqualificationNotification } = await import('../lib/discord');
+          await sendDisqualificationNotification({
+            nick: player.nick, characterName: decoded.characterName, reason,
+          });
+        } catch (e) {
+          console.error('[discord] disqualification notification error:', e);
+        }
+      })();
+    }
+
     res.status(200).json({
       success: true, character_name: decoded.characterName,
       score: 0, is_alive: decoded.isAlive,
@@ -570,6 +600,23 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       res.status(500).json({ error: dbError(error).message });
       return;
     }
+
+    // So notifica na primeira vez que este jogador cai desclassificado por
+    // sandbox/debug — prev.sandbox_ok !== false = ainda nao estava desclassificado
+    // antes deste sync (reasonToStore so muda na primeira desclassificacao, ver acima).
+    if (prev.sandbox_ok !== false) {
+      void (async () => {
+        try {
+          const { sendDisqualificationNotification } = await import('../lib/discord');
+          await sendDisqualificationNotification({
+            nick: player.nick, characterName: decoded.characterName, reason: reasonToStore,
+          });
+        } catch (e) {
+          console.error('[discord] disqualification notification error:', e);
+        }
+      })();
+    }
+
     res.status(200).json({
       success:        true,
       character_name: (data as { character_name: string }).character_name,
