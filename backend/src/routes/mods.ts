@@ -7,7 +7,7 @@ import type { ModRequest } from '../middleware/moderator';
 
 const router = Router();
 
-const SELECT_PUBLIC = 'id, name, mod_id, workshop_id, workshop_url, is_required, image_url, block_reason, created_at, updated_at';
+const SELECT_PUBLIC = 'id, name, mod_id, workshop_id, workshop_url, is_required, image_url, block_reason, status, created_at, updated_at';
 const SELECT_ALL    = 'id, name, mod_id, workshop_id, workshop_url, is_required, image_url, block_reason, status, created_at, updated_at';
 
 function extractWorkshopId(workshopUrl: string): string | null {

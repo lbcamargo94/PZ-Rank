@@ -260,12 +260,66 @@
 .mod-card-blocked { opacity: 0.85; }
 .mod-card-blocked .mod-card-thumb,
 .mod-card-blocked .mod-card-icon { filter: grayscale(60%); }
+.mod-card-mixed { border-color: var(--amber); }
 
-/* ── Tabs (Permitidos / Bloqueados) ── */
+/* ── Mixed status badge ── */
+.mod-badge-mixed {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 4px;
+  background: var(--amber-dim);
+  border: 1px solid var(--amber);
+  color: var(--amber-light);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: var(--radius);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.mod-badge-mixed .ti { font-size: 14px; }
+
+/* ── ID list: cada mod_id do item com seu proprio status ── */
+.mod-card-idlist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.mod-id-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--bg-3, rgba(0,0,0,0.2));
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px 9px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+.mod-id-chip code{ font-family: var(--font-mono); }
+
+.mod-id-chip-status {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.mod-id-chip-status.active  { color: var(--green-light); }
+.mod-id-chip-status.blocked { color: var(--red); }
+
+/* ── Tabs (Permitidos / Status misto / Bloqueados) ── */
 .mods-tabs-bar { padding-top: 4px; }
 
 .rank-tab.tab-allowed.active { color: var(--green-light); border-bottom-color: var(--green); }
 .rank-tab.tab-allowed.active .rank-tab-badge { background: var(--green-dim); color: var(--green-light); border-color: var(--green-border); }
+
+.rank-tab.tab-mixed.active { color: var(--amber-light); border-bottom-color: var(--amber); }
+.rank-tab.tab-mixed.active .rank-tab-badge { background: var(--amber-dim); color: var(--amber-light); border-color: var(--amber); }
 
 .rank-tab.tab-blocked.active { color: var(--red); border-bottom-color: var(--red); }
 .rank-tab.tab-blocked.active .rank-tab-badge { background: var(--red-dim); color: var(--red); border-color: var(--red-border); }
