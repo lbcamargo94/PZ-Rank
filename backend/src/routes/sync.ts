@@ -113,7 +113,14 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
 
   const VALID_REASONS = new Set(['sandbox', 'debug', 'manual']);
   const isValidReason  = (r: string) => VALID_REASONS.has(r);
-  const isModsReason   = (r: string | null | undefined) => !!r && (r === 'mods' || r === 'mod_removed' || r.startsWith('mods:'));
+  // Cobre os 3 formatos de desclassificação por mod: 'mods'/'mods:...' (client-side,
+  // RankModCheck.check() no mod Lua), 'blocked_mod:...' e 'unlisted_mods:...' (server-side,
+  // verificação direta contra a tabela `mods`). Mesma política para os 3: mods não
+  // desclassificam permanentemente — reabilita automaticamente no próximo sync limpo.
+  const isModsReason   = (r: string | null | undefined) => !!r && (
+    r === 'mods' || r === 'mod_removed' ||
+    r.startsWith('mods:') || r.startsWith('blocked_mod:') || r.startsWith('unlisted_mods:')
+  );
   const companionReason = (disqualification_reason && isValidReason(disqualification_reason))
     ? disqualification_reason
     : null;
