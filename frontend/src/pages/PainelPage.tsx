@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { apiLogout, apiDeleteEntry, apiGetEntries, apiUpdateEntryStatus, apiSetTestMod, apiConfirmDeath, apiClearAnomaly, apiRestoreEntry } from '../lib/api';
+import { apiLogout, apiDeleteEntry, apiGetEntries, apiGetAllEntries, apiUpdateEntryStatus, apiSetTestMod, apiConfirmDeath, apiClearAnomaly, apiRestoreEntry } from '../lib/api';
 import type { Entry, SortKey } from '../types';
 import type { ModSession } from '../types';
 import { hasLiveWarning } from '../lib/live';
@@ -317,9 +317,16 @@ export function PainelPage({ session, onSession, onBack }: Props) {
   const [deadZonePage,   setDeadZonePage]   = useState(1);
   const { toast, showToast, clearToast }   = useToast();
 
+  const [removedEntries, setRemovedEntries] = useState<Entry[]>([]);
+
   const fetchEntries = useCallback(async () => {
     try { setEntries(await apiGetEntries(sortKey, session?.token)); }
     catch (err) { showToast((err as Error).message, 'error'); }
+    // apiGetEntries (usada acima) filtra deleted_at no backend - as entradas
+    // removidas nunca aparecem ali. Busca separada com all=true pra alimentar
+    // a secao "Removidos", sem inflar as contagens/abas normais.
+    try { setRemovedEntries((await apiGetAllEntries(sortKey)).filter(e => !!e.deleted_at)); }
+    catch { /* seção "Removidos" so fica vazia - nao interrompe o resto do painel */ }
   }, [sortKey, showToast, session?.token]);
 
   useEffect(() => { setEntrySearch(''); }, [entryFilter]);
@@ -329,7 +336,6 @@ export function PainelPage({ session, onSession, onBack }: Props) {
   const deadEntries     = useMemo(() => entries.filter(e => e.sandbox_ok !== false && !e.is_alive),  [entries]);
   const discEntries     = useMemo(() => entries.filter(e => e.sandbox_ok === false && !isInDeadZone(e)), [entries]);
   const deadZoneEntries = useMemo(() => entries.filter(e => isInDeadZone(e)), [entries]);
-  const removedEntries  = useMemo(() => entries.filter(e => !!e.deleted_at), [entries]);
   const anomalyEntries  = useMemo(() => entries.filter(e => !!e.flagged_reason), [entries]);
   const conflictEntries = useMemo(() => entries.filter(e => !!e.pending_new_character && e.is_alive), [entries]);
   // Vivos e classificados sem transmissão confirmada há um tempo — mesmo critério do
