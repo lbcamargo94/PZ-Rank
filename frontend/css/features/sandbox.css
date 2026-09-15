@@ -557,6 +557,15 @@
 .mod-group-label-blocked { color: var(--text-3); }
 .mod-group-label-mixed   { color: var(--amber-light); }
 
+/* Badge mostra "N itens · M mod IDs" - texto mais longo que os usos padrão
+   de .rank-tab-badge (numero curto), entao normal-case + sem quebra. */
+.mod-group-label .rank-tab-badge {
+  text-transform: none;
+  letter-spacing: normal;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
 .mod-card-painel {
   background: var(--bg-1);
   border: 1px solid var(--border);

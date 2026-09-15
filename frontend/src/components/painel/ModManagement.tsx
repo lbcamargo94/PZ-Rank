@@ -628,6 +628,11 @@ export function ModManagement({ token, showToast }: Props) {
   const blockedGroups = groups.filter(g => g.every(m => m.status === 'blocked'));
   const mixedGroups   = groups.filter(g => !g.every(m => m.status === 'active') && !g.every(m => m.status === 'blocked'));
 
+  // Um item da Workshop pode ter varios mod_id (ex: 3 IDs num unico item) - a
+  // contagem de grupos (cards) e diferente da contagem de mod_ids individuais,
+  // que e o que realmente importa pra whitelist que o Companion gera.
+  const countModIds = (gs: Mod[][]) => gs.reduce((sum, g) => sum + g.length, 0);
+
   function renderGroup(group: Mod[]) {
     if (editingGroupId !== null && group.some(m => m.id === editingGroupId)) {
       return (
@@ -705,7 +710,9 @@ export function ModManagement({ token, showToast }: Props) {
           <div className="mod-group">
             <div className="mod-group-label">
               <i className="ti ti-circle-check" /> Ativos
-              <span className="rank-tab-badge">{activeGroups.length}</span>
+              <span className="rank-tab-badge" title={`${activeGroups.length} item(ns) da Workshop, ${countModIds(activeGroups)} mod ID(s) individuais`}>
+                {activeGroups.length} itens · {countModIds(activeGroups)} mod IDs
+              </span>
             </div>
             {activeGroups.map(renderGroup)}
           </div>
@@ -715,7 +722,9 @@ export function ModManagement({ token, showToast }: Props) {
           <div className="mod-group">
             <div className="mod-group-label mod-group-label-mixed">
               <i className="ti ti-arrows-shuffle" /> Status misto
-              <span className="rank-tab-badge">{mixedGroups.length}</span>
+              <span className="rank-tab-badge" title={`${mixedGroups.length} item(ns) da Workshop, ${countModIds(mixedGroups)} mod ID(s) individuais`}>
+                {mixedGroups.length} itens · {countModIds(mixedGroups)} mod IDs
+              </span>
             </div>
             {mixedGroups.map(renderGroup)}
           </div>
@@ -725,7 +734,9 @@ export function ModManagement({ token, showToast }: Props) {
           <div className="mod-group">
             <div className="mod-group-label mod-group-label-blocked">
               <i className="ti ti-ban" /> Bloqueados
-              <span className="rank-tab-badge">{blockedGroups.length}</span>
+              <span className="rank-tab-badge" title={`${blockedGroups.length} item(ns) da Workshop, ${countModIds(blockedGroups)} mod ID(s) individuais`}>
+                {blockedGroups.length} itens · {countModIds(blockedGroups)} mod IDs
+              </span>
             </div>
             {blockedGroups.map(renderGroup)}
           </div>
