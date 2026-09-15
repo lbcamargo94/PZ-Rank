@@ -142,6 +142,7 @@ async function buildPlayerProfilePayload(id: number) {
       .from('entries')
       .select(PLAYER_ENTRY_COLUMNS)
       .eq('player_id', id)
+      .is('deleted_at', null)
       .order('score', { ascending: false }),
   ]);
 
@@ -899,14 +900,13 @@ router.get('/:id/active-mods', async (req: Request, res: Response): Promise<void
   if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
 
   try {
-    // Busca o entry mais recente e ativo do jogador
+    // Busca o entry mais recente do jogador (vivo ou morto)
     const { data: entry } = await supabase
       .from(config.tableName)
       .select('active_mods, mod_version, updated_at')
       .eq('player_id', id)
-      .eq('is_alive', true)
       .is('deleted_at', null)
-      .order('score', { ascending: false })
+      .order('id', { ascending: false })
       .limit(1)
       .maybeSingle();
 

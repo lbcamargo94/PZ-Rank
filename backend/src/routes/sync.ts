@@ -62,7 +62,7 @@ const sandboxLimiter = rateLimit({
 // 800k kills: objetivo máximo do campeonato; cobre runs muito longas com alta densidade de zumbis.
 const MAX_KILLS            = 800_000;
 const MAX_DAYS             = 36_500; // ~100 anos em dias de jogo
-const MAX_KILLS_PER_SECOND = 2.0;    // acima disso é fisicamente impossível no PZ
+
 
 // GET /sync/lookup?nick=<nick> — público (rate limited: 10/hora por IP)
 // Retorna player_token se o jogador está aprovado e ativo.
@@ -458,13 +458,6 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     if (!isNewRun) {
       if (decoded.kills < prev.kills) {
         flaggedReason = 'kills_regression';
-      }
-      if (!flaggedReason) {
-        const timeDelta  = decoded.timeRaw - prev.time_raw;
-        const killsDelta = decoded.kills   - prev.kills;
-        if (timeDelta > 0 && killsDelta / timeDelta > MAX_KILLS_PER_SECOND) {
-          flaggedReason = 'kills_spike';
-        }
       }
     }
 

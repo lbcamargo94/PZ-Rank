@@ -379,6 +379,23 @@ router.patch('/:id/confirm-death', requireModerator, async (req: ModRequest, res
   res.json(data);
 });
 
+// PATCH /entries/:id/clear-anomaly — moderador: limpa flagged_reason e flagged_at
+router.patch('/:id/clear-anomaly', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
+  const id = parseInt(String(req.params.id), 10);
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
+
+  const { data, error } = await supabase
+    .from(config.tableName)
+    .update({ flagged_reason: null, flagged_at: null, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) { res.status(500).json({ error: dbError(error).message }); return; }
+  if (!data)  { res.status(404).json({ error: 'Entrada não encontrada.' }); return; }
+  res.json(data);
+});
+
 // DELETE /entries/:id — moderador (soft-delete: preserva o histórico na aba Records)
 router.delete('/:id', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
   const id = parseInt(String(req.params.id), 10);
