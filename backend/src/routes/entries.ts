@@ -420,6 +420,49 @@ router.patch('/:id/clear-anomaly', requireModerator, async (req: ModRequest, res
   res.json(data);
 });
 
+// PATCH /entries/:id/restore — moderador: restaura uma entrada soft-deleted (limpa deleted_at)
+router.patch('/:id/restore', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
+  const id = parseInt(String(req.params.id), 10);
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
+
+  const { data: existing, error: fetchError } = await supabase
+    .from(config.tableName)
+    .select('id, player_id, character_name, deleted_at')
+    .eq('id', id)
+    .single();
+
+  if (fetchError || !existing) { res.status(404).json({ error: 'Entrada não encontrada.' }); return; }
+  const row = existing as { id: number; player_id: number; character_name: string; deleted_at: string | null };
+  if (!row.deleted_at) { res.status(400).json({ error: 'Esta entrada não está removida.' }); return; }
+
+  // Regra de um personagem vivo por conta (mesma aplicada em /sync/update): bloqueia
+  // a restauração se a conta já tem outra entrada ativa, pra não recriar duplicidade.
+  const { data: conflict } = await supabase
+    .from(config.tableName)
+    .select('id, character_name')
+    .eq('player_id', row.player_id)
+    .is('deleted_at', null)
+    .neq('id', id)
+    .limit(1)
+    .maybeSingle();
+
+  if (conflict) {
+    const conflictName = (conflict as { character_name: string }).character_name;
+    res.status(409).json({ error: `Não é possível restaurar: "${conflictName}" já é o personagem ativo desta conta.` });
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from(config.tableName)
+    .update({ deleted_at: null })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) { res.status(500).json({ error: dbError(error).message }); return; }
+  res.json(data);
+});
+
 // DELETE /entries/:id — moderador (soft-delete: preserva o histórico na aba Records)
 router.delete('/:id', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
   const id = parseInt(String(req.params.id), 10);

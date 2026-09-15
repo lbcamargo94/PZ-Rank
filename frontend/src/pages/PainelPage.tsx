@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { apiLogout, apiDeleteEntry, apiGetEntries, apiUpdateEntryStatus, apiSetTestMod, apiConfirmDeath, apiClearAnomaly } from '../lib/api';
+import { apiLogout, apiDeleteEntry, apiGetEntries, apiUpdateEntryStatus, apiSetTestMod, apiConfirmDeath, apiClearAnomaly, apiRestoreEntry } from '../lib/api';
 import type { Entry, SortKey } from '../types';
 import type { ModSession } from '../types';
 import { hasLiveWarning } from '../lib/live';
@@ -329,6 +329,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
   const deadEntries     = useMemo(() => entries.filter(e => e.sandbox_ok !== false && !e.is_alive),  [entries]);
   const discEntries     = useMemo(() => entries.filter(e => e.sandbox_ok === false && !isInDeadZone(e)), [entries]);
   const deadZoneEntries = useMemo(() => entries.filter(e => isInDeadZone(e)), [entries]);
+  const removedEntries  = useMemo(() => entries.filter(e => !!e.deleted_at), [entries]);
   const anomalyEntries  = useMemo(() => entries.filter(e => !!e.flagged_reason), [entries]);
   const conflictEntries = useMemo(() => entries.filter(e => !!e.pending_new_character && e.is_alive), [entries]);
   // Vivos e classificados sem transmissão confirmada há um tempo — mesmo critério do
@@ -441,6 +442,20 @@ export function PainelPage({ session, onSession, onBack }: Props) {
     try {
       await apiClearAnomaly(session.token, id);
       showToast('Anomalia removida.', 'success');
+      fetchEntries();
+    } catch (err) {
+      showToast((err as Error).message, 'error');
+    } finally {
+      setUpdatingEntry(null);
+    }
+  }
+
+  async function handleRestoreEntry(id: number) {
+    if (!session) return;
+    setUpdatingEntry(id);
+    try {
+      await apiRestoreEntry(session.token, id);
+      showToast('Personagem restaurado.', 'success');
       fetchEntries();
     } catch (err) {
       showToast((err as Error).message, 'error');
@@ -883,6 +898,51 @@ export function PainelPage({ session, onSession, onBack }: Props) {
                   })}
                 </div>
                 <Pagination page={safeDeadZonePage} totalPages={deadZoneTotalPages} onChange={setDeadZonePage} />
+              </div>
+            )}
+
+            {/* ── Removidos ── */}
+            {removedEntries.length > 0 && (
+              <div className="dead-zone-section">
+                <div className="dead-zone-header">
+                  <h3><i className="ti ti-trash" /> Removidos</h3>
+                  <span className="dead-zone-count">{removedEntries.length}</span>
+                  <p className="dead-zone-desc">
+                    Personagens excluídos por um moderador. Restaurar bloqueia se a conta já tiver outro personagem ativo.
+                  </p>
+                </div>
+                <div className="painel-entries-list">
+                  {removedEntries.map(entry => {
+                    const busy = updatingEntry === entry.id;
+                    return (
+                      <div key={entry.id} className="painel-entry-card entry-dead-zone">
+                        <div className="painel-entry-identity">
+                          <span className="painel-entry-char">{entry.character_name || '—'}</span>
+                          <span className="painel-entry-player"><i className="ti ti-user" /> {entry.name}</span>
+                        </div>
+                        <div className="painel-entry-stats">
+                          <span><i className="ti ti-calendar" /> {entry.days}d</span>
+                          <span><i className="ti ti-sword" /> {entry.kills.toLocaleString('pt-BR')}</span>
+                          {entry.deleted_at && (
+                            <span className="painel-entry-updated">
+                              <i className="ti ti-trash" /> Removido em {fmtEntryDate(entry.deleted_at)}
+                            </span>
+                          )}
+                        </div>
+                        <div className="painel-entry-actions">
+                          <button
+                            className="btn-success btn-sm"
+                            disabled={busy}
+                            title="Restaurar personagem"
+                            onClick={() => handleRestoreEntry(entry.id!)}
+                          >
+                            <i className="ti ti-restore" /> Restaurar
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>
