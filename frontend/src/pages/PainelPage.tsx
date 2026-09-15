@@ -330,10 +330,14 @@ export function PainelPage({ session, onSession, onBack }: Props) {
     // antigas com deleted_at (de uma limpeza/migracao anterior), entao sem
     // isso os casos recentes que um moderador precisa revisar ficam perdidos.
     try {
-      const removed = (await apiGetAllEntries(sortKey)).filter(e => !!e.deleted_at);
+      const all = await apiGetAllEntries(sortKey);
+      const removed = all.filter(e => !!e.deleted_at);
       removed.sort((a, b) => new Date(b.deleted_at!).getTime() - new Date(a.deleted_at!).getTime());
+      console.log('[Removidos] total recebido:', all.length, '- com deleted_at:', removed.length);
       setRemovedEntries(removed);
-    } catch { /* seção "Removidos" so fica vazia - nao interrompe o resto do painel */ }
+    } catch (err) {
+      console.error('[Removidos] falha ao buscar entradas removidas:', err);
+    }
   }, [sortKey, showToast, session?.token]);
 
   useEffect(() => { setEntrySearch(''); }, [entryFilter]);
