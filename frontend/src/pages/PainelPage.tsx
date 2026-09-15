@@ -315,6 +315,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
   const [updatingEntry,  setUpdatingEntry]  = useState<number | null>(null);
   const [entryPage,      setEntryPage]      = useState(1);
   const [deadZonePage,   setDeadZonePage]   = useState(1);
+  const [removedPage,    setRemovedPage]    = useState(1);
   const { toast, showToast, clearToast }   = useToast();
 
   const [removedEntries, setRemovedEntries] = useState<Entry[]>([]);
@@ -324,9 +325,15 @@ export function PainelPage({ session, onSession, onBack }: Props) {
     catch (err) { showToast((err as Error).message, 'error'); }
     // apiGetEntries (usada acima) filtra deleted_at no backend - as entradas
     // removidas nunca aparecem ali. Busca separada com all=true pra alimentar
-    // a secao "Removidos", sem inflar as contagens/abas normais.
-    try { setRemovedEntries((await apiGetAllEntries(sortKey)).filter(e => !!e.deleted_at)); }
-    catch { /* seção "Removidos" so fica vazia - nao interrompe o resto do painel */ }
+    // a secao "Removidos", sem inflar as contagens/abas normais. Ordenado por
+    // deleted_at mais recente primeiro - a base tem centenas de entradas
+    // antigas com deleted_at (de uma limpeza/migracao anterior), entao sem
+    // isso os casos recentes que um moderador precisa revisar ficam perdidos.
+    try {
+      const removed = (await apiGetAllEntries(sortKey)).filter(e => !!e.deleted_at);
+      removed.sort((a, b) => new Date(b.deleted_at!).getTime() - new Date(a.deleted_at!).getTime());
+      setRemovedEntries(removed);
+    } catch { /* seção "Removidos" so fica vazia - nao interrompe o resto do painel */ }
   }, [sortKey, showToast, session?.token]);
 
   useEffect(() => { setEntrySearch(''); }, [entryFilter]);
@@ -370,6 +377,10 @@ export function PainelPage({ session, onSession, onBack }: Props) {
   const deadZoneTotalPages = Math.max(1, Math.ceil(deadZoneEntries.length / PAINEL_PAGE_SIZE));
   const safeDeadZonePage    = Math.min(deadZonePage, deadZoneTotalPages);
   const paginatedDeadZone   = deadZoneEntries.slice((safeDeadZonePage - 1) * PAINEL_PAGE_SIZE, safeDeadZonePage * PAINEL_PAGE_SIZE);
+
+  const removedTotalPages = Math.max(1, Math.ceil(removedEntries.length / PAINEL_PAGE_SIZE));
+  const safeRemovedPage   = Math.min(removedPage, removedTotalPages);
+  const paginatedRemoved  = removedEntries.slice((safeRemovedPage - 1) * PAINEL_PAGE_SIZE, safeRemovedPage * PAINEL_PAGE_SIZE);
 
   const entryCounts: Record<EntryFilter, number> = {
     all:          entries.filter(e => !isInDeadZone(e)).length,
@@ -914,11 +925,11 @@ export function PainelPage({ session, onSession, onBack }: Props) {
                   <h3><i className="ti ti-trash" /> Removidos</h3>
                   <span className="dead-zone-count">{removedEntries.length}</span>
                   <p className="dead-zone-desc">
-                    Personagens excluídos por um moderador. Restaurar bloqueia se a conta já tiver outro personagem ativo.
+                    Personagens removidos (mais recentes primeiro). Restaurar bloqueia se a conta já tiver outro personagem ativo.
                   </p>
                 </div>
                 <div className="painel-entries-list">
-                  {removedEntries.map(entry => {
+                  {paginatedRemoved.map(entry => {
                     const busy = updatingEntry === entry.id;
                     return (
                       <div key={entry.id} className="painel-entry-card entry-dead-zone">
@@ -949,6 +960,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
                     );
                   })}
                 </div>
+                <Pagination page={safeRemovedPage} totalPages={removedTotalPages} onChange={setRemovedPage} />
               </div>
             )}
           </div>
