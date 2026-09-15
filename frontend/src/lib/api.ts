@@ -297,6 +297,10 @@ export function apiConfirmDeath(token: string, id: number): Promise<Entry> {
   return request(`/entries/${id}/confirm-death`, { method: 'PATCH', ...auth(token) });
 }
 
+export function apiClearAnomaly(token: string, id: number): Promise<Entry> {
+  return request(`/entries/${id}/clear-anomaly`, { method: 'PATCH', ...auth(token) });
+}
+
 export function apiSetPlayerEmail(token: string, id: number, email: string): Promise<{ message: string }> {
   return request(`/players/${id}/email`, { method: 'PATCH', ...json(token, { email }) });
 }
@@ -434,7 +438,8 @@ export function apiGetAllMods(token: string): Promise<Mod[]> {
 }
 
 export function apiAddMod(
-  token: string, data: { name: string; mod_id?: string | null; workshop_url: string; is_required: boolean }
+  token: string,
+  data: { name: string; mod_id?: string | null; workshop_url: string; is_required: boolean; dependency_ids?: number[] }
 ): Promise<Mod> {
   return request('/mods', { method: 'POST', ...json(token, data) });
 }
@@ -447,8 +452,8 @@ export function apiUpdateMod(
   return request(`/mods/${id}`, { method: 'PATCH', ...json(token, data) });
 }
 
-export function apiBlockMod(token: string, id: number): Promise<Mod> {
-  return request(`/mods/${id}/block`, { method: 'PATCH', ...auth(token) });
+export function apiBlockMod(token: string, id: number, reason?: string): Promise<Mod> {
+  return request(`/mods/${id}/block`, { method: 'PATCH', ...json(token, { reason: reason ?? null }) });
 }
 
 export function apiUnblockMod(token: string, id: number): Promise<Mod> {
@@ -667,4 +672,8 @@ export async function apiGetJournal(limit = 30, before?: number): Promise<Journa
 
 export function apiGetPlayerActiveMods(playerId: number): Promise<import('../types').PlayerActiveMods> {
   return request<import('../types').PlayerActiveMods>(`/players/${playerId}/active-mods`);
+}
+
+export function apiGetHealth(): Promise<{ ok: boolean; ts: number; min_mod_version: string | null }> {
+  return request('/health');
 }

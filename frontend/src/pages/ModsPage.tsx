@@ -8,17 +8,36 @@ import './mods.css';
 
 const PAGE_SIZE = 15;
 
-type ModTab = 'allowed' | 'blocked';
+type ModTab = 'allowed' | 'blocked' | 'mixed';
+
+// Um mesmo item da Oficina Steam pode empacotar mais de um mod (mod_id diferente,
+// cada um com seu proprio status). Agrupa por workshop_id para mostrar 1 card por
+// item — sem isso, o item apareceria repetido N vezes na lista, uma vez por mod_id.
+// Mods sem workshop_id viram grupos de 1 (comportamento anterior, mantido).
+function groupByWorkshop(list: Mod[]): Mod[][] {
+  const map   = new Map<string, Mod[]>();
+  const order: string[] = [];
+  for (const m of list) {
+    const key = m.workshop_id ? `w-${m.workshop_id}` : `m-${m.id}`;
+    if (!map.has(key)) { map.set(key, []); order.push(key); }
+    map.get(key)!.push(m);
+  }
+  return order.map(k => map.get(k)!);
+}
+
+function groupDependencies(group: Mod[]) {
+  const seen = new Set<number>();
+  return group.flatMap(m => m.dependencies).filter(d => (seen.has(d.id) ? false : (seen.add(d.id), true)));
+}
 
 export function ModsPage() {
   const navigate = useNavigate();
-  const [allowedMods, setAllowedMods] = useState<Mod[]>([]);
-  const [blockedMods, setBlockedMods] = useState<Mod[]>([]);
-  const [loading,      setLoading]    = useState(true);
-  const [error,        setError]      = useState<string | null>(null);
-  const [tab,          setTab]        = useState<ModTab>('allowed');
-  const [search,       setSearch]     = useState('');
-  const [page,         setPage]       = useState(1);
+  const [groups,  setGroups]  = useState<Mod[][]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error,   setError]   = useState<string | null>(null);
+  const [tab,     setTab]     = useState<ModTab>('allowed');
+  const [search,  setSearch]  = useState('');
+  const [page,    setPage]    = useState(1);
   const listTopRef = useRef<HTMLDivElement>(null);
 
   function goToPage(p: number) {
@@ -30,21 +49,31 @@ export function ModsPage() {
   }
 
   useEffect(() => {
+    // Busca ativos e bloqueados e junta antes de agrupar — assim um item com IDs
+    // em status diferentes (ex: 3 bloqueados + 1 permitido) vira UM grupo so,
+    // com todos os IDs juntos, em vez de aparecer partido entre as duas abas.
     Promise.all([apiGetMods('active'), apiGetMods('blocked')])
-      .then(([active, blocked]) => { setAllowedMods(active); setBlockedMods(blocked); })
+      .then(([active, blocked]) => setGroups(groupByWorkshop([...active, ...blocked])))
       .catch(err => setError((err as Error).message))
       .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => { setPage(1); }, [search, tab]);
 
-  const mods = tab === 'allowed' ? allowedMods : blockedMods;
+  const allowedGroups = useMemo(() => groups.filter(g => g.every(m => m.status === 'active')),  [groups]);
+  const blockedGroups = useMemo(() => groups.filter(g => g.every(m => m.status === 'blocked')), [groups]);
+  const mixedGroups   = useMemo(
+    () => groups.filter(g => !g.every(m => m.status === 'active') && !g.every(m => m.status === 'blocked')),
+    [groups]
+  );
+
+  const visibleGroups = tab === 'allowed' ? allowedGroups : tab === 'blocked' ? blockedGroups : mixedGroups;
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const list = q ? mods.filter(m => m.name.toLowerCase().includes(q)) : mods;
-    return [...list].sort((a, b) => Number(b.is_required) - Number(a.is_required));
-  }, [mods, search]);
+    const list = q ? visibleGroups.filter(g => g[0].name.toLowerCase().includes(q)) : visibleGroups;
+    return [...list].sort((a, b) => Number(b[0].is_required) - Number(a[0].is_required));
+  }, [visibleGroups, search]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   // Trava a página dentro do intervalo válido mesmo num frame antes do efeito
@@ -65,7 +94,9 @@ export function ModsPage() {
             <p className="mods-subtitle">
               {tab === 'allowed'
                 ? 'Mods aprovados para uso no desafio BRASILEIRÃO PZ'
-                : 'Mods que não podem ser usados no desafio BRASILEIRÃO PZ'}
+                : tab === 'blocked'
+                  ? 'Mods que não podem ser usados no desafio BRASILEIRÃO PZ'
+                  : 'Itens da Oficina que empacotam mais de um mod, com status diferente entre eles'}
             </p>
           </div>
         </div>
@@ -78,14 +109,23 @@ export function ModsPage() {
             onClick={() => setTab('allowed')}
           >
             <i className="ti ti-circle-check" /> Permitidos
-            <span className="rank-tab-badge">{allowedMods.length}</span>
+            <span className="rank-tab-badge">{allowedGroups.length}</span>
           </button>
+          {mixedGroups.length > 0 && (
+            <button
+              className={`rank-tab tab-mixed${tab === 'mixed' ? ' active' : ''}`}
+              onClick={() => setTab('mixed')}
+            >
+              <i className="ti ti-arrows-shuffle" /> Status misto
+              <span className="rank-tab-badge">{mixedGroups.length}</span>
+            </button>
+          )}
           <button
             className={`rank-tab tab-blocked${tab === 'blocked' ? ' active' : ''}`}
             onClick={() => setTab('blocked')}
           >
             <i className="ti ti-ban" /> Bloqueados
-            <span className="rank-tab-badge">{blockedMods.length}</span>
+            <span className="rank-tab-badge">{blockedGroups.length}</span>
           </button>
         </div>
       </div>
@@ -108,9 +148,9 @@ export function ModsPage() {
         </div>
         {!loading && !error && (
           <span className="wiki-count">
-            {filtered.length === mods.length
-              ? `${mods.length} mod${mods.length !== 1 ? 's' : ''}`
-              : `${filtered.length} de ${mods.length}`}
+            {filtered.length === visibleGroups.length
+              ? `${visibleGroups.length} item${visibleGroups.length !== 1 ? 's' : ''}`
+              : `${filtered.length} de ${visibleGroups.length}`}
           </span>
         )}
       </div>
@@ -132,13 +172,15 @@ export function ModsPage() {
 
         {!loading && !error && filtered.length === 0 && (
           <div className="mods-empty-state">
-            <i className={`ti ${tab === 'allowed' ? 'ti-mood-empty' : 'ti-mood-check'}`} />
+            <i className={`ti ${tab === 'allowed' ? 'ti-mood-empty' : tab === 'blocked' ? 'ti-mood-check' : 'ti-arrows-shuffle'}`} />
             <p>
               {search
                 ? 'Nenhum mod encontrado para a busca.'
                 : tab === 'allowed'
                   ? 'Nenhum mod permitido cadastrado ainda.'
-                  : 'Nenhum mod bloqueado no momento.'}
+                  : tab === 'blocked'
+                    ? 'Nenhum mod bloqueado no momento.'
+                    : 'Nenhum item com status misto no momento.'}
             </p>
           </div>
         )}
@@ -149,41 +191,71 @@ export function ModsPage() {
             <Pagination page={safePage} totalPages={totalPages} onChange={goToPage} />
 
             <div className="mods-list">
-              {paginated.map(mod => (
-                <div key={mod.id} className={`mod-card${tab === 'blocked' ? ' mod-card-blocked' : ''}`}>
-                  <div className="mod-card-info">
-                    {mod.image_url
-                      ? <img src={mod.image_url} alt="" className="mod-card-thumb" loading="lazy" />
-                      : <i className="ti ti-puzzle mod-card-icon" />
-                    }
-                    <div className="mod-card-text">
-                      <span className="mod-card-name">{mod.name}</span>
-                      {tab === 'blocked' ? (
-                        <span className="mod-badge-blocked">
-                          <i className="ti ti-ban" /> Bloqueado
-                        </span>
-                      ) : mod.is_required && (
-                        <span className="mod-badge-required">
-                          <i className="ti ti-alert-circle" /> Obrigatório
-                        </span>
-                      )}
-                      {mod.dependencies.length > 0 && (
-                        <span className="mod-card-deps">
-                          <i className="ti ti-link" /> Requer: {mod.dependencies.map(d => d.name).join(', ')}
-                        </span>
-                      )}
+              {paginated.map(group => {
+                const primary    = group[0];
+                const allBlocked = group.every(m => m.status === 'blocked');
+                const isMixed    = !group.every(m => m.status === 'active') && !allBlocked;
+                const deps       = groupDependencies(group);
+                const reasons    = Array.from(new Set(group.map(m => m.block_reason).filter((r): r is string => !!r))).join(' | ');
+                return (
+                  <div key={primary.id} className={`mod-card${allBlocked ? ' mod-card-blocked' : ''}${isMixed ? ' mod-card-mixed' : ''}`}>
+                    <div className="mod-card-info">
+                      {primary.image_url
+                        ? <img src={primary.image_url} alt="" className="mod-card-thumb" loading="lazy" />
+                        : <i className="ti ti-puzzle mod-card-icon" />
+                      }
+                      <div className="mod-card-text">
+                        <span className="mod-card-name">{primary.name}</span>
+                        {allBlocked ? (
+                          <span className="mod-badge-blocked">
+                            <i className="ti ti-ban" /> Bloqueado
+                          </span>
+                        ) : isMixed ? (
+                          <span className="mod-badge-mixed">
+                            <i className="ti ti-arrows-shuffle" /> Status misto
+                          </span>
+                        ) : primary.is_required && (
+                          <span className="mod-badge-required">
+                            <i className="ti ti-alert-circle" /> Obrigatório
+                          </span>
+                        )}
+                        <div className="mod-card-idlist">
+                          {group.filter(m => m.mod_id).map(m => (
+                            <span
+                              key={m.id}
+                              className="mod-id-chip"
+                              title={m.status === 'blocked' && m.block_reason ? `Motivo: ${m.block_reason}` : undefined}
+                            >
+                              <code>{m.mod_id}</code>
+                              <span className={`mod-id-chip-status ${m.status}`}>
+                                {m.status === 'blocked' ? 'Bloqueado' : 'Permitido'}
+                              </span>
+                            </span>
+                          ))}
+                        </div>
+                        {deps.length > 0 && (
+                          <span className="mod-card-deps">
+                            <i className="ti ti-link" /> Requer: {deps.map(d => d.name).join(', ')}
+                          </span>
+                        )}
+                        {reasons && (
+                          <span className="mod-card-block-reason">
+                            <i className="ti ti-message-exclamation" /> {reasons}
+                          </span>
+                        )}
+                      </div>
                     </div>
+                    <a
+                      href={primary.workshop_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-primary btn-sm"
+                    >
+                      <i className="ti ti-brand-steam" /> Oficina Steam
+                    </a>
                   </div>
-                  <a
-                    href={mod.workshop_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn-primary btn-sm"
-                  >
-                    <i className="ti ti-brand-steam" /> Oficina Steam
-                  </a>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <Pagination page={safePage} totalPages={totalPages} onChange={goToPage} />

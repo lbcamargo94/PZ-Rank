@@ -2,11 +2,12 @@ import type { DecodedCode } from '../types';
 
 const XOR_KEY = 'PZRank-Community-2026-Key!';
 // PZRX1-5 = formatos antigos com stats estendidos; PZRX9 = slim 12 campos (mod v2.16+)
-const PZR_PREFIX_RE = /^PZRX[123456789]:([\s\S]+)$/;
+const PZR_PREFIX_RE = /^PZRX([123456789]):([\s\S]+)$/;
 // 17 grupos base + 4 PZRX4 + 1 PZRX5: nome|prof|kills|tempo|skills|status|sandbox|traits|motivo|ts|modVersion|
 //   animals_killed|fish_caught|crops_harvested|items_crafted|houses_looted|hours_without_sleep|
 //   trees_cut|books_read|structures_built|crops_planted|spiffo_visited
-const PZR_PAYLOAD_RE = /^PZR\|([^|]*)\|([^|]*)\|(\d+)\|(\d+)\|([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?(\d*)\|?([^|]*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?([^|]*)$/;
+// Grupo 23 = deathCause; (?:\|[^|]*)? = modsStr ignorado (PZRX9 slim)
+const PZR_PAYLOAD_RE = /^PZR\|([^|]*)\|([^|]*)\|(\d+)\|(\d+)\|([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?(\d*)\|?([^|]*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?([^|]*)(?:\|[^|]*)?$/;
 
 function xorBytes(bytes: Uint8Array, key: string): Uint8Array {
   const keyBytes = new TextEncoder().encode(key);
@@ -49,9 +50,10 @@ function formatMinutesToYDHM(totalMinutes: number): string {
 export function parsePzrCode(raw: string): DecodedCode | null {
   const fileMatch = raw.trim().match(PZR_PREFIX_RE);
   if (!fileMatch) return null;
+  const formatVersion = parseInt(fileMatch[1], 10);
   let plain: string;
   try {
-    plain = deobfuscate(fileMatch[1].trim());
+    plain = deobfuscate(fileMatch[2].trim());
   } catch {
     return null;
   }
@@ -60,6 +62,23 @@ export function parsePzrCode(raw: string): DecodedCode | null {
   const [, characterName, profession, kills, timeRaw, skillsRaw, statusRaw, sandboxRaw, traitsRaw, reasonRaw,
     tsRaw, modVersionRaw, animalsKilledRaw, fishCaughtRaw, cropsHarvestedRaw, itemsCraftedRaw, housesLootedRaw, hoursWithoutSleepRaw,
     treesCutRaw, booksReadRaw, structuresBuiltRaw, cropsPlantedRaw, spiffoVisitedRaw, deathCauseRaw] = match;
+
+  // PZRX9 slim tem 14 segmentos: "PZR" + 13 campos (sem stats estendidas).
+  // O regex colocaria o modsStr (campo 13) no grupo de deathCause para player vivo
+  // e falharia para player morto (deathCause não-vazio + modsStr quebra o $ final).
+  // Fix: usar split por posição fixa para PZRX9.
+  const plainParts = plain.split('|');
+  // PZRX9 slim: PZR + 13 campos = 14 segmentos (≤14 porque pode haver campos vazios no final)
+  const isSlimFormat = formatVersion === 9 && plainParts.length <= 14;
+  // PZRX1-8 não têm death_cause; PZRX9 legacy (>14 campos) usa regex; slim usa split posicional
+  const resolvedDeathCause = isSlimFormat
+    ? (plainParts[12]?.trim() || null)
+    : formatVersion >= 9
+      ? ((deathCauseRaw && deathCauseRaw.trim()) ? deathCauseRaw.trim() : null)
+      : null;
+  const resolvedActiveMods = isSlimFormat && plainParts[13]?.trim()
+    ? plainParts[13].split(';').filter(Boolean)
+    : [];
   const timeRawNum = parseInt(timeRaw, 10);
   const parseExt = (raw: string | undefined) => { const n = parseInt(raw ?? '', 10); return isNaN(n) ? 0 : n; };
   const tsNum = parseInt(tsRaw ?? '', 10);
@@ -101,7 +120,8 @@ export function parsePzrCode(raw: string): DecodedCode | null {
     structuresBuilt:   parseExt(structuresBuiltRaw),
     cropsPlanted:      parseExt(cropsPlantedRaw),
     spiffoVisited:     parseExt(spiffoVisitedRaw),
-    deathCause:        (deathCauseRaw && deathCauseRaw.trim()) ? deathCauseRaw.trim() : null,
+    deathCause:        resolvedDeathCause,
+    activeMods:        resolvedActiveMods,
     skillLevels,
   };
 }

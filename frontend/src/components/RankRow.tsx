@@ -25,9 +25,23 @@ interface RankRowProps {
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
 function disqTooltip(t: TFunction, reason: string | null | undefined): string {
-  if (!reason) return t('rank.disq.sandbox');
-  if (reason.startsWith('mods:')) {
-    const ids = reason.slice(5).split(',').map(v => {
+  const r = reason ?? '';
+  if (r === 'debug'       || r.startsWith('debug:'))       return t('rank.disq.debug');
+  if (r === 'manual')                                        return t('rank.disq.manual');
+  if (r === 'mod_removed' || r.startsWith('mod_removed:')) return t('rank.disq.mod_removed_row');
+  // Checagem server-side v2.18.0+ (sync.ts): mod bloqueado ou fora do cadastro do site.
+  // Formato "nome::mod_id" — mostra os dois: "Nome (mod_id)".
+  if (r.startsWith('blocked_mod:')) {
+    const [name, modId] = r.slice('blocked_mod:'.length).split('::');
+    if (!name) return t('rank.disq.mods');
+    return t('rank.disq.blocked_mod', { name: modId ? `${name} (${modId})` : name });
+  }
+  if (r.startsWith('unlisted_mods:')) {
+    const ids = r.slice('unlisted_mods:'.length).split(',').map(v => v.trim()).filter(Boolean);
+    return ids.length > 0 ? t('rank.disq.unlisted_mods', { list: ids.join(', ') }) : t('rank.disq.mods');
+  }
+  if (r.startsWith('mods:')) {
+    const ids = r.slice(5).split(',').map(v => {
       if (v.startsWith('NAO_PERMITIDO:')) return v.slice(14);
       if (v.startsWith('AUSENTE:'))       return v.slice(8) + ' (ausente)';
       return v;
@@ -36,13 +50,8 @@ function disqTooltip(t: TFunction, reason: string | null | undefined): string {
       ? t('rank.disq.mods_list', { list: ids.join(', ') })
       : t('rank.disq.mods');
   }
-  switch (reason) {
-    case 'debug':       return t('rank.disq.debug');
-    case 'manual':      return t('rank.disq.manual');
-    case 'mod_removed': return t('rank.disq.mod_removed_row');
-    case 'mods':        return t('rank.disq.mods');
-    default:             return t('rank.disq.mods');
-  }
+  if (r === 'mods') return t('rank.disq.mods');
+  return t('rank.disq.sandbox');
 }
 
 function SkillsModal({ skillMap, charName, onClose }: {

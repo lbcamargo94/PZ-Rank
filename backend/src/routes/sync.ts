@@ -113,13 +113,24 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
 
   const VALID_REASONS = new Set(['sandbox', 'debug', 'manual']);
   const isValidReason  = (r: string) => VALID_REASONS.has(r);
-  const isModsReason   = (r: string | null | undefined) => !!r && (r === 'mods' || r === 'mod_removed' || r.startsWith('mods:'));
+  // Cobre os 3 formatos de desclassificação por mod: 'mods'/'mods:...' (client-side,
+  // RankModCheck.check() no mod Lua), 'blocked_mod:...' e 'unlisted_mods:...' (server-side,
+  // verificação direta contra a tabela `mods`). Mesma política para os 3: mods não
+  // desclassificam permanentemente — reabilita automaticamente no próximo sync limpo.
+  const isModsReason   = (r: string | null | undefined) => !!r && (
+    r === 'mods' || r === 'mod_removed' ||
+    r.startsWith('mods:') || r.startsWith('blocked_mod:') || r.startsWith('unlisted_mods:')
+  );
   const companionReason = (disqualification_reason && isValidReason(disqualification_reason))
     ? disqualification_reason
     : null;
 
   if (!player_token || !code) {
     res.status(400).json({ error: 'player_token e code são obrigatórios.' });
+    return;
+  }
+  if (code.length > 8192) {
+    res.status(400).json({ error: 'Código inválido (muito longo).' });
     return;
   }
 
@@ -190,6 +201,13 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // O campo codeTimestamp (campo 11 do payload) é gerado pelo mod no momento da
   // criação do código. Rejeita códigos com mais de 26h (cobre 24h de retry queue)
   // ou com timestamp futuro (mais de 5min de tolerância para skew de relógio).
+  // Mods v2.x+ sempre incluem codeTimestamp; exigir o campo para esses.
+  const modVerStr = decoded.modVersion || '';
+  const isV2Plus  = /^[2-9]\./.test(modVerStr);
+  if (isV2Plus && (!decoded.codeTimestamp || decoded.codeTimestamp <= 0)) {
+    res.status(400).json({ error: 'Código sem timestamp. Atualize o mod para a versão mais recente.' });
+    return;
+  }
   if (decoded.codeTimestamp && decoded.codeTimestamp > 0) {
     const nowSec  = Math.floor(Date.now() / 1000);
     const ageSec  = nowSec - decoded.codeTimestamp;
@@ -247,27 +265,37 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     return;
   }
 
+  // Verifica separadamente se há entry soft-deleted para este personagem.
+  // Feito antes da busca principal para retornar erro claro sem maybeSingle() pegar a row deletada.
+  const { data: deletedEntry } = await supabase
+    .from(config.tableName)
+    .select('id')
+    .eq('player_id', player.id)
+    .eq('character_name', decoded.characterName)
+    .not('deleted_at', 'is', null)
+    .limit(1)
+    .maybeSingle();
+
+  if (deletedEntry) {
+    res.status(409).json({ error: 'Seu personagem foi removido do rank. Contate um moderador para reativação.', code: 'PLAYER_REMOVED' });
+    return;
+  }
+
   // Busca entrada existente para preservar objectives, live_url e estado de desclassificação.
-  // Inclui deleted_at para detectar entradas soft-deleted (não devem ser atualizadas silenciosamente).
+  // Filtra deleted_at IS NULL para nunca confundir entries soft-deletadas com a ativa.
   const { data: existingRaw, error: existingError } = await supabase
     .from(config.tableName)
     .select('id, objectives, live_url, sandbox_ok, disqualification_reason, kills, time_raw, days, flagged_reason, flagged_at, updated_at, score, record_score, character_name, is_alive, deleted_at, no_live_streak, skills')
     .eq('player_id', player.id)
     .eq('character_name', decoded.characterName)
+    .is('deleted_at', null)
     .maybeSingle();
 
-  // Erro indica múltiplas linhas para o mesmo personagem (race condition anterior).
+  // Erro indica múltiplas linhas ativas para o mesmo personagem (race condition anterior).
   // Rejeita o sync para não adicionar mais um duplicado — o estado fica congelado
   // até que um moderador master remova as entradas duplicadas.
   if (existingError) {
     res.status(409).json({ error: 'Entrada duplicada detectada. Sync pausado até limpeza pelo moderador.' });
-    return;
-  }
-
-  // Entrada soft-deleted: não atualiza silenciosamente — informa o jogador para contatar moderador.
-  // Antes deste fix, o sync atualizava a entrada deletada mas ela nunca aparecia no rank (bug PIGZEIRA).
-  if (existingRaw && (existingRaw as { deleted_at?: string | null }).deleted_at) {
-    res.status(409).json({ error: 'Seu personagem foi removido do rank. Contate um moderador para reativação.' });
     return;
   }
 
@@ -339,41 +367,42 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     ? null
     : (existing?.objectives as Objectives | null) ?? null;
 
-  // ── Verificação server-side de mods bloqueados (v2.18.0+) ─────────────────
-  // Quando o código traz active_mods, cruza contra a tabela mods no banco.
-  // Mods com status='blocked': desclassifica imediatamente (sandbox_ok=false).
-  // Mods não cadastrados: flag para revisão do moderador.
-  let blockedModFound: string | null = null;
-  let unknownModIds:   string[]      = [];
+  // ── Verificação server-side de mods (v2.18.0+) ────────────────────────────
+  // BLOCKED  → desclassifica imediatamente (sandbox_ok=false)
+  // UNLISTED → também desclassifica (não está na whitelist = não pode usar)
+  // PERMITTED → ok
+  let blockedModFound: { name: string; modId: string } | null = null; // primeiro BLOCKED encontrado
+  let unlistedModIds:  string[] = [];   // todos UNLISTED encontrados
 
   if (decoded.activeMods.length > 0) {
-    const { data: knownMods } = await supabase
+    const { data: catalogMods } = await supabase
       .from('mods')
       .select('mod_id, name, status')
       .not('mod_id', 'is', null);
 
-    // Mesmo com tabela vazia, todo mod enviado é desconhecido e vira flag.
-    type KnownMod = { mod_id: string; name: string; status: string };
-    const blockedSet = new Map<string, string>();
-    const allowedSet = new Set<string>();
-    for (const m of (knownMods ?? []) as KnownMod[]) {
+    type CatalogMod = { mod_id: string; name: string; status: string };
+    const blockedSet   = new Map<string, string>();
+    const permittedSet = new Set<string>();
+    for (const m of (catalogMods ?? []) as CatalogMod[]) {
       if (m.status === 'blocked') blockedSet.set(m.mod_id, m.name);
-      else allowedSet.add(m.mod_id);
+      else permittedSet.add(m.mod_id);
     }
     for (const modId of decoded.activeMods) {
       if (blockedSet.has(modId)) {
-        blockedModFound = blockedSet.get(modId) ?? modId;
+        blockedModFound = { name: blockedSet.get(modId) ?? modId, modId };
         break;
       }
-      if (!allowedSet.has(modId)) {
-        unknownModIds.push(modId);
+      if (!permittedSet.has(modId)) {
+        unlistedModIds.push(modId);
       }
     }
   }
 
-  // Mod bloqueado detectado server-side: desclassifica imediatamente e persiste no banco
+  // Mod bloqueado detectado server-side: desclassifica imediatamente e persiste no banco.
+  // Formato "nome::mod_id" — o "::" separa os dois campos no reason armazenado; o
+  // frontend faz split('::') pra exibir "Nome (mod_id)" ao jogador/moderador.
   if (blockedModFound) {
-    const reason     = `blocked_mod:${blockedModFound}`;
+    const reason     = `blocked_mod:${blockedModFound.name}::${blockedModFound.modId}`;
     const modPayload = {
       sandbox_ok:               false,
       score:                    0,
@@ -409,6 +438,81 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
         ...modPayload,
       }]);
     }
+
+    // Notifica Discord so na primeira vez que este jogador cai desclassificado —
+    // sem isso, cada sync subsequente com o mesmo mod ativo reenviaria a notificacao.
+    if (!prev || prev.sandbox_ok !== false) {
+      void (async () => {
+        try {
+          const { sendDisqualificationNotification } = await import('../lib/discord');
+          await sendDisqualificationNotification({
+            nick: player.nick, characterName: decoded.characterName, reason,
+          });
+        } catch (e) {
+          console.error('[discord] disqualification notification error:', e);
+        }
+      })();
+    }
+
+    res.status(200).json({
+      success: true, character_name: decoded.characterName,
+      score: 0, is_alive: decoded.isAlive,
+      disqualified: true, disqualified_reason: reason,
+    });
+    return;
+  }
+
+  // Mods UNLISTED detectados server-side: desclassificam igual a BLOCKED
+  if (!blockedModFound && unlistedModIds.length > 0) {
+    const reason     = `unlisted_mods:${unlistedModIds.slice(0, 5).join(',')}`;
+    const modPayload = {
+      sandbox_ok:               false,
+      score:                    0,
+      is_alive:                 decoded.isAlive,
+      disqualification_reason:  reason,
+      disqualified_at:          new Date().toISOString(),
+      mod_version:              decoded.modVersion ?? null,
+      active_mods:              JSON.stringify(decoded.activeMods),
+    };
+    if (prev) {
+      await supabase.from(config.tableName).update(modPayload).eq('id', (prev as { id: number }).id);
+    } else {
+      await supabase.from(config.tableName).insert([{
+        player_id:      player.id,
+        moderator_id:   null,
+        name:           player.nick,
+        character_name: decoded.characterName,
+        profession:     decoded.profession,
+        days:           decoded.days,
+        time_raw:       decoded.timeRaw,
+        time_str:       decoded.timeStr,
+        kills:          decoded.kills,
+        skills:         decoded.skills.join(', ') || null,
+        live_url:       null,
+        traits:         decoded.traits.length > 0 ? decoded.traits.join(',') : null,
+        objectives:     null,
+        record_score:   0,
+        flagged_reason: null,
+        flagged_at:     null,
+        updated_at:     new Date().toISOString(),
+        no_live_streak: 0,
+        ...modPayload,
+      }]);
+    }
+
+    if (!prev || prev.sandbox_ok !== false) {
+      void (async () => {
+        try {
+          const { sendDisqualificationNotification } = await import('../lib/discord');
+          await sendDisqualificationNotification({
+            nick: player.nick, characterName: decoded.characterName, reason,
+          });
+        } catch (e) {
+          console.error('[discord] disqualification notification error:', e);
+        }
+      })();
+    }
+
     res.status(200).json({
       success: true, character_name: decoded.characterName,
       score: 0, is_alive: decoded.isAlive,
@@ -423,12 +527,6 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   const codeReasonRaw = decoded.disqualificationReason;
   const hasModsFlag = !!codeReasonRaw && isModsReason(codeReasonRaw) && codeReasonRaw !== 'mod_removed';
 
-  // Mods desconhecidos viram flag para revisão do moderador (corrigido: flagStr era void'd)
-  let unknownModsFlag: string | null = null;
-  if (unknownModIds.length > 0 && !hasModsFlag) {
-    unknownModsFlag = `unknown_mods:${unknownModIds.slice(0, 5).join(',')}`;
-  }
-
   // ── Detecção de anomalias estatísticas ─────────────────────────────────────
   // Compara submissão atual com o último estado conhecido para detectar
   // progressão impossível (regressão de kills/dias ou ritmo de kills absurdo).
@@ -437,8 +535,8 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // (score=0, kills potencialmente desatualizados), então qualquer comparação
   // geraria falso-positivo e congelaria o score em 0.
 
-  let flaggedReason: string | null = unknownModsFlag;
-  let flaggedAt:     string | null = unknownModsFlag ? new Date().toISOString() : null;
+  let flaggedReason: string | null = null;
+  let flaggedAt:     string | null = null;
 
   if (hasModsFlag) {
     // Formato do mod Lua: "mods:NAO_PERMITIDO:<Nome>" — "NAO_PERMITIDO" é um marcador
@@ -509,6 +607,23 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       res.status(500).json({ error: dbError(error).message });
       return;
     }
+
+    // So notifica na primeira vez que este jogador cai desclassificado por
+    // sandbox/debug — prev.sandbox_ok !== false = ainda nao estava desclassificado
+    // antes deste sync (reasonToStore so muda na primeira desclassificacao, ver acima).
+    if (prev.sandbox_ok !== false) {
+      void (async () => {
+        try {
+          const { sendDisqualificationNotification } = await import('../lib/discord');
+          await sendDisqualificationNotification({
+            nick: player.nick, characterName: decoded.characterName, reason: reasonToStore,
+          });
+        } catch (e) {
+          console.error('[discord] disqualification notification error:', e);
+        }
+      })();
+    }
+
     res.status(200).json({
       success:        true,
       character_name: (data as { character_name: string }).character_name,
@@ -588,7 +703,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     updated_at:   new Date().toISOString(),
     no_live_streak,
     mod_version:  decoded.modVersion ?? null,
-    ...(decoded.activeMods.length > 0 ? { active_mods: JSON.stringify(decoded.activeMods) } : {}),
+    active_mods: JSON.stringify(decoded.activeMods),
     // PZRX3: only write when present to avoid overwriting with zeros on PZRX2 syncs
     ...(hasExtended ? {
       animals_killed:      decoded.animalsKilled,
@@ -999,10 +1114,15 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     }
   })();
 
-  // Posição no ranking: contagem de entradas com score mais alto (best-effort)
+  // Posição no ranking: só conta jogadores vivos, com sandbox válido e não deletados.
+  // Sem esses filtros a contagem inclui mortos/desclassificados e a posição retornada
+  // ao Companion (exibida in-game) é sempre pior do que a posição real no site.
   const { count: rankCount, error: rankError } = await supabase
     .from(config.tableName)
     .select('*', { count: 'exact', head: true })
+    .eq('is_alive', true)
+    .eq('sandbox_ok', true)
+    .is('deleted_at', null)
     .gt('score', finalScore);
 
   res.status(prev ? 200 : 201).json({

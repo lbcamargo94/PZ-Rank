@@ -3,6 +3,7 @@ import type { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import rateLimit from 'express-rate-limit';
 import { supabase } from '../supabase';
 
 import { validatePassword } from '../lib/password';
@@ -11,6 +12,8 @@ import { config } from '../config';
 import type { ModeratorRole } from '../types';
 
 const router = Router();
+
+const forgotPwdLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5, standardHeaders: true, legacyHeaders: false });
 
 const MOD_COOKIE_NAME  = 'mod_session';
 const MOD_COOKIE_30D_MS = 30 * 24 * 60 * 60 * 1000;
@@ -134,7 +137,7 @@ router.post('/signup', async (_req: Request, res: Response): Promise<void> => {
 });
 
 // POST /auth/mod/forgot-password — solicita link de redefinição de senha para moderador
-router.post('/mod/forgot-password', async (req: Request, res: Response): Promise<void> => {
+router.post('/mod/forgot-password', forgotPwdLimiter, async (req: Request, res: Response): Promise<void> => {
   const { email } = req.body as { email?: string };
   if (!email?.trim()) {
     res.status(400).json({ error: 'Email é obrigatório.' });

@@ -7,8 +7,13 @@ import type { ModRequest } from '../middleware/moderator';
 
 const router = Router();
 
-const SELECT_PUBLIC = 'id, name, mod_id, workshop_url, is_required, image_url, created_at, updated_at';
-const SELECT_ALL    = 'id, name, mod_id, workshop_url, is_required, image_url, status, created_at, updated_at';
+const SELECT_PUBLIC = 'id, name, mod_id, workshop_id, workshop_url, is_required, image_url, block_reason, status, created_at, updated_at';
+const SELECT_ALL    = 'id, name, mod_id, workshop_id, workshop_url, is_required, image_url, block_reason, status, created_at, updated_at';
+
+function extractWorkshopId(workshopUrl: string): string | null {
+  const match = workshopUrl.match(/[?&]id=(\d+)/);
+  return match ? match[1] : null;
+}
 
 async function fetchSteamModImage(workshopUrl: string): Promise<string | null> {
   try {
@@ -132,22 +137,31 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
   }
 
   try {
-    const { data: existing } = await supabase
+    // Um mesmo item da Workshop pode empacotar mais de um mod (mod_id diferente,
+    // podendo ter status diferente entre si — ex: um permitido e outro bloqueado).
+    // Por isso a URL não é mais unique sozinha: só bloqueia duplicata real
+    // (mesma URL + mesmo mod_id, incluindo o caso de ambos sem mod_id definido).
+    const { data: sameUrlMods } = await supabase
       .from('mods')
-      .select('id')
-      .eq('workshop_url', trimmedUrl)
-      .maybeSingle();
+      .select('id, mod_id')
+      .eq('workshop_url', trimmedUrl);
 
-    if (existing) {
-      res.status(400).json({ error: 'Este mod já está cadastrado (URL da oficina duplicada).' });
+    const dup = ((sameUrlMods ?? []) as RawMod[]).find(m => (m.mod_id ?? null) === trimmedModId);
+    if (dup) {
+      res.status(400).json({
+        error: trimmedModId
+          ? `Já existe um mod cadastrado com este link e o ID "${trimmedModId}".`
+          : 'Este mod já está cadastrado (mesma URL, sem ID definido).',
+      });
       return;
     }
 
-    const image_url = await fetchSteamModImage(trimmedUrl);
+    const image_url    = await fetchSteamModImage(trimmedUrl);
+    const workshop_id  = extractWorkshopId(trimmedUrl);
 
     const { data, error } = await supabase
       .from('mods')
-      .insert([{ name: name.trim(), mod_id: trimmedModId, workshop_url: trimmedUrl, is_required: is_required ?? false, image_url }])
+      .insert([{ name: name.trim(), mod_id: trimmedModId, workshop_id, workshop_url: trimmedUrl, is_required: is_required ?? false, image_url }])
       .select(SELECT_ALL)
       .single();
 
@@ -193,24 +207,34 @@ router.patch('/:id', requireModerator, async (req: ModRequest, res: Response): P
   }
 
   try {
-    const { data: existing } = await supabase
+    // Ver comentário equivalente no POST: mesma URL pode ter mais de um mod_id
+    // cadastrado (mesmo item da Workshop empacotando mods distintos).
+    const { data: sameUrlMods } = await supabase
       .from('mods')
-      .select('id')
-      .eq('workshop_url', trimmedUrl)
-      .maybeSingle();
+      .select('id, mod_id')
+      .eq('workshop_url', trimmedUrl);
 
-    if (existing && (existing as RawMod).id !== id) {
-      res.status(400).json({ error: 'Este link da oficina já está cadastrado em outro mod.' });
+    const dup = ((sameUrlMods ?? []) as RawMod[]).find(
+      m => (m.id as number) !== id && (m.mod_id ?? null) === trimmedModId
+    );
+    if (dup) {
+      res.status(400).json({
+        error: trimmedModId
+          ? `Já existe outro mod cadastrado com este link e o ID "${trimmedModId}".`
+          : 'Já existe outro mod cadastrado com esta URL sem ID definido.',
+      });
       return;
     }
 
-    const image_url = await fetchSteamModImage(trimmedUrl);
+    const image_url    = await fetchSteamModImage(trimmedUrl);
+    const workshop_id  = extractWorkshopId(trimmedUrl);
 
     const { data, error } = await supabase
       .from('mods')
       .update({
         name: name.trim(),
         mod_id: trimmedModId,
+        workshop_id,
         workshop_url: trimmedUrl,
         is_required: is_required ?? false,
         image_url,
@@ -262,13 +286,15 @@ router.post('/refresh-images', requireModerator, async (_req: ModRequest, res: R
   }
 });
 
-// PATCH /mods/:id/block — moderator
+// PATCH /mods/:id/block — moderator. Aceita { reason? } — motivo exibido aos
+// players na pagina publica de mods, para que saibam por que esta bloqueado.
 router.patch('/:id/block', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
   const id = Number(req.params.id);
+  const { reason } = req.body as { reason?: string };
   try {
     const { data, error } = await supabase
       .from('mods')
-      .update({ status: 'blocked' })
+      .update({ status: 'blocked', block_reason: reason?.trim() || null })
       .eq('id', id)
       .select(SELECT_ALL)
       .single();
@@ -283,13 +309,13 @@ router.patch('/:id/block', requireModerator, async (req: ModRequest, res: Respon
   }
 });
 
-// PATCH /mods/:id/unblock — moderator
+// PATCH /mods/:id/unblock — moderator: limpa o motivo de bloqueio junto com o status.
 router.patch('/:id/unblock', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
   const id = Number(req.params.id);
   try {
     const { data, error } = await supabase
       .from('mods')
-      .update({ status: 'active' })
+      .update({ status: 'active', block_reason: null })
       .eq('id', id)
       .select(SELECT_ALL)
       .single();

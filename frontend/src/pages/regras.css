@@ -298,6 +298,12 @@
   text-decoration: none;
   transition: color 0.15s;
 }
+button.rg-step-action {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
 .rg-step-action:hover { color: #9be070; }
 .rg-step-action .ti { font-size: 14px; }
 

@@ -48,13 +48,23 @@ const SORT_KEYS: { key: SortKey; labelKey: string }[] = [
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
 function disqTooltip(t: TFunction, reason: string | null | undefined): string {
-  switch (reason) {
-    case 'debug':       return t('rank.disq.debug');
-    case 'mods':        return t('rank.disq.mods');
-    case 'manual':      return t('rank.disq.manual');
-    case 'mod_removed': return t('rank.disq.mod_removed');
-    default:             return t('rank.disq.sandbox');
+  const r = reason ?? '';
+  if (r === 'debug'       || r.startsWith('debug:'))       return t('rank.disq.debug');
+  if (r === 'manual')                                        return t('rank.disq.manual');
+  if (r === 'mod_removed' || r.startsWith('mod_removed:')) return t('rank.disq.mod_removed');
+  // Checagem server-side v2.18.0+ (sync.ts): mod bloqueado ou fora do cadastro do site.
+  // Formato "nome::mod_id" — mostra os dois: "Nome (mod_id)".
+  if (r.startsWith('blocked_mod:')) {
+    const [name, modId] = r.slice('blocked_mod:'.length).split('::');
+    if (!name) return t('rank.disq.mods');
+    return t('rank.disq.blocked_mod', { name: modId ? `${name} (${modId})` : name });
   }
+  if (r.startsWith('unlisted_mods:')) {
+    const ids = r.slice('unlisted_mods:'.length).split(',').map(v => v.trim()).filter(Boolean);
+    return ids.length > 0 ? t('rank.disq.unlisted_mods', { list: ids.join(', ') }) : t('rank.disq.mods');
+  }
+  if (r === 'mods' || r.startsWith('mods:')) return t('rank.disq.mods');
+  return t('rank.disq.sandbox');
 }
 
 function fmtDate(iso: string | null | undefined): string {
@@ -141,7 +151,7 @@ function RankCard({ entry, rank, onPlayerClick, hideStatus, live, isUpdated }: {
           <span className={`rc-stat${isUpdated ? ' stat-flash' : ''}`}><i className="ti ti-sword" />{formatNumber(entry.kills)} {t('rank.zombies_suffix')}</span>
           <MiniBar value={entry.kills} max={KILLS_TARGET} done={killsDone} />
         </div>
-        <span className="rc-stat"><i className="ti ti-calendar" />{entry.days}d</span>
+        <span className="rc-stat"><i className="ti ti-calendar" />{entry.days ?? 0}d</span>
         {entry.time_str && <span className="rc-stat"><i className="ti ti-clock" />{entry.time_str}</span>}
         {objCount > 0 && <span className="rc-stat rc-obj"><i className="ti ti-star" />{objCount} {t('rank.obj_suffix')}</span>}
       </div>

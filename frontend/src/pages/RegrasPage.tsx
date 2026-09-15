@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -10,6 +10,7 @@ import {
 import regrasBg from '../../assets/background/tela-de-regras.webp';
 import { COMPANION_TAG, STEAM_WORKSHOP_URL } from '../lib/companion';
 import { formatNumber } from '../lib/format';
+import { apiGetHealth } from '../lib/api';
 import './regras.css';
 
 type Section = 'participar' | 'objetivos' | 'sandbox' | 'conduta';
@@ -43,7 +44,8 @@ const FUNDAMENTAL_RULES_META = [
   { n: '08', icon: 'ti-users' },
   { n: '09', icon: 'ti-alert-triangle' },
   { n: '10', icon: 'ti-gavel' },
-  { n: '11', icon: 'ti-skull-crossed' },
+  { n: '11', icon: 'ti-user-circle' },
+  { n: '12', icon: 'ti-link' },
 ] as const;
 
 const SANDBOX_GROUPS_META = [
@@ -69,6 +71,11 @@ export function RegrasPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [active, setActive] = useState<Section>('participar');
+  const [minModVersion, setMinModVersion] = useState<string | null>(null);
+
+  useEffect(() => {
+    apiGetHealth().then(h => setMinModVersion(h.min_mod_version)).catch(() => {});
+  }, []);
 
   const sectionLabels: Record<Section, string> = {
     participar: t('regras.sections.participar'),
@@ -132,6 +139,7 @@ export function RegrasPage() {
               <div className="rg-steps">
                 {PARTICIPATE_STEPS_META.map((step, i) => {
                   const text = stepTexts[i];
+                  if (!text) return null;
                   const actionLabel = text.action_label
                     ? text.action_label.replace('{{tag}}', COMPANION_TAG)
                     : null;
@@ -167,7 +175,7 @@ export function RegrasPage() {
 
               <div className="rg-callout rg-callout--info">
                 <i className="ti ti-info-circle" />
-                <span>{t('regras.participar.callout_min_version_pre')} <strong>v2.13.0</strong>. {t('regras.participar.callout_min_version_post')}</span>
+                <span>{t('regras.participar.callout_min_version_pre')} {minModVersion ? <strong>v{minModVersion}</strong> : null}. {t('regras.participar.callout_min_version_post')}</span>
               </div>
 
               <div className="rg-callout rg-callout--warn">
@@ -331,6 +339,7 @@ export function RegrasPage() {
               <div className="rg-steps">
                 {FUNDAMENTAL_RULES_META.map((rule, i) => {
                   const text = ruleTexts[i];
+                  if (!text) return null;
                   return (
                     <div key={rule.n} className="rg-step-card">
                       <div className="rg-step-n">{rule.n}</div>

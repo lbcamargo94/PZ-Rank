@@ -178,7 +178,9 @@
       "manual": "Manually disqualified by a moderator",
       "mod_removed_row": "Challenge mod was removed during the run",
       "mod_removed": "Companion detected the mod was removed while the game was running",
-      "mods_list": "Mods not allowed: {{list}}"
+      "mods_list": "Mods not allowed: {{list}}",
+      "blocked_mod": "Blocked mod detected: {{name}}",
+      "unlisted_mods": "Unregistered mod(s): {{list}}"
     },
     "skills": {
       "title": "Skills",
@@ -213,9 +215,45 @@
     },
     "no_chars": "No characters in this category.",
     "tabs": {
+      "profile": "Profile",
       "objectives": "Objectives",
       "skills": "Skills",
-      "traits": "Traits"
+      "traits": "Traits",
+      "achievements": "Achievements",
+      "mods": "Mods"
+    },
+    "mods": {
+      "loading": "Loading mods...",
+      "error": "Could not load mods.",
+      "no_data": "Mod data unavailable. Install mod v{{minVersion}}+ and sync again.",
+      "no_results": "No mods found.",
+      "updated": "Last check: {{date}}",
+      "workshop": "Workshop",
+      "search": "Search mod...",
+      "integrity": {
+        "approved_title": "Mod Integrity — Save approved",
+        "approved_sub": "All detected mods are on the official permitted mods list.",
+        "rejected_title": "Mod Integrity — Irregularity detected",
+        "rejected_sub": "Unauthorized mods were found. Championship status: DISQUALIFIED.",
+        "clean_save": "Clean save — no external mods detected."
+      },
+      "class": {
+        "permitted": "Permitted",
+        "blocked": "Blocked",
+        "unlisted": "Not authorized"
+      },
+      "filter": {
+        "all": "All",
+        "permitted": "Permitted",
+        "blocked": "Blocked",
+        "unlisted": "Not authorized"
+      },
+      "counters": {
+        "total": "{{n}} mods detected",
+        "permitted": "{{n}} permitted",
+        "blocked": "{{n}} blocked",
+        "unlisted": "{{n}} not authorized"
+      }
     },
     "score_label": "points",
     "extended_stats": {
@@ -451,20 +489,21 @@
       }
     },
     "conduta": {
-      "section_title": "10 Fundamental Rules",
+      "section_title": "12 Fundamental Rules",
       "section_sub": "The rules governing participation in the Brazilian PZ Championship. Compliance is mandatory.",
       "rules": [
-        { "title": "Mandatory Streaming", "desc": "All participation in the championship must be streamed live in a gameplay stream." },
+        { "title": "Mandatory Streaming", "desc": "All participation in the championship must be streamed live." },
         { "title": "YouTube or Twitch as Official Platform", "desc": "The stream must be done on YouTube or Twitch and remain saved for future audits. Registering a YouTube channel is still required at sign-up, but the stream itself can be done on either platform. On YouTube, streams under 12 hours are archived automatically. If streaming only on Twitch, it is the participant's responsibility to manually save the VOD before it is deleted: non-monetized streamers have only 7 days; Affiliates, 14 days; Partners, Prime and Turbo users, up to 60 days." },
         { "title": "Official Configuration", "desc": "It is mandatory to use the game version, Sandbox preset, and Official Mod List defined by the championship. Any change will result in the attempt being invalidated." },
         { "title": "Allowed Mods", "desc": "Only mods present in the Official Mod List may be used. Suggestions for new mods must be submitted to the moderation team for review." },
         { "title": "Cheat Prohibition", "desc": "It is forbidden to use software, scripts, macros, trainers, cheats, exploits or any resource that grants an unfair advantage during the competition." },
         { "title": "Match Integrity", "desc": "It is not allowed to edit saves, restore backups after death, use administrative commands, or modify game files to alter the official experience." },
-        { "title": "Attempt Validation", "desc": "All matches must be valid according to the championship rules and may be audited by the organization through recordings and information provided by PZ-Rank." },
+        { "title": "Attempt Validation", "desc": "All matches must be valid according to the championship rules and may be audited by the organization through recordings and information provided by PZ-Rank and the streams." },
         { "title": "Sportsmanship", "desc": "Participants must maintain a respectful attitude towards other competitors, viewers, and the organizing team. Unsportsmanlike conduct may result in penalties." },
         { "title": "Penalties", "desc": "Breaking any rule may result in a warning, invalidation of the attempt, disqualification, or ban, depending on the severity of the infraction." },
-        { "title": "Organization's Decision", "desc": "In omitted cases or situations not foreseen in these rules, the final decision rests exclusively with the Brasileirão PZ organizing team." },
-        { "title": "Death Registration", "desc": "Every death must be registered in the rank by Companion. If the death is not detected automatically, the player will be blocked from syncing a new character until a moderator confirms the death — after which the previous character's points are zeroed and the new run can start from scratch." }
+        { "title": "Organization's Decision", "desc": "In omitted cases or situations not foreseen in these rules, the final decision rests exclusively with the Brasileirão organizing team." },
+        { "title": "Character Creation", "desc": "Only 1 character is allowed. Always use the same name for your character. If you are bitten or want to start a new save, always finish killing your old character first. This does NOT mean you only have 1 chance to participate!" },
+        { "title": "Stream Posting", "desc": "Always remember to post your stream links when done in the envio-de-progresso channel on Discord. This helps in VOD analysis cases." }
       ],
       "footer": "Questions or reports? Contact the moderation team via Discord or the championship's social media."
     }

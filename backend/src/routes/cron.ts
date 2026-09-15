@@ -22,7 +22,7 @@ const router = Router();
 
 function requireCronSecret(req: Request, res: Response): boolean {
   const secret = process.env.CRON_SECRET;
-  if (!secret) return true; // sem segredo configurado, permite (dev)
+  if (!secret) return process.env.NODE_ENV !== 'production'; // bloqueia em prod sem CRON_SECRET
 
   const auth = req.headers.authorization ?? '';
   if (auth === `Bearer ${secret}`) return true;
