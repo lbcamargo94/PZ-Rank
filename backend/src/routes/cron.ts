@@ -36,13 +36,22 @@ function requireCronSecret(req: Request, res: Response): boolean {
 router.get('/backfill-yt-subs', async (req: Request, res: Response): Promise<void> => {
   if (!requireCronSecret(req, res)) return;
 
+  // Teto de segurança de cota: o fallback resolveChannelBySearch custa 100 unidades
+  // por chamada (search.list). Sem limite, jogadores com youtube_url permanentemente
+  // inválida (nunca resolvem) são retentados todo dia e sozinhos podem estourar as
+  // 10.000 unidades/dia da YouTube Data API (visto em produção em 2026-09-21).
+  // 20 jogadores/dia = no máximo 2.000 unidades no pior caso, deixando margem de
+  // sobra para o /cron/scan-lives (barato, RSS-first) rodar no mesmo dia.
+  const BACKFILL_BATCH = 20;
+
   const { data: players, error } = await supabase
     .from('players')
     .select('id, nick, youtube_url, yt_channel_id')
     .eq('status', 'approved')
     .is('deleted_at', null)
     .is('yt_channel_id', null)
-    .not('youtube_url', 'is', null);
+    .not('youtube_url', 'is', null)
+    .limit(BACKFILL_BATCH);
 
   if (error) {
     res.status(500).json({ error: 'Erro ao buscar jogadores.' });
