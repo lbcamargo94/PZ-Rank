@@ -121,6 +121,19 @@ export async function evaluateAchievements(
     .map(a => ({ player_id: playerId, character_name: characterName, achievement_id: a.id, entry_id: entryId, unlocked_at: now }));
 
   if (toInsert.length > 0) {
-    await supabase.from('player_achievements').insert(toInsert);
+    // upsert (não insert simples): um insert em lote comum aborta o lote inteiro
+    // se QUALQUER linha colidir com o UNIQUE(player_id, character_name, achievement_id)
+    // — cenário real em race de syncs concorrentes do mesmo personagem, onde uma
+    // conquista já registrada por outra requisição faz o restante do lote (outras
+    // conquistas novas e legítimas) nunca ser sequer tentado. onConflict torna cada
+    // linha independente: a que já existe só atualiza entry_id/unlocked_at (inofensivo),
+    // as demais são inseridas normalmente.
+    const { error } = await supabase
+      .from('player_achievements')
+      .upsert(toInsert, { onConflict: 'player_id,character_name,achievement_id' });
+
+    if (error) {
+      console.error('[achievements] falha ao gravar player_achievements:', error, 'player:', playerId, 'character:', characterName);
+    }
   }
 }
