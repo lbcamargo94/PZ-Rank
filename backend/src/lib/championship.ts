@@ -13,9 +13,14 @@
  * que arriscar notificar uma live de outro conteúdo.
  */
 
+// Apenas termos que identificam especificamente ESTE campeonato — nunca "zomboid"/
+// "project zomboid" puros. Um streamer pode jogar Project Zomboid em qualquer outro
+// desafio/formato (ex: "Legendoid Challenge x16 True Zero to Hero", que não tem
+// nenhuma relação com o Brasileirão) e a descrição de praticamente toda live de PZ
+// já cita o nome do jogo — um keyword genérico do jogo deixa o filtro inútil pro
+// próprio propósito dele (ver bug relatado: live de outro desafio foi notificada
+// só por mencionar "zomboid" na descrição).
 const TITLE_KEYWORDS = [
-  'project zomboid',
-  'zomboid',
   'brasileirão',
   'brasileirao',
   '#brasileiraopz',
