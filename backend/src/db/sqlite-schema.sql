@@ -347,7 +347,7 @@ INSERT OR IGNORE INTO achievements (slug, name, description, icon, tier, stat, t
   ('lumberjack',     'Lenhador',           'Corte 500 árvores',                 '🪵', 'bronze', 'trees_cut',           500),
   ('craftsman',      'Artesão',            'Produza 500 materiais',             '⚒️', 'bronze', 'materials_crafted',   500),
   ('tracker',        'Rastreador',         'Siga 50 rastros de animais',        '🐾', 'bronze', 'animal_tracks',        50),
-  -- ── PRATA (20) ───────────────────────────────────────
+  -- ── PRATA (19) ───────────────────────────────────────
   ('zombie-slayer',    'Exterminador',         '1.000 zumbis mortos',           '⚔️', 'silver', 'kills',             1000),
   ('veteran',          'Veterano',             '60 dias sobrevividos',          '🎖️', 'silver', 'days',                60),
   ('big-game',         'Caça Grossa',          '200 animais abatidos',          '🦌', 'silver', 'animals_killed',      200),
@@ -359,7 +359,6 @@ INSERT OR IGNORE INTO achievements (slug, name, description, icon, tier, stat, t
   ('trucker',          'Caminhoneiro',         'Percorra 2.000 km',             '🚛', 'silver', 'km_driven',          2000),
   ('master-lumberjack','Lenhador Mestre',      'Corte 5.000 árvores',           '🌲', 'silver', 'trees_cut',          5000),
   ('cheesemaker',      'Fazendeiro Rural',     'Produza queijo',                '🧀', 'silver', 'cheese_produced',       1),
-  ('butcher',          'Açougueiro',           '200 animais abatidos p/ carne', '🥩', 'silver', 'meat_butchered',      200),
   ('breeder',          'Criador',              '4 espécies de animais',         '🐑', 'silver', 'animal_species',        4),
   ('nomad',            'Nômade',               'Durma em 30 locais diferentes', '🏕️', 'silver', 'sleep_locations',      30),
   ('kentucky-explorer','Explorador de Kentucky','Visite todas as cidades',      '🧭', 'silver', 'all_cities_visited',    1),
@@ -368,35 +367,29 @@ INSERT OR IGNORE INTO achievements (slug, name, description, icon, tier, stat, t
   ('door-breaker',     'Arrombador',           'Abra 500 portas',               '🚪', 'silver', 'doors_opened',        500),
   ('industrialist',    'Industrial',           'Utilize todas as estações',     '🏭', 'silver', 'all_stations_used',     1),
   ('scout',            'Escoteiro',            'Explore 100 porões',            '🔦', 'silver', 'basements_explored',  100),
-  -- ── OURO (19) — immortal promovido para Platina ─────
+  -- ── OURO (11) — immortal promovido para Platina; 4 conquistas orfãs
+  -- (meat_butchered/animals_alive/full_map_revealed/cities_rebuilt) e 7 já
+  -- inviáveis (mega_base/louisville_cleared/calories_stored/all_regions_visited/
+  -- all_benches_used/arsenal_complete/powered_bases) removidas — ver auditoria
+  -- de conquistas 2026-09 (mesmo estado já vigente em produção) ─────
   ('zombie-god',       'Deus da Morte',        '10.000 zumbis mortos',          '💀', 'gold', 'kills',              10000),
   ('legend',           'Lenda',                '100 dias sobrevividos',         '👑', 'gold', 'days',                 100),
   ('immortal',         'Imortal',              'Sobreviva 365 dias',            '🌟', 'platinum', 'days',             365),
   ('no-sleep',         'Sem Sono',             '96h sem dormir',                '👁️', 'gold', 'hours_without_sleep',   96),
-  ('fortress',         'Fortaleza',            'Construa uma mega base',        '🏰', 'gold', 'mega_base',              1),
   ('spiffo-base',      'Dono do Spiffo',       'Base em um restaurante Spiffo', '🍔', 'gold', 'spiffo_base_any',        1),
   ('spiffo-franchise', 'Franqueado',           'Bases em 5 restaurantes Spiffo','🦝', 'gold', 'spiffo_base_five',       5),
-  ('conqueror',        'Conquistador',         'Limpe Louisville',              '🏙️', 'gold', 'louisville_cleared',     1),
   ('military-op',      'Operação Militar',     'Limpe a Base Militar',          '🪖', 'gold', 'military_cleared',       1),
-  ('calorie-hoarder',  'Acumulador',           'Armazene 100.000 calorias',     '📦', 'gold', 'calories_stored',   100000),
   ('master-smith',     'Mestre Ferreiro',      '500 armas produzidas',          '⚙️', 'gold', 'weapons_crafted',      500),
   ('master-tailor',    'Alfaiate Mestre',      '500 roupas produzidas',         '🧵', 'gold', 'clothes_crafted',      500),
   ('master-woodworker','Marceneiro Mestre',    '500 móveis produzidos',         '🪑', 'gold', 'furniture_crafted',    500),
-  ('livestock-king',   'Pecuarista',           '50 animais vivos',              '🐄', 'gold', 'animals_alive',         50),
   ('self-sufficient',  'Autossuficiente',      '180 dias sem enlatados',        '🌾', 'gold', 'days_no_canned',       180),
-  ('traveler',         'Viajante',             'Visite todas as regiões do mapa','🚂', 'gold', 'all_regions_visited',   1),
   ('spiffo-collector', 'Colecionador',         'Colete todas as estátuas Spiffo','🏛️', 'gold', 'spiffo_statues',       1),
-  ('scientist',        'Cientista',            'Use todas as bancadas',         '🔬', 'gold', 'all_benches_used',      1),
-  ('arsenal',          'Arsenal',              '100 armas de cada categoria',   '🛡️', 'gold', 'arsenal_complete',      1),
-  ('electrician',      'Eletricista',          'Energize 10 bases',             '⚡', 'gold', 'powered_bases',        10),
-  -- ── PLATINA (9) — completionist/supreme-survivor promovidos para Lendária ──
+  -- ── PLATINA (7) — completionist/supreme-survivor promovidos para Lendária ──
   ('season-01',        'O Início do Fim',      'Complete a Temporada 01',                      '☣️', 'platinum', 'season_01_complete',    1),
   ('spiffo-guardian',  'Guardião do Spiffo',   'Domine todos os restaurantes Spiffo',          '🏅', 'platinum', 'all_spiffo_bases',       1),
-  ('full-map',         'Kentucky Inteiro',     'Revele todo o mapa',                           '🗺️', 'platinum', 'full_map_revealed',      1),
   ('master-skills',    'Mestre das Habilidades','Nível máximo em todas as habilidades',        '🧬', 'platinum', 'all_skills_10',          1),
   ('supreme-hunter',   'Caçador Supremo',      'Abata todas as espécies de animais',           '🏹', 'platinum', 'all_animal_species',     1),
   ('magnate',          'Magnata',              'Tenha todas as bases totalmente equipadas',    '🏆', 'platinum', 'all_bases_equipped',     1),
-  ('rebuilder',        'Reconstrutor',         'Reconstrua todas as cidades com bases',        '🧱', 'platinum', 'cities_rebuilt',         1),
   ('supreme-survivor', 'Sobrevivente Supremo', 'Complete todos os objetivos do campeonato',   '👑', 'legendary', 'all_objectives_complete',1),
   ('master-industry',  'Mestre da Indústria',  '50.000 itens produzidos',                     '⚒️', 'platinum', 'items_crafted',      50000),
   ('completionist',    'Completionista',       'Obtenha todas as conquistas Ouro',             '💯', 'legendary', 'all_gold_achievements', 1);

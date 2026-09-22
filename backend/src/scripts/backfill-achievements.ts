@@ -14,6 +14,7 @@
 import { supabase } from '../supabase';
 import { evaluateAchievements } from '../lib/achievements';
 import { SKILL_NAMES } from '../lib/skills';
+import type { Objectives } from '../types';
 
 // Inverte SKILL_NAMES: "Machado" → "axe", "Culinária" → "cooking", etc.
 const PT_TO_ID: Record<string, string> = {};
@@ -60,7 +61,7 @@ async function main() {
       'weapons_crafted', 'furniture_crafted', 'clothes_crafted', 'cheese_produced',
       'doors_opened', 'sleep_locations', 'basements_explored', 'stations_used',
       'animal_species', 'days_no_canned',
-      'skills',
+      'skills', 'objectives',
     ].join(', '))
     .not('player_id', 'is', null)
     .order('id', { ascending: true });
@@ -118,7 +119,7 @@ async function main() {
         animalSpecies:     n('animal_species'),
         daysNoCanned:      n('days_no_canned'),
         skillLevels,
-      });
+      }, (e['objectives'] as Objectives | null) ?? null);
       console.log(`  entry ${entryId} (player ${playerId} / "${characterName}"): ok`);
       total++;
     } catch (err) {

@@ -1,4 +1,17 @@
 import { supabase } from '../supabase';
+import type { Objectives } from '../types';
+import { OFFICIAL_BASE_IDS } from './scoring';
+import { SKILL_NAMES } from './skills';
+
+// Metas fixas para as conquistas "visite/abata todos" — definidas com o usuário
+// (Brasileirão PZ): 12 cidades oficiais (mesmo conjunto de OFFICIAL_BASE_IDS) e
+// 7 espécies de animais (caça ativa + rastreamento/armadilhas, sem repetir coelho).
+const TOTAL_CITIES         = 12;
+const TOTAL_ANIMAL_SPECIES = 7;
+
+// IDs de skill em minúsculo (mesma normalização usada pelas chaves skill_<id>
+// abaixo) — fonte única de verdade: SKILL_NAMES (backend/src/lib/skills.ts).
+const ALL_SKILL_IDS = Object.keys(SKILL_NAMES).map(id => id.toLowerCase());
 
 export interface ExtendedStats {
   kills:             number;
@@ -47,10 +60,11 @@ export async function evaluateAchievements(
   characterName: string,
   entryId:       number,
   s:             ExtendedStats,
+  objectives:    Objectives | null = null,
 ): Promise<void> {
   const { data: allAch } = await supabase
     .from('achievements')
-    .select('id, stat, threshold');
+    .select('id, stat, threshold, tier');
 
   if (!allAch || allAch.length === 0) return;
 
@@ -114,9 +128,47 @@ export async function evaluateAchievements(
   for (const [id, level] of Object.entries(s.skillLevels)) {
     stats[`skill_${id}`] = level;
   }
+
+  // Nível máximo em TODAS as skills (não só as que o jogador já treinou alguma vez —
+  // uma skill nunca tocada não aparece em s.skillLevels, então conta como nível 0).
+  stats.all_skills_10 = ALL_SKILL_IDS.every(id => (s.skillLevels[id] ?? 0) >= 10) ? 1 : 0;
+
+  // "Visite todas as cidades" / "abata todas as espécies" — cities_visited e
+  // animal_species já são contagens reais enviadas pelo mod; só faltava a meta fixa.
+  stats.all_cities_visited = s.citiesVisited >= TOTAL_CITIES ? 1 : 0;
+  stats.all_animal_species = s.animalSpecies >= TOTAL_ANIMAL_SPECIES ? 1 : 0;
+
+  // objectives é preenchido manualmente pelo moderador no painel (EditObjectivesModal),
+  // não vem do mod — mas já é a fonte oficial usada pro cálculo de score (ver
+  // backend/src/lib/scoring.ts), então é a fonte correta pras conquistas abaixo também.
+  const bases = objectives?.bases ?? {};
+  const officialBaseIds = [...OFFICIAL_BASE_IDS];
+  const basesBuilt = officialBaseIds.filter(id => bases[id]?.has_base).length;
+  const allBasesEquipped = officialBaseIds.length > 0 && officialBaseIds.every(id => {
+    const b = bases[id];
+    return !!b && b.has_base && b.bed && b.windows && b.sink && b.power && b.food && b.vehicle && b.arsenal;
+  });
+  const militaryCleared = objectives?.military_base === true;
+
+  stats.bases_built         = basesBuilt;
+  stats.all_bases_equipped  = allBasesEquipped ? 1 : 0;
+  stats.military_cleared    = militaryCleared  ? 1 : 0;
+  stats.all_objectives_complete =
+    allBasesEquipped && militaryCleared && objectives?.spiffo_hq === true && objectives?.spiffo_relic === true
+      ? 1 : 0;
+
+  // Meta-conquista: todas as conquistas de tier Ouro já desbloqueadas por este
+  // personagem. Compara só contra `unlocked` (estado antes desta chamada) — se a
+  // ÚLTIMA conquista Ouro for atingida neste mesmíssimo sync, o Completionista só
+  // aparece no próximo sync (autocura, mesmo padrão de todo o resto do sistema).
+  const achWithTier = allAch as Array<{ id: number; stat: string; threshold: number; tier: string }>;
+  const goldIds = achWithTier.filter(a => a.tier === 'gold').map(a => a.id);
+  stats.all_gold_achievements =
+    goldIds.length > 0 && goldIds.every(id => unlocked.has(id)) ? 1 : 0;
+
   const now = new Date().toISOString();
 
-  const toInsert = (allAch as Array<{ id: number; stat: string; threshold: number }>)
+  const toInsert = achWithTier
     .filter(a => !unlocked.has(a.id) && (stats[a.stat] ?? 0) >= a.threshold)
     .map(a => ({ player_id: playerId, character_name: characterName, achievement_id: a.id, entry_id: entryId, unlocked_at: now }));
 

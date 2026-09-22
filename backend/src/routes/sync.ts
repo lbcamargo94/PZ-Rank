@@ -828,7 +828,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
         animalSpecies:     decoded.animalSpecies,
         daysNoCanned:      decoded.daysNoCanned,
         skillLevels:       decoded.skillLevels,
-      });
+      }, existingObjectives);
     } catch (e) {
       console.error('[achievements]', e);
     }
