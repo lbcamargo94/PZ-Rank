@@ -76,6 +76,7 @@ Não criar listas separadas no Header ou no QuickNav — tudo parte do mesmo `NA
 ## Key conventions
 
 - **Version tags**: commits use `(vX.Y.Z)` suffix in message; every feature/fix gets a `git tag vX.Y.Z` + GitHub release via `gh release create`.
+- **GitHub release format (required — auto-posts to Discord)**: publishing a release fires `.github/workflows/discord-release-notify.yml`, which forwards the release title/body as-is to the `#bugs-erros-e-correções` channel. So every release's `--title`/`--notes` must already read as a player-facing changelog, not a git-log message: `--title "PZ-Rank vX.Y.Z — Subtítulo do lançamento"`, `--notes` starting with a section header (`Novidades:`, `Melhorias:` or `Correções:`) followed by `• ` bullets in plain player language. Purely internal/CI changes with no player-visible effect should skip the tag+release entirely rather than spam the channel.
 - **CSS**: all styles in `frontend/css/style.css`. Uses CSS custom properties (`--green`, `--red`, `--border`, etc.). Tailwind v4 tokens defined via `@theme` at the top. Minimum font size for readable text: **16px**.
 - **Breakpoints**: `> 860px` table layout, `≤ 860px` card layout, `≤ 460px` single-column.
 - **Player soft-state**: `blocked` = cannot receive new entries; `status = 'rejected'` = not in rank. These are separate fields. A soft-deleted player pattern does not yet exist in the schema — adding it requires a migration on both SQLite schema and Supabase.
