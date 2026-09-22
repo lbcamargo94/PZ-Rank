@@ -280,11 +280,12 @@ async function sendModListEmbed(embed: ModListEmbedInput, url: string, logLabel:
 
 export async function notifyModAllowed(payload: ModListNotificationPayload): Promise<void> {
   const fields = [
-    { name: 'Mod',         value: payload.name,              inline: false },
-    { name: 'Workshop ID', value: payload.workshopId ?? '—', inline: true },
-    { name: 'Mod ID',      value: payload.modId ?? '—',      inline: true },
-    { name: 'Status',      value: '🟢 Permitido',            inline: true },
-    { name: 'Responsável', value: payload.moderator,         inline: true },
+    { name: 'Mod',         value: payload.name,                                            inline: false },
+    { name: 'Link',        value: `[Ver na Steam Workshop](${payload.workshopUrl})`,        inline: false },
+    { name: 'Workshop ID', value: payload.workshopId ?? '—',                                inline: true },
+    { name: 'Mod ID',      value: payload.modId ?? '—',                                     inline: true },
+    { name: 'Status',      value: '🟢 Permitido',                                           inline: true },
+    { name: 'Responsável', value: payload.moderator,                                        inline: true },
   ];
   await sendModListEmbed({
     title:       '✅ Novo mod permitido',
@@ -296,12 +297,13 @@ export async function notifyModAllowed(payload: ModListNotificationPayload): Pro
 
 export async function notifyModRemoved(payload: ModListNotificationPayload): Promise<void> {
   const fields = [
-    { name: 'Mod',             value: payload.name,              inline: false },
-    { name: 'Workshop ID',     value: payload.workshopId ?? '—', inline: true },
-    { name: 'Mod ID',          value: payload.modId ?? '—',      inline: true },
-    { name: 'Status anterior', value: '🟢 Permitido',            inline: true },
-    { name: 'Novo status',     value: '⚪ Não listado',          inline: true },
-    { name: 'Responsável',     value: payload.moderator,         inline: true },
+    { name: 'Mod',             value: payload.name,                                     inline: false },
+    { name: 'Link',            value: `[Ver na Steam Workshop](${payload.workshopUrl})`, inline: false },
+    { name: 'Workshop ID',     value: payload.workshopId ?? '—',                         inline: true },
+    { name: 'Mod ID',          value: payload.modId ?? '—',                              inline: true },
+    { name: 'Status anterior', value: '🟢 Permitido',                                    inline: true },
+    { name: 'Novo status',     value: '⚪ Não listado',                                   inline: true },
+    { name: 'Responsável',     value: payload.moderator,                                 inline: true },
   ];
   await sendModListEmbed({
     title:       '⚠️ Mod removido da lista de permitidos',
@@ -318,12 +320,13 @@ export interface ModBlockedNotificationPayload extends ModListNotificationPayloa
 export async function notifyModBlocked(payload: ModBlockedNotificationPayload): Promise<void> {
   const prevLabel = payload.previousStatus === 'active' ? '🟢 Permitido' : '⚪ Não listado';
   const fields: { name: string; value: string; inline: boolean }[] = [
-    { name: 'Mod',             value: payload.name,              inline: false },
-    { name: 'Workshop ID',     value: payload.workshopId ?? '—', inline: true },
-    { name: 'Mod ID',          value: payload.modId ?? '—',      inline: true },
-    { name: 'Status anterior', value: prevLabel,                 inline: true },
-    { name: 'Novo status',     value: '🔴 Bloqueado',            inline: true },
-    { name: 'Responsável',     value: payload.moderator,         inline: true },
+    { name: 'Mod',             value: payload.name,                                     inline: false },
+    { name: 'Link',            value: `[Ver na Steam Workshop](${payload.workshopUrl})`, inline: false },
+    { name: 'Workshop ID',     value: payload.workshopId ?? '—',                         inline: true },
+    { name: 'Mod ID',          value: payload.modId ?? '—',                              inline: true },
+    { name: 'Status anterior', value: prevLabel,                                         inline: true },
+    { name: 'Novo status',     value: '🔴 Bloqueado',                                    inline: true },
+    { name: 'Responsável',     value: payload.moderator,                                 inline: true },
   ];
   if (payload.reason?.trim()) {
     fields.push({ name: 'Motivo', value: payload.reason.trim(), inline: false });
