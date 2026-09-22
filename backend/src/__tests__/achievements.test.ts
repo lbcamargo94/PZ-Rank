@@ -279,4 +279,43 @@ describe('evaluateAchievements — conquistas derivadas (auditoria, Fase 1 Grupo
     const [rows] = upsertMock2.mock.calls[0]!;
     expect(rows).toEqual([expect.objectContaining({ achievement_id: 3 })]);
   });
+
+  // Regressão do bug encontrado na auditoria: essas 3 usavam s.spiffoVisited
+  // (contagem de visitas) em vez de contagem real de bases. Aqui o jogador visitou
+  // 12 restaurantes (spiffoVisited alto) mas não tem NENHUMA base construída —
+  // com o bug antigo, as 3 desbloqueariam; com a correção, nenhuma deve desbloquear.
+  it('spiffo_base_any/five/all: NÃO desbloqueiam só com visitas, exigem base real (objectives.bases)', async () => {
+    const visitedButNoBase = baseStats({ spiffoVisited: 12 });
+    const noBasesObjectives: Objectives = { bases: {}, military_base: false, spiffo_hq: false, spiffo_relic: false };
+
+    const uAny  = await runFor('spiffo_base_any',  1, visitedButNoBase, noBasesObjectives);
+    expect(uAny).not.toHaveBeenCalled();
+    const uFive = await runFor('spiffo_base_five', 5, visitedButNoBase, noBasesObjectives);
+    expect(uFive).not.toHaveBeenCalled();
+    const uAll  = await runFor('all_spiffo_bases',  1, visitedButNoBase, noBasesObjectives);
+    expect(uAll).not.toHaveBeenCalled();
+  });
+
+  it('spiffo_base_any: desbloqueia com 1 base real, mesmo sem nenhuma visita registrada', async () => {
+    const oneBase: Objectives = {
+      bases: { [[...OFFICIAL_BASE_IDS][0]!]: { ...FULL_BASE } },
+      military_base: false, spiffo_hq: false, spiffo_relic: false,
+    };
+    const u = await runFor('spiffo_base_any', 1, baseStats({ spiffoVisited: 0 }), oneBase);
+    expect(u).toHaveBeenCalledTimes(1);
+  });
+
+  it('all_spiffo_bases: exige as 12 bases oficiais, não 13 (bug antigo comparava contra 13, um total que nunca existiu)', async () => {
+    const bases: Record<string, BaseObjectives> = {};
+    const ids = [...OFFICIAL_BASE_IDS];
+    for (const id of ids.slice(0, 11)) bases[id] = { ...FULL_BASE }; // 11 de 12
+    const almostAll: Objectives = { bases, military_base: false, spiffo_hq: false, spiffo_relic: false };
+
+    const u11 = await runFor('all_spiffo_bases', 1, baseStats(), almostAll);
+    expect(u11).not.toHaveBeenCalled();
+
+    for (const id of ids) bases[id] = { ...FULL_BASE }; // as 12
+    const u12 = await runFor('all_spiffo_bases', 1, baseStats(), almostAll);
+    expect(u12).toHaveBeenCalledTimes(1);
+  });
 });

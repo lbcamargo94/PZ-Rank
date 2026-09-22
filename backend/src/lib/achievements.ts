@@ -91,12 +91,11 @@ export async function evaluateAchievements(
     books_read:          s.booksRead,
     structures_built:    s.structuresBuilt,
     crops_planted:       s.cropsPlanted,
-    // PZRX5: spiffo_visited é a contagem de restaurantes únicos visitados
-    // Os 4 stats de Spiffo mapeiam o mesmo valor com thresholds diferentes
-    spiffo_visited:   s.spiffoVisited,          // threshold 1
-    spiffo_base_any:  s.spiffoVisited,          // threshold 1
-    spiffo_base_five: s.spiffoVisited,          // threshold 5
-    all_spiffo_bases: s.spiffoVisited >= 13 ? 1 : 0,  // threshold 1 = todos 13
+    // spiffo_visited: contagem de restaurantes visitados — essa está correta.
+    // spiffo_base_any/spiffo_base_five/all_spiffo_bases NÃO entram aqui: são sobre
+    // ter BASE estabelecida (ver descrição de cada uma), não sobre visitar — usam
+    // objectives.bases (basesBuilt), calculado mais abaixo junto com bases_built.
+    spiffo_visited: s.spiffoVisited,          // threshold 1
     // PZRX6
     eggs_collected:    s.eggsCollected,
     milk_produced:     s.milkProduced,
@@ -153,6 +152,15 @@ export async function evaluateAchievements(
   stats.bases_built         = basesBuilt;
   stats.all_bases_equipped  = allBasesEquipped ? 1 : 0;
   stats.military_cleared    = militaryCleared  ? 1 : 0;
+
+  // Corrige bug encontrado na auditoria: essas 3 usavam s.spiffoVisited (visitas),
+  // mas a descrição de todas promete BASE estabelecida ("Base em...", "Bases em
+  // 5...", "Domine..."). O antigo threshold de all_spiffo_bases (13) também nunca
+  // batia com o total real de bases oficiais (12) — nunca era desbloqueável nem
+  // pelo critério errado.
+  stats.spiffo_base_any  = basesBuilt;                                    // threshold 1
+  stats.spiffo_base_five = basesBuilt;                                    // threshold 5
+  stats.all_spiffo_bases = basesBuilt >= officialBaseIds.length ? 1 : 0;  // threshold 1 = todas as 12
   stats.all_objectives_complete =
     allBasesEquipped && militaryCleared && objectives?.spiffo_hq === true && objectives?.spiffo_relic === true
       ? 1 : 0;
