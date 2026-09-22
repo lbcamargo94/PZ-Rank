@@ -504,17 +504,21 @@ export function ModManagement({ token, showToast }: Props) {
         }
       }
 
-      const created: Array<{ id: number; status: 'active' | 'blocked'; block_reason: string | null }> = [];
+      // Mods novos ja nascem com o status final escolhido no formulario (uma unica
+      // chamada) — evita criar como "permitido" e bloquear logo em seguida, o que
+      // dispararia duas notificacoes do Discord (permitido + bloqueado) para uma
+      // unica acao do moderador.
       for (const entry of payload.entries) {
         if (!entry.dbId) {
-          const mod = await apiAddMod(token, {
+          await apiAddMod(token, {
             name:           payload.name,
             mod_id:         entry.mod_id || null,
             workshop_url:   payload.workshop_url,
             is_required:    payload.is_required,
             dependency_ids: payload.dependency_ids,
+            status:         entry.status,
+            block_reason:   entry.block_reason,
           });
-          created.push({ id: mod.id, status: entry.status, block_reason: entry.block_reason });
         }
       }
 
@@ -523,9 +527,6 @@ export function ModManagement({ token, showToast }: Props) {
           if (entry.status === 'blocked') await apiBlockMod(token, entry.dbId, entry.block_reason ?? undefined);
           else await apiUnblockMod(token, entry.dbId);
         }
-      }
-      for (const c of created) {
-        if (c.status === 'blocked') await apiBlockMod(token, c.id, c.block_reason ?? undefined);
       }
 
       showToast('Mods salvos com sucesso.', 'success');

@@ -4,6 +4,7 @@ import { supabase } from '../supabase';
 import { dbError, translateSupabaseError } from '../lib/errors';
 import { requireModerator } from '../middleware/moderator';
 import type { ModRequest } from '../middleware/moderator';
+import { notifyModAllowed, notifyModRemoved, notifyModBlocked } from '../lib/discord';
 
 const router = Router();
 
@@ -79,6 +80,18 @@ async function setDependencies(modId: number, depIds: number[]): Promise<void> {
   }
 }
 
+// Resolve o login do moderador autenticado para exibir como "Responsável" nas
+// notificações do Discord (mesmo padrão usado em entries.ts e players.ts).
+async function resolveModeratorLogin(userId: string | undefined): Promise<string> {
+  if (!userId) return 'moderador';
+  const { data: mod } = await supabase
+    .from('moderators')
+    .select('login')
+    .eq('id', userId)
+    .single();
+  return mod?.login ?? userId;
+}
+
 async function handleGetMods(req: import('express').Request, res: Response): Promise<void> {
   const status = req.query.status === 'blocked' ? 'blocked' : 'active';
   try {
@@ -118,10 +131,16 @@ router.get('/all', requireModerator, async (_req: ModRequest, res: Response): Pr
 });
 
 // POST /mods — moderator: add new mod
+// status/block_reason são opcionais — permitem cadastrar um mod ja bloqueado
+// em uma unica chamada (ver ModManagement.tsx: fluxo de grupo de mods, que
+// cria e bloqueia na mesma submissao). Sem eles, mantem o comportamento
+// historico de sempre nascer 'active'.
 router.post('/', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
-  const { name, mod_id, workshop_url, is_required, dependency_ids } = req.body as {
+  const { name, mod_id, workshop_url, is_required, dependency_ids, status, block_reason } = req.body as {
     name?: string; mod_id?: string; workshop_url?: string; is_required?: boolean; dependency_ids?: number[];
+    status?: 'active' | 'blocked'; block_reason?: string | null;
   };
+  const initialStatus = status === 'blocked' ? 'blocked' as const : 'active' as const;
 
   if (!name?.trim() || !workshop_url?.trim()) {
     res.status(400).json({ error: 'Nome e URL da oficina são obrigatórios.' });
@@ -161,7 +180,12 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
 
     const { data, error } = await supabase
       .from('mods')
-      .insert([{ name: name.trim(), mod_id: trimmedModId, workshop_id, workshop_url: trimmedUrl, is_required: is_required ?? false, image_url }])
+      .insert([{
+        name: name.trim(), mod_id: trimmedModId, workshop_id, workshop_url: trimmedUrl,
+        is_required: is_required ?? false, image_url,
+        status: initialStatus,
+        block_reason: initialStatus === 'blocked' ? (block_reason?.trim() || null) : null,
+      }])
       .select(SELECT_ALL)
       .single();
 
@@ -176,6 +200,27 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
     const mod = data as RawMod;
     if (Array.isArray(dependency_ids) && dependency_ids.length > 0) {
       await setDependencies(mod.id as number, dependency_ids);
+    }
+
+    const moderatorLogin = await resolveModeratorLogin(req.userId);
+    if (initialStatus === 'blocked') {
+      await notifyModBlocked({
+        name:           mod.name as string,
+        modId:          (mod.mod_id as string | null) ?? null,
+        workshopId:     (mod.workshop_id as string | null) ?? null,
+        workshopUrl:    mod.workshop_url as string,
+        moderator:      moderatorLogin,
+        reason:         (mod.block_reason as string | null) ?? null,
+        previousStatus: null,
+      });
+    } else {
+      await notifyModAllowed({
+        name:        mod.name as string,
+        modId:       (mod.mod_id as string | null) ?? null,
+        workshopId:  (mod.workshop_id as string | null) ?? null,
+        workshopUrl: mod.workshop_url as string,
+        moderator:   moderatorLogin,
+      });
     }
 
     const [withDeps] = await attachDeps([mod]);
@@ -292,6 +337,15 @@ router.patch('/:id/block', requireModerator, async (req: ModRequest, res: Respon
   const id = Number(req.params.id);
   const { reason } = req.body as { reason?: string };
   try {
+    // Lido antes do update para saber o status anterior: decide se a
+    // notificação deve dizer "estava permitido" ou "não estava listado",
+    // e evita reenviar o aviso se o mod já estava bloqueado (no-op).
+    const { data: existing } = await supabase
+      .from('mods')
+      .select('status')
+      .eq('id', id)
+      .single();
+
     const { data, error } = await supabase
       .from('mods')
       .update({ status: 'blocked', block_reason: reason?.trim() || null })
@@ -301,6 +355,21 @@ router.patch('/:id/block', requireModerator, async (req: ModRequest, res: Respon
 
     if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
     if (!data) { res.status(404).json({ error: 'Mod não encontrado.' }); return; }
+
+    if (existing?.status !== 'blocked') {
+      const mod = data as RawMod;
+      const moderatorLogin = await resolveModeratorLogin(req.userId);
+      await notifyModBlocked({
+        name:           mod.name as string,
+        modId:          (mod.mod_id as string | null) ?? null,
+        workshopId:     (mod.workshop_id as string | null) ?? null,
+        workshopUrl:    mod.workshop_url as string,
+        moderator:      moderatorLogin,
+        reason:         (mod.block_reason as string | null) ?? null,
+        previousStatus: existing?.status === 'active' ? 'active' : null,
+      });
+    }
+
     const [withDeps] = await attachDeps([data as RawMod]);
     res.json(withDeps);
   } catch (err) {
@@ -313,6 +382,12 @@ router.patch('/:id/block', requireModerator, async (req: ModRequest, res: Respon
 router.patch('/:id/unblock', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
   const id = Number(req.params.id);
   try {
+    const { data: existing } = await supabase
+      .from('mods')
+      .select('status')
+      .eq('id', id)
+      .single();
+
     const { data, error } = await supabase
       .from('mods')
       .update({ status: 'active', block_reason: null })
@@ -322,6 +397,19 @@ router.patch('/:id/unblock', requireModerator, async (req: ModRequest, res: Resp
 
     if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
     if (!data) { res.status(404).json({ error: 'Mod não encontrado.' }); return; }
+
+    if (existing?.status === 'blocked') {
+      const mod = data as RawMod;
+      const moderatorLogin = await resolveModeratorLogin(req.userId);
+      await notifyModAllowed({
+        name:        mod.name as string,
+        modId:       (mod.mod_id as string | null) ?? null,
+        workshopId:  (mod.workshop_id as string | null) ?? null,
+        workshopUrl: mod.workshop_url as string,
+        moderator:   moderatorLogin,
+      });
+    }
+
     const [withDeps] = await attachDeps([data as RawMod]);
     res.json(withDeps);
   } catch (err) {
@@ -334,8 +422,30 @@ router.patch('/:id/unblock', requireModerator, async (req: ModRequest, res: Resp
 router.delete('/:id', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
   const id = Number(req.params.id);
   try {
+    // Lido antes do delete: é a única chance de saber se o mod estava
+    // permitido (única transição que gera o aviso de "removido da lista de
+    // permitidos" — um mod que já estava bloqueado sendo apagado não é essa
+    // transição, então não notifica).
+    const { data: existing } = await supabase
+      .from('mods')
+      .select('status, name, mod_id, workshop_id, workshop_url')
+      .eq('id', id)
+      .single();
+
     const { error } = await supabase.from('mods').delete().eq('id', id);
     if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
+
+    if (existing?.status === 'active') {
+      const moderatorLogin = await resolveModeratorLogin(req.userId);
+      await notifyModRemoved({
+        name:        existing.name as string,
+        modId:       (existing.mod_id as string | null) ?? null,
+        workshopId:  (existing.workshop_id as string | null) ?? null,
+        workshopUrl: existing.workshop_url as string,
+        moderator:   moderatorLogin,
+      });
+    }
+
     res.status(204).send();
   } catch (err) {
     console.error('[DELETE /mods/:id] Erro inesperado:', err);

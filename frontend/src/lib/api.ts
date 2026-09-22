@@ -443,7 +443,10 @@ export function apiGetAllMods(token: string): Promise<Mod[]> {
 
 export function apiAddMod(
   token: string,
-  data: { name: string; mod_id?: string | null; workshop_url: string; is_required: boolean; dependency_ids?: number[] }
+  data: {
+    name: string; mod_id?: string | null; workshop_url: string; is_required: boolean; dependency_ids?: number[];
+    status?: 'active' | 'blocked'; block_reason?: string | null;
+  }
 ): Promise<Mod> {
   return request('/mods', { method: 'POST', ...json(token, data) });
 }

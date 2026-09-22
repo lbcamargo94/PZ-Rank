@@ -1,10 +1,12 @@
 /**
- * Discord webhook — notificação de início de live, morte e desclassificação de jogador
+ * Discord webhook — notificação de início de live, morte, desclassificação de
+ * jogador e alteração de status na lista de mods
  *
  * Env vars:
- *   DISCORD_WEBHOOK_URL       — webhook do canal de lives
- *   DISCORD_DEATH_WEBHOOK_URL — webhook do canal de mortes (usa DISCORD_WEBHOOK_URL se não definida)
- *   DISCORD_DISQ_WEBHOOK_URL  — webhook do canal de desclassificações
+ *   DISCORD_WEBHOOK_URL         — webhook do canal de lives
+ *   DISCORD_DEATH_WEBHOOK_URL   — webhook do canal de mortes (usa DISCORD_WEBHOOK_URL se não definida)
+ *   DISCORD_DISQ_WEBHOOK_URL    — webhook do canal de desclassificações
+ *   DISCORD_MODLIST_WEBHOOK_URL — webhook do canal #🧩・modlist-info (permitido/bloqueado/removido)
  */
 
 const DEATH_CAUSE_PT: Record<string, string> = {
@@ -208,5 +210,129 @@ export async function sendDisqualificationNotification(payload: Disqualification
   } catch (err) {
     console.error('[discord] falha ao enviar notificação de desclassificação:', err);
   }
+}
+
+// ── Notificações de mudança de status na lista de mods ───────────────────────
+//
+// Um mod só existe em dois status reais no banco: 'active' (permitido) ou
+// 'blocked' (bloqueado) — ver backend/src/db/sqlite-schema.sql. Não existe um
+// status "neutro" armazenado: um mod que "sai da lista de permitidos" sem ser
+// bloqueado deixa de existir como linha na tabela (DELETE). Por isso
+// notifyModRemoved representa justamente essa transição active → (linha
+// removida), e "⚪ Não listado" abaixo é sempre relativo a essa ausência, não
+// a um status gravado. Quem decide qual notificação disparar é o chamador em
+// backend/src/routes/mods.ts, comparando o status antes/depois de cada ação.
+
+export interface ModListNotificationPayload {
+  name:        string;
+  modId:       string | null;
+  workshopId:  string | null;
+  workshopUrl: string;
+  moderator:   string;
+  reason?:     string | null; // block_reason — só usado por notifyModBlocked
+}
+
+const MODLIST_COLOR = {
+  allowed: 0x43B581, // verde
+  removed: 0xFAA61A, // laranja
+  blocked: 0xE04040, // vermelho
+} as const;
+
+interface ModListEmbedInput {
+  title:       string;
+  description: string;
+  color:       number;
+  fields:      { name: string; value: string; inline: boolean }[];
+}
+
+async function sendModListEmbed(embed: ModListEmbedInput, url: string, logLabel: string, modName: string): Promise<void> {
+  const webhookUrl = process.env.DISCORD_MODLIST_WEBHOOK_URL;
+  if (!webhookUrl) {
+    console.warn('[discord] DISCORD_MODLIST_WEBHOOK_URL não configurada — notificação de mod list descartada:', logLabel, modName);
+    return;
+  }
+
+  const body = {
+    embeds: [{
+      ...embed,
+      url,
+      footer:    { text: 'PZ Rank • Lista de Mods' },
+      timestamp: new Date().toISOString(),
+    }],
+  };
+
+  try {
+    const res = await fetch(webhookUrl, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(body),
+      signal:  AbortSignal.timeout(8_000),
+    });
+    if (res.ok) {
+      console.log('[discord] notificação de mod list enviada:', logLabel, modName);
+    } else {
+      console.error('[discord] mod list webhook retornou', res.status, 'para:', logLabel, modName);
+    }
+  } catch (err) {
+    console.error('[discord] falha ao enviar notificação de mod list:', logLabel, modName, err);
+  }
+}
+
+export async function notifyModAllowed(payload: ModListNotificationPayload): Promise<void> {
+  const fields = [
+    { name: 'Mod',         value: payload.name,              inline: false },
+    { name: 'Workshop ID', value: payload.workshopId ?? '—', inline: true },
+    { name: 'Mod ID',      value: payload.modId ?? '—',      inline: true },
+    { name: 'Status',      value: '🟢 Permitido',            inline: true },
+    { name: 'Responsável', value: payload.moderator,         inline: true },
+  ];
+  await sendModListEmbed({
+    title:       '✅ Novo mod permitido',
+    description: 'Um novo mod foi adicionado à lista de mods permitidos do Brasileirão PZ.',
+    color:       MODLIST_COLOR.allowed,
+    fields,
+  }, payload.workshopUrl, 'permitido', payload.name);
+}
+
+export async function notifyModRemoved(payload: ModListNotificationPayload): Promise<void> {
+  const fields = [
+    { name: 'Mod',             value: payload.name,              inline: false },
+    { name: 'Workshop ID',     value: payload.workshopId ?? '—', inline: true },
+    { name: 'Mod ID',          value: payload.modId ?? '—',      inline: true },
+    { name: 'Status anterior', value: '🟢 Permitido',            inline: true },
+    { name: 'Novo status',     value: '⚪ Não listado',          inline: true },
+    { name: 'Responsável',     value: payload.moderator,         inline: true },
+  ];
+  await sendModListEmbed({
+    title:       '⚠️ Mod removido da lista de permitidos',
+    description: 'Este mod não faz mais parte da lista de mods permitidos do Brasileirão PZ.',
+    color:       MODLIST_COLOR.removed,
+    fields,
+  }, payload.workshopUrl, 'removido', payload.name);
+}
+
+export interface ModBlockedNotificationPayload extends ModListNotificationPayload {
+  previousStatus: 'active' | null; // null = não existia ("não listado") antes de ser criado já bloqueado
+}
+
+export async function notifyModBlocked(payload: ModBlockedNotificationPayload): Promise<void> {
+  const prevLabel = payload.previousStatus === 'active' ? '🟢 Permitido' : '⚪ Não listado';
+  const fields: { name: string; value: string; inline: boolean }[] = [
+    { name: 'Mod',             value: payload.name,              inline: false },
+    { name: 'Workshop ID',     value: payload.workshopId ?? '—', inline: true },
+    { name: 'Mod ID',          value: payload.modId ?? '—',      inline: true },
+    { name: 'Status anterior', value: prevLabel,                 inline: true },
+    { name: 'Novo status',     value: '🔴 Bloqueado',            inline: true },
+    { name: 'Responsável',     value: payload.moderator,         inline: true },
+  ];
+  if (payload.reason?.trim()) {
+    fields.push({ name: 'Motivo', value: payload.reason.trim(), inline: false });
+  }
+  await sendModListEmbed({
+    title:       '🚫 Mod bloqueado',
+    description: 'Este mod foi adicionado à lista de mods bloqueados do Brasileirão PZ.',
+    color:       MODLIST_COLOR.blocked,
+    fields,
+  }, payload.workshopUrl, 'bloqueado', payload.name);
 }
 
