@@ -60,6 +60,18 @@
   water_collected?:     number | null;
   materials_crafted?:   number | null;
   animal_tracks?:       number | null;
+  // PZRX7 extended stats
+  weapons_crafted?:     number | null;
+  // PZRX8 extended stats
+  furniture_crafted?:   number | null;
+  clothes_crafted?:     number | null;
+  cheese_produced?:     number | null;
+  doors_opened?:        number | null;
+  sleep_locations?:     number | null;
+  basements_explored?:  number | null;
+  stations_used?:       number | null;
+  animal_species?:      number | null;
+  days_no_canned?:      number | null;
 }
 
 export type SortKey = 'days' | 'kills' | 'time' | 'score' | 'skills' | 'updated_at';

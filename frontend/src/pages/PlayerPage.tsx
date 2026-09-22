@@ -459,6 +459,17 @@ function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | nul
     water_collected:     entry.water_collected      ?? 0,
     materials_crafted:   entry.materials_crafted    ?? 0,
     animal_tracks:       entry.animal_tracks        ?? 0,
+    // PZRX7/PZRX8 — faltavam aqui (auditoria de conquistas 2026-09-22): backend já
+    // desbloqueia essas conquistas certo, só a barra de progresso ficava sem dado.
+    weapons_crafted:     entry.weapons_crafted      ?? 0,
+    furniture_crafted:   entry.furniture_crafted    ?? 0,
+    clothes_crafted:     entry.clothes_crafted      ?? 0,
+    cheese_produced:     entry.cheese_produced      ?? 0,
+    doors_opened:        entry.doors_opened         ?? 0,
+    sleep_locations:     entry.sleep_locations      ?? 0,
+    basements_explored:  entry.basements_explored   ?? 0,
+    animal_species:      entry.animal_species       ?? 0,
+    days_no_canned:      entry.days_no_canned       ?? 0,
   };
 
   return (

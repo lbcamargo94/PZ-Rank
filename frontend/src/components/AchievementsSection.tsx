@@ -23,6 +23,12 @@ const TRACKED_STATS = new Set([
   'eggs_collected', 'milk_produced', 'stone_structures', 'ceramic_items',
   'forged_weapons', 'km_driven', 'cities_visited', 'military_visited',
   'meals_cooked', 'water_collected', 'materials_crafted', 'animal_tracks',
+  // PZRX7/PZRX8 — faltavam aqui (auditoria de conquistas 2026-09-22).
+  // all_stations_used fica de fora de propósito: é tratado como conquista
+  // binária (ver STAT_LABELS abaixo), não como contador com meta.
+  'weapons_crafted', 'furniture_crafted', 'clothes_crafted', 'cheese_produced',
+  'doors_opened', 'sleep_locations', 'basements_explored', 'animal_species',
+  'days_no_canned',
 ]);
 
 const STAT_LABELS: Record<string, string> = {
