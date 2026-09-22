@@ -55,18 +55,31 @@ export interface ExtendedStats {
   skillLevels:       Record<string, number>;
 }
 
+export interface EvaluateAchievementsOptions {
+  // Não grava nada — retorna o que SERIA concedido. Usado pelo backfill
+  // (backend/src/scripts/backfill-achievements.ts --dry-run) pra revisar o
+  // impacto de uma mudança de critério antes de aplicar em produção.
+  dryRun?: boolean;
+}
+
+export interface UnlockedAchievement {
+  achievement_id: number;
+  slug:           string;
+}
+
 export async function evaluateAchievements(
   playerId:      number,
   characterName: string,
   entryId:       number,
   s:             ExtendedStats,
   objectives:    Objectives | null = null,
-): Promise<void> {
+  options:       EvaluateAchievementsOptions = {},
+): Promise<UnlockedAchievement[]> {
   const { data: allAch } = await supabase
     .from('achievements')
-    .select('id, stat, threshold, tier');
+    .select('id, slug, stat, threshold, tier');
 
-  if (!allAch || allAch.length === 0) return;
+  if (!allAch || allAch.length === 0) return [];
 
   const { data: existing } = await supabase
     .from('player_achievements')
@@ -169,31 +182,35 @@ export async function evaluateAchievements(
   // personagem. Compara só contra `unlocked` (estado antes desta chamada) — se a
   // ÚLTIMA conquista Ouro for atingida neste mesmíssimo sync, o Completionista só
   // aparece no próximo sync (autocura, mesmo padrão de todo o resto do sistema).
-  const achWithTier = allAch as Array<{ id: number; stat: string; threshold: number; tier: string }>;
+  const achWithTier = allAch as Array<{ id: number; slug: string; stat: string; threshold: number; tier: string }>;
   const goldIds = achWithTier.filter(a => a.tier === 'gold').map(a => a.id);
   stats.all_gold_achievements =
     goldIds.length > 0 && goldIds.every(id => unlocked.has(id)) ? 1 : 0;
 
+  const newlyUnlocked = achWithTier.filter(a => !unlocked.has(a.id) && (stats[a.stat] ?? 0) >= a.threshold);
+  const result: UnlockedAchievement[] = newlyUnlocked.map(a => ({ achievement_id: a.id, slug: a.slug }));
+
+  if (newlyUnlocked.length === 0 || options.dryRun) return result;
+
   const now = new Date().toISOString();
+  const toInsert = newlyUnlocked.map(a => ({
+    player_id: playerId, character_name: characterName, achievement_id: a.id, entry_id: entryId, unlocked_at: now,
+  }));
 
-  const toInsert = achWithTier
-    .filter(a => !unlocked.has(a.id) && (stats[a.stat] ?? 0) >= a.threshold)
-    .map(a => ({ player_id: playerId, character_name: characterName, achievement_id: a.id, entry_id: entryId, unlocked_at: now }));
+  // upsert (não insert simples): um insert em lote comum aborta o lote inteiro
+  // se QUALQUER linha colidir com o UNIQUE(player_id, character_name, achievement_id)
+  // — cenário real em race de syncs concorrentes do mesmo personagem, onde uma
+  // conquista já registrada por outra requisição faz o restante do lote (outras
+  // conquistas novas e legítimas) nunca ser sequer tentado. onConflict torna cada
+  // linha independente: a que já existe só atualiza entry_id/unlocked_at (inofensivo),
+  // as demais são inseridas normalmente.
+  const { error } = await supabase
+    .from('player_achievements')
+    .upsert(toInsert, { onConflict: 'player_id,character_name,achievement_id' });
 
-  if (toInsert.length > 0) {
-    // upsert (não insert simples): um insert em lote comum aborta o lote inteiro
-    // se QUALQUER linha colidir com o UNIQUE(player_id, character_name, achievement_id)
-    // — cenário real em race de syncs concorrentes do mesmo personagem, onde uma
-    // conquista já registrada por outra requisição faz o restante do lote (outras
-    // conquistas novas e legítimas) nunca ser sequer tentado. onConflict torna cada
-    // linha independente: a que já existe só atualiza entry_id/unlocked_at (inofensivo),
-    // as demais são inseridas normalmente.
-    const { error } = await supabase
-      .from('player_achievements')
-      .upsert(toInsert, { onConflict: 'player_id,character_name,achievement_id' });
-
-    if (error) {
-      console.error('[achievements] falha ao gravar player_achievements:', error, 'player:', playerId, 'character:', characterName);
-    }
+  if (error) {
+    console.error('[achievements] falha ao gravar player_achievements:', error, 'player:', playerId, 'character:', characterName);
   }
+
+  return result;
 }

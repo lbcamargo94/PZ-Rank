@@ -1,20 +1,28 @@
 /**
  * backfill-achievements.ts
  *
- * Retroativamente desbloqueia conquistas para todos os personagens (entries)
+ * Retroativamente reavalia conquistas para todos os personagens (entries)
  * com base nas stats de cada entry individual — por personagem, não por player.
+ * Útil após adicionar/corrigir critérios de conquista: pega jogadores que já
+ * cumpriam o requisito antes da mudança entrar no ar.
  *
- * Execução (Supabase produção):
+ * --dry-run: não grava nada. Lista o que SERIA concedido (por conquista e por
+ * personagem) para revisão antes de aplicar de verdade.
+ *
+ * Execução (Supabase/Postgres produção):
+ *   npx tsx src/scripts/backfill-achievements.ts --dry-run
  *   npx tsx src/scripts/backfill-achievements.ts
  *
  * Execução (SQLite local):
- *   USE_SQLITE=true npx tsx src/scripts/backfill-achievements.ts
+ *   USE_SQLITE=true npx tsx src/scripts/backfill-achievements.ts --dry-run
  */
 
 import { supabase } from '../supabase';
 import { evaluateAchievements } from '../lib/achievements';
 import { SKILL_NAMES } from '../lib/skills';
 import type { Objectives } from '../types';
+
+const DRY_RUN = process.argv.includes('--dry-run');
 
 // Inverte SKILL_NAMES: "Machado" → "axe", "Culinária" → "cooking", etc.
 const PT_TO_ID: Record<string, string> = {};
@@ -45,6 +53,7 @@ function parseSkillLevels(skillsStr: string | null): Record<string, number> {
 }
 
 async function main() {
+  console.log(DRY_RUN ? '=== MODO DRY-RUN — nada será gravado ===\n' : '=== MODO REAL — vai gravar no banco ===\n');
   console.log('Buscando todas as entradas do banco...');
 
   const { data: entries, error } = await supabase
@@ -71,18 +80,26 @@ async function main() {
     process.exit(1);
   }
 
+  const { data: players } = await supabase.from('players').select('id, nick');
+  const nickById = new Map<number, string>(
+    ((players ?? []) as Array<{ id: number; nick: string }>).map(p => [p.id, p.nick]),
+  );
+
   console.log(`${entries.length} entrada(s) encontrada(s). Avaliando conquistas por personagem...\n`);
 
-  let total = 0;
+  let processed = 0;
+  const perAchievement = new Map<string, number>(); // slug -> quantas vezes seria/foi concedida
+  const details: string[] = []; // linhas "nick | personagem | slug" pra revisão detalhada
+
   for (const e of entries as Array<Record<string, unknown>>) {
-    const playerId     = e['player_id']     as number;
+    const playerId      = e['player_id']      as number;
     const characterName = String(e['character_name'] ?? '');
-    const entryId      = e['id']            as number;
+    const entryId        = e['id']            as number;
     const n = (f: string) => Math.max(0, (e[f] as number | null) ?? 0);
     const skillLevels  = parseSkillLevels(e['skills'] as string | null);
 
     try {
-      await evaluateAchievements(playerId, characterName, entryId, {
+      const unlocked = await evaluateAchievements(playerId, characterName, entryId, {
         kills:             n('kills'),
         days:              n('days'),
         animalsKilled:     n('animals_killed'),
@@ -119,15 +136,38 @@ async function main() {
         animalSpecies:     n('animal_species'),
         daysNoCanned:      n('days_no_canned'),
         skillLevels,
-      }, (e['objectives'] as Objectives | null) ?? null);
-      console.log(`  entry ${entryId} (player ${playerId} / "${characterName}"): ok`);
-      total++;
+      }, (e['objectives'] as Objectives | null) ?? null, { dryRun: DRY_RUN });
+
+      processed++;
+      if (unlocked.length > 0) {
+        const nick = nickById.get(playerId) ?? `player#${playerId}`;
+        for (const u of unlocked) {
+          perAchievement.set(u.slug, (perAchievement.get(u.slug) ?? 0) + 1);
+          details.push(`${nick} | ${characterName} | ${u.slug}`);
+        }
+      }
     } catch (err) {
       console.error(`  entry ${entryId} (player ${playerId} / "${characterName}"): ERRO`, err);
     }
   }
 
-  console.log(`\nBackfill concluído: ${total}/${entries.length} entrada(s) processadas.`);
+  console.log(`\nEntradas processadas: ${processed}/${entries.length}`);
+  console.log(`${DRY_RUN ? 'Conquistas que SERIAM concedidas' : 'Conquistas concedidas'}: ${details.length}\n`);
+
+  if (perAchievement.size > 0) {
+    console.log('Por conquista:');
+    for (const [slug, count] of [...perAchievement.entries()].sort((a, b) => b[1] - a[1])) {
+      console.log(`  ${slug}: ${count}`);
+    }
+    console.log('\nDetalhado (jogador | personagem | conquista):');
+    for (const line of details) console.log(`  ${line}`);
+  } else {
+    console.log('Nenhuma conquista nova a conceder — nada mudaria.');
+  }
+
+  if (DRY_RUN) {
+    console.log('\nDry-run concluído. Nada foi gravado. Rode sem --dry-run pra aplicar de verdade.');
+  }
 }
 
 main().catch(err => {

@@ -100,7 +100,8 @@ describe('evaluateAchievements', () => {
       .mockReturnValueOnce(makeSelectChain({ data: [], error: null }))
       .mockReturnValueOnce({ upsert: upsertMock });
 
-    await expect(evaluateAchievements(1, 'Bob', 42, baseStats({ kills: 150 }))).resolves.toBeUndefined();
+    await expect(evaluateAchievements(1, 'Bob', 42, baseStats({ kills: 150 })))
+      .resolves.toEqual([{ achievement_id: 1, slug: undefined }]);
     expect(errorSpy).toHaveBeenCalled();
 
     errorSpy.mockRestore();
