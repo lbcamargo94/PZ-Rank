@@ -3,8 +3,6 @@ import { SectionHeader } from './StatsUi';
 // Seções pedidas que ainda não têm dado confiável no servidor. Detalhes técnicos
 // e o caminho pra implementar cada uma: docs/estatisticas.md.
 const PENDING = [
-  { icon: '🎮', title: 'O que os sobreviventes fazem',
-    text: 'Casas saqueadas, itens fabricados, refeições, ovos, leite, cidades visitadas e outras ações. O mod já conta, mas esses números ainda não chegam ao site.' },
   { icon: '☠️', title: 'Principais causas de morte',
     text: 'Registrada só em parte das mortes. Vai aparecer quando houver cobertura suficiente.' },
   { icon: '💀', title: 'Onde os sobreviventes mais morrem',

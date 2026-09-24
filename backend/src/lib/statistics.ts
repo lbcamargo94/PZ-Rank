@@ -31,6 +31,10 @@ export interface StatsRow {
   sandbox_ok:     boolean | number;
   // pg-adapter devolve Date; sqlite-adapter devolve string ISO — sempre comparar via createdMs()
   created_at:     string | Date;
+  // Preenchida quando os contadores de ações vieram do Companion (confiáveis).
+  // NULL = contadores antigos/congelados → a run fica fora da seção de ações.
+  stats_synced_at?: string | Date | null;
+  [action: string]: unknown;
 }
 
 const createdMs = (r: StatsRow) => new Date(r.created_at).getTime() || 0;
@@ -152,6 +156,11 @@ export function computeOverview(rows: StatsRow[]) {
     total_days:  rows.reduce((s, r) => s + (r.days || 0), 0),
     bases_built: rows.reduce((s, r) => s + basesBuilt(r.objectives), 0),
     skills_maxed: rows.reduce((s, r) => s + [...parseSkills(r.skills).values()].filter(l => l >= 10).length, 0),
+    // Só runs com contadores confiáveis (ver computeActions)
+    action_runs:   rows.filter(hasActionStats).length,
+    items_crafted: rows.filter(hasActionStats).reduce((s, r) => s + actionValue(r, 'items_crafted'), 0),
+    meals_cooked:  rows.filter(hasActionStats).reduce((s, r) => s + actionValue(r, 'meals_cooked'), 0),
+    houses_looted: rows.filter(hasActionStats).reduce((s, r) => s + actionValue(r, 'houses_looted'), 0),
   };
 }
 
@@ -285,13 +294,109 @@ export function computeSkills(rows: StatsRow[]) {
     .sort((a, b) => b.pct10 - a.pct10 || b.avg - a.avg);
 }
 
+// ── Ações dos sobreviventes ────────────────────────────────────────────────
+// Fonte: colunas de contadores em `entries`, SÓ de runs com stats_synced_at
+// (stats enviadas pelo Companion v2.5.0+). Registro central: pra adicionar uma
+// ação nova, basta incluí-la aqui (+ rótulo no frontend, RecordsSection/ActionSection).
+//
+// kind 'sum'  → contador acumulado; faz sentido somar entre runs (total do campeonato)
+// kind 'peak' → contagem de itens distintos ou recorde pessoal (cidades visitadas,
+//               maior tempo sem dormir…); somar entre runs não significa nada,
+//               então a página mostra média/máximo, sem total.
+export const ACTION_GROUPS = [
+  { id: 'craft', actions: [
+    { key: 'items_crafted',      kind: 'sum'  },
+    { key: 'materials_crafted',  kind: 'sum'  },
+    { key: 'weapons_crafted',    kind: 'sum'  },
+    { key: 'forged_weapons',     kind: 'sum'  },
+    { key: 'clothes_crafted',    kind: 'sum'  },
+    { key: 'furniture_crafted',  kind: 'sum'  },
+    { key: 'structures_built',   kind: 'sum'  },
+    { key: 'stone_structures',   kind: 'sum'  },
+    { key: 'ceramic_items',      kind: 'sum'  },
+    { key: 'stations_used',      kind: 'peak' },
+  ] },
+  { id: 'food', actions: [
+    { key: 'meals_cooked',       kind: 'sum'  },
+    { key: 'crops_planted',      kind: 'sum'  },
+    { key: 'crops_harvested',    kind: 'sum'  },
+    { key: 'eggs_collected',     kind: 'sum'  },
+    { key: 'milk_produced',      kind: 'sum'  },
+    { key: 'cheese_produced',    kind: 'sum'  },
+    { key: 'water_collected',    kind: 'sum'  },
+    { key: 'days_no_canned',     kind: 'peak' },
+  ] },
+  { id: 'nature', actions: [
+    { key: 'animals_killed',     kind: 'sum'  },
+    { key: 'fish_caught',        kind: 'sum'  },
+    { key: 'animal_tracks',      kind: 'sum'  },
+    { key: 'trees_cut',          kind: 'sum'  },
+    { key: 'animal_species',     kind: 'peak' },
+  ] },
+  { id: 'exploration', actions: [
+    { key: 'houses_looted',      kind: 'sum'  },
+    { key: 'doors_opened',       kind: 'sum'  },
+    { key: 'basements_explored', kind: 'sum'  },
+    { key: 'km_driven',          kind: 'sum'  },
+    { key: 'cities_visited',     kind: 'peak' },
+    { key: 'spiffo_visited',     kind: 'peak' },
+    { key: 'military_visited',   kind: 'peak' },
+  ] },
+  { id: 'survival', actions: [
+    { key: 'books_read',          kind: 'sum'  },
+    { key: 'sleep_locations',     kind: 'peak' },
+    { key: 'hours_without_sleep', kind: 'peak' },
+  ] },
+] as const satisfies ReadonlyArray<{ id: string; actions: ReadonlyArray<{ key: string; kind: 'sum' | 'peak' }> }>;
+
+export const ACTION_KEYS: readonly string[] = ACTION_GROUPS.flatMap(g => g.actions.map(a => a.key));
+const ACTION_KEY_SET = new Set(ACTION_KEYS);
+
+const ACTION_BUCKETS: Array<[number, number | null]> = [[0, 0], [1, 10], [11, 100], [101, 1_000], [1_001, 10_000], [10_001, null]];
+
+export const hasActionStats = (r: StatsRow) => r.stats_synced_at != null;
+const actionValue = (r: StatsRow, key: string) => {
+  const v = Number(r[key]);
+  return Number.isFinite(v) && v > 0 ? v : 0;
+};
+
+export function computeActions(rows: StatsRow[]) {
+  const withStats = rows.filter(hasActionStats);
+  const groups = ACTION_GROUPS.map(g => ({
+    id: g.id,
+    actions: g.actions.map(({ key, kind }) => {
+      const values = withStats.map(r => actionValue(r, key));
+      const total  = values.reduce((a, b) => a + b, 0);
+      const done   = values.filter(v => v > 0).length;
+      return {
+        key, kind,
+        total:       kind === 'sum' ? total : null,
+        avg:         avg(values),
+        median:      median(values),
+        max:         values.length ? Math.max(...values) : 0,
+        runs_done:   done,                           // runs que fizeram ao menos 1×
+        pct_done:    pct(done, withStats.length),
+        buckets:     bucketize(values, ACTION_BUCKETS),
+        top:         topHolder(withStats, r => actionValue(r, key)),
+      };
+    }),
+  }));
+  return {
+    runs_with_data: withStats.length,
+    runs_total:     rows.length,
+    groups,
+  };
+}
+
 // ── Rankings e recordes ────────────────────────────────────────────────────
 
 export const RANKING_METRICS = ['kills', 'days', 'score', 'skills10', 'skill_levels', 'bases'] as const;
-export type RankingMetric = typeof RANKING_METRICS[number] | `skill:${string}`;
+export type RankingMetric = typeof RANKING_METRICS[number] | `skill:${string}` | `action:${string}`;
 
 export function isRankingMetric(m: string): m is RankingMetric {
-  return (RANKING_METRICS as readonly string[]).includes(m) || (m.startsWith('skill:') && m.length > 6);
+  return (RANKING_METRICS as readonly string[]).includes(m)
+    || (m.startsWith('skill:') && m.length > 6)
+    || (m.startsWith('action:') && ACTION_KEY_SET.has(m.slice(7)));
 }
 
 function metricValue(metric: RankingMetric): (r: StatsRow) => number {
@@ -303,6 +408,10 @@ function metricValue(metric: RankingMetric): (r: StatsRow) => number {
     case 'skill_levels': return r => [...parseSkills(r.skills).values()].reduce((a, b) => a + b, 0);
     case 'bases':        return r => basesBuilt(r.objectives);
     default: {
+      if (metric.startsWith('action:')) {
+        const key = metric.slice('action:'.length);
+        return r => actionValue(r, key);
+      }
       const skill = metric.slice('skill:'.length);
       return r => parseSkills(r.skills).get(skill) ?? 0;
     }
@@ -311,7 +420,9 @@ function metricValue(metric: RankingMetric): (r: StatsRow) => number {
 
 export function computeRanking(rows: StatsRow[], metric: RankingMetric, limit = 50) {
   const value = metricValue(metric);
-  return rows
+  // Ações: só runs com contadores confiáveis (stats_synced_at)
+  const pool = metric.startsWith('action:') ? rows.filter(hasActionStats) : rows;
+  return pool
     .map(r => ({ r, v: value(r) }))
     .filter(x => x.v > 0)
     .sort((a, b) => b.v - a.v || createdMs(a.r) - createdMs(b.r))
@@ -326,10 +437,21 @@ export function computeRanking(rows: StatsRow[], metric: RankingMetric, limit = 
     }));
 }
 
+// Recordes de ações exibidos em "Recordes do campeonato" (o ranking vale pra todas)
+export const ACTION_RECORDS = [
+  'items_crafted', 'meals_cooked', 'houses_looted', 'cities_visited', 'eggs_collected',
+  'milk_produced', 'animals_killed', 'fish_caught', 'trees_cut', 'km_driven',
+] as const;
+
 export function computeRecords(rows: StatsRow[]) {
-  return RANKING_METRICS
-    .map(metric => ({ metric, holder: topHolder(rows, metricValue(metric)) }))
-    .filter(r => r.holder !== null);
+  const withStats = rows.filter(hasActionStats);
+  const metrics: RankingMetric[] = [...RANKING_METRICS, ...ACTION_RECORDS.map(k => `action:${k}` as const)];
+  return metrics
+    .map(metric => ({
+      metric,
+      holder: topHolder(metric.startsWith('action:') ? withStats : rows, metricValue(metric)),
+    }))
+    .filter((r): r is { metric: RankingMetric; holder: Holder } => r.holder !== null);
 }
 
 // ── Curiosidades (estatística descritiva — nunca causalidade) ──────────────
@@ -397,6 +519,7 @@ export function computeChampionshipStats(allRows: StatsRow[], filters: StatsFilt
     zombies,
     skills,
     records:      computeRecords(rows),
+    actions:      computeActions(rows),
     curiosities:  computeCuriosities(professions, traits, skills, zombies, rows),
     profession_options: professionOptions,
   };

@@ -8,6 +8,7 @@ import { TraitSection }       from '../components/statistics/TraitSection';
 import { SurvivalSection }    from '../components/statistics/SurvivalSection';
 import { ZombieSection }      from '../components/statistics/ZombieSection';
 import { SkillSection }       from '../components/statistics/SkillSection';
+import { ActionSection }      from '../components/statistics/ActionSection';
 import { RecordsSection, recordTarget } from '../components/statistics/RecordsSection';
 import { CuriositiesSection } from '../components/statistics/CuriositiesSection';
 import { ComingSoonSection }  from '../components/statistics/ComingSoonSection';
@@ -20,6 +21,7 @@ const SECTIONS = [
   { id: 'sobrevivencia', label: 'Sobrevivência' },
   { id: 'zumbis',        label: 'Zumbis' },
   { id: 'skills',        label: 'Skills' },
+  { id: 'acoes',         label: 'Ações' },
   { id: 'recordes',      label: 'Recordes' },
   { id: 'curiosidades',  label: 'Curiosidades' },
   { id: 'em-breve',      label: 'Em breve' },
@@ -122,6 +124,7 @@ export function StatisticsPage() {
                   runs={data.overview.runs}
                   onRanking={skill => setRanking({ metric: `skill:${skill}`, title: `Maior nível em ${skill}`, unit: 'Nível' })}
                 />
+                <ActionSection data={data.actions} onRanking={key => setRanking(recordTarget(`action:${key}`))} />
                 <RecordsSection data={data.records} onRanking={m => setRanking(recordTarget(m))} />
                 <CuriositiesSection data={data.curiosities} />
               </>

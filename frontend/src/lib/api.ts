@@ -431,12 +431,31 @@ export interface StatsHolder {
 
 export interface StatsBucket { min: number; max: number | null; count: number }
 
+export interface StatsAction {
+  key:       string;
+  kind:      'sum' | 'peak';   // peak = sem total (somar entre runs não faz sentido)
+  total:     number | null;
+  avg:       number;
+  median:    number;
+  max:       number;
+  runs_done: number;
+  pct_done:  number;
+  buckets:   StatsBucket[];
+  top:       StatsHolder | null;
+}
+
 export interface ChampionshipStats {
   season:       { id: number; name: string; started_at: string } | null;
   generated_at: string;
   overview: {
     players: number; runs: number; alive: number; dead: number;
     total_kills: number; total_days: number; bases_built: number; skills_maxed: number;
+    action_runs: number; items_crafted: number; meals_cooked: number; houses_looted: number;
+  };
+  actions: {
+    runs_with_data: number;
+    runs_total:     number;
+    groups: Array<{ id: string; actions: StatsAction[] }>;
   };
   professions: Array<{ name: string; runs: number; players: number; pct: number; alive: number; avg_days: number; avg_kills: number }>;
   traits:      Array<{ key: string; runs: number; players: number; pct: number; avg_days: number }>;

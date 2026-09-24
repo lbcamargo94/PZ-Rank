@@ -5,7 +5,7 @@ import { dbError } from '../lib/errors';
 import { config } from '../config';
 import { normalizeProfession } from '../lib/professions';
 import {
-  applyFilters, computeChampionshipStats, computeRanking, isRankingMetric,
+  ACTION_KEYS, applyFilters, computeChampionshipStats, computeRanking, isRankingMetric,
   type StatsFilters, type StatsRow,
 } from '../lib/statistics';
 
@@ -223,8 +223,11 @@ router.get('/legends', async (_req: Request, res: Response) => {
 // Temporada: `entries` não tem season_id — todas as runs do banco pertencem à
 // temporada ativa. Por isso só `season=current` é aceito (ver docs/estatisticas.md).
 
-const STATS_ENTRY_COLS =
-  'id, player_id, name, character_name, profession, days, kills, score, skills, traits, objectives, is_alive, sandbox_ok, created_at';
+const STATS_ENTRY_COLS = [
+  'id, player_id, name, character_name, profession, days, kills, score, skills, traits, objectives, is_alive, sandbox_ok, created_at',
+  'stats_synced_at',   // requer migration_v37
+  ...ACTION_KEYS,
+].join(', ');
 const STATS_CACHE_MS = 3 * 60 * 1000;
 let _statsRowsCache: { rows: StatsRow[]; season: { id: number; name: string; started_at: string } | null; at: number } | null = null;
 let _statsResultCache: { at: number; results: Map<string, object> } = { at: 0, results: new Map() };
@@ -293,7 +296,7 @@ router.get('/championship', async (req: Request, res: Response) => {
   }
 });
 
-// GET /stats/championship/ranking?metric=kills|days|score|skills10|skill_levels|bases|skill:<Nome>&limit=50 (+ filtros)
+// GET /stats/championship/ranking?metric=kills|days|score|skills10|skill_levels|bases|skill:<Nome>|action:<chave>&limit=50 (+ filtros)
 router.get('/championship/ranking', async (req: Request, res: Response) => {
   const filters = parseStatsFilters(req.query);
   if (typeof filters === 'string') return res.status(400).json({ error: filters });

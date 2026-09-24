@@ -143,6 +143,8 @@ CREATE TABLE IF NOT EXISTS entries (
   -- v2.18.0: mods ativos e versão do mod PZCommunityRank no momento do sync
   active_mods                  TEXT     DEFAULT NULL,
   mod_version                  TEXT     DEFAULT NULL,
+  -- v4.22.0: contadores de ações vindos do Companion (NULL = não confiáveis)
+  stats_synced_at              TEXT     DEFAULT NULL,
   UNIQUE (player_id, character_name)
 );
 

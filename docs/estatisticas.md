@@ -28,7 +28,7 @@ GET /stats/championship?season=current&status=all|alive|dead&profession=<nome>&i
 GET /stats/championship/ranking?metric=<métrica>&limit=1..100 (+ mesmos filtros)
 ```
 
-Métricas de ranking: `kills`, `days`, `score`, `skills10`, `skill_levels`, `bases`, `skill:<Nome PT>`.
+Métricas de ranking: `kills`, `days`, `score`, `skills10`, `skill_levels`, `bases`, `skill:<Nome PT>`, `action:<chave>`.
 
 ### Performance
 
@@ -87,14 +87,14 @@ para o nome PTBR atual. Profissões desconhecidas (mods) passam inalteradas.
 
 | Seção | Status | Observação |
 | --- | --- | --- |
-| Cards gerais | 🟢 parcial | Jogadores, runs, vivos, mortos, zumbis, dias, bases Spiffo, skills no 10. **Sem** itens fabricados, refeições, cidades exploradas (ver "Ações") |
+| Cards gerais | 🟢 | Jogadores, runs, vivos, mortos, zumbis, dias, bases Spiffo, skills no 10 + itens fabricados, refeições e casas saqueadas (quando já há runs com dados de ações) |
 | Profissões | 🟢 | Todas, com "ver todos" |
 | Traits (positivos/negativos, mais/menos) | 🟢 | Traits de mods ficam em "Outros (mods)" — sem polaridade conhecida |
 | Combinações de traits | 🟢 | Conjuntos completos idênticos em 2+ runs (top 10). Pares foram descartados: com ~20 traits por run, os pares mais comuns só repetem os traits mais populares |
 | Sobrevivência | 🟢 | Média, mediana, extremos, média vivos/mortos, distribuição |
 | Zumbis | 🟢 | Faixas adaptadas aos dados reais (mediana = 44 kills; as faixas sugeridas de 0–10.000 colocariam 90% das runs numa barra só) |
 | Skills + detalhe por skill + comparação nível 10 | 🟢 | "Tempo médio até o nível 10" 🔴 — ver abaixo |
-| Recordes | 🟢 parcial | Kills, dias, score, skills no 10, soma de níveis, bases. **Sem** recordes de ações |
+| Recordes | 🟢 | Kills, dias, score, skills no 10, soma de níveis, bases + 10 recordes de ações |
 | Ranking por estatística | 🟢 | Todas as métricas acima + qualquer skill |
 | Curiosidades | 🟢 | Grupos com < 5 runs são ignorados (média de 1–2 runs é ruído). Texto sempre descritivo |
 | Filtros na URL | 🟢 | `?status=`, `?profissao=`, `?dq=1` |
@@ -102,48 +102,49 @@ para o nome PTBR atual. Profissões desconhecidas (mods) passam inalteradas.
 | Causas de morte | 🟡 | Ver abaixo |
 | Onde os jogadores morrem | 🟡 | Ver abaixo |
 | Evolução histórica | 🟡 | Ver abaixo |
-| Ações dos sobreviventes / ranking de ações | 🔴 | Ver abaixo |
+| Ações dos sobreviventes / ranking de ações | 🟢 | Desde v4.22.0 — cobertura cresce conforme o Companion v2.5.0 é adotado. Ver abaixo |
 | Locais de início | 🔴 | Ver abaixo |
 | Tempo até nível 10 | 🔴 | Ver abaixo |
 
 ---
 
-## 🔴 Ações dos sobreviventes (maior pendência)
+## 🟢 Ações dos sobreviventes (v4.22.0 + Companion v2.5.0)
 
-**O dado existe, mas não chega ao servidor.**
+**Problema encontrado na auditoria:** desde o mod **v2.16** o código de sync é o
+**PZRX9 slim** (13 campos). Os 33 contadores de ações (`houses_looted`,
+`items_crafted`, `meals_cooked`, …) saíram do código e passaram a ser gravados só
+em `pz_rank_stats_<char>.log`, que o Companion lia apenas localmente. Resultado: as
+colunas de `entries` ficaram congeladas (ou zeradas em runs novas) e **as conquistas
+de ações nunca desbloqueavam no servidor**.
 
-- Desde o mod **v2.16** o código de sync é o **PZRX9 slim** (13 campos). Os 35
-  contadores de ações (`houses_looted`, `items_crafted`, `meals_cooked`,
-  `eggs_collected`, `milk_produced`, `cities_visited`, `sleep_locations`, …) saem do
-  código e passam a ser gravados em `pz_rank_stats_<char>.log`.
+**Solução (sem mudar o mod, sem telemetria nova):**
 
-- O Companion lê esse arquivo (`handleNewStatsFile`, `main.js`) mas **só usa
-  localmente** (conquistas locais) — `localStats` "não enviado ao backend".
+- Companion v2.5.0+ lê `pz_rank_stats_<char>.log` no momento do sync e envia
+  `stats` + `stats_character` no `POST /sync/update`, assinado em `X-Stats-Sig`
+  (HMAC de `token:code:personagem:k=v&…` com chaves ordenadas).
+- Backend (`lib/companionStats.ts`): valida assinatura, personagem (tolerante a
+  diferença de encoding latin1/UTF-8 em nomes com acento) e valores (inteiros,
+  ≥ 0, teto de 10 milhões). Válidas → gravadas nas colunas **e** repassadas às
+  conquistas. Inválidas → ignoradas com log `[sync] stats do Companion ignoradas`;
+  o sync do rank **nunca** é rejeitado por causa das stats.
+- `entries.stats_synced_at` (migration_v37) marca runs com contadores confiáveis.
+  A página só usa ações dessas runs — os valores antigos congelados ficam de fora.
+  Por isso a cobertura começa em 0 e cresce conforme os jogadores atualizam o
+  Companion ("Baseado em X de Y runs").
+- A fila de reenvio do Companion **não** manda stats (o arquivo em disco pode ser
+  mais novo que o código enfileirado); o próximo sync normal atualiza.
 
-- No `sync.ts`, `hasExtended*` dá falso para PZRX9 → as colunas de `entries` nunca
-  mais são atualizadas. Ficam congeladas no último sync pré-v2.16, ou zeradas em runs
-  novas.
+**Na página:** seção "O que os sobreviventes fazem" em 5 grupos (craft,
+alimentação, caça/natureza, exploração, sobrevivência), detalhe por ação (total,
+média, mediana, maior, % das runs, distribuição, recordista, ranking), 3 cards na
+visão geral e 10 recordes de ações. Ações do tipo "pico" (cidades visitadas,
+espécies, maior tempo sem dormir…) não mostram total — somar entre runs não
+significa nada.
 
-- Agravante: 10 desses contadores só passaram a contar certo no mod v2.25.0–2.25.5,
-  então mesmo os valores antigos congelados não são confiáveis.
-
-- **Efeito colateral encontrado**: as conquistas de ações também **não desbloqueiam
-  no servidor** para quem usa o mod atual (`evaluateAchievements` recebe tudo zerado
-  do decoder).
-
-**Caminho sugerido (sem mudar o mod, sem nova telemetria):**
-
-1. Companion: ao ler `pz_rank_stats_<char>.log`, enviar `stats` junto no
-   `POST /sync/update` (campo novo, opcional, assinado junto do código).
-2. Backend: validar (whitelist das 35 chaves, inteiros ≥ 0, teto de sanidade),
-   gravar nas colunas existentes e repassar a `evaluateAchievements`.
-3. Zerar/ignorar valores gravados antes do mod v2.25.5 nas estatísticas (ou exibir
-   "desde `<data>`").
-4. Com isso: cards de itens fabricados/refeições/cidades, seção "O que os
-   sobreviventes fazem" agrupada (Construção e Craft · Alimentação · Exploração ·
-   Sobrevivência), detalhe por ação (total, média, mediana, maior, distribuição,
-   top jogadores) e recordes de ações. A camada `lib/statistics.ts` já tem
-   `computeRanking`/`topHolder`/`bucketize` genéricos — basta registrar as métricas.
+**Adicionar uma ação nova:** o mod grava a chave no `saveStats` → incluir em
+`COMPANION_STAT_KEYS` (companionStats.ts), coluna em `entries` (migration + schema
+SQLite + ALLOWED_COLS dos 2 adapters) → `ACTION_GROUPS` (statistics.ts) → rótulo
+em `frontend/src/lib/actionLabels.ts`.
 
 ## 🔴 Locais de início
 

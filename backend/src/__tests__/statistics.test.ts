@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  applyFilters, computeChampionshipStats, computeOverview, computeProfessions,
+  ACTION_KEYS, applyFilters, computeActions, computeChampionshipStats, computeOverview, computeProfessions, computeRecords,
   computeRanking, computeSkills, computeSurvival, computeTraitBuilds, computeTraits,
   isRankingMetric, median, parseSkills, traitKey,
   type StatsFilters, type StatsRow,
@@ -175,6 +175,53 @@ describe('filtros', () => {
     expect(bomb.zombies.total).toBe(30);
     // opções de profissão não encolhem ao filtrar por profissão
     expect(bomb.profession_options).toEqual(expect.arrayContaining(['Bombeiro', 'Veterano']));
+  });
+});
+
+describe('ações dos sobreviventes', () => {
+  const synced = '2026-09-25T00:00:00Z';
+  const rows = [
+    row({ stats_synced_at: synced, houses_looted: 10, cities_visited: 3 }),
+    row({ stats_synced_at: synced, houses_looted: 30, cities_visited: 5 }),
+    row({ stats_synced_at: synced, houses_looted: 0,  cities_visited: 1 }),
+    // contadores congelados (sem stats_synced_at) — NÃO podem entrar
+    row({ stats_synced_at: null, houses_looted: 99999, cities_visited: 12 }),
+  ];
+  const find = (key: string) => computeActions(rows).groups.flatMap(g => g.actions).find(a => a.key === key)!;
+
+  it('só usa runs com contadores confiáveis', () => {
+    const a = computeActions(rows);
+    expect(a.runs_with_data).toBe(3);
+    expect(a.runs_total).toBe(4);
+    const houses = find('houses_looted');
+    expect(houses.total).toBe(40);
+    expect(houses.max).toBe(30);
+    expect(houses.avg).toBeCloseTo(40 / 3);
+    expect(houses.median).toBe(10);
+    expect(houses.runs_done).toBe(2);
+    expect(houses.buckets.reduce((s, b) => s + b.count, 0)).toBe(3);
+  });
+
+  it('ações do tipo "peak" não têm total (somar cidades entre runs não significa nada)', () => {
+    expect(find('cities_visited').total).toBeNull();
+    expect(find('cities_visited').max).toBe(5);
+  });
+
+  it('ranking e recordes de ação ignoram contadores congelados', () => {
+    expect(computeRanking(rows, 'action:houses_looted').map(r => r.value)).toEqual([30, 10]);
+    const rec = computeRecords(rows).find(r => r.metric === 'action:houses_looted');
+    expect(rec?.holder.value).toBe(30);
+    expect(computeOverview(rows)).toMatchObject({ action_runs: 3, houses_looted: 40 });
+  });
+
+  it('valida métricas de ação', () => {
+    expect(isRankingMetric('action:houses_looted')).toBe(true);
+    expect(isRankingMetric('action:password_hash')).toBe(false);
+  });
+
+  it('todas as 33 ações estão registradas exatamente uma vez', () => {
+    expect(ACTION_KEYS).toHaveLength(33);
+    expect(new Set(ACTION_KEYS).size).toBe(33);
   });
 });
 

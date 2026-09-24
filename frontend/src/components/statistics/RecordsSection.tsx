@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { ChampionshipStats } from '../../lib/api';
 import { fmtDays, fmtInt } from '../../lib/statsFormat';
+import { actionLabel } from '../../lib/actionLabels';
 import { EmptyState, RankingButton, SectionHeader, type RankingTarget } from './StatsUi';
 
 // Metadados de exibição por métrica — as métricas em si vêm do backend
@@ -14,8 +15,18 @@ export const RECORD_META: Record<string, { icon: string; title: string; unit: st
   bases:        { icon: '🏠', title: 'Mais bases Spiffo concluídas',  unit: 'Bases',       format: fmtInt },
 };
 
+// action:<chave> → rótulo vindo de actionLabels (mesma fonte da seção de ações)
+function metaFor(metric: string) {
+  if (RECORD_META[metric]) return RECORD_META[metric];
+  if (metric.startsWith('action:')) {
+    const a = actionLabel(metric.slice('action:'.length));
+    return { icon: a.icon, title: `Mais ${a.label.toLowerCase()}`, unit: a.unit, format: (v: number) => `${fmtInt(v)} ${a.unit}` };
+  }
+  return undefined;
+}
+
 export function recordTarget(metric: string): RankingTarget {
-  const m = RECORD_META[metric];
+  const m = metaFor(metric);
   return { metric, title: m?.title ?? metric, unit: m?.unit ?? '', format: m?.format };
 }
 
@@ -29,7 +40,7 @@ export function RecordsSection({ data, onRanking }: { data: ChampionshipStats['r
       {data.length === 0 ? <EmptyState text="Nenhum recorde para os filtros escolhidos." /> : (
         <div className="stats-records">
           {data.map(({ metric, holder }) => {
-            const meta = RECORD_META[metric];
+            const meta = metaFor(metric);
             if (!meta) return null;
             const who = holder.character_name ?? holder.name;
             return (

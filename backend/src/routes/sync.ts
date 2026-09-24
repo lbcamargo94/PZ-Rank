@@ -20,6 +20,7 @@ import { parsePzrCode } from '../lib/decoder';
 import { dbError } from '../lib/errors';
 import { computeScore } from '../lib/scoring';
 import { processHeatmapDelta } from '../lib/heatmap';
+import { COMPANION_STAT_KEYS, validateCompanionStats, type CompanionStatKey } from '../lib/companionStats';
 import { config } from '../config';
 import type { Objectives } from '../types';
 
@@ -104,11 +105,13 @@ router.get('/lookup', lookupLimiter, async (req: Request, res: Response): Promis
 // Enviado pelo mod automaticamente (sem precisar de moderador).
 // Preserva objectives e live_url de entradas existentes.
 router.post('/update', syncLimiter, async (req: Request, res: Response): Promise<void> => {
-  const { player_token, code, disqualification_reason, heatmap_delta } = req.body as {
+  const { player_token, code, disqualification_reason, heatmap_delta, stats, stats_character } = req.body as {
     player_token?:           string;
     code?:                   string;
     disqualification_reason?: string;
     heatmap_delta?:           unknown[];
+    stats?:                   unknown;   // Companion v2.5.0+: contadores de ações (ver lib/companionStats.ts)
+    stats_character?:         unknown;
   };
 
   const VALID_REASONS = new Set(['sandbox', 'debug', 'manual']);
@@ -194,6 +197,31 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     if (sig !== expected) {
       res.status(400).json({ error: 'Assinatura inválida. Atualize o Companion.' });
       return;
+    }
+  }
+
+  // ── Stats de ações do Companion (PZRX9 slim não carrega mais esses contadores) ──
+  // Válidas → sobrescrevem os campos estendidos do decoded (zerados no PZRX9) e
+  // passam a alimentar colunas, conquistas e /estatisticas. Inválidas → ignoradas,
+  // o sync do rank segue normal.
+  let companionStatsOk = false;
+  if (stats != null) {
+    const v = validateCompanionStats({
+      stats,
+      statsCharacter: stats_character,
+      signature:      req.headers['x-stats-sig'] as string | undefined,
+      secret:         config.syncHmacSecret ?? '',
+      playerToken:    player_token,
+      code,
+      characterName:  decoded.characterName,
+    });
+    if (v.ok) {
+      for (const [key, field] of Object.entries(COMPANION_STAT_KEYS)) {
+        (decoded as unknown as Record<string, number>)[field] = v.stats[key as CompanionStatKey];
+      }
+      companionStatsOk = true;
+    } else {
+      console.warn(`[sync] stats do Companion ignoradas | player=${player.nick} | motivo=${v.reason}`);
     }
   }
 
@@ -662,20 +690,22 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   }
   const no_live_streak = wasLiveAtSync ? 0 : (prev?.no_live_streak ?? 0) + 1;
 
-  const hasExtended = decoded.animalsKilled > 0 || decoded.fishCaught > 0 ||
+  // Com stats do Companion validadas, grava as 33 colunas SEMPRE (inclusive zeros):
+  // uma run nova com o mesmo nome de personagem não pode herdar contadores da anterior.
+  const hasExtended = companionStatsOk || decoded.animalsKilled > 0 || decoded.fishCaught > 0 ||
     decoded.cropsHarvested > 0 || decoded.itemsCrafted > 0 ||
     decoded.housesLooted > 0 || decoded.hoursWithoutSleep > 0 ||
     decoded.treesCut > 0 || decoded.booksRead > 0 ||
     decoded.structuresBuilt > 0 || decoded.cropsPlanted > 0 ||
     decoded.spiffoVisited > 0;
-  const hasExtended6 = decoded.eggsCollected > 0 || decoded.milkProduced > 0 ||
+  const hasExtended6 = companionStatsOk || decoded.eggsCollected > 0 || decoded.milkProduced > 0 ||
     decoded.stoneStructures > 0 || decoded.ceramicItems > 0 ||
     decoded.forgedWeapons > 0 || decoded.kmDriven > 0 ||
     decoded.citiesVisited > 0 || decoded.militaryVisited > 0 ||
     decoded.mealsCooked > 0 || decoded.waterCollected > 0 ||
     decoded.materialsCrafted > 0 || decoded.animalTracks > 0;
-  const hasExtended7 = decoded.weaponsCrafted > 0;
-  const hasExtended8 = decoded.furnitureCrafted > 0 || decoded.clothesCrafted > 0 ||
+  const hasExtended7 = companionStatsOk || decoded.weaponsCrafted > 0;
+  const hasExtended8 = companionStatsOk || decoded.furnitureCrafted > 0 || decoded.clothesCrafted > 0 ||
     decoded.cheeseProduced > 0 || decoded.doorsOpened > 0 || decoded.sleepLocations > 0 ||
     decoded.basementsExplored > 0 || decoded.stationsUsed > 0 ||
     decoded.animalSpecies > 0 || decoded.daysNoCanned > 0;
@@ -704,6 +734,11 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     no_live_streak,
     mod_version:  decoded.modVersion ?? null,
     active_mods: JSON.stringify(decoded.activeMods),
+    // Marca a run como tendo contadores de ações confiáveis (fonte: Companion).
+    // /estatisticas só usa ações de runs com esta coluna preenchida — valores
+    // anteriores (PZRX≤8, congelados desde o mod v2.16) ficam de fora.
+    // Em nova run sem stats, zera a marca pra não herdar a confiabilidade da anterior.
+    ...(companionStatsOk ? { stats_synced_at: new Date().toISOString() } : isNewCharRun ? { stats_synced_at: null } : {}),
     // PZRX3: only write when present to avoid overwriting with zeros on PZRX2 syncs
     ...(hasExtended ? {
       animals_killed:      decoded.animalsKilled,
