@@ -84,6 +84,34 @@ describe('planBackfill', () => {
     });
   });
 
+  it('dump antigo da MESMA run já coberta pelo snapshot não vira run duplicada (caso Kdevil)', () => {
+    const plan = planBackfill({
+      entries: [entry({ id: 65, player_id: 54, character_name: 'Kdevil', time_raw: 52 })],
+      journal: [death({ player_id: 54, char_name: 'Kdevil', created_at: '2026-09-24T21:50:49Z', data: { days: 563, kills: 47756 } })],
+      existing: [],
+      sources: [
+        { name: 'snapshot', takenAt: '2026-09-24T20:53:34Z', rows: [{ id: 65, player_id: 54, character_name: 'Kdevil', time_raw: 799741, days: 555, kills: 47332 }] },
+        { name: 'dump',     takenAt: '2026-09-03T17:49:00Z', rows: [{ id: '65', player_id: '54', character_name: 'Kdevil', time_raw: '345600', days: '240', kills: '11543' }] },
+      ],
+    });
+    expect(plan).toHaveLength(1);
+    expect(plan[0]!.source).toBe('snapshot');
+  });
+
+  it('dump antigo com morte registrada antes do snapshot É outra run', () => {
+    const plan = planBackfill({
+      entries: [entry({ time_raw: 52 })],
+      journal: [death({ created_at: '2026-09-10T00:00:00Z', data: { days: 250, kills: 12000 } })],
+      existing: [],
+      sources: [
+        { name: 'snapshot', takenAt: '2026-09-24T20:00:00Z', rows: [{ id: 1, player_id: 10, character_name: 'Ana', time_raw: 500000, days: 347, kills: 30000 }] },
+        { name: 'dump',     takenAt: '2026-09-03T17:49:00Z', rows: [{ id: '1', player_id: '10', character_name: 'Ana', time_raw: '345600', days: '240', kills: '11543' }] },
+      ],
+    });
+    expect(plan.map(p => p.source).sort()).toEqual(['dump', 'snapshot']);
+    expect(plan.find(p => p.source === 'dump')!.row).toMatchObject({ days: 250, kills: 12000 }); // final pelo jornal
+  });
+
   it('não recupera se a run do snapshot/dump ainda é a atual', () => {
     const plan = planBackfill({
       entries: [entry({ time_raw: 5000 })],

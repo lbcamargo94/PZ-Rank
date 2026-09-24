@@ -5,7 +5,9 @@
  * uma partida nova com o mesmo nome de personagem (antes da migration_v38).
  * Lógica em lib/runHistoryBackfill.ts (testada); aqui só carrega dados e grava.
  *
- * --dry-run  não grava nada — mostra o que seria recuperado, por fonte.
+ * --dry-run     não grava nada — mostra o que seria recuperado, por fonte.
+ * --skip-empty  descarta mortes do jornal com 0 dias E 0 kills (personagem
+ *               recriado no início pra sortear spawn/traits, não é run de verdade)
  * --source=snapshot:<arquivo.json>:<ISO>   cópia de GET /entries tirada em <ISO>
  * --source=dump:<arquivo.json>:<ISO>       linhas de entries exportadas do dump SQL
  *   (a ordem dos --source define a prioridade: o primeiro que cobrir a run vence)
@@ -21,7 +23,8 @@ import { supabase } from '../supabase';
 import { config } from '../config';
 import { planBackfill, type BackfillInput, type CurrentEntry, type DeathEvent, type FullRow } from '../lib/runHistoryBackfill';
 
-const DRY_RUN = process.argv.includes('--dry-run');
+const DRY_RUN    = process.argv.includes('--dry-run');
+const SKIP_EMPTY = process.argv.includes('--skip-empty');
 
 function parseSources(): BackfillInput['sources'] {
   return process.argv
@@ -67,13 +70,27 @@ async function main() {
   });
 
   // Nick atual pra runs vindas só do jornal; descarta jogadores que não existem mais
-  const ready = plan
+  const named = plan
     .map(p => ({ ...p, row: { ...p.row, name: p.row['name'] ?? nick.get(Number(p.row['player_id'])) } as Record<string, unknown> }))
     .filter(p => p.row.name != null);
 
+  // Mortes do jornal com 0 dias e 0 kills: na prática, personagem recriado logo no
+  // início (sortear spawn/traits) — não é uma run de verdade. --skip-empty descarta.
+  const isEmpty = (p: typeof named[number]) =>
+    p.source === 'journal' && Number(p.row['days']) === 0 && Number(p.row['kills']) === 0;
+  const emptyCount = named.filter(isEmpty).length;
+  const ready = SKIP_EMPTY ? named.filter(p => !isEmpty(p)) : named;
+  console.log(`\nMortes do jornal com 0 dias e 0 kills: ${emptyCount} ${SKIP_EMPTY ? '(DESCARTADAS por --skip-empty)' : '(incluídas — use --skip-empty pra descartar)'}`);
+
   const bySource = ready.reduce<Record<string, number>>((acc, p) => { acc[p.source] = (acc[p.source] ?? 0) + 1; return acc; }, {});
   console.log(`\nEntradas: ${entries.length} | mortes no jornal: ${journal.length} | já no histórico: ${(historyRes.data ?? []).length}`);
-  console.log(`Runs a recuperar: ${ready.length}`, bySource, plan.length !== ready.length ? `(descartadas sem jogador: ${plan.length - ready.length})` : '');
+  console.log(`Runs a recuperar: ${ready.length}`, bySource, plan.length !== named.length ? `(descartadas sem jogador: ${plan.length - named.length})` : '');
+  const journalDays = ready.filter(p => p.source === 'journal').map(p => Number(p.row['days'])).sort((a, b) => a - b);
+  if (journalDays.length) {
+    const buckets = [[0, 0], [1, 7], [8, 30], [31, 90], [91, 99999]].map(([a, b]) =>
+      `${a === b ? a : `${a}–${b === 99999 ? '+' : b}`}d: ${journalDays.filter(d => d >= a! && d <= b!).length}`);
+    console.log('Parciais (jornal) por dias:', buckets.join(' | '));
+  }
   console.log('\nMaiores runs recuperadas:');
   for (const p of [...ready].sort((a, b) => Number(b.row['days']) - Number(a.row['days'])).slice(0, 20)) {
     console.log(`  ${String(p.row.name).padEnd(22)} ${String(p.row['character_name']).padEnd(24)} ${p.note}${p.is_partial ? ' [parcial]' : ''}`);

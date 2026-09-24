@@ -74,6 +74,19 @@ export function planBackfill(input: BackfillInput): PlannedRun[] {
 
   // 1 e 2: linhas completas (snapshot/dump) cuja run foi sobrescrita depois
   const fullDone = new Set<string>();
+  // Fotos já usadas por personagem. Uma foto MAIS ANTIGA (ex: dump com 240 dias)
+  // da mesma run que outra fonte já cobriu (snapshot com 555 dias) não é outra
+  // run — só é, se houve uma morte registrada entre as duas fotos (caso Kdevil).
+  const fullByKey = new Map<string, Array<{ timeRaw: number; takenAt: string }>>();
+  const anyDeath = new Map<string, DeathEvent[]>();
+  for (const [k, evs] of deaths) anyDeath.set(k, evs);
+  const sameRunAsPlanned = (k: string, timeRaw: number, days: number, takenAt: string) =>
+    (fullByKey.get(k) ?? []).some(p =>
+      p.timeRaw >= timeRaw &&
+      !(anyDeath.get(k) ?? []).some(ev =>
+        ev.created_at >= (takenAt < p.takenAt ? takenAt : p.takenAt) &&
+        ev.created_at <= (takenAt < p.takenAt ? p.takenAt : takenAt) &&
+        num(ev.data.days) >= days));
   for (const src of input.sources) {
     for (const r of src.rows) {
       if (r['deleted_at']) continue;                    // removida por moderador: não ressuscita
@@ -84,7 +97,10 @@ export function planBackfill(input: BackfillInput): PlannedRun[] {
       const runKey = `${k}\u0000${num(r.time_raw)}`;
       if (fullDone.has(runKey)) continue;
       if (input.existing.some(h => key(h.player_id, h.character_name) === k && h.days >= num(r['days']) && h.kills >= num(r.kills as unknown))) continue;
+      if (sameRunAsPlanned(k, num(r.time_raw), num(r['days']), src.takenAt)) continue;
       fullDone.add(runKey);
+      if (!fullByKey.has(k)) fullByKey.set(k, []);
+      fullByKey.get(k)!.push({ timeRaw: num(r.time_raw), takenAt: src.takenAt });
 
       const row: Record<string, unknown> = { entry_id: e.id, player_id: e.player_id };
       for (const c of FULL_COLS) row[c] = r[c] ?? null;
