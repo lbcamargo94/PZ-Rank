@@ -411,6 +411,74 @@ export function apiGetLegends(): Promise<Legends> {
   return request('/stats/legends');
 }
 
+// ── Estatísticas do campeonato (/estatisticas) ──────────────
+// Tudo já vem agregado do backend (backend/src/lib/statistics.ts).
+
+export type StatsStatus = 'all' | 'alive' | 'dead';
+
+export interface StatsQuery {
+  status:     StatsStatus;
+  profession: string | null;
+  includeDq:  boolean;
+}
+
+export interface StatsHolder {
+  player_id:      number | null;
+  name:           string;
+  character_name: string | null;
+  value:          number;
+}
+
+export interface StatsBucket { min: number; max: number | null; count: number }
+
+export interface ChampionshipStats {
+  season:       { id: number; name: string; started_at: string } | null;
+  generated_at: string;
+  overview: {
+    players: number; runs: number; alive: number; dead: number;
+    total_kills: number; total_days: number; bases_built: number; skills_maxed: number;
+  };
+  professions: Array<{ name: string; runs: number; players: number; pct: number; alive: number; avg_days: number; avg_kills: number }>;
+  traits:      Array<{ key: string; runs: number; players: number; pct: number; avg_days: number }>;
+  trait_builds: Array<{ traits: string[]; runs: number; avg_days: number }>;
+  survival: {
+    avg_days: number; median_days: number; max_days: number; min_days: number;
+    avg_dead: number; avg_alive: number; buckets: StatsBucket[]; longest: StatsHolder | null;
+  };
+  zombies: {
+    total: number; avg_per_player: number; avg_per_run: number; median_per_run: number;
+    per_day: number; avg_before_death: number; max: number; buckets: StatsBucket[]; top: StatsHolder | null;
+  };
+  skills:  Array<{ name: string; avg: number; max: number; count10: number; pct10: number; count0: number; dist: number[] }>;
+  records: Array<{ metric: string; holder: StatsHolder }>;
+  curiosities: Array<{ kind: string; name?: string; key?: string; value: number; runs?: number }>;
+  profession_options: string[];
+}
+
+export interface StatsRankingRow {
+  position: number; player_id: number | null; name: string;
+  character_name: string | null; is_alive: boolean; value: number;
+}
+
+function statsParams(q: StatsQuery): URLSearchParams {
+  const p = new URLSearchParams({ season: 'current', status: q.status });
+  if (q.profession) p.set('profession', q.profession);
+  if (q.includeDq)  p.set('include_dq', '1');
+  return p;
+}
+
+export function apiGetChampionshipStats(q: StatsQuery): Promise<ChampionshipStats> {
+  return request(`/stats/championship?${statsParams(q)}`);
+}
+
+export async function apiGetChampionshipRanking(metric: string, q: StatsQuery, limit = 50): Promise<StatsRankingRow[]> {
+  const p = statsParams(q);
+  p.set('metric', metric);
+  p.set('limit', String(limit));
+  const r = await request<{ ranking: StatsRankingRow[] }>(`/stats/championship/ranking?${p}`);
+  return r.ranking;
+}
+
 // ── Seasons ─────────────────────────────────────────────────
 
 export function apiGetSeasons(): Promise<import('../types').Season[]> {

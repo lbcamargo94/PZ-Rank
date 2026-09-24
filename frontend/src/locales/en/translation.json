@@ -21,6 +21,7 @@
     "mods": "Mods",
     "legends": "Legends",
     "transparency": "Transparency",
+    "statistics": "Statistics",
     "tips": "Tips",
     "compare": "Compare",
     "settings": "Settings",
@@ -45,6 +46,7 @@
       "legends":       { "label": "Legends",        "sub": "Hall of fame" },
       "links":         { "label": "Useful Links",   "sub": "Championship resources" },
       "transparency":  { "label": "Transparency",   "sub": "Server data" },
+      "statistics":    { "label": "Statistics", "sub": "Championship numbers" },
       "compare":       { "label": "Compare",        "sub": "Player vs Player" }
     },
     "stats": {

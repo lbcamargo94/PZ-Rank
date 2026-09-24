@@ -2,6 +2,12 @@ import { Router } from 'express';
 import type { Request, Response } from 'express';
 import { supabase } from '../supabase';
 import { dbError } from '../lib/errors';
+import { config } from '../config';
+import { normalizeProfession } from '../lib/professions';
+import {
+  applyFilters, computeChampionshipStats, computeRanking, isRankingMetric,
+  type StatsFilters, type StatsRow,
+} from '../lib/statistics';
 
 const router = Router();
 
@@ -202,6 +208,107 @@ router.get('/legends', async (_req: Request, res: Response) => {
     first_champion:       firstChampion,
     hall_of_fame:         hallOfFame,
   });
+});
+
+// ── Estatísticas do campeonato (/estatisticas) ─────────────────────────────
+// Toda agregação vive em lib/statistics.ts. Aqui só: leitura do banco com as
+// colunas necessárias, regras oficiais de visibilidade e cache curto em memória.
+//
+// Regras oficiais (as mesmas do rank público — GET /entries + RankPage):
+//   - entries com deleted_at IS NULL
+//   - jogador não excluído (players.deleted_at IS NULL)
+//   - contas de teste (players.is_test_mod) fora
+//   - desclassificados (sandbox_ok=false) fora, salvo include_dq=1
+//
+// Temporada: `entries` não tem season_id — todas as runs do banco pertencem à
+// temporada ativa. Por isso só `season=current` é aceito (ver docs/estatisticas.md).
+
+const STATS_ENTRY_COLS =
+  'id, player_id, name, character_name, profession, days, kills, score, skills, traits, objectives, is_alive, sandbox_ok, created_at';
+const STATS_CACHE_MS = 3 * 60 * 1000;
+let _statsRowsCache: { rows: StatsRow[]; season: { id: number; name: string; started_at: string } | null; at: number } | null = null;
+let _statsResultCache: { at: number; results: Map<string, object> } = { at: 0, results: new Map() };
+
+async function loadStatsRows() {
+  if (_statsRowsCache && Date.now() - _statsRowsCache.at < STATS_CACHE_MS) return _statsRowsCache;
+
+  const [entriesRes, playersRes, seasonRes] = await Promise.all([
+    supabase.from(config.tableName).select(STATS_ENTRY_COLS).is('deleted_at', null),
+    supabase.from('players').select('id, deleted_at, is_test_mod'),
+    supabase.from('seasons').select('id, name, started_at').eq('is_active', true).maybeSingle(),
+  ]);
+  const err = entriesRes.error ?? playersRes.error ?? seasonRes.error;
+  if (err) throw err;
+
+  type PlayerRow = { id: number; deleted_at: string | null; is_test_mod: boolean | number };
+  const hidden = new Set(((playersRes.data ?? []) as PlayerRow[])
+    .filter(p => p.deleted_at != null || p.is_test_mod === true || p.is_test_mod === 1)
+    .map(p => p.id));
+
+  const rows = ((entriesRes.data ?? []) as StatsRow[])
+    .filter(r => r.player_id == null || !hidden.has(r.player_id));
+
+  _statsRowsCache = { rows, season: (seasonRes.data as { id: number; name: string; started_at: string } | null) ?? null, at: Date.now() };
+  return _statsRowsCache;
+}
+
+function parseStatsFilters(q: Request['query']): StatsFilters | string {
+  const status = typeof q.status === 'string' && q.status ? q.status : 'all';
+  if (status !== 'all' && status !== 'alive' && status !== 'dead') return 'status inválido.';
+  const season = typeof q.season === 'string' && q.season ? q.season : 'current';
+  if (season !== 'current') return 'Somente a temporada atual está disponível.';
+  const profession = typeof q.profession === 'string' && q.profession.trim()
+    ? normalizeProfession(q.profession.slice(0, 80)) : null;
+  return { status, profession, includeDisqualified: q.include_dq === '1' || q.include_dq === 'true' };
+}
+
+// GET /stats/championship?status=all|alive|dead&profession=&include_dq=0|1&season=current
+router.get('/championship', async (req: Request, res: Response) => {
+  const filters = parseStatsFilters(req.query);
+  if (typeof filters === 'string') return res.status(400).json({ error: filters });
+
+  try {
+    const cache = await loadStatsRows();
+    // Resultado memoizado por combinação de filtros enquanto as linhas em cache
+    // forem as mesmas (~50ms de agregação com ~550 runs — evita repetir a cada acesso)
+    const key = JSON.stringify(filters);
+    if (_statsResultCache.at !== cache.at) _statsResultCache = { at: cache.at, results: new Map() };
+    let body = _statsResultCache.results.get(key);
+    if (!body) {
+      body = {
+        season:       cache.season,
+        filters,
+        generated_at: new Date(cache.at).toISOString(),
+        ...computeChampionshipStats(cache.rows, filters),
+      };
+      // Teto contra query string arbitrária em `profession` inflando o Map
+      if (_statsResultCache.results.size >= 200) _statsResultCache.results.clear();
+      _statsResultCache.results.set(key, body);
+    }
+    res.setHeader('Cache-Control', 'public, s-maxage=180, stale-while-revalidate=120');
+    res.json(body);
+  } catch (error) {
+    const e = dbError(error as Parameters<typeof dbError>[0]);
+    res.status(e.httpStatus).json({ error: e.message });
+  }
+});
+
+// GET /stats/championship/ranking?metric=kills|days|score|skills10|skill_levels|bases|skill:<Nome>&limit=50 (+ filtros)
+router.get('/championship/ranking', async (req: Request, res: Response) => {
+  const filters = parseStatsFilters(req.query);
+  if (typeof filters === 'string') return res.status(400).json({ error: filters });
+  const metric = typeof req.query.metric === 'string' ? req.query.metric.slice(0, 60) : '';
+  if (!isRankingMetric(metric)) return res.status(400).json({ error: 'metric inválida.' });
+  const limit = Math.min(100, Math.max(1, parseInt(String(req.query.limit ?? '50'), 10) || 50));
+
+  try {
+    const { rows } = await loadStatsRows();
+    res.setHeader('Cache-Control', 'public, s-maxage=180, stale-while-revalidate=120');
+    res.json({ metric, ranking: computeRanking(applyFilters(rows, filters), metric, limit) });
+  } catch (error) {
+    const e = dbError(error as Parameters<typeof dbError>[0]);
+    res.status(e.httpStatus).json({ error: e.message });
+  }
 });
 
 export default router;

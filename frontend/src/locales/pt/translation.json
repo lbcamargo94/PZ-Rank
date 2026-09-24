@@ -21,6 +21,7 @@
     "mods": "Mods",
     "legends": "Lendas",
     "transparency": "Transparência",
+    "statistics": "Estatísticas",
     "tips": "Dicas",
     "compare": "Comparar",
     "settings": "Configurações",
@@ -45,6 +46,7 @@
       "legends":       { "label": "Lendas",          "sub": "Hall da fama" },
       "links":         { "label": "Links Úteis",     "sub": "Recursos do campeonato" },
       "transparency":  { "label": "Transparência",   "sub": "Dados do servidor" },
+      "statistics":    { "label": "Estatísticas", "sub": "Números do campeonato" },
       "compare":       { "label": "Comparar",        "sub": "Jogador vs Jogador" }
     },
     "stats": {

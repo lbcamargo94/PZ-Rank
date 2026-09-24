@@ -57,6 +57,7 @@ const ResendVerificationPage = lazy(() => import('./pages/ResendVerificationPage
 const ClaimAccountPage      = lazy(() => import('./pages/ClaimAccountPage').then(m => ({ default: m.ClaimAccountPage })));
 const LegendsPage           = lazy(() => import('./pages/LegendsPage').then(m => ({ default: m.LegendsPage })));
 const TransparenciaPage     = lazy(() => import('./pages/TransparenciaPage').then(m => ({ default: m.TransparenciaPage })));
+const StatisticsPage        = lazy(() => import('./pages/StatisticsPage').then(m => ({ default: m.StatisticsPage })));
 const MapPage               = lazy(() => import('./pages/MapPage').then(m => ({ default: m.MapPage })));
 const LinksUteisPage        = lazy(() => import('./pages/LinksUteisPage').then(m => ({ default: m.LinksUteisPage })));
 const ModeratorRegisterPage = lazy(() => import('./pages/ModeratorRegisterPage').then(m => ({ default: m.ModeratorRegisterPage })));
@@ -173,6 +174,7 @@ export default function App() {
             <Route path="/verificar-conta"  element={<ResendVerificationPage />} />
             <Route path="/cadastrar-conta"  element={<ClaimAccountPage />} />
             <Route path="/lendas"           element={<LegendsPage />} />
+            <Route path="/estatisticas"     element={<StatisticsPage />} />
             <Route path="/transparencia"    element={<TransparenciaPage />} />
             <Route path="/mapa"             element={<MapPage />} />
             <Route path="/links"            element={<LinksUteisPage />} />

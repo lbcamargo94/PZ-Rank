@@ -17,6 +17,7 @@ export const NAV_ITEMS = [
   { to: '/mods-lista',    icon: 'ti-puzzle',         navKey: 'mods',         quickKey: 'mods'         },
   { to: '/dicas',         icon: 'ti-bulb',           navKey: 'tips',         quickKey: 'tips'         },
   { to: '/lendas',        icon: 'ti-award',          navKey: 'legends',      quickKey: 'legends'      },
+  { to: '/estatisticas',  icon: 'ti-chart-bar',      navKey: 'statistics',   quickKey: 'statistics'   },
   { to: '/links',         icon: 'ti-link',           navKey: 'links',        quickKey: 'links'        },
   { to: '/transparencia', icon: 'ti-chart-pie',      navKey: 'transparency', quickKey: 'transparency' },
   { to: '/comparar',      icon: 'ti-arrows-diff',    navKey: 'compare',      quickKey: 'compare'      },
