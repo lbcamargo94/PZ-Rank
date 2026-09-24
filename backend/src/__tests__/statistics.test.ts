@@ -196,6 +196,13 @@ describe('visão geral, rankings e recordes', () => {
     expect(r[0]!.position).toBe(1);
   });
 
+  it('aceita created_at como Date (pg-adapter) além de string (sqlite)', () => {
+    const a = row({ kills: 50, created_at: new Date('2026-08-02T00:00:00Z') });
+    const b = row({ kills: 50, created_at: new Date('2026-08-01T00:00:00Z') });
+    expect(computeRanking([a, b], 'kills').map(x => x.player_id)).toEqual([b.player_id, a.player_id]);
+    expect(computeChampionshipStats([a, b], ALL).records.find(r => r.metric === 'kills')?.holder?.player_id).toBe(b.player_id);
+  });
+
   it('ranking por skill individual', () => {
     const rows = [row({ skills: 'Machado 3' }), row({ skills: 'Machado 9' })];
     expect(computeRanking(rows, 'skill:Machado').map(x => x.value)).toEqual([9, 3]);

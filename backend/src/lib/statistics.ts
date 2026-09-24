@@ -29,8 +29,11 @@ export interface StatsRow {
   objectives:     unknown;
   is_alive:       boolean | number;
   sandbox_ok:     boolean | number;
-  created_at:     string;
+  // pg-adapter devolve Date; sqlite-adapter devolve string ISO — sempre comparar via createdMs()
+  created_at:     string | Date;
 }
+
+const createdMs = (r: StatsRow) => new Date(r.created_at).getTime() || 0;
 
 export type StatusFilter = 'all' | 'alive' | 'dead';
 
@@ -76,7 +79,7 @@ function topHolder(rows: StatsRow[], value: (r: StatsRow) => number): Holder | n
   let bestVal = -Infinity;
   for (const r of rows) {
     const v = value(r);
-    if (v > bestVal || (v === bestVal && best && r.created_at < best.created_at)) { best = r; bestVal = v; }
+    if (v > bestVal || (v === bestVal && best && createdMs(r) < createdMs(best))) { best = r; bestVal = v; }
   }
   if (!best || bestVal <= 0) return null;
   return { player_id: best.player_id, name: best.name, character_name: best.character_name, value: bestVal };
@@ -311,7 +314,7 @@ export function computeRanking(rows: StatsRow[], metric: RankingMetric, limit = 
   return rows
     .map(r => ({ r, v: value(r) }))
     .filter(x => x.v > 0)
-    .sort((a, b) => b.v - a.v || a.r.created_at.localeCompare(b.r.created_at))
+    .sort((a, b) => b.v - a.v || createdMs(a.r) - createdMs(b.r))
     .slice(0, limit)
     .map((x, i) => ({
       position:       i + 1,
