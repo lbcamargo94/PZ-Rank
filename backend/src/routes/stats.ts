@@ -86,6 +86,18 @@ router.get('/steam-players', async (_req: Request, res: Response) => {
   }
 });
 
+// Maior valor entre a run atual (entries) e as anteriores (run_history).
+// Empate fica com a run atual. `previous_run` deixa o frontend sinalizar.
+function pickRecord(
+  current:  Record<string, unknown> | null,
+  previous: Record<string, unknown> | null,
+  field:    'kills' | 'days',
+): Record<string, unknown> | null {
+  if (!previous) return current;
+  if (!current || Number(previous[field]) > Number(current[field])) return { ...previous, previous_run: true };
+  return current;
+}
+
 // GET /stats/legends — recordes da temporada + hall da fama
 router.get('/legends', async (_req: Request, res: Response) => {
   // created_at incluído para tiebreak: quem alcançou o marco PRIMEIRO mantém o posto
@@ -93,6 +105,17 @@ router.get('/legends', async (_req: Request, res: Response) => {
   const ef          = (q: ReturnType<typeof supabase.from>) =>
     (q as ReturnType<typeof supabase.from> & { is: Function; neq: Function })
       .is('deleted_at', null).neq('sandbox_ok', false);
+
+  // Runs anteriores (run_history) também valem pra "mais kills" e "maior
+  // sobrevivência" — senão uma run recordista some quando o jogador começa uma
+  // partida nova com o mesmo nome (caso Kdevil, 563 dias).
+  const histSelect = 'name, character_name, player_id, kills, days, score, created_at';
+  const [histKillsRes, histDaysRes] = await Promise.all([
+    supabase.from('run_history').select(histSelect).neq('sandbox_ok', false)
+      .order('kills', { ascending: false }).order('created_at', { ascending: true }).limit(1).maybeSingle(),
+    supabase.from('run_history').select(histSelect).neq('sandbox_ok', false)
+      .order('days', { ascending: false }).order('created_at', { ascending: true }).limit(1).maybeSingle(),
+  ]);
 
   const [
     killsRes, daysRes, scoreRes, leaderRes,
@@ -199,8 +222,8 @@ router.get('/legends', async (_req: Request, res: Response) => {
   res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=120');
   res.json({
     current_leader:       leaderRes.data,
-    most_kills:           killsRes.data,
-    most_days:            daysRes.data,
+    most_kills:           pickRecord(killsRes.data, histKillsRes.data, 'kills'),
+    most_days:            pickRecord(daysRes.data, histDaysRes.data, 'days'),
     highest_score:        scoreRes.data,
     most_skills_10:       mostSkills10,
     most_spiffo_bases:    mostSpiffo,
@@ -228,6 +251,12 @@ const STATS_ENTRY_COLS = [
   'stats_synced_at',   // requer migration_v37
   ...ACTION_KEYS,
 ].join(', ');
+// run_history (migration_v38) — mesmas colunas + marcadores do histórico
+const STATS_HISTORY_COLS = [
+  'id, player_id, name, character_name, profession, days, kills, score, skills, traits, objectives, sandbox_ok',
+  'stats_synced_at, is_partial, run_started_at, run_ended_at',
+  ...ACTION_KEYS,
+].join(', ');
 const STATS_CACHE_MS = 3 * 60 * 1000;
 let _statsRowsCache: { rows: StatsRow[]; season: { id: number; name: string; started_at: string } | null; at: number } | null = null;
 let _statsResultCache: { at: number; results: Map<string, object> } = { at: 0, results: new Map() };
@@ -235,12 +264,13 @@ let _statsResultCache: { at: number; results: Map<string, object> } = { at: 0, r
 async function loadStatsRows() {
   if (_statsRowsCache && Date.now() - _statsRowsCache.at < STATS_CACHE_MS) return _statsRowsCache;
 
-  const [entriesRes, playersRes, seasonRes] = await Promise.all([
+  const [entriesRes, historyRes, playersRes, seasonRes] = await Promise.all([
     supabase.from(config.tableName).select(STATS_ENTRY_COLS).is('deleted_at', null),
+    supabase.from('run_history').select(STATS_HISTORY_COLS),
     supabase.from('players').select('id, deleted_at, is_test_mod'),
     supabase.from('seasons').select('id, name, started_at').eq('is_active', true).maybeSingle(),
   ]);
-  const err = entriesRes.error ?? playersRes.error ?? seasonRes.error;
+  const err = entriesRes.error ?? historyRes.error ?? playersRes.error ?? seasonRes.error;
   if (err) throw err;
 
   type PlayerRow = { id: number; deleted_at: string | null; is_test_mod: boolean | number };
@@ -248,7 +278,19 @@ async function loadStatsRows() {
     .filter(p => p.deleted_at != null || p.is_test_mod === true || p.is_test_mod === 1)
     .map(p => p.id));
 
-  const rows = ((entriesRes.data ?? []) as StatsRow[])
+  // Runs anteriores (run_history): sempre encerradas — uma run "viva" no histórico foi
+  // abandonada sem morte registrada quando a partida nova com o mesmo nome começou.
+  type HistoryRow = StatsRow & { is_partial: boolean | number; run_started_at: string | Date | null; run_ended_at: string | Date };
+  const previous: StatsRow[] = ((historyRes.data ?? []) as HistoryRow[]).map(h => ({
+    ...h,
+    id:           `h${h.id}`,
+    is_alive:     false,
+    previous_run: true,
+    partial:      h.is_partial === true || h.is_partial === 1,
+    created_at:   h.run_started_at ?? h.run_ended_at,
+  }));
+
+  const rows = [...((entriesRes.data ?? []) as StatsRow[]), ...previous]
     .filter(r => r.player_id == null || !hidden.has(r.player_id));
 
   _statsRowsCache = { rows, season: (seasonRes.data as { id: number; name: string; started_at: string } | null) ?? null, at: Date.now() };

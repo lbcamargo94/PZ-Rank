@@ -411,6 +411,29 @@ export function apiGetLegends(): Promise<Legends> {
   return request('/stats/legends');
 }
 
+// ── Runs anteriores do jogador (run_history) ────────────────
+
+export interface PreviousRun {
+  id:             number;
+  character_name: string | null;
+  profession:     string | null;
+  days:           number;
+  time_str:       string | null;
+  kills:          number;
+  score:          number;
+  is_alive:       boolean;   // true = abandonada sem morte registrada
+  sandbox_ok:     boolean;
+  death_cause:    string | null;
+  run_started_at: string | null;
+  run_ended_at:   string;
+  is_partial:     boolean;   // recuperada só do jornal (dias/kills/pontuação)
+}
+
+export async function apiGetPlayerRuns(playerId: number): Promise<PreviousRun[]> {
+  const r = await request<{ runs: PreviousRun[] }>(`/players/${playerId}/runs`);
+  return r.runs;
+}
+
 // ── Estatísticas do campeonato (/estatisticas) ──────────────
 // Tudo já vem agregado do backend (backend/src/lib/statistics.ts).
 
@@ -448,7 +471,7 @@ export interface ChampionshipStats {
   season:       { id: number; name: string; started_at: string } | null;
   generated_at: string;
   overview: {
-    players: number; runs: number; alive: number; dead: number;
+    players: number; runs: number; previous_runs: number; alive: number; dead: number;
     total_kills: number; total_days: number; bases_built: number; skills_maxed: number;
     action_runs: number; items_crafted: number; meals_cooked: number; houses_looted: number;
   };
@@ -477,6 +500,7 @@ export interface ChampionshipStats {
 export interface StatsRankingRow {
   position: number; player_id: number | null; name: string;
   character_name: string | null; is_alive: boolean; value: number;
+  previous_run?: boolean;   // run anterior com o mesmo nome (run_history)
 }
 
 function statsParams(q: StatsQuery): URLSearchParams {

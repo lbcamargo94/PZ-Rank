@@ -17,6 +17,7 @@ import { LiveBadges } from '../components/LiveBadges';
 import { useToast } from '../hooks/useToast';
 import { Toast } from '../components/Toast';
 import { formatNumber } from '../lib/format';
+import { PreviousRunsSection } from '../components/PreviousRunsSection';
 import { translateApiError } from '../lib/apiErrors';
 import type { PlayerProfile, Entry, LiveStatus, PlayerSession, PlayerLikeStatus, PlayerActiveMods, ModClassification } from '../types';
 import type { Objectives } from '../lib/objectives';
@@ -421,7 +422,7 @@ function ActiveModsSection({ playerId }: { playerId: number }) {
 
 function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | null; live?: LiveStatus[] }) {
   const { t } = useTranslation();
-  const [tab, setTab] = useState<'profile' | 'stats' | 'skills' | 'traits' | 'achievements' | 'mods'>('profile');
+  const [tab, setTab] = useState<'profile' | 'stats' | 'skills' | 'traits' | 'achievements' | 'mods' | 'history'>('profile');
   const [showGuide, setShowGuide] = useState(false);
   const isDisqualified = entry.sandbox_ok === false;
 
@@ -568,6 +569,9 @@ function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | nul
         <button className={`pp-tab${tab === 'mods' ? ' active' : ''}`} onClick={() => setTab('mods')}>
           <i className="ti ti-puzzle" /><span>{t('player.tabs.mods')}</span>
         </button>
+        <button className={`pp-tab${tab === 'history' ? ' active' : ''}`} onClick={() => setTab('history')}>
+          <i className="ti ti-history" /><span>{t('player.tabs.history')}</span>
+        </button>
       </div>
 
       <div className="pp-tab-body">
@@ -666,6 +670,9 @@ function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | nul
         )}
         {tab === 'mods' && entry.player_id != null && (
           <ActiveModsSection playerId={entry.player_id} />
+        )}
+        {tab === 'history' && entry.player_id != null && (
+          <PreviousRunsSection playerId={entry.player_id} characterName={entry.character_name ?? ''} />
         )}
       </div>
 

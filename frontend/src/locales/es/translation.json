@@ -222,7 +222,20 @@
       "skills": "Habilidades",
       "traits": "Características",
       "achievements": "Logros",
-      "mods": "Mods"
+      "mods": "Mods",
+      "history": "Partidas anteriores"
+    },
+    "history": {
+      "loading": "Cargando partidas anteriores...",
+      "error": "No se pudieron cargar las partidas anteriores.",
+      "empty": "No hay partidas anteriores con este personaje.",
+      "intro": "Partidas anteriores con este mismo nombre de personaje.",
+      "partial": "Parcial",
+      "partial_tip": "Recuperada del Diario del Apocalipsis: solo días, kills y puntuación.",
+      "abandoned": "Abandonada",
+      "abandoned_tip": "Una nueva partida empezó sin que esta muerte se registrara.",
+      "ended": "Terminada el {{date}}",
+      "unknown_cause": "Causa desconocida"
     },
     "mods": {
       "loading": "Cargando mods...",

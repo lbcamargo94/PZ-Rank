@@ -184,6 +184,25 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
   res.json(payload);
 });
 
+// GET /players/:id/runs — público: runs anteriores do jogador (run_history, migration_v38)
+// — partidas substituídas por uma nova com o mesmo nome de personagem. Separado do
+// perfil pra não pesar o payload do overlay de OBS, que não precisa disso.
+router.get('/:id/runs', async (req: Request, res: Response): Promise<void> => {
+  const id = parseInt(String(req.params.id), 10);
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.', error_code: 'INVALID_ID' }); return; }
+
+  const { data, error } = await supabase
+    .from('run_history')
+    .select('id, character_name, profession, days, time_str, kills, score, is_alive, sandbox_ok, death_cause, run_started_at, run_ended_at, is_partial')
+    .eq('player_id', id)
+    .order('run_ended_at', { ascending: false })
+    .limit(200);
+
+  if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
+  res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120');
+  res.json({ runs: data ?? [] });
+});
+
 // GET /players/:id/overlay — fonte de dados do overlay de OBS: disponível para qualquer jogador cadastrado.
 router.get('/:id/overlay', async (req: Request, res: Response): Promise<void> => {
   const id = parseInt(String(req.params.id), 10);

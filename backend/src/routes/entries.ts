@@ -5,6 +5,7 @@ import { supabase } from '../supabase';
 import { parsePzrCode } from '../lib/decoder';
 import { dbError } from '../lib/errors';
 import { computeScore, sumSkillLevels } from '../lib/scoring';
+import { archiveRun, getActiveSeasonId, isNewRunOf } from '../lib/runHistory';
 import { requireModerator } from '../middleware/moderator';
 import type { ModRequest } from '../middleware/moderator';
 import { config } from '../config';
@@ -164,7 +165,7 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
   // confirmadas pelo moderador, mesmo em caso de race condition no carregamento do painel.
   const { data: existing, error: existingError } = await supabase
     .from(config.tableName)
-    .select('id, disqualified_at, objectives, live_url')
+    .select('id, disqualified_at, objectives, live_url, time_raw')
     .eq('player_id', player_id)
     .eq('character_name', decoded.characterName)
     .maybeSingle();
@@ -176,7 +177,13 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
     return;
   }
 
-  const existingRow = existing as { id: number; disqualified_at?: string | null; objectives?: Objectives | null; live_url?: string | null } | null;
+  const existingRow = existing as { id: number; disqualified_at?: string | null; objectives?: Objectives | null; live_url?: string | null; time_raw?: number } | null;
+
+  // Código de uma partida NOVA com o mesmo nome de personagem: arquiva a run
+  // anterior antes de sobrescrever (mesma regra do sync — lib/runHistory.ts)
+  const isNewRun = !!existingRow && isNewRunOf(existingRow.time_raw ?? 0, decoded.timeRaw);
+  if (existingRow && isNewRun) await archiveRun(existingRow.id, 'manual');
+  const activeSeasonId = await getActiveSeasonId();
 
   // Para entradas existentes: preserva os objectives do DB (nunca sobrescreve com o form).
   // Para entradas novas: usa os objectives enviados pelo frontend (pode ser null).
@@ -215,6 +222,11 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
       : null,
     disqualified_at:         disqualifiedAt,
     updated_at:              new Date().toISOString(),
+    ...(activeSeasonId != null ? { season_id: activeSeasonId } : {}),
+    ...(!existingRow || isNewRun ? { run_started_at: new Date().toISOString() } : {}),
+    ...(!decoded.isAlive && decoded.deathCause
+      ? { death_cause: decoded.deathCause }
+      : isNewRun ? { death_cause: null } : {}),
   };
 
   let data, error;

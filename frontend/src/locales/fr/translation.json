@@ -222,7 +222,20 @@
       "skills": "Compétences",
       "traits": "Traits",
       "achievements": "Succès",
-      "mods": "Mods"
+      "mods": "Mods",
+      "history": "Parties précédentes"
+    },
+    "history": {
+      "loading": "Chargement des parties précédentes...",
+      "error": "Impossible de charger les parties précédentes.",
+      "empty": "Aucune partie précédente avec ce personnage.",
+      "intro": "Parties précédentes avec ce même nom de personnage.",
+      "partial": "Partielle",
+      "partial_tip": "Récupérée du Journal de l’Apocalypse : seulement jours, kills et score.",
+      "abandoned": "Abandonnée",
+      "abandoned_tip": "Une nouvelle partie a commencé avant que cette mort soit enregistrée.",
+      "ended": "Terminée le {{date}}",
+      "unknown_cause": "Cause inconnue"
     },
     "mods": {
       "loading": "Chargement des mods...",

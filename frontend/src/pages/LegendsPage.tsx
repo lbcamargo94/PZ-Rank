@@ -36,6 +36,9 @@ function LegendCard({ icon, category, color, hero, entry, statLabel, statValue, 
             {typeof entry['season_name'] === 'string' && entry['season_name'] && (
               <span className="legend-season-tag">{entry['season_name']}</span>
             )}
+            {entry['previous_run'] === true && (
+              <span className="legend-season-tag" title="Partida anterior com este mesmo personagem — já encerrada">Run anterior</span>
+            )}
           </div>
 
           <div className="legend-stat-block">

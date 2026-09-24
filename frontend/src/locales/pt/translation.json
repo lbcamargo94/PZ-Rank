@@ -222,7 +222,20 @@
       "skills": "Habilidades",
       "traits": "Características",
       "achievements": "Conquistas",
-      "mods": "Mods"
+      "mods": "Mods",
+      "history": "Runs anteriores"
+    },
+    "history": {
+      "loading": "Carregando runs anteriores...",
+      "error": "Não foi possível carregar as runs anteriores.",
+      "empty": "Nenhuma run anterior com este personagem.",
+      "intro": "Partidas anteriores com este mesmo nome de personagem.",
+      "partial": "Parcial",
+      "partial_tip": "Recuperada do Jornal do Apocalipse: só dias, kills e pontuação.",
+      "abandoned": "Abandonada",
+      "abandoned_tip": "Uma nova partida começou sem a morte desta ter sido registrada.",
+      "ended": "Encerrada em {{date}}",
+      "unknown_cause": "Causa desconhecida"
     },
     "mods": {
       "loading": "Carregando mods...",

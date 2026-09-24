@@ -98,7 +98,7 @@ para o nome PTBR atual. Profissões desconhecidas (mods) passam inalteradas.
 | Ranking por estatística | 🟢 | Todas as métricas acima + qualquer skill |
 | Curiosidades | 🟢 | Grupos com < 5 runs são ignorados (média de 1–2 runs é ruído). Texto sempre descritivo |
 | Filtros na URL | 🟢 | `?status=`, `?profissao=`, `?dq=1` |
-| Temporada | 🟡 | Só "temporada atual" — ver abaixo |
+| Temporada | 🟡 | Só "temporada atual" — `season_id` passa a ser gravado desde v4.23.0; ver abaixo |
 | Causas de morte | 🟡 | Ver abaixo |
 | Onde os jogadores morrem | 🟡 | Ver abaixo |
 | Evolução histórica | 🟡 | Ver abaixo |
@@ -217,12 +217,31 @@ Dá para montar agora, com ressalvas:
 
 **Não** é possível: zumbis mortos por semana, evolução de skills ao longo do tempo.
 
-## Limitação geral: runs com o mesmo nome
+## 🟢 Runs com o mesmo nome — histórico de runs (v4.23.0)
 
-`entries` tem `UNIQUE(player_id, character_name)`. Uma nova run com o mesmo nome de
-personagem sobrescreve a anterior (`isNewCharRun` em `sync.ts`) — a run antiga
-desaparece das estatísticas. Contar "runs iniciadas" de verdade exigiria uma tabela de
-histórico de runs.
+`entries` tem `UNIQUE(player_id, character_name)`: uma partida nova com o mesmo nome
+de personagem reaproveita a linha. Até a v4.22.0 a run anterior era **apagada** (caso
+Kdevil: 563 dias; pelo jornal, 138 personagens já tinham perdido runs assim).
+
+Desde a v4.23.0 (`migration_v38`, `lib/runHistory.ts`):
+
+- Antes de sobrescrever (sync ou cadastro manual do moderador), a run anterior é
+  copiada para `run_history` — com profissão, skills, traits, bases, contadores de
+  ações, causa da morte, temporada e datas de início/fim.
+- `entries` passa a gravar `season_id` (temporada ativa), `run_started_at` e
+  `death_cause` (antes só existia no jornal).
+- `/estatisticas` soma as runs atuais + `run_history` (runs anteriores sempre contam
+  como encerradas). Lendas considera o histórico em "mais kills" e "maior
+  sobrevivência". O perfil do jogador ganhou a aba "Runs anteriores".
+- Runs perdidas antes disso foram recuperadas por `scripts/backfill-run-history.ts`
+  (lógica em `lib/runHistoryBackfill.ts`), com 3 fontes: snapshot de `GET /entries`,
+  dump de 2026-09-03 e mortes do jornal. As que vieram **só do jornal** ficam
+  `is_partial = true` (dias/kills/pontuação/causa) e não entram em
+  profissões/traits/skills.
+- Conquistas continuam por (jogador, nome de personagem) — compartilhadas entre as
+  runs do mesmo nome, como antes.
+- Uma run abandonada viva (partida nova sem a morte ter sido registrada) é arquivada
+  com `is_alive = true` e aparece como "Abandonada" no perfil.
 
 ---
 

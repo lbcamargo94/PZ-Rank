@@ -142,7 +142,11 @@ export function RankingModal({ target, query, onClose }: { target: RankingTarget
                     <td className="num">{r.position}</td>
                     <td>
                       {r.player_id ? <Link to={`/player/${r.player_id}`} onClick={onClose}>{r.name}</Link> : r.name}
-                      {r.character_name && <span className="stats-sub-name">{r.character_name}{!r.is_alive && ' 💀'}</span>}
+                      {r.character_name && (
+                        <span className="stats-sub-name">
+                          {r.character_name}{!r.is_alive && ' 💀'}{r.previous_run && ' · run anterior'}
+                        </span>
+                      )}
                     </td>
                     <td className="num">{format(r.value)}</td>
                   </tr>

@@ -8,7 +8,10 @@ export function OverviewSection({ data }: { data: ChampionshipStats['overview'] 
       <SectionHeader id="visao-geral" icon="📊" title="Visão geral" />
       <div className="stats-cards">
         <StatCard icon="👥" label="Jogadores participantes" value={fmtInt(data.players)} hint="Contas distintas com ao menos uma run" />
-        <StatCard icon="🎮" label="Runs registradas"       value={fmtInt(data.runs)}    hint="Personagens enviados ao rank" />
+        <StatCard icon="🎮" label="Runs registradas"       value={fmtInt(data.runs)}
+          hint={data.previous_runs > 0
+            ? `Inclui ${fmtInt(data.previous_runs)} runs anteriores de personagens que recomeçaram com o mesmo nome`
+            : 'Personagens enviados ao rank'} />
         <StatCard icon="❤️" label="Sobreviventes vivos"    value={fmtInt(data.alive)} />
         <StatCard icon="💀" label="Personagens mortos"     value={fmtInt(data.dead)} />
         <StatCard icon="🧟" label="Zumbis eliminados"      value={fmtInt(data.total_kills)} />

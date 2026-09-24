@@ -222,7 +222,20 @@
       "skills": "Skills",
       "traits": "Traits",
       "achievements": "Achievements",
-      "mods": "Mods"
+      "mods": "Mods",
+      "history": "Previous runs"
+    },
+    "history": {
+      "loading": "Loading previous runs...",
+      "error": "Could not load previous runs.",
+      "empty": "No previous runs with this character.",
+      "intro": "Earlier games with this same character name.",
+      "partial": "Partial",
+      "partial_tip": "Recovered from the Apocalypse Journal: only days, kills and score.",
+      "abandoned": "Abandoned",
+      "abandoned_tip": "A new game started before this death was recorded.",
+      "ended": "Ended on {{date}}",
+      "unknown_cause": "Unknown cause"
     },
     "mods": {
       "loading": "Loading mods...",

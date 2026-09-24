@@ -145,6 +145,9 @@ CREATE TABLE IF NOT EXISTS entries (
   mod_version                  TEXT     DEFAULT NULL,
   -- v4.22.0: contadores de ações vindos do Companion (NULL = não confiáveis)
   stats_synced_at              TEXT     DEFAULT NULL,
+  -- v4.23.0: histórico de runs (migration_v38)
+  death_cause                  TEXT     DEFAULT NULL,
+  run_started_at               TEXT     DEFAULT NULL,
   UNIQUE (player_id, character_name)
 );
 
@@ -258,6 +261,70 @@ CREATE TABLE IF NOT EXISTS player_likes (
   created_at      TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
   UNIQUE(liker_player_id, liked_player_id)
 );
+
+-- Histórico de runs substituídas por uma nova partida com o mesmo nome (migration_v38)
+CREATE TABLE IF NOT EXISTS run_history (
+  id                   INTEGER  PRIMARY KEY AUTOINCREMENT,
+  entry_id             INTEGER  REFERENCES entries(id) ON DELETE SET NULL,
+  player_id            INTEGER  REFERENCES players(id) ON DELETE CASCADE,
+  season_id            INTEGER  REFERENCES seasons(id) ON DELETE SET NULL,
+  name                 TEXT     NOT NULL,
+  character_name       TEXT,
+  profession           TEXT,
+  days                 INTEGER  NOT NULL DEFAULT 0,
+  time_raw             INTEGER  NOT NULL DEFAULT 0,
+  time_str             TEXT,
+  kills                INTEGER  NOT NULL DEFAULT 0,
+  score                INTEGER  NOT NULL DEFAULT 0,
+  skills               TEXT,
+  traits               TEXT,
+  objectives           TEXT,
+  is_alive             INTEGER  NOT NULL DEFAULT 0,
+  sandbox_ok           INTEGER  NOT NULL DEFAULT 1,
+  disqualification_reason TEXT,
+  death_cause          TEXT,
+  animals_killed INTEGER,
+  fish_caught INTEGER,
+  crops_harvested INTEGER,
+  items_crafted INTEGER,
+  houses_looted INTEGER,
+  hours_without_sleep INTEGER,
+  trees_cut INTEGER,
+  books_read INTEGER,
+  structures_built INTEGER,
+  crops_planted INTEGER,
+  spiffo_visited INTEGER,
+  eggs_collected INTEGER,
+  milk_produced INTEGER,
+  stone_structures INTEGER,
+  ceramic_items INTEGER,
+  forged_weapons INTEGER,
+  km_driven INTEGER,
+  cities_visited INTEGER,
+  military_visited INTEGER,
+  meals_cooked INTEGER,
+  water_collected INTEGER,
+  materials_crafted INTEGER,
+  animal_tracks INTEGER,
+  weapons_crafted INTEGER,
+  furniture_crafted INTEGER,
+  clothes_crafted INTEGER,
+  cheese_produced INTEGER,
+  doors_opened INTEGER,
+  sleep_locations INTEGER,
+  basements_explored INTEGER,
+  stations_used INTEGER,
+  animal_species INTEGER,
+  days_no_canned INTEGER,
+  stats_synced_at      TEXT,
+  run_started_at       TEXT,
+  run_ended_at         TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+  source               TEXT     NOT NULL DEFAULT 'sync'
+                       CHECK (source IN ('sync', 'manual', 'snapshot', 'dump', 'journal')),
+  is_partial           INTEGER  NOT NULL DEFAULT 0,
+  created_at           TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+);
+CREATE INDEX IF NOT EXISTS idx_run_history_player ON run_history(player_id);
 
 -- Jornal do Apocalipse: eventos notáveis durante uma run (morte, milestones, skills)
 CREATE TABLE IF NOT EXISTS journal_events (

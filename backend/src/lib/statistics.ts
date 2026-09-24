@@ -5,11 +5,12 @@
 // espalhado por rotas — toda nova métrica entra aqui (e ganha teste em
 // __tests__/statistics.test.ts).
 //
-// Unidade de contagem: "run" = uma linha de `entries` (um personagem de um
-// jogador). "Jogador" = player_id distinto. Um jogador pode ter várias runs
-// (personagens diferentes); uma nova run com o MESMO nome de personagem
-// sobrescreve a linha anterior, então essas runs antigas não existem mais no
-// banco — limitação documentada em docs/estatisticas.md.
+// Unidade de contagem: "run" = uma partida de um personagem. Vem de duas tabelas:
+//   - `entries`:     a run ATUAL de cada (jogador, nome de personagem)
+//   - `run_history`: runs anteriores com o mesmo nome, arquivadas quando uma
+//                    partida nova sobrescreve a linha (previous_run = true)
+// "Jogador" = player_id distinto. Runs recuperadas só do jornal (partial) entram
+// em contagens/sobrevivência/kills, mas não em profissões/traits/skills.
 
 import { normalizeProfession } from './professions';
 import { SKILL_NAMES } from './skills';
@@ -34,8 +35,16 @@ export interface StatsRow {
   // Preenchida quando os contadores de ações vieram do Companion (confiáveis).
   // NULL = contadores antigos/congelados → a run fica fora da seção de ações.
   stats_synced_at?: string | Date | null;
+  // Run anterior (run_history) — sempre conta como encerrada
+  previous_run?: boolean;
+  // Recuperada só do jornal (dias/kills/pontuação/causa): fica fora de
+  // profissões, traits, skills e ações — ver isComplete()
+  partial?: boolean;
   [action: string]: unknown;
 }
+
+/** Run com dados completos (profissão, traits, skills). */
+export const isComplete = (r: StatsRow) => !r.partial;
 
 const createdMs = (r: StatsRow) => new Date(r.created_at).getTime() || 0;
 
@@ -150,6 +159,7 @@ export function computeOverview(rows: StatsRow[]) {
   return {
     players:     new Set(rows.map(r => r.player_id).filter(id => id != null)).size,
     runs:        rows.length,
+    previous_runs: rows.filter(r => r.previous_run).length,
     alive,
     dead:        rows.length - alive,
     total_kills: rows.reduce((s, r) => s + (r.kills || 0), 0),
@@ -164,7 +174,8 @@ export function computeOverview(rows: StatsRow[]) {
   };
 }
 
-export function computeProfessions(rows: StatsRow[]) {
+export function computeProfessions(allRows: StatsRow[]) {
+  const rows = allRows.filter(isComplete);
   const groups = new Map<string, StatsRow[]>();
   for (const r of rows) {
     const p = normalizeProfession(r.profession);
@@ -185,7 +196,8 @@ export function computeProfessions(rows: StatsRow[]) {
 }
 
 /** Um trait conta 1x por run (duplicatas no CSV são ignoradas). pct = % das runs. */
-export function computeTraits(rows: StatsRow[]) {
+export function computeTraits(allRows: StatsRow[]) {
+  const rows = allRows.filter(isComplete);
   const runs    = new Map<string, number>();
   const players = new Map<string, Set<number>>();
   const days    = new Map<string, number[]>();
@@ -212,7 +224,8 @@ export function computeTraits(rows: StatsRow[]) {
 /** "Builds": conjuntos COMPLETOS de traits idênticos usados por 2+ runs.
  *  (Pares de traits não foram usados: com ~20 traits por run, os pares mais
  *  frequentes só repetem os traits mais populares e não dizem nada novo.) */
-export function computeTraitBuilds(rows: StatsRow[], limit = 10) {
+export function computeTraitBuilds(allRows: StatsRow[], limit = 10) {
+  const rows = allRows.filter(isComplete);
   const sets = new Map<string, { traits: string[]; runs: number; days: number[] }>();
   for (const r of rows) {
     const traits = parseTraits(r.traits).sort();
@@ -271,7 +284,8 @@ export function computeZombies(rows: StatsRow[]) {
 /** Skills: toda run conta — skill ausente no CSV conta como nível 0 (o mod
  *  exporta todas as skills, inclusive nível 0, desde o B42). "Nunca evoluiu" =
  *  nível 0; bônus de profissão/trait já tiram a skill do 0 desde o início. */
-export function computeSkills(rows: StatsRow[]) {
+export function computeSkills(allRows: StatsRow[]) {
+  const rows = allRows.filter(isComplete);
   const parsed = rows.map(r => parseSkills(r.skills));
   const names = new Set<string>(ALL_SKILLS);
   for (const m of parsed) for (const k of m.keys()) names.add(k);
@@ -433,6 +447,7 @@ export function computeRanking(rows: StatsRow[], metric: RankingMetric, limit = 
       name:           x.r.name,
       character_name: x.r.character_name,
       is_alive:       isTrue(x.r.is_alive),
+      previous_run:   !!x.r.previous_run,
       value:          x.v,
     }));
 }

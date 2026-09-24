@@ -21,6 +21,7 @@ import { dbError } from '../lib/errors';
 import { computeScore } from '../lib/scoring';
 import { processHeatmapDelta } from '../lib/heatmap';
 import { COMPANION_STAT_KEYS, validateCompanionStats, type CompanionStatKey } from '../lib/companionStats';
+import { archiveRun, getActiveSeasonId, isNewRunOf } from '../lib/runHistory';
 import { config } from '../config';
 import type { Objectives } from '../types';
 
@@ -390,7 +391,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // (glitch pontual do Companion/decoder) já bastava pra zerar objectives de uma
   // run de centenas de dias que nunca morreu de verdade — foi o que aconteceu com
   // o DrChatO (base de Rosewood sumiu do nada, personagem seguia vivo e íntegro).
-  const isNewCharRun = prev !== null && decoded.timeRaw < prev.time_raw * 0.5;
+  const isNewCharRun = prev !== null && isNewRunOf(prev.time_raw, decoded.timeRaw);
   const existingObjectives = isNewCharRun
     ? null
     : (existing?.objectives as Objectives | null) ?? null;
@@ -710,6 +711,12 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     decoded.basementsExplored > 0 || decoded.stationsUsed > 0 ||
     decoded.animalSpecies > 0 || decoded.daysNoCanned > 0;
 
+  const activeSeasonId = await getActiveSeasonId();
+
+  // Partida nova com o mesmo nome de personagem: copia a run anterior para o
+  // histórico ANTES de sobrescrever a linha (antes disso ela era apagada).
+  if (prev && isNewCharRun) await archiveRun(prev.id, 'sync');
+
   const entry = {
     player_id:      player.id,
     moderator_id:   null,
@@ -739,6 +746,12 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     // anteriores (PZRX≤8, congelados desde o mod v2.16) ficam de fora.
     // Em nova run sem stats, zera a marca pra não herdar a confiabilidade da anterior.
     ...(companionStatsOk ? { stats_synced_at: new Date().toISOString() } : isNewCharRun ? { stats_synced_at: null } : {}),
+    // Histórico de runs (migration_v38): temporada da run, início e causa da morte.
+    ...(activeSeasonId != null ? { season_id: activeSeasonId } : {}),
+    ...(!prev || isNewCharRun ? { run_started_at: new Date().toISOString() } : {}),
+    ...(!decoded.isAlive && decoded.deathCause
+      ? { death_cause: decoded.deathCause }
+      : isNewCharRun ? { death_cause: null } : {}),
     // PZRX3: only write when present to avoid overwriting with zeros on PZRX2 syncs
     ...(hasExtended ? {
       animals_killed:      decoded.animalsKilled,
