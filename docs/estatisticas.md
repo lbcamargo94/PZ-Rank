@@ -61,8 +61,13 @@ Métricas de ranking: `kills`, `days`, `score`, `skills10`, `skill_levels`, `bas
   Vale pra runs atuais mortas, pro histórico (o sync não arquiva) e pra recuperação
   (`--skip-empty`). Viva com 0/0 = recém-criada, continua contando. A regra é
   explicada aos jogadores em /estatisticas ("Como as runs são contadas") e no perfil
-  (aba "Runs anteriores"). Por isso `/stats/championship` tem menos mortos que
-  `/stats/global`, que não aplica essa regra.
+  (aba "Runs anteriores").
+
+- **Fonte única** (`lib/statsData.ts`, v4.23.1): `/estatisticas`, o contador do
+  topo da home (`GET /stats/global`) e o Jornal diário (`routes/news.ts`) usam a
+  mesma leitura e as mesmas regras — os números batem entre si. O Jornal marca a
+  base do total de kills (`kills_basis`) pra não gerar um "kills de hoje" falso na
+  troca de base.
 
 ### Unidades
 

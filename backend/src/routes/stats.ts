@@ -2,55 +2,49 @@ import { Router } from 'express';
 import type { Request, Response } from 'express';
 import { supabase } from '../supabase';
 import { dbError } from '../lib/errors';
-import { config } from '../config';
 import { normalizeProfession } from '../lib/professions';
 import {
-  ACTION_KEYS, applyFilters, computeChampionshipStats, computeRanking, isRankingMetric,
-  type StatsFilters, type StatsRow,
+  applyFilters, computeChampionshipStats, computeRanking, isRankingMetric,
+  type StatsFilters,
 } from '../lib/statistics';
+import { loadStatsRows, officialOverview } from '../lib/statsData';
 
 const router = Router();
 
-// GET /stats/global — totais da temporada (somente entries aprovadas e válidas)
+// GET /stats/global — totais do campeonato no topo da home.
+// Mesma fonte e mesmas regras de /estatisticas (lib/statsData.ts): inclui runs
+// anteriores (run_history) e ignora partidas encerradas com 0 dias e 0 kills.
+// Os dois contadores divergiam antes disso (decisão do usuário: manter alinhados).
 router.get('/global', async (_req: Request, res: Response) => {
   const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-  const [mainRes, activeRes] = await Promise.all([
-    supabase
-      .from('entries')
-      .select('kills, days, is_alive, sandbox_ok, deleted_at')
-      .is('deleted_at', null)
-      .neq('sandbox_ok', false),
-    supabase
-      .from('entries')
-      .select('id', { count: 'exact', head: true })
-      .is('deleted_at', null)
-      .eq('sandbox_ok', true)
-      .eq('is_alive', true)
-      .gte('updated_at', since24h),
-  ]);
+  try {
+    const [overview, activeRes] = await Promise.all([
+      officialOverview(),
+      // "Jogando hoje": só runs atuais sincronizadas nas últimas 24h — não depende do histórico
+      supabase
+        .from('entries')
+        .select('id', { count: 'exact', head: true })
+        .is('deleted_at', null)
+        .eq('sandbox_ok', true)
+        .eq('is_alive', true)
+        .gte('updated_at', since24h),
+    ]);
+    if (activeRes.error) { const e = dbError(activeRes.error); return res.status(e.httpStatus).json({ error: e.message }); }
 
-  if (mainRes.error)   { const e = dbError(mainRes.error);   return res.status(e.httpStatus).json({ error: e.message }); }
-  if (activeRes.error) { const e = dbError(activeRes.error); return res.status(e.httpStatus).json({ error: e.message }); }
-
-  let total_kills    = 0;
-  let total_days     = 0;
-  let alive_count    = 0;
-  let dead_count     = 0;
-  let player_count   = 0;
-
-  for (const e of (mainRes.data ?? [])) {
-    total_kills  += e.kills  ?? 0;
-    total_days   += e.days   ?? 0;
-    player_count += 1;
-    if (e.is_alive) alive_count++;
-    else            dead_count++;
+    res.setHeader('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=60');
+    res.json({
+      total_kills:  overview.total_kills,
+      total_days:   overview.total_days,
+      alive_count:  overview.alive,
+      dead_count:   overview.dead,
+      player_count: overview.runs,
+      active_count: activeRes.count ?? 0,
+    });
+  } catch (error) {
+    const e = dbError(error as Parameters<typeof dbError>[0]);
+    res.status(e.httpStatus).json({ error: e.message });
   }
-
-  const active_count = activeRes.count ?? 0;
-
-  res.setHeader('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=60');
-  res.json({ total_kills, total_days, alive_count, dead_count, player_count, active_count });
 });
 
 // GET /stats/steam-players — jogadores simultâneos no PZ via Steam Web API (cache 5min)
@@ -234,68 +228,14 @@ router.get('/legends', async (_req: Request, res: Response) => {
 });
 
 // ── Estatísticas do campeonato (/estatisticas) ─────────────────────────────
-// Toda agregação vive em lib/statistics.ts. Aqui só: leitura do banco com as
-// colunas necessárias, regras oficiais de visibilidade e cache curto em memória.
+// Agregação em lib/statistics.ts; leitura + regras oficiais em lib/statsData.ts
+// (mesma fonte do contador da home e do Jornal diário). Aqui: filtros da URL e
+// cache do resultado por combinação de filtros.
 //
-// Regras oficiais (as mesmas do rank público — GET /entries + RankPage):
-//   - entries com deleted_at IS NULL
-//   - jogador não excluído (players.deleted_at IS NULL)
-//   - contas de teste (players.is_test_mod) fora
-//   - desclassificados (sandbox_ok=false) fora, salvo include_dq=1
-//
-// Temporada: `entries` não tem season_id — todas as runs do banco pertencem à
-// temporada ativa. Por isso só `season=current` é aceito (ver docs/estatisticas.md).
+// Temporada: só `season=current` — entries.season_id só passou a ser gravado na
+// v4.23.0; as runs anteriores não têm temporada (ver docs/estatisticas.md).
 
-const STATS_ENTRY_COLS = [
-  'id, player_id, name, character_name, profession, days, kills, score, skills, traits, objectives, is_alive, sandbox_ok, created_at',
-  'stats_synced_at',   // requer migration_v37
-  ...ACTION_KEYS,
-].join(', ');
-// run_history (migration_v38) — mesmas colunas + marcadores do histórico
-const STATS_HISTORY_COLS = [
-  'id, player_id, name, character_name, profession, days, kills, score, skills, traits, objectives, sandbox_ok',
-  'stats_synced_at, is_partial, run_started_at, run_ended_at',
-  ...ACTION_KEYS,
-].join(', ');
-const STATS_CACHE_MS = 3 * 60 * 1000;
-let _statsRowsCache: { rows: StatsRow[]; season: { id: number; name: string; started_at: string } | null; at: number } | null = null;
 let _statsResultCache: { at: number; results: Map<string, object> } = { at: 0, results: new Map() };
-
-async function loadStatsRows() {
-  if (_statsRowsCache && Date.now() - _statsRowsCache.at < STATS_CACHE_MS) return _statsRowsCache;
-
-  const [entriesRes, historyRes, playersRes, seasonRes] = await Promise.all([
-    supabase.from(config.tableName).select(STATS_ENTRY_COLS).is('deleted_at', null),
-    supabase.from('run_history').select(STATS_HISTORY_COLS),
-    supabase.from('players').select('id, deleted_at, is_test_mod'),
-    supabase.from('seasons').select('id, name, started_at').eq('is_active', true).maybeSingle(),
-  ]);
-  const err = entriesRes.error ?? historyRes.error ?? playersRes.error ?? seasonRes.error;
-  if (err) throw err;
-
-  type PlayerRow = { id: number; deleted_at: string | null; is_test_mod: boolean | number };
-  const hidden = new Set(((playersRes.data ?? []) as PlayerRow[])
-    .filter(p => p.deleted_at != null || p.is_test_mod === true || p.is_test_mod === 1)
-    .map(p => p.id));
-
-  // Runs anteriores (run_history): sempre encerradas — uma run "viva" no histórico foi
-  // abandonada sem morte registrada quando a partida nova com o mesmo nome começou.
-  type HistoryRow = StatsRow & { is_partial: boolean | number; run_started_at: string | Date | null; run_ended_at: string | Date };
-  const previous: StatsRow[] = ((historyRes.data ?? []) as HistoryRow[]).map(h => ({
-    ...h,
-    id:           `h${h.id}`,
-    is_alive:     false,
-    previous_run: true,
-    partial:      h.is_partial === true || h.is_partial === 1,
-    created_at:   h.run_started_at ?? h.run_ended_at,
-  }));
-
-  const rows = [...((entriesRes.data ?? []) as StatsRow[]), ...previous]
-    .filter(r => r.player_id == null || !hidden.has(r.player_id));
-
-  _statsRowsCache = { rows, season: (seasonRes.data as { id: number; name: string; started_at: string } | null) ?? null, at: Date.now() };
-  return _statsRowsCache;
-}
 
 function parseStatsFilters(q: Request['query']): StatsFilters | string {
   const status = typeof q.status === 'string' && q.status ? q.status : 'all';
