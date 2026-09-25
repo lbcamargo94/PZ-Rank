@@ -35,6 +35,8 @@ export interface StatsRow {
   // Preenchida quando os contadores de ações vieram do Companion (confiáveis).
   // NULL = contadores antigos/congelados → a run fica fora da seção de ações.
   stats_synced_at?: string | Date | null;
+  // Último sync da run atual (entries.updated_at) — define vivo ativo × inativo
+  updated_at?: string | Date | null;
   // Run anterior (run_history) — sempre conta como encerrada
   previous_run?: boolean;
   // Recuperada só do jornal (dias/kills/pontuação/causa): fica fora de
@@ -48,7 +50,7 @@ export const isComplete = (r: StatsRow) => !r.partial;
 
 const createdMs = (r: StatsRow) => new Date(r.created_at).getTime() || 0;
 
-export type StatusFilter = 'all' | 'alive' | 'dead';
+export type StatusFilter = 'all' | 'alive' | 'inactive' | 'dead';
 
 export interface StatsFilters {
   status:              StatusFilter;
@@ -145,18 +147,34 @@ export function isEmptyRun(days: unknown, kills: unknown): boolean {
   return Number(days || 0) === 0 && Number(kills || 0) === 0;
 }
 
+/** Dias sem sincronizar pra uma run viva contar como INATIVA (decisão de produto,
+ *  2026-09-25). O Companion sincroniza a cada ~10 min durante o jogo; pelos dados,
+ *  quem passa de 14 dias sem sync tem runs curtas (média de 10 dias) — abandono. De
+ *  7 a 14 dias ainda aparecem runs longas (média de 88 dias) só em pausa. */
+export const INACTIVE_AFTER_DAYS = 14;
+
+/** Viva, run atual, sem sync há mais de INACTIVE_AFTER_DAYS dias. Continua no rank e
+ *  volta a ser ativa no próximo sync — só não entra na contagem de "vivos ativos". */
+export function isInactive(r: StatsRow, now = Date.now()): boolean {
+  if (!isTrue(r.is_alive) || r.previous_run || !r.updated_at) return false;
+  const last = new Date(r.updated_at).getTime();
+  return Number.isFinite(last) && now - last > INACTIVE_AFTER_DAYS * 86_400_000;
+}
+
 // ── Filtro oficial ─────────────────────────────────────────────────────────
 // As linhas já chegam sem deleted_at, sem jogador excluído e sem conta de teste
 // (ver routes/stats.ts). Aqui só entram os filtros escolhidos na página.
 // Desclassificados (sandbox_ok=false) ficam fora por padrão — mesma regra do
 // rank público, de /stats/global, /stats/legends e do fechamento de temporada.
-export function applyFilters(rows: StatsRow[], f: StatsFilters): StatsRow[] {
+export function applyFilters(rows: StatsRow[], f: StatsFilters, now = Date.now()): StatsRow[] {
   return rows.filter(r => {
     // Partida ENCERRADA com 0 dias e 0 kills não conta (personagem recriado no
     // início). Viva com 0/0 = recém-criada, ainda em jogo: continua contando.
     if (!isTrue(r.is_alive) && isEmptyRun(r.days, r.kills)) return false;
     if (!f.includeDisqualified && r.sandbox_ok !== null && !isTrue(r.sandbox_ok)) return false;
-    if (f.status === 'alive' && !isTrue(r.is_alive)) return false;
+    // 'alive' = vivos ATIVOS; 'inactive' = vivos sem sync há 14+ dias
+    if (f.status === 'alive' && (!isTrue(r.is_alive) || isInactive(r, now))) return false;
+    if (f.status === 'inactive' && !isInactive(r, now)) return false;
     if (f.status === 'dead'  &&  isTrue(r.is_alive)) return false;
     if (f.profession && normalizeProfession(r.profession) !== f.profession) return false;
     return true;
@@ -165,14 +183,17 @@ export function applyFilters(rows: StatsRow[], f: StatsFilters): StatsRow[] {
 
 // ── Seções ─────────────────────────────────────────────────────────────────
 
-export function computeOverview(rows: StatsRow[]) {
-  const alive = rows.filter(r => isTrue(r.is_alive)).length;
+export function computeOverview(rows: StatsRow[], now = Date.now()) {
+  const aliveAll = rows.filter(r => isTrue(r.is_alive)).length;
+  const inactive = rows.filter(r => isInactive(r, now)).length;
+  const alive    = aliveAll - inactive;   // vivos ATIVOS
   return {
     players:     new Set(rows.map(r => r.player_id).filter(id => id != null)).size,
     runs:        rows.length,
     previous_runs: rows.filter(r => r.previous_run).length,
     alive,
-    dead:        rows.length - alive,
+    alive_inactive: inactive,
+    dead:        rows.length - aliveAll,
     total_kills: rows.reduce((s, r) => s + (r.kills || 0), 0),
     total_days:  rows.reduce((s, r) => s + (r.days || 0), 0),
     bases_built: rows.reduce((s, r) => s + basesBuilt(r.objectives), 0),

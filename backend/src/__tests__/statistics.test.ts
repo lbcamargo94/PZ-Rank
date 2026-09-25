@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  ACTION_KEYS, applyFilters, computeActions, computeChampionshipStats, computeOverview, computeProfessions, computeRecords,
+  ACTION_KEYS, applyFilters, computeActions, computeChampionshipStats, computeOverview, computeProfessions, computeRecords, isInactive,
   computeRanking, computeSkills, computeSurvival, computeTraitBuilds, computeTraits,
   isRankingMetric, median, parseSkills, traitKey,
   type StatsFilters, type StatsRow,
@@ -166,6 +166,25 @@ describe('filtros', () => {
     ];
     expect(applyFilters(r, ALL)).toHaveLength(2);
     expect(computeChampionshipStats(r, ALL).overview).toMatchObject({ runs: 2, dead: 1, alive: 1 });
+  });
+
+  it('vivo sem sync há mais de 14 dias é inativo: fora dos "vivos ativos", mas continua sendo run', () => {
+    const now = Date.parse('2026-09-25T12:00:00Z');
+    const r = [
+      row({ is_alive: true, days: 5, kills: 9, updated_at: '2026-09-24T12:00:00Z' }),  // ativo (1 dia)
+      row({ is_alive: true, days: 88, kills: 9, updated_at: '2026-09-12T12:00:00Z' }), // 13 dias: ativo (pausa)
+      row({ is_alive: true, days: 10, kills: 9, updated_at: '2026-09-05T12:00:00Z' }), // 20 dias: inativo
+      row({ is_alive: false, days: 30, kills: 9, updated_at: '2026-08-01T00:00:00Z' }), // morto antigo: morto
+      row({ is_alive: true, days: 400, kills: 9, previous_run: true, updated_at: '2026-08-01T00:00:00Z' }),
+    ];
+    expect(isInactive(r[2]!, now)).toBe(true);
+    expect(isInactive(r[1]!, now)).toBe(false);
+    expect(isInactive(r[3]!, now)).toBe(false);   // morto nunca é "inativo"
+    expect(isInactive(r[4]!, now)).toBe(false);   // run anterior nunca é "inativa"
+    expect(computeOverview(r.slice(0, 4), now)).toMatchObject({ runs: 4, alive: 2, alive_inactive: 1, dead: 1 });
+    expect(applyFilters(r.slice(0, 4), { ...ALL, status: 'alive' }, now)).toHaveLength(2);
+    expect(applyFilters(r.slice(0, 4), { ...ALL, status: 'inactive' }, now)).toHaveLength(1);
+    expect(applyFilters(r.slice(0, 4), ALL, now)).toHaveLength(4);   // "todas" continua com todas
   });
 
   it('desclassificados ficam fora por padrão e entram com includeDisqualified', () => {

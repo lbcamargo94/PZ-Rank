@@ -165,6 +165,8 @@
   white-space: nowrap;
   text-transform: uppercase;
 }
+/* Complemento dos vivos ativos: vivos sem jogar há 14+ dias (continuam no rank) */
+.cs-desc--muted { color: var(--text-4); text-transform: none; }
 
 @media (max-width: 640px) {
   .cs-season      { padding: 8px 12px; gap: 8px; }

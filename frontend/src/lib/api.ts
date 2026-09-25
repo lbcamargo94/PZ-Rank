@@ -355,7 +355,8 @@ export function apiDeleteModerator(token: string, id: string): Promise<void> {
 export interface GlobalStats {
   total_kills:  number;
   total_days:   number;
-  alive_count:  number;
+  alive_count:  number;    // vivos ATIVOS (sync nos últimos 14 dias)
+  inactive_count?: number; // vivos sem sync há 14+ dias (continuam no rank)
   dead_count:   number;
   player_count: number;
   active_count: number;
@@ -437,7 +438,7 @@ export async function apiGetPlayerRuns(playerId: number): Promise<PreviousRun[]>
 // ── Estatísticas do campeonato (/estatisticas) ──────────────
 // Tudo já vem agregado do backend (backend/src/lib/statistics.ts).
 
-export type StatsStatus = 'all' | 'alive' | 'dead';
+export type StatsStatus = 'all' | 'alive' | 'inactive' | 'dead';
 
 export interface StatsQuery {
   status:     StatsStatus;
@@ -471,7 +472,7 @@ export interface ChampionshipStats {
   season:       { id: number; name: string; started_at: string } | null;
   generated_at: string;
   overview: {
-    players: number; runs: number; previous_runs: number; alive: number; dead: number;
+    players: number; runs: number; previous_runs: number; alive: number; alive_inactive: number; dead: number;
     total_kills: number; total_days: number; bases_built: number; skills_maxed: number;
     action_runs: number; items_crafted: number; meals_cooked: number; houses_looted: number;
   };

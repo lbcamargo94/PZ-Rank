@@ -36,7 +36,8 @@ router.get('/global', async (_req: Request, res: Response) => {
     res.json({
       total_kills:  overview.total_kills,
       total_days:   overview.total_days,
-      alive_count:  overview.alive,
+      alive_count:  overview.alive,            // vivos ATIVOS (sync nos últimos 14 dias)
+      inactive_count: overview.alive_inactive, // vivos sem sync há 14+ dias
       dead_count:   overview.dead,
       player_count: overview.runs,
       active_count: activeRes.count ?? 0,
@@ -239,7 +240,7 @@ let _statsResultCache: { at: number; results: Map<string, object> } = { at: 0, r
 
 function parseStatsFilters(q: Request['query']): StatsFilters | string {
   const status = typeof q.status === 'string' && q.status ? q.status : 'all';
-  if (status !== 'all' && status !== 'alive' && status !== 'dead') return 'status inválido.';
+  if (status !== 'all' && status !== 'alive' && status !== 'inactive' && status !== 'dead') return 'status inválido.';
   const season = typeof q.season === 'string' && q.season ? q.season : 'current';
   if (season !== 'current') return 'Somente a temporada atual está disponível.';
   const profession = typeof q.profession === 'string' && q.profession.trim()

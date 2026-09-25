@@ -27,7 +27,7 @@ const SECTIONS = [
   { id: 'em-breve',      label: 'Em breve' },
 ];
 
-const STATUSES: StatsStatus[] = ['all', 'alive', 'dead'];
+const STATUSES: StatsStatus[] = ['all', 'alive', 'inactive', 'dead'];
 
 // Filtros vivem na URL (?status=dead&profissao=Lenhador&dq=1) pra permitir compartilhar
 function queryFromParams(p: URLSearchParams): StatsQuery {

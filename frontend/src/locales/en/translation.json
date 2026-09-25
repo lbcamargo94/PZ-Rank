@@ -55,7 +55,9 @@
       "season_active_today": "active today",
       "zombies": "zombies",
       "days_survived": "days survived",
-      "alive": "alive",
+      "alive": "active alive",
+      "inactive_hint": "+{{count}} idle for 14+ days",
+      "alive_tip": "Alive characters that synced in the last 14 days. {{count}} alive characters have not played for over 14 days and remain in the rank.",
       "dead": "dead",
       "playing_today": "playing today",
       "on_pz_now": "on PZ right now"

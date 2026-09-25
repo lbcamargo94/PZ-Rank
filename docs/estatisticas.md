@@ -63,6 +63,13 @@ Métricas de ranking: `kills`, `days`, `score`, `skills10`, `skill_levels`, `bas
   explicada aos jogadores em /estatisticas ("Como as runs são contadas") e no perfil
   (aba "Runs anteriores").
 
+- **Vivos ativos × inativos** (`isInactive`, `INACTIVE_AFTER_DAYS = 14`, v4.23.2):
+  vivo sem sync há mais de 14 dias conta como **vivo inativo**, separado dos vivos
+  ativos (card próprio, filtro "Vivos inativos", complemento no topo da home). Continua
+  sendo run e continua no rank — volta a ativo no próximo sync. Corte escolhido pelos
+  dados de 2026-09-25: além de 14 dias as runs têm média de 10 dias (abandono); de 7 a
+  14 dias ainda há runs longas (média de 88 dias) só em pausa.
+
 - **Fonte única** (`lib/statsData.ts`, v4.23.1): `/estatisticas`, o contador do
   topo da home (`GET /stats/global`) e o Jornal diário (`routes/news.ts`) usam a
   mesma leitura e as mesmas regras — os números batem entre si. O Jornal marca a

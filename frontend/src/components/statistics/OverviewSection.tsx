@@ -12,7 +12,11 @@ export function OverviewSection({ data }: { data: ChampionshipStats['overview'] 
           hint={data.previous_runs > 0
             ? `Inclui ${fmtInt(data.previous_runs)} runs anteriores de personagens que recomeçaram com o mesmo nome`
             : 'Personagens enviados ao rank'} />
-        <StatCard icon="❤️" label="Sobreviventes vivos"    value={fmtInt(data.alive)} />
+        <StatCard icon="❤️" label="Vivos ativos"           value={fmtInt(data.alive)} hint="Personagens vivos que sincronizaram nos últimos 14 dias" />
+        {data.alive_inactive > 0 && (
+          <StatCard icon="💤" label="Vivos inativos" value={fmtInt(data.alive_inactive)}
+            hint="Vivos sem jogar há mais de 14 dias — continuam no rank e voltam a ser ativos no próximo sync" />
+        )}
         <StatCard icon="💀" label="Personagens mortos"     value={fmtInt(data.dead)} />
         <StatCard icon="🧟" label="Zumbis eliminados"      value={fmtInt(data.total_kills)} />
         <StatCard icon="⏱️" label="Dias sobrevividos"      value={fmtInt(data.total_days)}  hint="Soma dos dias de todas as runs" />
@@ -33,6 +37,7 @@ export function OverviewSection({ data }: { data: ChampionshipStats['overview'] 
           <li>Cada <strong>run</strong> é uma partida de um personagem. A mesma conta pode ter várias.</li>
           <li>Se você começa uma nova partida com o <strong>mesmo nome de personagem</strong>, a anterior continua contando aqui como run encerrada — e fica visível no seu perfil, na aba "Runs anteriores".</li>
           <li>Partidas encerradas com <strong>0 dias e 0 zumbis mortos</strong> (por exemplo, recriar o personagem para escolher outro ponto de partida ou outros traits) <strong>não contam</strong>.</li>
+          <li>Um personagem vivo que <strong>não joga há mais de 14 dias</strong> aparece como <strong>vivo inativo</strong>, separado dos vivos ativos. Ele continua no rank e volta a ser ativo assim que você sincronizar de novo.</li>
           <li>Runs desclassificadas ficam de fora dos números oficiais.</li>
         </ul>
       </details>

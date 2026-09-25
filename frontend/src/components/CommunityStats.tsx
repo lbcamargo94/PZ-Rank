@@ -89,10 +89,18 @@ export function CommunityStats() {
               <span className="cs-desc">{t('home.stats.days_survived')}</span>
             </div>
             <div className="cs-vdivider" />
-            <div className="cs-item cs-item--alive">
+            <div
+              className="cs-item cs-item--alive"
+              data-tip={t('home.stats.alive_tip', { count: stats.inactive_count ?? 0 })}
+            >
               <i className="ti ti-heartbeat" />
               <span className="cs-value">{formatCompactNumber(stats.alive_count)}</span>
               <span className="cs-desc">{t('home.stats.alive')}</span>
+              {(stats.inactive_count ?? 0) > 0 && (
+                <span className="cs-desc cs-desc--muted">
+                  {t('home.stats.inactive_hint', { count: stats.inactive_count })}
+                </span>
+              )}
             </div>
             <div className="cs-vdivider" />
             <div className="cs-item cs-item--dead">

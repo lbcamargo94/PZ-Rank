@@ -9,7 +9,8 @@ interface Props {
 
 const STATUS_OPTIONS: Array<{ value: StatsStatus; label: string }> = [
   { value: 'all',   label: 'Todas as runs' },
-  { value: 'alive', label: 'Vivos' },
+  { value: 'alive',    label: 'Vivos ativos' },
+  { value: 'inactive', label: 'Vivos inativos (14+ dias sem jogar)' },
   { value: 'dead',  label: 'Mortos (runs encerradas)' },
 ];
 
