@@ -243,6 +243,22 @@ describe('ações dos sobreviventes', () => {
     expect(computeOverview(rows)).toMatchObject({ action_runs: 3, houses_looted: 40 });
   });
 
+  it('contadores corrigidos no mod 2.26.0 ignoram runs de versões antigas (zeros falsos)', () => {
+    const r = [
+      row({ stats_synced_at: synced, mod_version: '2.25.5', items_crafted: 0, houses_looted: 5 }),  // zero falso
+      row({ stats_synced_at: synced, mod_version: '2.26.0', items_crafted: 30, houses_looted: 7 }),
+      row({ stats_synced_at: synced, mod_version: '2.27.1', items_crafted: 10, houses_looted: 0 }),
+    ];
+    const all = computeActions(r).groups.flatMap(g => g.actions);
+    const items = all.find(a => a.key === 'items_crafted')!;
+    expect(items).toMatchObject({ runs: 2, total: 40, avg: 20, since_mod: '2.26.0' });
+    expect(items.pct_done).toBeCloseTo(100);
+    // contador que sempre funcionou continua usando todas as runs com stats
+    expect(all.find(a => a.key === 'houses_looted')).toMatchObject({ runs: 3, total: 12, since_mod: null });
+    expect(computeRanking(r, 'action:items_crafted').map(x => x.value)).toEqual([30, 10]);
+    expect(computeOverview(r).items_crafted).toBe(40);
+  });
+
   it('valida métricas de ação', () => {
     expect(isRankingMetric('action:houses_looted')).toBe(true);
     expect(isRankingMetric('action:password_hash')).toBe(false);

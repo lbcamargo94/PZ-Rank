@@ -4,17 +4,7 @@ import { createHmac } from 'crypto';
 import { broadcast } from '../lib/sse';
 import rateLimit from 'express-rate-limit';
 
-function isVersionAtLeast(version: string | null, minimum: string): boolean {
-  if (!version) return false;
-  const parse = (v: string) => v.split('.').map(n => parseInt(n, 10) || 0);
-  const a = parse(version);
-  const b = parse(minimum);
-  for (let i = 0; i < Math.max(a.length, b.length); i++) {
-    const diff = (a[i] ?? 0) - (b[i] ?? 0);
-    if (diff !== 0) return diff > 0;
-  }
-  return true;
-}
+import { isVersionAtLeast } from '../lib/version';
 import { supabase } from '../supabase';
 import { parsePzrCode } from '../lib/decoder';
 import { dbError } from '../lib/errors';

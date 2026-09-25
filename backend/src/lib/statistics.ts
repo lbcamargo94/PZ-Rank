@@ -15,6 +15,7 @@
 import { normalizeProfession } from './professions';
 import { SKILL_NAMES } from './skills';
 import { OFFICIAL_BASE_IDS } from './scoring';
+import { isVersionAtLeast } from './version';
 
 export interface StatsRow {
   id:             number | string;
@@ -36,6 +37,9 @@ export interface StatsRow {
   // NULL = contadores antigos/congelados → a run fica fora da seção de ações.
   stats_synced_at?: string | Date | null;
   season_id?:     number | null;
+  // Versão do mod no último sync (entries.mod_version) — alguns contadores de ações
+  // só são confiáveis a partir de uma versão (ACTION_MIN_MOD_VERSION)
+  mod_version?:   string | null;
   // Último sync da run atual (entries.updated_at) — define vivo ativo × inativo
   updated_at?: string | Date | null;
   // Run anterior (run_history) — sempre conta como encerrada
@@ -205,9 +209,9 @@ export function computeOverview(rows: StatsRow[], now = Date.now()) {
     skills_maxed: rows.reduce((s, r) => s + [...parseSkills(r.skills).values()].filter(l => l >= 10).length, 0),
     // Só runs com contadores confiáveis (ver computeActions)
     action_runs:   rows.filter(hasActionStats).length,
-    items_crafted: rows.filter(hasActionStats).reduce((s, r) => s + actionValue(r, 'items_crafted'), 0),
-    meals_cooked:  rows.filter(hasActionStats).reduce((s, r) => s + actionValue(r, 'meals_cooked'), 0),
-    houses_looted: rows.filter(hasActionStats).reduce((s, r) => s + actionValue(r, 'houses_looted'), 0),
+    items_crafted: rows.filter(r => hasActionStatsFor(r, 'items_crafted')).reduce((s, r) => s + actionValue(r, 'items_crafted'), 0),
+    meals_cooked:  rows.filter(r => hasActionStatsFor(r, 'meals_cooked')).reduce((s, r) => s + actionValue(r, 'meals_cooked'), 0),
+    houses_looted: rows.filter(r => hasActionStatsFor(r, 'houses_looted')).reduce((s, r) => s + actionValue(r, 'houses_looted'), 0),
   };
 }
 
@@ -406,6 +410,25 @@ const ACTION_KEY_SET = new Set(ACTION_KEYS);
 const ACTION_BUCKETS: Array<[number, number | null]> = [[0, 0], [1, 10], [11, 100], [101, 1_000], [1_001, 10_000], [10_001, null]];
 
 export const hasActionStats = (r: StatsRow) => r.stats_synced_at != null;
+
+/** Contadores que o mod só passou a contar de verdade a partir de uma versão. Até a
+ *  v2.25.5 o mod escutava o sistema de crafting antigo (ISCraftAction) e um evento de
+ *  loot no lugar de "encher recipiente" — esses contadores chegavam SEMPRE 0 (0 em 54
+ *  runs, média de 89 dias). Runs de versões anteriores ficam fora desses contadores
+ *  (senão os zeros falsos derrubariam médias e percentuais). Runs anteriores do
+ *  histórico não guardam a versão do mod — ficam fora também. */
+export const ACTION_MIN_MOD_VERSION: Record<string, string> = Object.fromEntries(
+  ['items_crafted', 'meals_cooked', 'water_collected', 'materials_crafted', 'weapons_crafted',
+   'clothes_crafted', 'ceramic_items', 'forged_weapons', 'cheese_produced', 'stations_used']
+    .map(k => [k, '2.26.0']),
+);
+
+/** A run tem valor confiável PARA ESTE contador (stats do Companion + versão do mod). */
+export function hasActionStatsFor(r: StatsRow, key: string): boolean {
+  if (!hasActionStats(r)) return false;
+  const min = ACTION_MIN_MOD_VERSION[key];
+  return !min || isVersionAtLeast(r.mod_version ?? null, min);
+}
 const actionValue = (r: StatsRow, key: string) => {
   const v = Number(r[key]);
   return Number.isFinite(v) && v > 0 ? v : 0;
@@ -416,7 +439,8 @@ export function computeActions(rows: StatsRow[]) {
   const groups = ACTION_GROUPS.map(g => ({
     id: g.id,
     actions: g.actions.map(({ key, kind }) => {
-      const values = withStats.map(r => actionValue(r, key));
+      const pool   = withStats.filter(r => hasActionStatsFor(r, key));
+      const values = pool.map(r => actionValue(r, key));
       const total  = values.reduce((a, b) => a + b, 0);
       const done   = values.filter(v => v > 0).length;
       return {
@@ -426,9 +450,11 @@ export function computeActions(rows: StatsRow[]) {
         median:      median(values),
         max:         values.length ? Math.max(...values) : 0,
         runs_done:   done,                           // runs que fizeram ao menos 1×
-        pct_done:    pct(done, withStats.length),
+        pct_done:    pct(done, pool.length),
+        runs:        pool.length,                    // runs com dado confiável deste contador
+        since_mod:   ACTION_MIN_MOD_VERSION[key] ?? null,
         buckets:     bucketize(values, ACTION_BUCKETS),
-        top:         topHolder(withStats, r => actionValue(r, key)),
+        top:         topHolder(pool, r => actionValue(r, key)),
       };
     }),
   }));
@@ -523,7 +549,9 @@ function metricValue(metric: RankingMetric): (r: StatsRow) => number {
 export function computeRanking(rows: StatsRow[], metric: RankingMetric, limit = 50) {
   const value = metricValue(metric);
   // Ações: só runs com contadores confiáveis (stats_synced_at)
-  const pool = metric.startsWith('action:') ? rows.filter(hasActionStats) : rows;
+  const pool = metric.startsWith('action:')
+    ? rows.filter(r => hasActionStatsFor(r, metric.slice('action:'.length)))
+    : rows;
   return pool
     .map(r => ({ r, v: value(r) }))
     .filter(x => x.v > 0)
@@ -552,7 +580,9 @@ export function computeRecords(rows: StatsRow[]) {
   return metrics
     .map(metric => ({
       metric,
-      holder: topHolder(metric.startsWith('action:') ? withStats : rows, metricValue(metric)),
+      holder: topHolder(
+        metric.startsWith('action:') ? withStats.filter(r => hasActionStatsFor(r, metric.slice('action:'.length))) : rows,
+        metricValue(metric)),
     }))
     .filter((r): r is { metric: RankingMetric; holder: Holder } => r.holder !== null);
 }

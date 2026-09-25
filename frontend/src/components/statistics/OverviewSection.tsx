@@ -25,9 +25,10 @@ export function OverviewSection({ data }: { data: ChampionshipStats['overview'] 
         {/* Ações: só aparecem quando já há runs com dados enviados pelo Companion atualizado */}
         {data.action_runs > 0 && (
           <>
-            <StatCard icon="🛠️" label="Itens fabricados"     value={fmtInt(data.items_crafted)} hint={`Em ${fmtInt(data.action_runs)} runs com dados de ações`} />
-            <StatCard icon="🍳" label="Refeições preparadas" value={fmtInt(data.meals_cooked)}  hint={`Em ${fmtInt(data.action_runs)} runs com dados de ações`} />
-            <StatCard icon="🏚️" label="Casas saqueadas"      value={fmtInt(data.houses_looted)} hint={`Em ${fmtInt(data.action_runs)} runs com dados de ações`} />
+            {/* só com dado: itens/refeições só passaram a ser contados no mod 2.26.0 */}
+            {data.items_crafted > 0 && <StatCard icon="🛠️" label="Itens fabricados" value={fmtInt(data.items_crafted)} hint="Desde o mod 2.26.0" />}
+            {data.meals_cooked  > 0 && <StatCard icon="🍳" label="Refeições preparadas" value={fmtInt(data.meals_cooked)} hint="Desde o mod 2.26.0" />}
+            {data.houses_looted > 0 && <StatCard icon="🏚️" label="Casas saqueadas" value={fmtInt(data.houses_looted)} hint={`Em ${fmtInt(data.action_runs)} runs com dados de ações`} />}
           </>
         )}
       </div>

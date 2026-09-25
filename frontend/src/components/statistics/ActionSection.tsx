@@ -11,8 +11,20 @@ function headline(a: StatsAction): { value: string; caption: string } {
     : { value: fmtDec(a.avg), caption: `${unit} em média por run` };
 }
 
-function ActionDetail({ action, runs, onRanking }: { action: StatsAction; runs: number; onRanking: () => void }) {
+function ActionDetail({ action, onRanking }: { action: StatsAction; onRanking: () => void }) {
   const { label, unit } = actionLabel(action.key);
+  const runs = action.runs;
+  if (runs === 0) {
+    return (
+      <div className="stats-action-detail" aria-live="polite">
+        <h4 className="stats-subtitle">{label}</h4>
+        <p className="stats-section-sub">
+          Este número começou a ser contado no mod {action.since_mod}. Ele aparece aqui assim que os
+          jogadores sincronizarem com a versão nova do mod.
+        </p>
+      </div>
+    );
+  }
   return (
     <div className="stats-action-detail" aria-live="polite">
       <h4 className="stats-subtitle">{label}</h4>
@@ -64,6 +76,7 @@ export function ActionSection({ data, onRanking }: {
                 {g.actions.map(a => {
                   const { icon, label } = actionLabel(a.key);
                   const h = headline(a);
+                  const waiting = a.runs === 0;
                   return (
                     <button
                       key={a.key} type="button"
@@ -73,14 +86,22 @@ export function ActionSection({ data, onRanking }: {
                     >
                       <span className="stats-action-icon" aria-hidden="true">{icon}</span>
                       <span className="stats-action-label">{label}</span>
-                      <span className="stats-action-value">{h.value}</span>
-                      <span className="stats-action-caption">{h.caption}</span>
-                      <span className="stats-action-caption">{fmtPct(a.pct_done)} das runs</span>
+                      {waiting ? (
+                        <span className="stats-action-caption">Aguardando dados (mod {a.since_mod}+)</span>
+                      ) : (
+                        <>
+                          <span className="stats-action-value">{h.value}</span>
+                          <span className="stats-action-caption">{h.caption}</span>
+                          <span className="stats-action-caption">
+                            {fmtPct(a.pct_done)} das runs{a.since_mod ? ` · desde o mod ${a.since_mod}` : ''}
+                          </span>
+                        </>
+                      )}
                     </button>
                   );
                 })}
               </div>
-              {open && <ActionDetail action={open} runs={runs} onRanking={() => onRanking(open.key)} />}
+              {open && <ActionDetail action={open} onRanking={() => onRanking(open.key)} />}
             </div>
           );
         })

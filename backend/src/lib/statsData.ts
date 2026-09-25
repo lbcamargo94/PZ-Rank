@@ -16,7 +16,7 @@ import { ACTION_KEYS, applyFilters, computeOverview, type StatsFilters, type Sta
 
 const STATS_ENTRY_COLS = [
   'id, player_id, name, character_name, profession, days, kills, score, skills, traits, objectives, is_alive, sandbox_ok, created_at',
-  'season_id, death_cause',
+  'season_id, death_cause, mod_version',
   'updated_at',        // último sync — vivo ativo × inativo (INACTIVE_AFTER_DAYS)
   'stats_synced_at',   // requer migration_v37
   ...ACTION_KEYS,

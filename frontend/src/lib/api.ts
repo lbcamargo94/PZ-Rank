@@ -465,6 +465,8 @@ export interface StatsAction {
   max:       number;
   runs_done: number;
   pct_done:  number;
+  runs:      number;          // runs com dado confiável deste contador
+  since_mod: string | null;   // versão mínima do mod pra este contador valer
   buckets:   StatsBucket[];
   top:       StatsHolder | null;
 }
