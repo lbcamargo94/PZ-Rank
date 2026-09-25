@@ -37,7 +37,10 @@ function WeeklyColumns({ weeks, series, ariaLabel }: { weeks: Week[]; series: Se
       )}
       <div className="stats-tl-plot" role="img" aria-label={ariaLabel}>
         <div className="stats-tl-axis" aria-hidden="true">
-          {ticks.map((t, i) => <span key={i}>{fmtInt(t)}</span>)}
+          {/* mesma posição das linhas de grade (top %), centralizado nela */}
+          {ticks.map((t, i) => (
+            <span key={i} style={{ top: `${(i / (ticks.length - 1)) * 100}%` }}>{fmtInt(t)}</span>
+          ))}
         </div>
         <div className="stats-tl-grid">
           <div className="stats-tl-lines" aria-hidden="true">
