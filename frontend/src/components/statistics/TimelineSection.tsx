@@ -46,7 +46,11 @@ function WeeklyColumns({ weeks, series, ariaLabel }: { weeks: Week[]; series: Se
           <div className="stats-tl-lines" aria-hidden="true">
             {ticks.map((_, i) => <span key={i} className="stats-tl-gridline" style={{ top: `${(i / (ticks.length - 1)) * 100}%` }} />)}
           </div>
-          {weeks.map(w => (
+          {weeks.map((w, wi) => {
+            // balão do tooltip alinhado pela posição: nas pontas ele não pode passar
+            // da borda da tela (o pseudo-elemento, mesmo invisível, alarga a página)
+            const align = wi < weeks.length / 3 ? 'left' : wi >= (weeks.length * 2) / 3 ? 'right' : undefined;
+            return (
             <div key={w.week_start} className="stats-tl-week">
               <div className="stats-tl-bars">
                 {series.map(s => {
@@ -54,7 +58,7 @@ function WeeklyColumns({ weeks, series, ariaLabel }: { weeks: Week[]; series: Se
                   if (v == null) {
                     // sem registro: contorno tracejado (não é zero)
                     const tip = s.noDataTip?.(w) ?? 'Sem dado nesta semana';
-                    return <span key={s.key} className="stats-tl-bar stats-tl-bar--nodata" data-tip={tip} title={tip} />;
+                    return <span key={s.key} className="stats-tl-bar stats-tl-bar--nodata" data-tip={tip} data-tip-align={align} title={tip} />;
                   }
                   return (
                     <span
@@ -62,6 +66,7 @@ function WeeklyColumns({ weeks, series, ariaLabel }: { weeks: Week[]; series: Se
                       className={`stats-tl-bar ${s.cls}`}
                       style={{ height: `${(v / max) * 100}%` }}
                       data-tip={s.tip(w)}
+                      data-tip-align={align}
                       title={s.tip(w)}
                     />
                   );
@@ -69,7 +74,8 @@ function WeeklyColumns({ weeks, series, ariaLabel }: { weeks: Week[]; series: Se
               </div>
               <span className="stats-tl-label">{shortDate(w.week_start)}</span>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </figure>
