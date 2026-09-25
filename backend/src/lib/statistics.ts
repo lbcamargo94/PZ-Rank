@@ -35,6 +35,7 @@ export interface StatsRow {
   // Preenchida quando os contadores de ações vieram do Companion (confiáveis).
   // NULL = contadores antigos/congelados → a run fica fora da seção de ações.
   stats_synced_at?: string | Date | null;
+  season_id?:     number | null;
   // Último sync da run atual (entries.updated_at) — define vivo ativo × inativo
   updated_at?: string | Date | null;
   // Run anterior (run_history) — sempre conta como encerrada
@@ -56,6 +57,9 @@ export interface StatsFilters {
   status:              StatusFilter;
   profession:          string | null;   // nome canônico (normalizeProfession)
   includeDisqualified: boolean;
+  // Temporada (seasons.id). null/ausente = todas. Runs sem season_id (antes da
+  // v4.23.0 e sem backfill) só aparecem em "todas".
+  seasonId?:           number | null;
 }
 
 export interface Holder {
@@ -171,6 +175,7 @@ export function applyFilters(rows: StatsRow[], f: StatsFilters, now = Date.now()
     // Partida ENCERRADA com 0 dias e 0 kills não conta (personagem recriado no
     // início). Viva com 0/0 = recém-criada, ainda em jogo: continua contando.
     if (!isTrue(r.is_alive) && isEmptyRun(r.days, r.kills)) return false;
+    if (f.seasonId != null && Number(r.season_id) !== f.seasonId) return false;
     if (!f.includeDisqualified && r.sandbox_ok !== null && !isTrue(r.sandbox_ok)) return false;
     // 'alive' = vivos ATIVOS; 'inactive' = vivos sem sync há 14+ dias
     if (f.status === 'alive' && (!isTrue(r.is_alive) || isInactive(r, now))) return false;
@@ -434,6 +439,57 @@ export function computeActions(rows: StatsRow[]) {
   };
 }
 
+// ── Causas de morte ────────────────────────────────────────────────────────
+// Chaves que o mod detecta (PZCommunityRank RankDeathCause.lua, v2.15+). Versões
+// antigas mandavam o texto da tela de morte ("Você sobreviveu por 6 horas.") no
+// lugar da causa — qualquer coisa fora desta lista conta como desconhecida.
+export const DEATH_CAUSES = [
+  'zombie', 'zombie_horde', 'zombie_virus', 'vehicle', 'pvp', 'burned', 'bled',
+  'infection', 'bleach', 'poison', 'fall', 'cold', 'sick', 'hunger', 'thirst',
+] as const;
+export type DeathCause = typeof DEATH_CAUSES[number];
+const DEATH_CAUSE_SET = new Set<string>(DEATH_CAUSES);
+/** Causas "por zumbi" — somadas num destaque próprio da seção. */
+export const ZOMBIE_CAUSES = new Set<string>(['zombie', 'zombie_horde', 'zombie_virus']);
+
+export function normalizeDeathCause(raw: unknown): DeathCause | null {
+  if (typeof raw !== 'string') return null;
+  const k = raw.trim().toLowerCase();
+  return DEATH_CAUSE_SET.has(k) ? (k as DeathCause) : null;
+}
+
+/** Só mortes (runs encerradas). Percentuais sobre as mortes com causa CONHECIDA;
+ *  `coverage` diz quantas das mortes têm causa — a página mostra isso junto. */
+export function computeDeaths(rows: StatsRow[]) {
+  const dead  = rows.filter(r => !isTrue(r.is_alive));
+  const known = dead.map(r => ({ r, cause: normalizeDeathCause(r['death_cause']) }))
+    .filter((x): x is { r: StatsRow; cause: DeathCause } => x.cause !== null);
+
+  const byCause = new Map<DeathCause, StatsRow[]>();
+  for (const { r, cause } of known) {
+    if (!byCause.has(cause)) byCause.set(cause, []);
+    byCause.get(cause)!.push(r);
+  }
+  const causes = [...byCause.entries()]
+    .map(([cause, g]) => ({
+      cause,
+      deaths:    g.length,
+      pct:       pct(g.length, known.length),
+      avg_days:  avg(g.map(r => r.days || 0)),
+      avg_kills: avg(g.map(r => r.kills || 0)),
+    }))
+    .sort((a, b) => b.deaths - a.deaths || a.cause.localeCompare(b.cause));
+
+  const zombieDeaths = known.filter(x => ZOMBIE_CAUSES.has(x.cause)).length;
+  return {
+    deaths:        dead.length,
+    known:         known.length,
+    coverage:      pct(known.length, dead.length),
+    zombie_pct:    pct(zombieDeaths, known.length),
+    causes,
+  };
+}
+
 // ── Rankings e recordes ────────────────────────────────────────────────────
 
 export const RANKING_METRICS = ['kills', 'days', 'score', 'skills10', 'skill_levels', 'bases'] as const;
@@ -567,6 +623,7 @@ export function computeChampionshipStats(allRows: StatsRow[], filters: StatsFilt
     skills,
     records:      computeRecords(rows),
     actions:      computeActions(rows),
+    deaths:       computeDeaths(rows),
     curiosities:  computeCuriosities(professions, traits, skills, zombies, rows),
     profession_options: professionOptions,
   };

@@ -444,6 +444,7 @@ export interface StatsQuery {
   status:     StatsStatus;
   profession: string | null;
   includeDq:  boolean;
+  season:     string;   // 'current' (padrão) | 'all' | id da temporada
 }
 
 export interface StatsHolder {
@@ -476,6 +477,13 @@ export interface ChampionshipStats {
     total_kills: number; total_days: number; bases_built: number; skills_maxed: number;
     action_runs: number; items_crafted: number; meals_cooked: number; houses_looted: number;
   };
+  deaths: {
+    deaths:     number;   // runs encerradas (com os filtros)
+    known:      number;   // com causa conhecida
+    coverage:   number;   // % das mortes com causa conhecida
+    zombie_pct: number;   // % das causas conhecidas que foram por zumbi
+    causes: Array<{ cause: string; deaths: number; pct: number; avg_days: number; avg_kills: number }>;
+  };
   actions: {
     runs_with_data: number;
     runs_total:     number;
@@ -505,7 +513,7 @@ export interface StatsRankingRow {
 }
 
 function statsParams(q: StatsQuery): URLSearchParams {
-  const p = new URLSearchParams({ season: 'current', status: q.status });
+  const p = new URLSearchParams({ season: q.season || 'current', status: q.status });
   if (q.profession) p.set('profession', q.profession);
   if (q.includeDq)  p.set('include_dq', '1');
   return p;

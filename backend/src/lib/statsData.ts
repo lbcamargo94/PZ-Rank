@@ -16,6 +16,7 @@ import { ACTION_KEYS, applyFilters, computeOverview, type StatsFilters, type Sta
 
 const STATS_ENTRY_COLS = [
   'id, player_id, name, character_name, profession, days, kills, score, skills, traits, objectives, is_alive, sandbox_ok, created_at',
+  'season_id, death_cause',
   'updated_at',        // último sync — vivo ativo × inativo (INACTIVE_AFTER_DAYS)
   'stats_synced_at',   // requer migration_v37
   ...ACTION_KEYS,
@@ -23,7 +24,7 @@ const STATS_ENTRY_COLS = [
 // run_history (migration_v38) — mesmas colunas + marcadores do histórico
 const STATS_HISTORY_COLS = [
   'id, player_id, name, character_name, profession, days, kills, score, skills, traits, objectives, sandbox_ok',
-  'stats_synced_at, is_partial, run_started_at, run_ended_at',
+  'season_id, death_cause, stats_synced_at, is_partial, run_started_at, run_ended_at',
   ...ACTION_KEYS,
 ].join(', ');
 const STATS_CACHE_MS = 3 * 60 * 1000;
@@ -69,8 +70,9 @@ export async function loadStatsRows() {
 /** Filtros dos números oficiais (sem desclassificados, todas as runs válidas). */
 export const OFFICIAL_FILTERS: StatsFilters = { status: 'all', profession: null, includeDisqualified: false };
 
-/** Visão geral oficial — mesma fonte e mesmas regras de /estatisticas. */
+/** Visão geral oficial — mesma fonte e mesmas regras de /estatisticas, na
+ *  TEMPORADA ATIVA (quando a próxima começar, a home recomeça do zero sozinha). */
 export async function officialOverview() {
-  const { rows } = await loadStatsRows();
-  return computeOverview(applyFilters(rows, OFFICIAL_FILTERS));
+  const { rows, season } = await loadStatsRows();
+  return computeOverview(applyFilters(rows, { ...OFFICIAL_FILTERS, seasonId: season?.id ?? null }));
 }

@@ -22,6 +22,7 @@ import { computeScore } from '../lib/scoring';
 import { processHeatmapDelta } from '../lib/heatmap';
 import { COMPANION_STAT_KEYS, validateCompanionStats, type CompanionStatKey } from '../lib/companionStats';
 import { archiveRun, getActiveSeasonId, isNewRunOf } from '../lib/runHistory';
+import { normalizeDeathCause } from '../lib/statistics';
 import { config } from '../config';
 import type { Objectives } from '../types';
 
@@ -314,7 +315,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // Filtra deleted_at IS NULL para nunca confundir entries soft-deletadas com a ativa.
   const { data: existingRaw, error: existingError } = await supabase
     .from(config.tableName)
-    .select('id, objectives, live_url, sandbox_ok, disqualification_reason, kills, time_raw, days, flagged_reason, flagged_at, updated_at, score, record_score, character_name, is_alive, deleted_at, no_live_streak, skills')
+    .select('id, objectives, live_url, sandbox_ok, disqualification_reason, kills, time_raw, days, flagged_reason, flagged_at, updated_at, score, record_score, character_name, is_alive, deleted_at, no_live_streak, skills, season_id')
     .eq('player_id', player.id)
     .eq('character_name', decoded.characterName)
     .is('deleted_at', null)
@@ -339,6 +340,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     score: number; record_score: number; character_name: string; is_alive: boolean;
     no_live_streak: number;
     skills: string | null;
+    season_id: number | null;
   };
   const prev = existing as ExistingRow | null;
 
@@ -747,10 +749,13 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     // Em nova run sem stats, zera a marca pra não herdar a confiabilidade da anterior.
     ...(companionStatsOk ? { stats_synced_at: new Date().toISOString() } : isNewCharRun ? { stats_synced_at: null } : {}),
     // Histórico de runs (migration_v38): temporada da run, início e causa da morte.
-    ...(activeSeasonId != null ? { season_id: activeSeasonId } : {}),
+    // Temporada só no INÍCIO da run (ou se ainda não tiver): uma run que atravessa a
+    // virada de temporada continua pertencendo à temporada em que começou.
+    ...(activeSeasonId != null && (!prev || isNewCharRun || prev.season_id == null) ? { season_id: activeSeasonId } : {}),
     ...(!prev || isNewCharRun ? { run_started_at: new Date().toISOString() } : {}),
-    ...(!decoded.isAlive && decoded.deathCause
-      ? { death_cause: decoded.deathCause }
+    // Só causas conhecidas — mods antigos mandavam o texto da tela de morte no campo
+    ...(!decoded.isAlive && normalizeDeathCause(decoded.deathCause)
+      ? { death_cause: normalizeDeathCause(decoded.deathCause) }
       : isNewCharRun ? { death_cause: null } : {}),
     // PZRX3: only write when present to avoid overwriting with zeros on PZRX2 syncs
     ...(hasExtended ? {
@@ -947,7 +952,9 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
               player_id:   player.id,
               player_nick: player.nick,
               char_name:   decoded.characterName,
-              data: { skill: skillName },
+              // days/time_raw: tempo de JOGO em que a skill chegou ao 10 — base do
+              // futuro "tempo médio até o nível 10" em /estatisticas (desde v4.23.3)
+              data: { skill: skillName, days: decoded.days, time_raw: decoded.timeRaw },
             });
           }
         }

@@ -119,8 +119,8 @@ para o nome PTBR atual. Profissões desconhecidas (mods) passam inalteradas.
 | Ranking por estatística | 🟢 | Todas as métricas acima + qualquer skill |
 | Curiosidades | 🟢 | Grupos com < 5 runs são ignorados (média de 1–2 runs é ruído). Texto sempre descritivo |
 | Filtros na URL | 🟢 | `?status=`, `?profissao=`, `?dq=1` |
-| Temporada | 🟡 | Só "temporada atual" — `season_id` passa a ser gravado desde v4.23.0; ver abaixo |
-| Causas de morte | 🟡 | Ver abaixo |
+| Temporada | 🟢 | v4.23.3 — filtro real por `season_id` (atual, passadas, todas). Ver abaixo |
+| Causas de morte | 🟢 | v4.23.3 — seção própria, com cobertura exibida. Ver abaixo |
 | Onde os jogadores morrem | 🟡 | Ver abaixo |
 | Evolução histórica | 🟡 | Ver abaixo |
 | Ações dos sobreviventes / ranking de ações | 🟢 | Desde v4.22.0 — cobertura cresce conforme o Companion v2.5.0 é adotado. Ver abaixo |
@@ -180,34 +180,29 @@ jogo. "Dias de jogo até o nível 10" precisaria do `time_raw` no momento do eve
 Caminho barato: gravar `time_raw`/`days` no `data` do evento `skill_maxed` em
 `sync.ts` a partir de agora (sem mudar o mod). Só vale para eventos futuros.
 
-## 🟡 Temporada
+## 🟢 Temporada (v4.23.3)
 
-`entries` não tem vínculo real com temporada. Existe uma coluna `entries.season_id`
-(migração do SQLite local e na allowlist do `pg-adapter`), mas **nenhuma rota a
-preenche** — o sync nunca grava `season_id`. Encerrar temporada só arquiva o top 3
-em `hall_of_fame`. Hoje há 1 temporada ("Um Novo Começo", id 2).
+- `entries.season_id` é gravado **no início da run** (insert ou partida nova) — uma
+  run que atravessa a virada de temporada continua na temporada em que começou.
+- `run_history.season_id` vem da run arquivada.
+- Runs anteriores a isso: `migration_v39` preencheu `season_id = 2` ("Um Novo
+  Começo", a única temporada até 2026-09-25). **Não reaproveitar essa migration.**
+- Filtro: `season=current` (padrão, temporada ativa) | `<id>` | `all`. A opção
+  "Todas as temporadas" só aparece com 2+ temporadas. URL: `?temporada=`.
+- O contador da home (`officialOverview`) usa só a temporada ativa — zera sozinho
+  quando a próxima começar.
 
-Por isso o filtro mostra só "Atual — `<nome>`". Para habilitar temporadas passadas:
-gravar `season_id` da temporada ativa no INSERT de `entries` (sync + criação manual),
-fazer backfill das runs existentes para a temporada atual, e trocar o filtro de
-temporada no backend por `.eq('season_id', …)`.
+## 🟢 Causas de morte (v4.23.3)
 
-## 🟡 Causas de morte
-
-O mod (v2.15+) envia `death_cause` (15 chaves: `zombie`, `zombie_horde`,
-`zombie_virus`, `vehicle`, `pvp`, `burned`, `bled`, `infection`, `poison`, `bleach`,
-`fall`, `cold`, `sick`, `hunger`, `thirst`; vazio = desconhecida). Mas o servidor só
-guarda isso em `journal_events.data.cause` quando o sync vê a transição vivo→morto:
-
-- mortes confirmadas por moderador (`/entries/:id/confirm-death`) ficam sem causa;
-
-- runs mortas antes do mod v2.15 não têm causa;
-
-- não há coluna em `entries`.
-
-Caminho: coluna `entries.death_cause` gravada no sync de morte + backfill a partir do
-journal (`player_id` + `char_name`). Exibir com o percentual de cobertura
-("causa conhecida em X% das mortes").
+- Fonte: `entries.death_cause` (gravado no sync de morte desde v4.23.0) +
+  `run_history.death_cause`. `migration_v39` recuperou do jornal a causa das mortes
+  atuais (mesmos dias/kills).
+- Só as 15 chaves de `DEATH_CAUSES` (`statistics.ts`) valem; mods antigos mandavam o
+  texto da tela de morte ("Você sobreviveu por...") — vira desconhecida.
+- Percentuais sobre mortes com causa **conhecida**; a seção mostra a cobertura
+  ("causa registrada em X de Y mortes").
+- "Horda de zumbis" (`zombie_horde`) = morrer cercado por 2+ zumbis ou derrubado
+  (`RankDeathCause.lua`). Domina os dados (~80% das causas conhecidas em 2026-09).
 
 ## 🟡 Onde os jogadores morrem
 

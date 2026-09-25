@@ -6,6 +6,7 @@ import { parsePzrCode } from '../lib/decoder';
 import { dbError } from '../lib/errors';
 import { computeScore, sumSkillLevels } from '../lib/scoring';
 import { archiveRun, getActiveSeasonId, isNewRunOf } from '../lib/runHistory';
+import { normalizeDeathCause } from '../lib/statistics';
 import { requireModerator } from '../middleware/moderator';
 import type { ModRequest } from '../middleware/moderator';
 import { config } from '../config';
@@ -165,7 +166,7 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
   // confirmadas pelo moderador, mesmo em caso de race condition no carregamento do painel.
   const { data: existing, error: existingError } = await supabase
     .from(config.tableName)
-    .select('id, disqualified_at, objectives, live_url, time_raw')
+    .select('id, disqualified_at, objectives, live_url, time_raw, season_id')
     .eq('player_id', player_id)
     .eq('character_name', decoded.characterName)
     .maybeSingle();
@@ -177,7 +178,7 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
     return;
   }
 
-  const existingRow = existing as { id: number; disqualified_at?: string | null; objectives?: Objectives | null; live_url?: string | null; time_raw?: number } | null;
+  const existingRow = existing as { id: number; disqualified_at?: string | null; objectives?: Objectives | null; live_url?: string | null; time_raw?: number; season_id?: number | null } | null;
 
   // Código de uma partida NOVA com o mesmo nome de personagem: arquiva a run
   // anterior antes de sobrescrever (mesma regra do sync — lib/runHistory.ts)
@@ -222,10 +223,10 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
       : null,
     disqualified_at:         disqualifiedAt,
     updated_at:              new Date().toISOString(),
-    ...(activeSeasonId != null ? { season_id: activeSeasonId } : {}),
+    ...(activeSeasonId != null && (!existingRow || isNewRun || existingRow.season_id == null) ? { season_id: activeSeasonId } : {}),
     ...(!existingRow || isNewRun ? { run_started_at: new Date().toISOString() } : {}),
-    ...(!decoded.isAlive && decoded.deathCause
-      ? { death_cause: decoded.deathCause }
+    ...(!decoded.isAlive && normalizeDeathCause(decoded.deathCause)
+      ? { death_cause: normalizeDeathCause(decoded.deathCause) }
       : isNewRun ? { death_cause: null } : {}),
   };
 

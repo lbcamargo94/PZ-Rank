@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { apiGetChampionshipStats, type ChampionshipStats, type StatsQuery, type StatsStatus } from '../lib/api';
+import { apiGetChampionshipStats, apiGetSeasons, type ChampionshipStats, type StatsQuery, type StatsStatus } from '../lib/api';
 import { StatsFiltersBar }    from '../components/statistics/StatsFiltersBar';
 import { OverviewSection }    from '../components/statistics/OverviewSection';
 import { ProfessionSection }  from '../components/statistics/ProfessionSection';
@@ -9,6 +9,7 @@ import { SurvivalSection }    from '../components/statistics/SurvivalSection';
 import { ZombieSection }      from '../components/statistics/ZombieSection';
 import { SkillSection }       from '../components/statistics/SkillSection';
 import { ActionSection }      from '../components/statistics/ActionSection';
+import { DeathSection }       from '../components/statistics/DeathSection';
 import { RecordsSection, recordTarget } from '../components/statistics/RecordsSection';
 import { CuriositiesSection } from '../components/statistics/CuriositiesSection';
 import { ComingSoonSection }  from '../components/statistics/ComingSoonSection';
@@ -20,6 +21,7 @@ const SECTIONS = [
   { id: 'traits',        label: 'Traits' },
   { id: 'sobrevivencia', label: 'Sobrevivência' },
   { id: 'zumbis',        label: 'Zumbis' },
+  { id: 'mortes',        label: 'Mortes' },
   { id: 'skills',        label: 'Skills' },
   { id: 'acoes',         label: 'Ações' },
   { id: 'recordes',      label: 'Recordes' },
@@ -36,6 +38,7 @@ function queryFromParams(p: URLSearchParams): StatsQuery {
     status:     status && STATUSES.includes(status) ? status : 'all',
     profession: p.get('profissao') || null,
     includeDq:  p.get('dq') === '1',
+    season:     p.get('temporada') || 'current',
   };
 }
 
@@ -47,6 +50,9 @@ export function StatisticsPage() {
   const [error, setError]     = useState<string | null>(null);
   const [ranking, setRanking] = useState<RankingTarget | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
+  const [seasons, setSeasons] = useState<Array<{ id: number; name: string; is_active: boolean | number }>>([]);
+
+  useEffect(() => { apiGetSeasons().then(setSeasons).catch(() => setSeasons([])); }, []);
 
   const paramsKey = params.toString();
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -70,6 +76,7 @@ export function StatisticsPage() {
     if (q.status !== 'all') next.set('status', q.status);
     if (q.profession)       next.set('profissao', q.profession);
     if (q.includeDq)        next.set('dq', '1');
+    if (q.season && q.season !== 'current') next.set('temporada', q.season);
     setParams(next, { replace: true });
   }, [setParams]);
 
@@ -88,7 +95,7 @@ export function StatisticsPage() {
 
         <StatsFiltersBar
           query={query}
-          seasonName={data?.season?.name ?? null}
+          seasons={seasons}
           professions={data?.profession_options ?? (query.profession ? [query.profession] : [])}
           onChange={updateQuery}
         />
@@ -119,6 +126,7 @@ export function StatisticsPage() {
                 <TraitSection traits={data.traits} builds={data.trait_builds} />
                 <SurvivalSection data={data.survival} onRanking={() => setRanking(recordTarget('days'))} />
                 <ZombieSection data={data.zombies} onRanking={() => setRanking(recordTarget('kills'))} />
+                <DeathSection data={data.deaths} />
                 <SkillSection
                   data={data.skills}
                   runs={data.overview.runs}

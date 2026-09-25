@@ -2,7 +2,7 @@ import type { StatsQuery, StatsStatus } from '../../lib/api';
 
 interface Props {
   query:       StatsQuery;
-  seasonName:  string | null;
+  seasons:     Array<{ id: number; name: string; is_active: boolean | number }>;
   professions: string[];
   onChange:    (q: StatsQuery) => void;
 }
@@ -14,14 +14,23 @@ const STATUS_OPTIONS: Array<{ value: StatsStatus; label: string }> = [
   { value: 'dead',  label: 'Mortos (runs encerradas)' },
 ];
 
-export function StatsFiltersBar({ query, seasonName, professions, onChange }: Props) {
+export function StatsFiltersBar({ query, seasons, professions, onChange }: Props) {
+  // Temporada ativa = 'current' (padrão). Passadas pelo id. "Todas" só aparece quando
+  // existe mais de uma — nunca misturar temporadas sem o jogador escolher isso.
+  const past = seasons.filter(s => !(s.is_active === true || s.is_active === 1));
+  const active = seasons.find(s => s.is_active === true || s.is_active === 1);
   return (
     <div className="stats-filters" role="group" aria-label="Filtros das estatísticas">
-      {/* Uma opção só: `entries` ainda não tem season_id (ver docs/estatisticas.md) */}
       <label className="stats-filter">
         <span>Temporada</span>
-        <select value="current" disabled={true} aria-describedby="stats-season-note">
-          <option value="current">{seasonName ? `Atual — ${seasonName}` : 'Temporada atual'}</option>
+        <select
+          value={query.season}
+          disabled={seasons.length <= 1}
+          onChange={e => onChange({ ...query, season: e.target.value })}
+        >
+          <option value="current">{active ? `Atual — ${active.name}` : 'Temporada atual'}</option>
+          {past.map(s => <option key={s.id} value={String(s.id)}>{s.name}</option>)}
+          {seasons.length > 1 && <option value="all">Todas as temporadas</option>}
         </select>
       </label>
 
@@ -49,10 +58,12 @@ export function StatsFiltersBar({ query, seasonName, professions, onChange }: Pr
         <span>Incluir desclassificados</span>
       </label>
 
-      <p id="stats-season-note" className="stats-filter-note">
+      <p className="stats-filter-note">
         {query.includeDq
           ? 'Mostrando também runs desclassificadas — estes números NÃO são os oficiais.'
-          : 'Dados oficiais: runs válidas da temporada atual (sem desclassificados).'}
+          : query.season === 'all'
+            ? 'Somando todas as temporadas (sem desclassificados).'
+            : 'Dados oficiais: runs válidas da temporada escolhida (sem desclassificados).'}
       </p>
     </div>
   );

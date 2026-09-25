@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  ACTION_KEYS, applyFilters, computeActions, computeChampionshipStats, computeOverview, computeProfessions, computeRecords, isInactive,
+  ACTION_KEYS, applyFilters, computeActions, computeChampionshipStats, computeOverview, computeProfessions, computeRecords, isInactive, computeDeaths, normalizeDeathCause,
   computeRanking, computeSkills, computeSurvival, computeTraitBuilds, computeTraits,
   isRankingMetric, median, parseSkills, traitKey,
   type StatsFilters, type StatsRow,
@@ -251,6 +251,42 @@ describe('ações dos sobreviventes', () => {
   it('todas as 33 ações estão registradas exatamente uma vez', () => {
     expect(ACTION_KEYS).toHaveLength(33);
     expect(new Set(ACTION_KEYS).size).toBe(33);
+  });
+});
+
+describe('causas de morte', () => {
+  it('só aceita as causas conhecidas; texto da tela de morte (mods antigos) vira desconhecida', () => {
+    expect(normalizeDeathCause('zombie_horde')).toBe('zombie_horde');
+    expect(normalizeDeathCause(' Poison ')).toBe('poison');
+    expect(normalizeDeathCause('Você sobreviveu por 6 horas.')).toBeNull();
+    expect(normalizeDeathCause('')).toBeNull();
+    expect(normalizeDeathCause(null)).toBeNull();
+  });
+
+  it('percentual sobre causas conhecidas, cobertura sobre todas as mortes, vivos fora', () => {
+    const rows = [
+      row({ is_alive: false, days: 10, kills: 5, death_cause: 'zombie_horde' }),
+      row({ is_alive: false, days: 20, kills: 5, death_cause: 'zombie_horde' }),
+      row({ is_alive: false, days: 30, kills: 5, death_cause: 'poison' }),
+      row({ is_alive: false, days: 40, kills: 5, death_cause: 'zombie' }),
+      row({ is_alive: false, days: 50, kills: 5, death_cause: 'Você sobreviveu por 2 horas.' }),
+      row({ is_alive: true,  days: 60, kills: 5, death_cause: 'zombie' }),   // vivo não conta
+    ];
+    const d = computeDeaths(rows);
+    expect(d).toMatchObject({ deaths: 5, known: 4 });
+    expect(d.coverage).toBeCloseTo(80);
+    expect(d.zombie_pct).toBeCloseTo(75);
+    expect(d.causes[0]).toMatchObject({ cause: 'zombie_horde', deaths: 2, pct: 50, avg_days: 15 });
+  });
+});
+
+describe('temporada', () => {
+  it('filtra por season_id; null = todas; runs sem temporada só aparecem em "todas"', () => {
+    const rows = [row({ season_id: 2 }), row({ season_id: 2 }), row({ season_id: 3 }), row({ season_id: null })];
+    expect(applyFilters(rows, { ...ALL, seasonId: 2 })).toHaveLength(2);
+    expect(applyFilters(rows, { ...ALL, seasonId: 3 })).toHaveLength(1);
+    expect(applyFilters(rows, { ...ALL, seasonId: null })).toHaveLength(4);
+    expect(applyFilters(rows, ALL)).toHaveLength(4);
   });
 });
 

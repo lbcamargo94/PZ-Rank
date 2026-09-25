@@ -238,23 +238,27 @@ router.get('/legends', async (_req: Request, res: Response) => {
 
 let _statsResultCache: { at: number; results: Map<string, object> } = { at: 0, results: new Map() };
 
-function parseStatsFilters(q: Request['query']): StatsFilters | string {
+/** season: 'current' (padrão = temporada ativa) | 'all' | id numérico. */
+function parseStatsFilters(q: Request['query'], activeSeasonId: number | null): StatsFilters | string {
   const status = typeof q.status === 'string' && q.status ? q.status : 'all';
   if (status !== 'all' && status !== 'alive' && status !== 'inactive' && status !== 'dead') return 'status inválido.';
   const season = typeof q.season === 'string' && q.season ? q.season : 'current';
-  if (season !== 'current') return 'Somente a temporada atual está disponível.';
+  let seasonId: number | null;
+  if (season === 'current') seasonId = activeSeasonId;
+  else if (season === 'all') seasonId = null;
+  else if (/^\d{1,9}$/.test(season)) seasonId = Number(season);
+  else return 'temporada inválida.';
   const profession = typeof q.profession === 'string' && q.profession.trim()
     ? normalizeProfession(q.profession.slice(0, 80)) : null;
-  return { status, profession, includeDisqualified: q.include_dq === '1' || q.include_dq === 'true' };
+  return { status, profession, includeDisqualified: q.include_dq === '1' || q.include_dq === 'true', seasonId };
 }
 
-// GET /stats/championship?status=all|alive|dead&profession=&include_dq=0|1&season=current
+// GET /stats/championship?status=all|alive|inactive|dead&profession=&include_dq=0|1&season=current|all|<id>
 router.get('/championship', async (req: Request, res: Response) => {
-  const filters = parseStatsFilters(req.query);
-  if (typeof filters === 'string') return res.status(400).json({ error: filters });
-
   try {
     const cache = await loadStatsRows();
+    const filters = parseStatsFilters(req.query, cache.season?.id ?? null);
+    if (typeof filters === 'string') return res.status(400).json({ error: filters });
     // Resultado memoizado por combinação de filtros enquanto as linhas em cache
     // forem as mesmas (~50ms de agregação com ~550 runs — evita repetir a cada acesso)
     const key = JSON.stringify(filters);
@@ -281,14 +285,14 @@ router.get('/championship', async (req: Request, res: Response) => {
 
 // GET /stats/championship/ranking?metric=kills|days|score|skills10|skill_levels|bases|skill:<Nome>|action:<chave>&limit=50 (+ filtros)
 router.get('/championship/ranking', async (req: Request, res: Response) => {
-  const filters = parseStatsFilters(req.query);
-  if (typeof filters === 'string') return res.status(400).json({ error: filters });
   const metric = typeof req.query.metric === 'string' ? req.query.metric.slice(0, 60) : '';
   if (!isRankingMetric(metric)) return res.status(400).json({ error: 'metric inválida.' });
   const limit = Math.min(100, Math.max(1, parseInt(String(req.query.limit ?? '50'), 10) || 50));
 
   try {
-    const { rows } = await loadStatsRows();
+    const { rows, season } = await loadStatsRows();
+    const filters = parseStatsFilters(req.query, season?.id ?? null);
+    if (typeof filters === 'string') return res.status(400).json({ error: filters });
     res.setHeader('Cache-Control', 'public, s-maxage=180, stale-while-revalidate=120');
     res.json({ metric, ranking: computeRanking(applyFilters(rows, filters), metric, limit) });
   } catch (error) {
