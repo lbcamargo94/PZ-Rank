@@ -557,6 +557,15 @@ function runEndedAt(r: StatsRow): string | Date | null {
 
 export interface SignupRow { created_at: string | Date | null }
 
+/** Primeira semana COMPLETA com mortes datadas: o Jornal (journal_events) registrou
+ *  a 1ª morte em 2026-09-06; antes disso, mortes de runs sobrescritas por uma partida
+ *  nova com o mesmo nome se perderam e as poucas que restaram foram removidas do rank
+ *  ou são 0 dias/0 kills. Semanas anteriores → null ("sem dado"), nunca 0. */
+export const DEATHS_TRACKED_SINCE_WEEK = '2026-09-07';
+/** Até aqui uma partida recomeçada com o mesmo nome não era guardada (run_history,
+ *  v4.23.0): "runs iniciadas" antes disso contam só a 1ª partida de cada personagem. */
+export const RESTARTS_TRACKED_SINCE_WEEK = '2026-09-21';
+
 /** Série semanal da temporada: runs iniciadas, mortes (com média de dias vividos) e
  *  novos inscritos. Semanas sem nada aparecem com zero, de `from` até `to`. */
 export function computeTimeline(rows: StatsRow[], signups: SignupRow[], from: string | Date | null, to = new Date()) {
@@ -586,20 +595,24 @@ export function computeTimeline(rows: StatsRow[], signups: SignupRow[], from: st
   // Preenche semanas vazias entre a primeira e a última
   const keys = [...weeks.keys()].sort();
   const first = fromKey ?? keys[0];
-  if (!first) return { weeks: [] };
-  const out: Array<{ week_start: string; runs_started: number; deaths: number; avg_days_at_death: number; signups: number }> = [];
+  if (!first) return { weeks: [], deaths_tracked_since: DEATHS_TRACKED_SINCE_WEEK, restarts_tracked_since: RESTARTS_TRACKED_SINCE_WEEK };
+  const out: Array<{ week_start: string; runs_started: number; deaths: number | null; avg_days_at_death: number | null; signups: number }> = [];
   for (let d = new Date(`${first}T00:00:00Z`); d.toISOString().slice(0, 10) <= toKey; d.setUTCDate(d.getUTCDate() + 7)) {
     const k = d.toISOString().slice(0, 10);
     const w = weeks.get(k);
     out.push({
       week_start:        k,
       runs_started:      w?.runs_started ?? 0,
-      deaths:            w?.deaths ?? 0,
-      avg_days_at_death: w ? avg(w.death_days) : 0,
+      deaths:            k < DEATHS_TRACKED_SINCE_WEEK ? null : (w?.deaths ?? 0),
+      avg_days_at_death: k < DEATHS_TRACKED_SINCE_WEEK ? null : (w ? avg(w.death_days) : 0),
       signups:           w?.signups ?? 0,
     });
   }
-  return { weeks: out };
+  return {
+    weeks: out,
+    deaths_tracked_since:   DEATHS_TRACKED_SINCE_WEEK,
+    restarts_tracked_since: RESTARTS_TRACKED_SINCE_WEEK,
+  };
 }
 
 // ── Rankings e recordes ────────────────────────────────────────────────────
@@ -748,7 +761,7 @@ export function computeChampionshipStats(allRows: StatsRow[], filters: StatsFilt
     deaths:       computeDeaths(rows),
     timeline:     timeline
       ? computeTimeline(rows, timeline.signups, timeline.from, timeline.to ? new Date(timeline.to) : new Date())
-      : { weeks: [] },
+      : { weeks: [], deaths_tracked_since: DEATHS_TRACKED_SINCE_WEEK, restarts_tracked_since: RESTARTS_TRACKED_SINCE_WEEK },
     curiosities:  computeCuriosities(professions, traits, skills, zombies, rows),
     profession_options: professionOptions,
   };

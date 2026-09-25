@@ -318,9 +318,12 @@ describe('evolução semanal', () => {
     const signups = [{ created_at: '2026-09-02T00:00:00Z' }, { created_at: '2026-09-09T12:00:00Z' }];
     const { weeks } = computeTimeline(rows, signups, '2026-08-31T12:00:00Z', new Date('2026-09-20T12:00:00Z'));
     expect(weeks.map(w => w.week_start)).toEqual(['2026-08-31', '2026-09-07', '2026-09-14']);
-    expect(weeks[0]).toMatchObject({ runs_started: 3, deaths: 0, signups: 1 });
-    expect(weeks[1]).toMatchObject({ runs_started: 0, deaths: 0, signups: 1 });   // semana vazia de runs
+    expect(weeks[0]).toMatchObject({ runs_started: 3, signups: 1 });
+    expect(weeks[1]).toMatchObject({ runs_started: 0, signups: 1 });   // semana vazia de runs
     expect(weeks[2]).toMatchObject({ runs_started: 0, deaths: 3, avg_days_at_death: 14 });
+    // semanas antes do Jornal completo: mortes = null (sem dado), nunca 0
+    expect(weeks[0]!.deaths).toBeNull();            // 31/08: antes do Jornal completo
+    expect(weeks[1]!.deaths).toBe(0);               // 07/09: 1ª semana registrada, sem mortes
   });
 
   it('ignora datas fora da temporada', () => {

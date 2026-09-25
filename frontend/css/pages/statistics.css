@@ -409,3 +409,7 @@
   .stats-tl-plot { height: 180px; }
   .stats-tl-label { font-size: 12px; } /* rótulo de eixo: exceção decorativa, data também no tooltip e na tabela */
 }
+
+/* semana sem registro: contorno tracejado de altura cheia (não é zero) */
+.stats-tl-bar--nodata { align-self: stretch; height: auto !important; background: transparent; border: 1px dashed var(--border-mid); border-bottom: 0; }
+.stats-tl-notes { padding-left: 20px; display: flex; flex-direction: column; gap: 4px; }

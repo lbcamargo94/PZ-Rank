@@ -480,7 +480,10 @@ export interface ChampionshipStats {
     action_runs: number; items_crafted: number; meals_cooked: number; houses_looted: number;
   };
   timeline: {
-    weeks: Array<{ week_start: string; runs_started: number; deaths: number; avg_days_at_death: number; signups: number }>;
+    // deaths/avg null = semana sem registro de mortes (antes de deaths_tracked_since)
+    weeks: Array<{ week_start: string; runs_started: number; deaths: number | null; avg_days_at_death: number | null; signups: number }>;
+    deaths_tracked_since:   string;
+    restarts_tracked_since: string;
   };
   deaths: {
     deaths:     number;   // runs encerradas (com os filtros)

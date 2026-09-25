@@ -12,13 +12,14 @@ interface Series {
   label: string;
   cls:   string;       // classe da cor (tokens em statistics.css)
   tip:   (w: Week) => string;
+  noDataTip?: (w: Week) => string;   // semana sem registro (valor null)
 }
 
 /** Colunas semanais (1 ou 2 séries lado a lado, mesmo eixo). Barras finas com
  *  ponta arredondada e 2px entre barras; tooltip em cada barra; legenda sempre
  *  presente com 2+ séries; grade discreta com 3 linhas (0, metade, máximo). */
 function WeeklyColumns({ weeks, series, ariaLabel }: { weeks: Week[]; series: Series[]; ariaLabel: string }) {
-  const max = Math.max(1, ...weeks.flatMap(w => series.map(s => w[s.key])));
+  const max = Math.max(1, ...weeks.flatMap(w => series.map(s => w[s.key] ?? 0)));
   const ticks = [max, Math.round(max / 2), 0];
   const last = weeks[weeks.length - 1];
   return (
@@ -29,7 +30,7 @@ function WeeklyColumns({ weeks, series, ariaLabel }: { weeks: Week[]; series: Se
             <span key={s.key} className="stats-tl-legend-item">
               <span className={`stats-tl-swatch ${s.cls}`} aria-hidden="true" />
               {s.label}
-              {last && <strong className="stats-tl-legend-last">{fmtInt(last[s.key])} nesta semana</strong>}
+              {last && last[s.key] != null && <strong className="stats-tl-legend-last">{fmtInt(last[s.key]!)} nesta semana</strong>}
             </span>
           ))}
         </figcaption>
@@ -45,15 +46,23 @@ function WeeklyColumns({ weeks, series, ariaLabel }: { weeks: Week[]; series: Se
           {weeks.map(w => (
             <div key={w.week_start} className="stats-tl-week">
               <div className="stats-tl-bars">
-                {series.map(s => (
-                  <span
-                    key={s.key}
-                    className={`stats-tl-bar ${s.cls}`}
-                    style={{ height: `${(w[s.key] / max) * 100}%` }}
-                    data-tip={s.tip(w)}
-                    title={s.tip(w)}
-                  />
-                ))}
+                {series.map(s => {
+                  const v = w[s.key];
+                  if (v == null) {
+                    // sem registro: contorno tracejado (não é zero)
+                    const tip = s.noDataTip?.(w) ?? 'Sem dado nesta semana';
+                    return <span key={s.key} className="stats-tl-bar stats-tl-bar--nodata" data-tip={tip} title={tip} />;
+                  }
+                  return (
+                    <span
+                      key={s.key}
+                      className={`stats-tl-bar ${s.cls}`}
+                      style={{ height: `${(v / max) * 100}%` }}
+                      data-tip={s.tip(w)}
+                      title={s.tip(w)}
+                    />
+                  );
+                })}
               </div>
               <span className="stats-tl-label">{shortDate(w.week_start)}</span>
             </div>
@@ -66,12 +75,16 @@ function WeeklyColumns({ weeks, series, ariaLabel }: { weeks: Week[]; series: Se
 
 export function TimelineSection({ data }: { data: ChampionshipStats['timeline'] }) {
   const weeks = data.weeks;
+  const deathsSince   = shortDate(data.deaths_tracked_since);
+  const restartsSince = shortDate(data.restarts_tracked_since);
+  const hasNoDeathData = weeks.some(w => w.deaths == null);
   const runsDeaths: Series[] = [
     { key: 'runs_started', label: 'Runs iniciadas', cls: 'is-s1',
       tip: w => `Semana de ${shortDate(w.week_start)} — ${fmtInt(w.runs_started)} runs iniciadas` },
     { key: 'deaths', label: 'Mortes', cls: 'is-s2',
-      tip: w => `Semana de ${shortDate(w.week_start)} — ${fmtInt(w.deaths)} mortes` +
-        (w.deaths > 0 ? ` · sobreviveram em média ${fmtDays(w.avg_days_at_death)}` : '') },
+      tip: w => `Semana de ${shortDate(w.week_start)} — ${fmtInt(w.deaths ?? 0)} mortes` +
+        ((w.deaths ?? 0) > 0 ? ` · sobreviveram em média ${fmtDays(w.avg_days_at_death ?? 0)}` : ''),
+      noDataTip: w => `Semana de ${shortDate(w.week_start)} — mortes sem registro completo (o site registra a data das mortes desde ${deathsSince})` },
   ];
   const signups: Series[] = [
     { key: 'signups', label: 'Novos inscritos', cls: 'is-s0',
@@ -110,8 +123,8 @@ export function TimelineSection({ data }: { data: ChampionshipStats['timeline'] 
                     <tr key={w.week_start}>
                       <td>{shortDate(w.week_start)}</td>
                       <td className="num">{fmtInt(w.runs_started)}</td>
-                      <td className="num">{fmtInt(w.deaths)}</td>
-                      <td className="num">{w.deaths > 0 ? fmtDays(w.avg_days_at_death) : '—'}</td>
+                      <td className="num">{w.deaths == null ? '—' : fmtInt(w.deaths)}</td>
+                      <td className="num">{w.deaths ? fmtDays(w.avg_days_at_death ?? 0) : '—'}</td>
                       <td className="num">{fmtInt(w.signups)}</td>
                     </tr>
                   ))}
@@ -119,10 +132,13 @@ export function TimelineSection({ data }: { data: ChampionshipStats['timeline'] 
               </table>
             </div>
           </details>
-          <p className="stats-section-sub stats-note">
-            Runs anteriores recuperadas só do Jornal não têm data de início e entram apenas nas mortes.
-            Partidas encerradas com 0 dias e 0 zumbis mortos não contam.
-          </p>
+          <ul className="stats-section-sub stats-note stats-tl-notes">
+            {hasNoDeathData && (
+              <li>As mortes têm data registrada desde a semana de {deathsSince}. Nas semanas anteriores a barra aparece tracejada: não há registro completo (não é zero).</li>
+            )}
+            <li>Até a semana de {restartsSince}, uma partida recomeçada com o mesmo nome de personagem não era guardada — nas semanas anteriores, “runs iniciadas” conta só a primeira partida de cada personagem.</li>
+            <li>Partidas encerradas com 0 dias e 0 zumbis mortos não contam.</li>
+          </ul>
         </>
       )}
     </section>
