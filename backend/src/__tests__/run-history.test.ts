@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildHistoryRow, isNewRunOf } from '../lib/runHistory';
+import { buildHistoryRow, isEmptyRun, isNewRunOf } from '../lib/runHistory';
 import { planBackfill, type CurrentEntry, type DeathEvent } from '../lib/runHistoryBackfill';
 import { computeChampionshipStats, computeRanking, type StatsRow } from '../lib/statistics';
 
@@ -8,6 +8,15 @@ describe('detecção de partida nova', () => {
     expect(isNewRunOf(800_000, 52)).toBe(true);
     expect(isNewRunOf(800_000, 400_001)).toBe(false); // leitura ruim pontual não arquiva
     expect(isNewRunOf(100, 100)).toBe(false);
+  });
+});
+
+describe('isEmptyRun (0 dias e 0 kills não vira histórico)', () => {
+  it('só é vazia com os dois zerados', () => {
+    expect(isEmptyRun(0, 0)).toBe(true);
+    expect(isEmptyRun(null, undefined)).toBe(true);
+    expect(isEmptyRun(0, 3)).toBe(false);   // morreu no dia 0, mas jogou
+    expect(isEmptyRun(2, 0)).toBe(false);   // sobreviveu 2 dias sem matar
   });
 });
 

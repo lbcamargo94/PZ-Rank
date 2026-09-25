@@ -353,3 +353,17 @@
   .stats-cards, .stats-cards--compact,
   .stats-skill-detail .stats-cards--compact { grid-template-columns: 1fr; }
 }
+
+/* ── "Como as runs são contadas" ─────────────────────────── */
+.stats-howto {
+  margin-top: 14px;
+  background: var(--blue-dim);
+  border: 1px solid var(--blue-border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 16px;
+  color: var(--text-2);
+}
+.stats-howto summary { cursor: pointer; color: var(--blue-light); }
+.stats-howto ul { margin: 10px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; line-height: 1.5; }
+.stats-howto strong { color: var(--text-1); }

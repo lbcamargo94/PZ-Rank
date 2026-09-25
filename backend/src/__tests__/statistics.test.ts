@@ -158,6 +158,16 @@ describe('filtros', () => {
     row({ is_alive: true,  profession: 'Veterano', kills: 40, sandbox_ok: false }),
   ];
 
+  it('partida ENCERRADA com 0 dias e 0 kills não conta; viva com 0/0 (recém-criada) conta', () => {
+    const r = [
+      row({ is_alive: false, days: 0, kills: 0 }),   // recriou o personagem — fora
+      row({ is_alive: false, days: 0, kills: 3 }),   // morreu no dia 0, mas jogou — conta
+      row({ is_alive: true,  days: 0, kills: 0 }),   // acabou de criar — conta
+    ];
+    expect(applyFilters(r, ALL)).toHaveLength(2);
+    expect(computeChampionshipStats(r, ALL).overview).toMatchObject({ runs: 2, dead: 1, alive: 1 });
+  });
+
   it('desclassificados ficam fora por padrão e entram com includeDisqualified', () => {
     expect(applyFilters(rows, ALL)).toHaveLength(3);
     expect(applyFilters(rows, { ...ALL, includeDisqualified: true })).toHaveLength(4);

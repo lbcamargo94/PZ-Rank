@@ -31,14 +31,25 @@ export function PreviousRunsSection({ playerId, characterName }: { playerId: num
     return () => { alive = false; };
   }, [playerId, characterName]);
 
-  if (error) return <p className="pp-history-msg"><i className="ti ti-alert-circle" /> {t('player.history.error')}</p>;
-  if (!runs)  return <p className="pp-history-msg"><i className="ti ti-loader-2 spin" /> {t('player.history.loading')}</p>;
-  if (runs.length === 0) return <p className="pp-history-msg">{t('player.history.empty')}</p>;
+  // Explicação da regra — sempre visível, inclusive sem histórico: é aqui que o
+  // jogador descobre por que uma partida de 0 dias/0 kills não aparece.
+  const howItWorks = (
+    <details className="pp-history-how" open>
+      <summary><i className="ti ti-info-circle" /> {t('player.history.how_title')}</summary>
+      <p>{t('player.history.how_new_run')}</p>
+      <p>{t('player.history.how_empty')}</p>
+    </details>
+  );
+
+  if (error) return <div className="pp-history">{howItWorks}<p className="pp-history-msg"><i className="ti ti-alert-circle" /> {t('player.history.error')}</p></div>;
+  if (!runs)  return <div className="pp-history">{howItWorks}<p className="pp-history-msg"><i className="ti ti-loader-2 spin" /> {t('player.history.loading')}</p></div>;
+  if (runs.length === 0) return <div className="pp-history">{howItWorks}<p className="pp-history-msg">{t('player.history.empty')}</p></div>;
 
   const fmtDate = (iso: string) => new Date(iso).toLocaleDateString(i18n.language || 'pt-BR');
 
   return (
     <div className="pp-history">
+      {howItWorks}
       <p className="pp-history-msg">{t('player.history.intro')}</p>
       <ul className="pp-history-list">
         {runs.map(r => (

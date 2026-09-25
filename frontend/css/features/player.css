@@ -2146,3 +2146,13 @@ body.overlay-page-active::before { display: none; }
 }
 .pp-history-badge--dq { border-color: var(--red-border); background: var(--red-dim); color: var(--red); }
 .pp-history-item .pp-char-stats-row { padding: 0; }
+.pp-history-how {
+  background: var(--blue-dim);
+  border: 1px solid var(--blue-border);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  font-size: 16px;
+  color: var(--text-2);
+}
+.pp-history-how summary { cursor: pointer; color: var(--blue-light); }
+.pp-history-how p { margin: 8px 0 0; line-height: 1.5; }

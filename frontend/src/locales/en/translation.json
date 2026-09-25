@@ -235,7 +235,10 @@
       "abandoned": "Abandoned",
       "abandoned_tip": "A new game started before this death was recorded.",
       "ended": "Ended on {{date}}",
-      "unknown_cause": "Unknown cause"
+      "unknown_cause": "Unknown cause",
+      "how_title": "How it works",
+      "how_new_run": "When you start a new game with the same character name, the previous game is saved here automatically — with days, kills, score and cause of death.",
+      "how_empty": "Games that end with 0 days and 0 zombies killed (for example, recreating the character to pick another starting point or other traits) are not saved and do not count in the championship statistics."
     },
     "mods": {
       "loading": "Loading mods...",

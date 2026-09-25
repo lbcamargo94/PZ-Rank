@@ -235,7 +235,10 @@
       "abandoned": "Abandonada",
       "abandoned_tip": "Una nueva partida empezó sin que esta muerte se registrara.",
       "ended": "Terminada el {{date}}",
-      "unknown_cause": "Causa desconocida"
+      "unknown_cause": "Causa desconocida",
+      "how_title": "Cómo funciona",
+      "how_new_run": "Cuando empiezas una nueva partida con el mismo nombre de personaje, la partida anterior se guarda aquí automáticamente — con días, kills, puntuación y causa de muerte.",
+      "how_empty": "Las partidas que terminan con 0 días y 0 zombis eliminados (por ejemplo, al recrear el personaje para elegir otro punto de inicio u otros rasgos) no se guardan y no cuentan en las estadísticas del campeonato."
     },
     "mods": {
       "loading": "Cargando mods...",

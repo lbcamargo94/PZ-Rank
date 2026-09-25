@@ -22,6 +22,7 @@ import fs from 'fs';
 import { supabase } from '../supabase';
 import { config } from '../config';
 import { planBackfill, type BackfillInput, type CurrentEntry, type DeathEvent, type FullRow } from '../lib/runHistoryBackfill';
+import { isEmptyRun } from '../lib/runHistory';
 
 const DRY_RUN    = process.argv.includes('--dry-run');
 const SKIP_EMPTY = process.argv.includes('--skip-empty');
@@ -76,8 +77,8 @@ async function main() {
 
   // Mortes do jornal com 0 dias e 0 kills: na prática, personagem recriado logo no
   // início (sortear spawn/traits) — não é uma run de verdade. --skip-empty descarta.
-  const isEmpty = (p: typeof named[number]) =>
-    p.source === 'journal' && Number(p.row['days']) === 0 && Number(p.row['kills']) === 0;
+  // Mesma regra do arquivamento automático (isEmptyRun em lib/runHistory.ts)
+  const isEmpty = (p: typeof named[number]) => isEmptyRun(p.row['days'], p.row['kills']);
   const emptyCount = named.filter(isEmpty).length;
   const ready = SKIP_EMPTY ? named.filter(p => !isEmpty(p)) : named;
   console.log(`\nMortes do jornal com 0 dias e 0 kills: ${emptyCount} ${SKIP_EMPTY ? '(DESCARTADAS por --skip-empty)' : '(incluídas — use --skip-empty pra descartar)'}`);

@@ -235,7 +235,10 @@
       "abandoned": "Abandonnée",
       "abandoned_tip": "Une nouvelle partie a commencé avant que cette mort soit enregistrée.",
       "ended": "Terminée le {{date}}",
-      "unknown_cause": "Cause inconnue"
+      "unknown_cause": "Cause inconnue",
+      "how_title": "Comment ça marche",
+      "how_new_run": "Quand vous commencez une nouvelle partie avec le même nom de personnage, la partie précédente est automatiquement conservée ici — avec les jours, les kills, le score et la cause de la mort.",
+      "how_empty": "Les parties terminées avec 0 jour et 0 zombie tué (par exemple, en recréant le personnage pour choisir un autre point de départ ou d’autres traits) ne sont pas conservées et ne comptent pas dans les statistiques du championnat."
     },
     "mods": {
       "loading": "Chargement des mods...",

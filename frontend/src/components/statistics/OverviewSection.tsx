@@ -27,6 +27,15 @@ export function OverviewSection({ data }: { data: ChampionshipStats['overview'] 
           </>
         )}
       </div>
+      <details className="stats-howto">
+        <summary><i className="ti ti-info-circle" aria-hidden="true" /> Como as runs são contadas</summary>
+        <ul>
+          <li>Cada <strong>run</strong> é uma partida de um personagem. A mesma conta pode ter várias.</li>
+          <li>Se você começa uma nova partida com o <strong>mesmo nome de personagem</strong>, a anterior continua contando aqui como run encerrada — e fica visível no seu perfil, na aba "Runs anteriores".</li>
+          <li>Partidas encerradas com <strong>0 dias e 0 zumbis mortos</strong> (por exemplo, recriar o personagem para escolher outro ponto de partida ou outros traits) <strong>não contam</strong>.</li>
+          <li>Runs desclassificadas ficam de fora dos números oficiais.</li>
+        </ul>
+      </details>
     </section>
   );
 }

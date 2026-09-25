@@ -235,7 +235,10 @@
       "abandoned": "Abandonada",
       "abandoned_tip": "Uma nova partida começou sem a morte desta ter sido registrada.",
       "ended": "Encerrada em {{date}}",
-      "unknown_cause": "Causa desconhecida"
+      "unknown_cause": "Causa desconhecida",
+      "how_title": "Como funciona",
+      "how_new_run": "Quando você começa uma nova partida com o mesmo nome de personagem, a partida anterior fica guardada aqui automaticamente — com dias, kills, pontuação e causa da morte.",
+      "how_empty": "Partidas encerradas com 0 dias e 0 zumbis mortos (por exemplo, ao recriar o personagem para escolher outro ponto de partida ou outros traits) não são guardadas e não contam nas estatísticas do campeonato."
     },
     "mods": {
       "loading": "Carregando mods...",

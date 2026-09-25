@@ -137,6 +137,14 @@ function basesBuilt(objectives: unknown): number {
   return [...OFFICIAL_BASE_IDS].filter(id => bases[id]?.has_base === true).length;
 }
 
+/** Partida encerrada com 0 dias E 0 kills não é uma run de verdade — na prática é o
+ *  jogador recriando o personagem logo no início (sortear spawn/traits). Não entra
+ *  no histórico nem nas estatísticas. Decisão de produto (2026-09-24); a regra é
+ *  explicada aos jogadores no perfil ("Runs anteriores") e em /estatisticas. */
+export function isEmptyRun(days: unknown, kills: unknown): boolean {
+  return Number(days || 0) === 0 && Number(kills || 0) === 0;
+}
+
 // ── Filtro oficial ─────────────────────────────────────────────────────────
 // As linhas já chegam sem deleted_at, sem jogador excluído e sem conta de teste
 // (ver routes/stats.ts). Aqui só entram os filtros escolhidos na página.
@@ -144,6 +152,9 @@ function basesBuilt(objectives: unknown): number {
 // rank público, de /stats/global, /stats/legends e do fechamento de temporada.
 export function applyFilters(rows: StatsRow[], f: StatsFilters): StatsRow[] {
   return rows.filter(r => {
+    // Partida ENCERRADA com 0 dias e 0 kills não conta (personagem recriado no
+    // início). Viva com 0/0 = recém-criada, ainda em jogo: continua contando.
+    if (!isTrue(r.is_alive) && isEmptyRun(r.days, r.kills)) return false;
     if (!f.includeDisqualified && r.sandbox_ok !== null && !isTrue(r.sandbox_ok)) return false;
     if (f.status === 'alive' && !isTrue(r.is_alive)) return false;
     if (f.status === 'dead'  &&  isTrue(r.is_alive)) return false;

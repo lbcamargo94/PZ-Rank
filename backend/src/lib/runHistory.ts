@@ -8,7 +8,7 @@
 
 import { supabase } from '../supabase';
 import { config } from '../config';
-import { ACTION_KEYS } from './statistics';
+import { ACTION_KEYS, isEmptyRun } from './statistics';
 
 /** Mesma regra que o sync já usava: o tempo de jogo caiu mais da metade = partida
  *  nova. (Não basta "caiu": uma leitura ruim pontual do código não pode arquivar
@@ -16,6 +16,10 @@ import { ACTION_KEYS } from './statistics';
 export function isNewRunOf(prevTimeRaw: number, newTimeRaw: number): boolean {
   return newTimeRaw < prevTimeRaw * 0.5;
 }
+
+// isEmptyRun mora em statistics.ts (regra oficial também das estatísticas);
+// reexportada aqui pra quem arquiva runs.
+export { isEmptyRun };
 
 const COPY_COLS = [
   'id', 'player_id', 'season_id', 'name', 'character_name', 'profession',
@@ -66,7 +70,12 @@ export async function archiveRun(entryId: number, source: 'sync' | 'manual'): Pr
       console.error('[run-history] ERRO ao ler run para arquivar | entry=', entryId, error);
       return false;
     }
-    const row = buildHistoryRow(data as unknown as EntryRow, source);
+    const entry = data as unknown as EntryRow;
+    if (isEmptyRun(entry['days'], entry['kills'])) {
+      console.log(`[run-history] run vazia (0 dias, 0 kills) não arquivada | entry=${entryId}`);
+      return false;
+    }
+    const row = buildHistoryRow(entry, source);
     const { error: insErr } = await supabase.from('run_history').insert([row]);
     if (insErr) {
       console.error('[run-history] ERRO ao arquivar run | entry=', entryId, insErr);

@@ -55,6 +55,15 @@ Métricas de ranking: `kills`, `days`, `score`, `skills10`, `skill_levels`, `bas
 - Status "Mortos (runs encerradas)": no sistema atual a única forma de uma run
   terminar é morrer, então "encerrada" = `is_alive = false`.
 
+- **Partida encerrada com 0 dias E 0 kills não conta** (`isEmptyRun`, decisão de
+  2026-09-24): na prática é o jogador recriando o personagem logo no início pra
+  sortear spawn/traits (caso real: um personagem "morreu" 29× em 5 dias com 0/0).
+  Vale pra runs atuais mortas, pro histórico (o sync não arquiva) e pra recuperação
+  (`--skip-empty`). Viva com 0/0 = recém-criada, continua contando. A regra é
+  explicada aos jogadores em /estatisticas ("Como as runs são contadas") e no perfil
+  (aba "Runs anteriores"). Por isso `/stats/championship` tem menos mortos que
+  `/stats/global`, que não aplica essa regra.
+
 ### Unidades
 
 - **Run** = uma linha de `entries` (um personagem de um jogador). Profissão, traits,
