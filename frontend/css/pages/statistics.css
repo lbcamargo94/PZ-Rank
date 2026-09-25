@@ -371,3 +371,41 @@
 /* ── Causas de morte ─────────────────────────────────────── */
 .stats-bar-emoji { display: inline-flex; align-items: center; justify-content: center; font-size: 20px; }
 .stats-note { margin-top: 14px; }
+
+/* ── Evolução semanal (colunas) ──────────────────────────────
+ * Paleta validada (dataviz validate_palette.js, dark, superfície #121710):
+ * azul #3987e5 + laranja #d95926 — CVD ΔE 26.8, normal 31.8, contraste ≥ 3:1.
+ * (Verde+âmbar do site reprovou: deutan ΔE 3.7.) Série única usa o verde do site. */
+.stats-tl { --tl-s0: var(--green-light); --tl-s1: #3987e5; --tl-s2: #d95926; margin: 0 0 8px; }
+.stats-tl-legend { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-bottom: 10px; font-size: 16px; color: var(--text-2); }
+.stats-tl-legend-item { display: inline-flex; align-items: center; gap: 8px; }
+.stats-tl-legend-last { color: var(--text-4); font-weight: 400; }
+.stats-tl-swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.stats-tl-plot { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; height: 220px; }
+.stats-tl-axis {
+  display: flex; flex-direction: column; justify-content: space-between;
+  padding-bottom: 26px; font-family: var(--font-mono); font-size: 14px; color: var(--text-4); text-align: right;
+}
+.stats-tl-grid { position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 4px; padding-bottom: 26px; }
+/* camada das linhas de grade: termina na linha de base (acima dos rótulos) */
+.stats-tl-lines { position: absolute; left: 0; right: 0; top: 0; bottom: 26px; pointer-events: none; }
+.stats-tl-gridline { position: absolute; left: 0; right: 0; height: 1px; background: var(--border); }
+.stats-tl-gridline:last-child { background: var(--border-mid); } /* linha de base */
+.stats-tl-week { z-index: 1; }
+.stats-tl-week { position: relative; display: flex; flex-direction: column; min-width: 0; }
+.stats-tl-bars { flex: 1; display: flex; align-items: flex-end; justify-content: center; gap: 2px; }
+.stats-tl-bar {
+  display: block; flex: 0 1 18px; min-height: 2px;
+  border-radius: 4px 4px 0 0;       /* ponta arredondada, base reta no eixo */
+  transition: height 0.3s ease, filter 0.15s;
+  cursor: default;
+}
+.stats-tl-bar:hover { filter: brightness(1.2); }
+.stats-tl-label { position: absolute; bottom: -24px; left: 0; right: 0; text-align: center; font-size: 14px; color: var(--text-4); white-space: nowrap; }
+.is-s0 { background: var(--tl-s0); }
+.is-s1 { background: var(--tl-s1); }
+.is-s2 { background: var(--tl-s2); }
+@media (max-width: 460px) {
+  .stats-tl-plot { height: 180px; }
+  .stats-tl-label { font-size: 12px; } /* rótulo de eixo: exceção decorativa, data também no tooltip e na tabela */
+}

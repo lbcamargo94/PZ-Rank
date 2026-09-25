@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  ACTION_KEYS, applyFilters, computeActions, computeChampionshipStats, computeOverview, computeProfessions, computeRecords, isInactive, computeDeaths, normalizeDeathCause,
+  ACTION_KEYS, applyFilters, computeActions, computeChampionshipStats, computeOverview, computeProfessions, computeRecords, isInactive, computeDeaths, normalizeDeathCause, computeTimeline, weekStart,
   computeRanking, computeSkills, computeSurvival, computeTraitBuilds, computeTraits,
   isRankingMetric, median, parseSkills, traitKey,
   type StatsFilters, type StatsRow,
@@ -293,6 +293,40 @@ describe('causas de morte', () => {
     expect(d.coverage).toBeCloseTo(80);
     expect(d.zombie_pct).toBeCloseTo(75);
     expect(d.causes[0]).toMatchObject({ cause: 'zombie_horde', deaths: 2, pct: 50, avg_days: 15 });
+  });
+});
+
+describe('evolução semanal', () => {
+  it('semana começa na segunda 00:00 de Brasília', () => {
+    expect(weekStart('2026-09-21T03:00:00Z')).toBe('2026-09-21');   // seg 00:00 BRT
+    expect(weekStart('2026-09-21T02:59:59Z')).toBe('2026-09-14');   // dom 23:59 BRT
+    expect(weekStart('2026-09-27T23:00:00Z')).toBe('2026-09-21');   // dom 20:00 BRT
+    expect(weekStart('lixo')).toBeNull();
+  });
+
+  it('conta runs iniciadas, mortes (com média de dias) e inscritos, preenchendo semanas vazias', () => {
+    const rows = [
+      row({ created_at: '2026-09-01T12:00:00Z', run_started_at: '2026-09-01T12:00:00Z', is_alive: true }),
+      row({ created_at: '2026-09-02T12:00:00Z', is_alive: false, days: 10, kills: 5, updated_at: '2026-09-16T12:00:00Z' }),
+      // run anterior: início e fim próprios
+      row({ previous_run: true, is_alive: false, days: 30, kills: 9, run_started_at: '2026-09-03T12:00:00Z',
+            run_ended_at: '2026-09-16T13:00:00Z', created_at: '2026-09-03T12:00:00Z' }),
+      // recuperada só do jornal: sem início conhecido, conta só a morte
+      row({ previous_run: true, partial: true, is_alive: false, days: 2, kills: 1,
+            run_ended_at: '2026-09-17T12:00:00Z', created_at: '2026-09-17T12:00:00Z' }),
+    ];
+    const signups = [{ created_at: '2026-09-02T00:00:00Z' }, { created_at: '2026-09-09T12:00:00Z' }];
+    const { weeks } = computeTimeline(rows, signups, '2026-08-31T12:00:00Z', new Date('2026-09-20T12:00:00Z'));
+    expect(weeks.map(w => w.week_start)).toEqual(['2026-08-31', '2026-09-07', '2026-09-14']);
+    expect(weeks[0]).toMatchObject({ runs_started: 3, deaths: 0, signups: 1 });
+    expect(weeks[1]).toMatchObject({ runs_started: 0, deaths: 0, signups: 1 });   // semana vazia de runs
+    expect(weeks[2]).toMatchObject({ runs_started: 0, deaths: 3, avg_days_at_death: 14 });
+  });
+
+  it('ignora datas fora da temporada', () => {
+    const rows = [row({ created_at: '2026-07-01T12:00:00Z', is_alive: true })];
+    const { weeks } = computeTimeline(rows, [], '2026-08-31T12:00:00Z', new Date('2026-09-01T12:00:00Z'));
+    expect(weeks.reduce((s, w) => s + w.runs_started, 0)).toBe(0);
   });
 });
 

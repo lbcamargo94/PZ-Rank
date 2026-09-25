@@ -269,7 +269,11 @@ router.get('/championship', async (req: Request, res: Response) => {
         season:       cache.season,
         filters,
         generated_at: new Date(cache.at).toISOString(),
-        ...computeChampionshipStats(cache.rows, filters),
+        // Evolução semanal: desde o início da temporada filtrada ("todas" = desde o começo)
+        ...computeChampionshipStats(cache.rows, filters, {
+          signups: cache.signups,
+          from:    filters.seasonId != null && filters.seasonId === cache.season?.id ? cache.season.started_at : null,
+        }),
       };
       // Teto contra query string arbitrária em `profession` inflando o Map
       if (_statsResultCache.results.size >= 200) _statsResultCache.results.clear();

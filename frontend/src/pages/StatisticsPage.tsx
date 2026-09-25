@@ -10,6 +10,7 @@ import { ZombieSection }      from '../components/statistics/ZombieSection';
 import { SkillSection }       from '../components/statistics/SkillSection';
 import { ActionSection }      from '../components/statistics/ActionSection';
 import { DeathSection }       from '../components/statistics/DeathSection';
+import { TimelineSection }    from '../components/statistics/TimelineSection';
 import { RecordsSection, recordTarget } from '../components/statistics/RecordsSection';
 import { CuriositiesSection } from '../components/statistics/CuriositiesSection';
 import { ComingSoonSection }  from '../components/statistics/ComingSoonSection';
@@ -17,6 +18,7 @@ import { RankingModal, type RankingTarget } from '../components/statistics/Stats
 
 const SECTIONS = [
   { id: 'visao-geral',   label: 'Visão geral' },
+  { id: 'evolucao',      label: 'Evolução' },
   { id: 'profissoes',    label: 'Profissões' },
   { id: 'traits',        label: 'Traits' },
   { id: 'sobrevivencia', label: 'Sobrevivência' },
@@ -122,6 +124,7 @@ export function StatisticsPage() {
             ) : (
               <>
                 <OverviewSection data={data.overview} />
+                <TimelineSection data={data.timeline} />
                 <ProfessionSection data={data.professions} />
                 <TraitSection traits={data.traits} builds={data.trait_builds} />
                 <SurvivalSection data={data.survival} onRanking={() => setRanking(recordTarget('days'))} />

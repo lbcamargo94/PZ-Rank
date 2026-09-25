@@ -524,6 +524,84 @@ export function computeDeaths(rows: StatsRow[]) {
   };
 }
 
+// ── Evolução semanal ───────────────────────────────────────────────────────
+// Semanas começam na segunda-feira 00:00 no horário de Brasília (UTC-3 fixo — o
+// Brasil não tem horário de verão desde 2019). Chave = data da segunda (YYYY-MM-DD).
+const BRT_OFFSET_MS = 3 * 3_600_000;
+export function weekStart(d: string | Date): string | null {
+  const t = new Date(d).getTime();
+  if (!Number.isFinite(t)) return null;
+  const local = new Date(t - BRT_OFFSET_MS);             // relógio de Brasília em campos UTC
+  const dow = (local.getUTCDay() + 6) % 7;                // 0 = segunda
+  local.setUTCDate(local.getUTCDate() - dow);
+  return local.toISOString().slice(0, 10);
+}
+
+/** Início da run: run_started_at (desde v4.23.0) ou, antes disso, a criação da linha.
+ *  Runs recuperadas só do jornal não têm início conhecido → null. */
+function runStartedAt(r: StatsRow): string | Date | null {
+  if (r.partial) return null;
+  const started = (r['run_started_at'] as string | Date | null | undefined) ?? null;
+  // Histórico sem início registrado: não chuta (created_at dele é o fim da run)
+  if (r.previous_run) return started;
+  return started ?? r.created_at ?? null;
+}
+/** Fim de uma run encerrada: histórico → run_ended_at; atual morta → último sync
+ *  (depois da morte a run não é mais gravada, então updated_at = momento da morte). */
+function runEndedAt(r: StatsRow): string | Date | null {
+  if (isTrue(r.is_alive)) return null;
+  return r.previous_run
+    ? ((r['run_ended_at'] as string | Date | null | undefined) ?? null)
+    : (r.updated_at ?? null);
+}
+
+export interface SignupRow { created_at: string | Date | null }
+
+/** Série semanal da temporada: runs iniciadas, mortes (com média de dias vividos) e
+ *  novos inscritos. Semanas sem nada aparecem com zero, de `from` até `to`. */
+export function computeTimeline(rows: StatsRow[], signups: SignupRow[], from: string | Date | null, to = new Date()) {
+  const weeks = new Map<string, { runs_started: number; deaths: number; death_days: number[]; signups: number }>();
+  const bump = (k: string | null) => {
+    if (!k) return null;
+    if (!weeks.has(k)) weeks.set(k, { runs_started: 0, deaths: 0, death_days: [], signups: 0 });
+    return weeks.get(k)!;
+  };
+  const inRange = (k: string | null) => k !== null && (!fromKey || k >= fromKey) && k <= toKey;
+  const fromKey = from ? weekStart(from) : null;
+  const toKey = weekStart(to)!;
+
+  for (const r of rows) {
+    const s = runStartedAt(r);
+    const ks = s ? weekStart(s) : null;
+    if (inRange(ks)) bump(ks)!.runs_started++;
+    const e = runEndedAt(r);
+    const ke = e ? weekStart(e) : null;
+    if (inRange(ke)) { const w = bump(ke)!; w.deaths++; w.death_days.push(r.days || 0); }
+  }
+  for (const p of signups) {
+    const k = p.created_at ? weekStart(p.created_at) : null;
+    if (inRange(k)) bump(k)!.signups++;
+  }
+
+  // Preenche semanas vazias entre a primeira e a última
+  const keys = [...weeks.keys()].sort();
+  const first = fromKey ?? keys[0];
+  if (!first) return { weeks: [] };
+  const out: Array<{ week_start: string; runs_started: number; deaths: number; avg_days_at_death: number; signups: number }> = [];
+  for (let d = new Date(`${first}T00:00:00Z`); d.toISOString().slice(0, 10) <= toKey; d.setUTCDate(d.getUTCDate() + 7)) {
+    const k = d.toISOString().slice(0, 10);
+    const w = weeks.get(k);
+    out.push({
+      week_start:        k,
+      runs_started:      w?.runs_started ?? 0,
+      deaths:            w?.deaths ?? 0,
+      avg_days_at_death: w ? avg(w.death_days) : 0,
+      signups:           w?.signups ?? 0,
+    });
+  }
+  return { weeks: out };
+}
+
 // ── Rankings e recordes ────────────────────────────────────────────────────
 
 export const RANKING_METRICS = ['kills', 'days', 'score', 'skills10', 'skill_levels', 'bases'] as const;
@@ -639,7 +717,13 @@ export function computeCuriosities(
 
 // ── Montagem completa ──────────────────────────────────────────────────────
 
-export function computeChampionshipStats(allRows: StatsRow[], filters: StatsFilters) {
+export interface TimelineContext {
+  signups: SignupRow[];          // jogadores aprovados (created_at = cadastro)
+  from:    string | Date | null;  // início da temporada filtrada (null = desde o começo)
+  to?:     string | Date | null;  // fim da temporada (encerrada) ou agora
+}
+
+export function computeChampionshipStats(allRows: StatsRow[], filters: StatsFilters, timeline?: TimelineContext) {
   const rows        = applyFilters(allRows, filters);
   const professions = computeProfessions(rows);
   const traits      = computeTraits(rows);
@@ -662,6 +746,9 @@ export function computeChampionshipStats(allRows: StatsRow[], filters: StatsFilt
     records:      computeRecords(rows),
     actions:      computeActions(rows),
     deaths:       computeDeaths(rows),
+    timeline:     timeline
+      ? computeTimeline(rows, timeline.signups, timeline.from, timeline.to ? new Date(timeline.to) : new Date())
+      : { weeks: [] },
     curiosities:  computeCuriosities(professions, traits, skills, zombies, rows),
     profession_options: professionOptions,
   };

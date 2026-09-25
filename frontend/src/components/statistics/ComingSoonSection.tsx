@@ -7,8 +7,6 @@ const PENDING = [
     text: 'O mapa de calor já existe; falta identificar a cidade de cada região do mapa.' },
   { icon: '🗺️', title: 'Onde os jogadores começam',
     text: 'A cidade inicial não é registrada hoje.' },
-  { icon: '📈', title: 'Evolução ao longo do tempo',
-    text: 'Gráficos semanais/mensais de inscrições, runs e mortes.' },
 ];
 
 export function ComingSoonSection() {

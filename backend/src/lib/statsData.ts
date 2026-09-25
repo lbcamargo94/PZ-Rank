@@ -12,11 +12,11 @@
 
 import { supabase } from '../supabase';
 import { config } from '../config';
-import { ACTION_KEYS, applyFilters, computeOverview, type StatsFilters, type StatsRow } from './statistics';
+import { ACTION_KEYS, applyFilters, computeOverview, type SignupRow, type StatsFilters, type StatsRow } from './statistics';
 
 const STATS_ENTRY_COLS = [
   'id, player_id, name, character_name, profession, days, kills, score, skills, traits, objectives, is_alive, sandbox_ok, created_at',
-  'season_id, death_cause, mod_version',
+  'season_id, death_cause, mod_version, run_started_at',
   'updated_at',        // último sync — vivo ativo × inativo (INACTIVE_AFTER_DAYS)
   'stats_synced_at',   // requer migration_v37
   ...ACTION_KEYS,
@@ -28,7 +28,8 @@ const STATS_HISTORY_COLS = [
   ...ACTION_KEYS,
 ].join(', ');
 const STATS_CACHE_MS = 3 * 60 * 1000;
-let _statsRowsCache: { rows: StatsRow[]; season: { id: number; name: string; started_at: string } | null; at: number } | null = null;
+type SeasonInfo = { id: number; name: string; started_at: string };
+let _statsRowsCache: { rows: StatsRow[]; season: SeasonInfo | null; signups: SignupRow[]; at: number } | null = null;
 
 export async function loadStatsRows() {
   if (_statsRowsCache && Date.now() - _statsRowsCache.at < STATS_CACHE_MS) return _statsRowsCache;
@@ -36,16 +37,20 @@ export async function loadStatsRows() {
   const [entriesRes, historyRes, playersRes, seasonRes] = await Promise.all([
     supabase.from(config.tableName).select(STATS_ENTRY_COLS).is('deleted_at', null),
     supabase.from('run_history').select(STATS_HISTORY_COLS),
-    supabase.from('players').select('id, deleted_at, is_test_mod'),
+    supabase.from('players').select('id, deleted_at, is_test_mod, status, created_at'),
     supabase.from('seasons').select('id, name, started_at').eq('is_active', true).maybeSingle(),
   ]);
   const err = entriesRes.error ?? historyRes.error ?? playersRes.error ?? seasonRes.error;
   if (err) throw err;
 
-  type PlayerRow = { id: number; deleted_at: string | null; is_test_mod: boolean | number };
-  const hidden = new Set(((playersRes.data ?? []) as PlayerRow[])
-    .filter(p => p.deleted_at != null || p.is_test_mod === true || p.is_test_mod === 1)
-    .map(p => p.id));
+  type PlayerRow = { id: number; deleted_at: string | null; is_test_mod: boolean | number; status: string; created_at: string | Date | null };
+  const players = (playersRes.data ?? []) as PlayerRow[];
+  const isHidden = (p: PlayerRow) => p.deleted_at != null || p.is_test_mod === true || p.is_test_mod === 1;
+  const hidden = new Set(players.filter(isHidden).map(p => p.id));
+  // Novos inscritos (evolução semanal): cadastro de jogadores aprovados e visíveis
+  const signups: SignupRow[] = players
+    .filter(p => !isHidden(p) && p.status === 'approved')
+    .map(p => ({ created_at: p.created_at }));
 
   // Runs anteriores (run_history): sempre encerradas — uma run "viva" no histórico foi
   // abandonada sem morte registrada quando a partida nova com o mesmo nome começou.
@@ -62,7 +67,7 @@ export async function loadStatsRows() {
   const rows = [...((entriesRes.data ?? []) as StatsRow[]), ...previous]
     .filter(r => r.player_id == null || !hidden.has(r.player_id));
 
-  _statsRowsCache = { rows, season: (seasonRes.data as { id: number; name: string; started_at: string } | null) ?? null, at: Date.now() };
+  _statsRowsCache = { rows, season: (seasonRes.data as SeasonInfo | null) ?? null, signups, at: Date.now() };
   return _statsRowsCache;
 }
 

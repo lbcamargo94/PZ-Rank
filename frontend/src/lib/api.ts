@@ -479,6 +479,9 @@ export interface ChampionshipStats {
     total_kills: number; total_days: number; bases_built: number; skills_maxed: number;
     action_runs: number; items_crafted: number; meals_cooked: number; houses_looted: number;
   };
+  timeline: {
+    weeks: Array<{ week_start: string; runs_started: number; deaths: number; avg_days_at_death: number; signups: number }>;
+  };
   deaths: {
     deaths:     number;   // runs encerradas (com os filtros)
     known:      number;   // com causa conhecida
