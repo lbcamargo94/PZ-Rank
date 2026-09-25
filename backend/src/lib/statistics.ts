@@ -417,11 +417,19 @@ export const hasActionStats = (r: StatsRow) => r.stats_synced_at != null;
  *  runs, média de 89 dias). Runs de versões anteriores ficam fora desses contadores
  *  (senão os zeros falsos derrubariam médias e percentuais). Runs anteriores do
  *  histórico não guardam a versão do mod — ficam fora também. */
-export const ACTION_MIN_MOD_VERSION: Record<string, string> = Object.fromEntries(
-  ['items_crafted', 'meals_cooked', 'water_collected', 'materials_crafted', 'weapons_crafted',
-   'clothes_crafted', 'ceramic_items', 'forged_weapons', 'cheese_produced', 'stations_used']
-    .map(k => [k, '2.26.0']),
-);
+export const ACTION_MIN_MOD_VERSION: Record<string, string> = {
+  ...Object.fromEntries(
+    ['items_crafted', 'meals_cooked', 'water_collected', 'materials_crafted', 'weapons_crafted',
+     'clothes_crafted', 'ceramic_items', 'forged_weapons', 'cheese_produced', 'stations_used']
+      .map(k => [k, '2.26.0']),
+  ),
+  // v2.27.0: leite contava chamadas (inflado) e passou a litros; km descartava o
+  // trajeto (floor + zerar); rastros e base militar nunca contavam (evento
+  // inexistente / palavra-chave). Valores anteriores não são comparáveis.
+  ...Object.fromEntries(
+    ['milk_produced', 'km_driven', 'animal_tracks', 'military_visited'].map(k => [k, '2.27.0']),
+  ),
+};
 
 /** A run tem valor confiável PARA ESTE contador (stats do Companion + versão do mod). */
 export function hasActionStatsFor(r: StatsRow, key: string): boolean {
