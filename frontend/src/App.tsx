@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { Routes, Route, Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { setOnUnauthorized, apiModMe } from './lib/api';
@@ -8,6 +8,8 @@ import { Toast } from './components/Toast';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { NAV_ITEMS } from './lib/nav';
+import { lazyPage } from './lib/lazyPage';
+import { PageErrorBoundary } from './components/PageErrorBoundary';
 import { DonationButton } from './components/DonationButton';
 import { CommunityStats }      from './components/CommunityStats';
 import { NewsInline }     from './components/NewsCard';
@@ -22,46 +24,46 @@ import { OverlayPage } from './pages/OverlayPage';
 import { OverlayTop10Page } from './pages/OverlayTop10Page';
 
 // Rotas lazy — carregadas sob demanda
-const RegrasPage            = lazy(() => import('./pages/RegrasPage').then(m => ({ default: m.RegrasPage })));
-const PainelPage            = lazy(() => import('./pages/PainelPage').then(m => ({ default: m.PainelPage })));
-const WikiPage              = lazy(() => import('./pages/WikiPage').then(m => ({ default: m.WikiPage })));
-const WikiHuntingPage       = lazy(() => import('./pages/WikiHuntingPage').then(m => ({ default: m.WikiHuntingPage })));
-const ModsPage              = lazy(() => import('./pages/ModsPage').then(m => ({ default: m.ModsPage })));
-const TipsPage              = lazy(() => import('./pages/TipsPage').then(m => ({ default: m.TipsPage })));
-const GuiaFerraria          = lazy(() => import('./pages/GuiaFerraria').then(m => ({ default: m.GuiaFerraria })));
-const GuiaEntalhamento      = lazy(() => import('./pages/GuiaEntalhamento').then(m => ({ default: m.GuiaEntalhamento })));
-const GuiaCostura           = lazy(() => import('./pages/GuiaCostura').then(m => ({ default: m.GuiaCostura })));
-const GuiaCarpintaria       = lazy(() => import('./pages/GuiaCarpintaria').then(m => ({ default: m.GuiaCarpintaria })));
-const GuiaMecanica          = lazy(() => import('./pages/GuiaMecanica').then(m => ({ default: m.GuiaMecanica })));
-const GuiaEletrica          = lazy(() => import('./pages/GuiaEletrica').then(m => ({ default: m.GuiaEletrica })));
-const GuiaManutencao        = lazy(() => import('./pages/GuiaManutencao').then(m => ({ default: m.GuiaManutencao })));
-const GuiaCondicionamento   = lazy(() => import('./pages/GuiaCondicionamento').then(m => ({ default: m.GuiaCondicionamento })));
-const GuiaCulinaria         = lazy(() => import('./pages/GuiaCulinaria').then(m => ({ default: m.GuiaCulinaria })));
-const GuiaAgricultura       = lazy(() => import('./pages/GuiaAgricultura').then(m => ({ default: m.GuiaAgricultura })));
-const GuiaAnimais           = lazy(() => import('./pages/GuiaAnimais').then(m => ({ default: m.GuiaAnimais })));
-const GuiaAbate             = lazy(() => import('./pages/GuiaAbate').then(m => ({ default: m.GuiaAbate })));
-const GuiaCeramica          = lazy(() => import('./pages/GuiaCeramica').then(m => ({ default: m.GuiaCeramica })));
-const GuiaColeta            = lazy(() => import('./pages/GuiaColeta').then(m => ({ default: m.GuiaColeta })));
-const GuiaRastreamento      = lazy(() => import('./pages/GuiaRastreamento').then(m => ({ default: m.GuiaRastreamento })));
-const GuiaArmadilhas        = lazy(() => import('./pages/GuiaArmadilhas').then(m => ({ default: m.GuiaArmadilhas })));
-const GuiaLascamento        = lazy(() => import('./pages/GuiaLascamento').then(m => ({ default: m.GuiaLascamento })));
-const GuiaAlvenaria         = lazy(() => import('./pages/GuiaAlvenaria').then(m => ({ default: m.GuiaAlvenaria })));
-const ComparePage           = lazy(() => import('./pages/ComparePage').then(m => ({ default: m.ComparePage })));
-const VerifyEmailPage       = lazy(() => import('./pages/VerifyEmailPage').then(m => ({ default: m.VerifyEmailPage })));
-const ResetPasswordPage     = lazy(() => import('./pages/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
-const ActivateAccountPage   = lazy(() => import('./pages/ActivateAccountPage').then(m => ({ default: m.ActivateAccountPage })));
-const AccountPage           = lazy(() => import('./pages/AccountPage').then(m => ({ default: m.AccountPage })));
-const ProfilePage           = lazy(() => import('./pages/ProfilePage').then(m => ({ default: m.ProfilePage })));
-const ForgotPasswordPage    = lazy(() => import('./pages/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })));
-const ResendVerificationPage = lazy(() => import('./pages/ResendVerificationPage').then(m => ({ default: m.ResendVerificationPage })));
-const ClaimAccountPage      = lazy(() => import('./pages/ClaimAccountPage').then(m => ({ default: m.ClaimAccountPage })));
-const LegendsPage           = lazy(() => import('./pages/LegendsPage').then(m => ({ default: m.LegendsPage })));
-const TransparenciaPage     = lazy(() => import('./pages/TransparenciaPage').then(m => ({ default: m.TransparenciaPage })));
-const StatisticsPage        = lazy(() => import('./pages/StatisticsPage').then(m => ({ default: m.StatisticsPage })));
-const MapPage               = lazy(() => import('./pages/MapPage').then(m => ({ default: m.MapPage })));
-const LinksUteisPage        = lazy(() => import('./pages/LinksUteisPage').then(m => ({ default: m.LinksUteisPage })));
-const ModeratorRegisterPage = lazy(() => import('./pages/ModeratorRegisterPage').then(m => ({ default: m.ModeratorRegisterPage })));
-const ModResetPasswordPage  = lazy(() => import('./pages/ModResetPasswordPage').then(m => ({ default: m.ModResetPasswordPage })));
+const RegrasPage            = lazyPage(() => import('./pages/RegrasPage').then(m => ({ default: m.RegrasPage })));
+const PainelPage            = lazyPage(() => import('./pages/PainelPage').then(m => ({ default: m.PainelPage })));
+const WikiPage              = lazyPage(() => import('./pages/WikiPage').then(m => ({ default: m.WikiPage })));
+const WikiHuntingPage       = lazyPage(() => import('./pages/WikiHuntingPage').then(m => ({ default: m.WikiHuntingPage })));
+const ModsPage              = lazyPage(() => import('./pages/ModsPage').then(m => ({ default: m.ModsPage })));
+const TipsPage              = lazyPage(() => import('./pages/TipsPage').then(m => ({ default: m.TipsPage })));
+const GuiaFerraria          = lazyPage(() => import('./pages/GuiaFerraria').then(m => ({ default: m.GuiaFerraria })));
+const GuiaEntalhamento      = lazyPage(() => import('./pages/GuiaEntalhamento').then(m => ({ default: m.GuiaEntalhamento })));
+const GuiaCostura           = lazyPage(() => import('./pages/GuiaCostura').then(m => ({ default: m.GuiaCostura })));
+const GuiaCarpintaria       = lazyPage(() => import('./pages/GuiaCarpintaria').then(m => ({ default: m.GuiaCarpintaria })));
+const GuiaMecanica          = lazyPage(() => import('./pages/GuiaMecanica').then(m => ({ default: m.GuiaMecanica })));
+const GuiaEletrica          = lazyPage(() => import('./pages/GuiaEletrica').then(m => ({ default: m.GuiaEletrica })));
+const GuiaManutencao        = lazyPage(() => import('./pages/GuiaManutencao').then(m => ({ default: m.GuiaManutencao })));
+const GuiaCondicionamento   = lazyPage(() => import('./pages/GuiaCondicionamento').then(m => ({ default: m.GuiaCondicionamento })));
+const GuiaCulinaria         = lazyPage(() => import('./pages/GuiaCulinaria').then(m => ({ default: m.GuiaCulinaria })));
+const GuiaAgricultura       = lazyPage(() => import('./pages/GuiaAgricultura').then(m => ({ default: m.GuiaAgricultura })));
+const GuiaAnimais           = lazyPage(() => import('./pages/GuiaAnimais').then(m => ({ default: m.GuiaAnimais })));
+const GuiaAbate             = lazyPage(() => import('./pages/GuiaAbate').then(m => ({ default: m.GuiaAbate })));
+const GuiaCeramica          = lazyPage(() => import('./pages/GuiaCeramica').then(m => ({ default: m.GuiaCeramica })));
+const GuiaColeta            = lazyPage(() => import('./pages/GuiaColeta').then(m => ({ default: m.GuiaColeta })));
+const GuiaRastreamento      = lazyPage(() => import('./pages/GuiaRastreamento').then(m => ({ default: m.GuiaRastreamento })));
+const GuiaArmadilhas        = lazyPage(() => import('./pages/GuiaArmadilhas').then(m => ({ default: m.GuiaArmadilhas })));
+const GuiaLascamento        = lazyPage(() => import('./pages/GuiaLascamento').then(m => ({ default: m.GuiaLascamento })));
+const GuiaAlvenaria         = lazyPage(() => import('./pages/GuiaAlvenaria').then(m => ({ default: m.GuiaAlvenaria })));
+const ComparePage           = lazyPage(() => import('./pages/ComparePage').then(m => ({ default: m.ComparePage })));
+const VerifyEmailPage       = lazyPage(() => import('./pages/VerifyEmailPage').then(m => ({ default: m.VerifyEmailPage })));
+const ResetPasswordPage     = lazyPage(() => import('./pages/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
+const ActivateAccountPage   = lazyPage(() => import('./pages/ActivateAccountPage').then(m => ({ default: m.ActivateAccountPage })));
+const AccountPage           = lazyPage(() => import('./pages/AccountPage').then(m => ({ default: m.AccountPage })));
+const ProfilePage           = lazyPage(() => import('./pages/ProfilePage').then(m => ({ default: m.ProfilePage })));
+const ForgotPasswordPage    = lazyPage(() => import('./pages/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })));
+const ResendVerificationPage = lazyPage(() => import('./pages/ResendVerificationPage').then(m => ({ default: m.ResendVerificationPage })));
+const ClaimAccountPage      = lazyPage(() => import('./pages/ClaimAccountPage').then(m => ({ default: m.ClaimAccountPage })));
+const LegendsPage           = lazyPage(() => import('./pages/LegendsPage').then(m => ({ default: m.LegendsPage })));
+const TransparenciaPage     = lazyPage(() => import('./pages/TransparenciaPage').then(m => ({ default: m.TransparenciaPage })));
+const StatisticsPage        = lazyPage(() => import('./pages/StatisticsPage').then(m => ({ default: m.StatisticsPage })));
+const MapPage               = lazyPage(() => import('./pages/MapPage').then(m => ({ default: m.MapPage })));
+const LinksUteisPage        = lazyPage(() => import('./pages/LinksUteisPage').then(m => ({ default: m.LinksUteisPage })));
+const ModeratorRegisterPage = lazyPage(() => import('./pages/ModeratorRegisterPage').then(m => ({ default: m.ModeratorRegisterPage })));
+const ModResetPasswordPage  = lazyPage(() => import('./pages/ModResetPasswordPage').then(m => ({ default: m.ModResetPasswordPage })));
 
 // NAV_ITEMS importado de lib/nav.ts — fonte única de verdade para nav + quick access
 
@@ -133,6 +135,7 @@ export default function App() {
     <>
       <div className="page-body">
         {!isOverlay && <Header onPainel={() => navigate('/painel')} />}
+        <PageErrorBoundary resetKey={location.pathname}>
         <Suspense fallback={null}>
           <ScrollToTop />
           <Routes>
@@ -190,6 +193,7 @@ export default function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
+        </PageErrorBoundary>
       </div>
       {!isOverlay && <Footer />}
       {!isOverlay && <DonationButton />}
