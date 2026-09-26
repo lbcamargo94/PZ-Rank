@@ -127,7 +127,7 @@ const PLAYER_ENTRY_COLUMNS = [
   'days', 'time_raw', 'time_str', 'kills', 'skills', 'live_url',
   'is_alive', 'sandbox_ok', 'traits', 'objectives', 'score',
   'disqualification_reason', 'disqualified_at', 'deleted_at', 'updated_at',
-  'no_live_streak',
+  'no_live_streak', 'weapon_kills',
 ].join(', ');
 
 // Monta o payload de perfil (jogador + entries com rank calculado) compartilhado

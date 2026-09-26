@@ -288,6 +288,13 @@
       "eyebrow": "Perfil Psicológico",
       "guide_btn": "Ver guía completa de perfiles"
     },
+    "weapons": {
+      "heading": "Armas",
+      "favorite": "Arma favorita",
+      "kills": "bajas",
+      "by_type": "Bajas por tipo de arma",
+      "note": "El arma del golpe final se lleva la baja. Registrado desde el mod 2.29.0."
+    },
     "highlights": {
       "heading": "Destacados",
       "kills": "Eliminaciones",

@@ -12,6 +12,7 @@ import { SPIFFOS_RESTAURANTS, BASE_ITEMS, initObjectives } from '../lib/objectiv
 import { ProgressBar } from '../components/ProgressBar';
 import { AchievementsSection } from '../components/AchievementsSection';
 import { resolveArchetype } from '../lib/archetype';
+import { categoryIcon, categoryLabel, parseWeaponKills, weaponName } from '../lib/weapons';
 import { ArchetypeGuideModal } from '../components/ArchetypeGuideModal';
 import { LiveBadges } from '../components/LiveBadges';
 import { useToast } from '../hooks/useToast';
@@ -641,6 +642,8 @@ function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | nul
                 </button>
               </div>
 
+              <WeaponsBlock raw={entry.weapon_kills} />
+
               {highlights.length > 0 && (
                 <div className="pp-highlights">
                   <span className="pp-highlights-heading">{t('player.highlights.heading')}</span>
@@ -677,6 +680,46 @@ function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | nul
       </div>
 
       {showGuide && <ArchetypeGuideModal onClose={() => setShowGuide(false)} />}
+    </div>
+  );
+}
+
+// Arma preferida + abates por tipo de arma da run (mod 2.29.0+; sem dado = não aparece)
+function WeaponsBlock({ raw }: { raw: string | null | undefined }) {
+  const { t } = useTranslation();
+  const w = parseWeaponKills(raw);
+  if (!w) return null;
+  const cats = Object.entries(w.cats).sort((a, b) => b[1] - a[1]);
+  const total = cats.reduce((s, [, n]) => s + n, 0);
+  const fav = w.top[0];
+  return (
+    <div className="pp-weapons">
+      <span className="pp-highlights-heading">{t('player.weapons.heading')}</span>
+      {fav && (
+        <div className="pp-weapon-fav">
+          <span className="pp-weapon-fav-icon" aria-hidden="true">🏆</span>
+          <div className="pp-weapon-fav-text">
+            <span className="pp-weapon-fav-label">{t('player.weapons.favorite')}</span>
+            <strong className="pp-weapon-fav-name">{weaponName(fav[0])}</strong>
+            <span className="pp-weapon-fav-kills">{formatNumber(fav[1])} {t('player.weapons.kills')}</span>
+          </div>
+        </div>
+      )}
+      {total > 0 && (
+        <>
+          <span className="pp-weapon-sub">{t('player.weapons.by_type')}</span>
+          <ul className="pp-weapon-bars">
+            {cats.map(([cat, n]) => (
+              <li key={cat}>
+                <span className="pp-weapon-bar-label"><span aria-hidden="true">{categoryIcon(cat)}</span> {categoryLabel(cat)}</span>
+                <span className="pp-weapon-bar-track"><span style={{ width: `${Math.max(2, (n / cats[0]![1]) * 100)}%` }} /></span>
+                <span className="pp-weapon-bar-value">{formatNumber(n)} · {Math.round((n / total) * 100)}%</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+      <p className="pp-weapon-note">{t('player.weapons.note')}</p>
     </div>
   );
 }

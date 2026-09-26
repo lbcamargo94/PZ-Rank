@@ -2156,3 +2156,31 @@ body.overlay-page-active::before { display: none; }
 }
 .pp-history-how summary { cursor: pointer; color: var(--blue-light); }
 .pp-history-how p { margin: 8px 0 0; line-height: 1.5; }
+
+
+/* ── Armas (mod 2.29.0+) ─────────────────────────────────────────────────── */
+.pp-weapons { display: flex; flex-direction: column; gap: 10px; }
+.pp-weapon-fav {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 12px 14px;
+}
+.pp-weapon-fav-icon { font-size: 30px; line-height: 1; }
+.pp-weapon-fav-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pp-weapon-fav-label { font-size: 16px; color: var(--text-3); }
+.pp-weapon-fav-name  { font-size: 20px; color: var(--text-1); overflow-wrap: anywhere; }
+.pp-weapon-fav-kills { font-family: var(--font-mono); font-size: 16px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.pp-weapon-sub { font-size: 16px; color: var(--text-3); }
+.pp-weapon-bars { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.pp-weapon-bars li {
+  display: grid; grid-template-columns: minmax(150px, 190px) 1fr auto; align-items: center; gap: 10px;
+  font-size: 16px; color: var(--text-2);
+}
+.pp-weapon-bar-track { height: 10px; background: var(--bg-3); border-radius: 5px; overflow: hidden; }
+.pp-weapon-bar-track > span { display: block; height: 100%; background: var(--red); border-radius: 5px; }
+.pp-weapon-bar-value { font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pp-weapon-note { margin: 0; font-size: 16px; color: var(--text-4); }
+@media (max-width: 460px) {
+  .pp-weapon-bars li { grid-template-columns: 1fr auto; }
+  .pp-weapon-bar-track { grid-column: 1 / -1; grid-row: 2; }
+}

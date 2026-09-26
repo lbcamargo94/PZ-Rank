@@ -288,6 +288,13 @@
       "eyebrow": "Psychological Profile",
       "guide_btn": "View full profile guide"
     },
+    "weapons": {
+      "heading": "Weapons",
+      "favorite": "Favorite weapon",
+      "kills": "kills",
+      "by_type": "Kills by weapon type",
+      "note": "The weapon that lands the final blow gets the kill. Tracked since mod 2.29.0."
+    },
     "highlights": {
       "heading": "Highlights",
       "kills": "Kills",

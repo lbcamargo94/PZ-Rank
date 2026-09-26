@@ -72,6 +72,7 @@
   stations_used?:       number | null;
   animal_species?:      number | null;
   days_no_canned?:      number | null;
+  weapon_kills?:        string | null;   // JSON (mod 2.29.0+) — lib/weapons.ts
 }
 
 export type SortKey = 'days' | 'kills' | 'time' | 'score' | 'skills' | 'updated_at';

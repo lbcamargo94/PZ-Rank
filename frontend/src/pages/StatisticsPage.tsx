@@ -10,6 +10,7 @@ import { ZombieSection }      from '../components/statistics/ZombieSection';
 import { SkillSection }       from '../components/statistics/SkillSection';
 import { ActionSection }      from '../components/statistics/ActionSection';
 import { DeathSection }       from '../components/statistics/DeathSection';
+import { WeaponSection }      from '../components/statistics/WeaponSection';
 import { TimelineSection }    from '../components/statistics/TimelineSection';
 import { RecordsSection, recordTarget } from '../components/statistics/RecordsSection';
 import { CuriositiesSection } from '../components/statistics/CuriositiesSection';
@@ -24,6 +25,7 @@ const SECTIONS = [
   { id: 'sobrevivencia', label: 'Sobrevivência' },
   { id: 'zumbis',        label: 'Zumbis' },
   { id: 'mortes',        label: 'Mortes' },
+  { id: 'armas',         label: 'Armas' },
   { id: 'skills',        label: 'Skills' },
   { id: 'acoes',         label: 'Ações' },
   { id: 'recordes',      label: 'Recordes' },
@@ -133,6 +135,7 @@ export function StatisticsPage() {
                 <SurvivalSection data={data.survival} onRanking={() => setRanking(recordTarget('days'))} />
                 <ZombieSection data={data.zombies} onRanking={() => setRanking(recordTarget('kills'))} />
                 <DeathSection data={data.deaths} />
+                <WeaponSection data={data.weapons} />
                 <SkillSection
                   data={data.skills}
                   runs={data.overview.runs}

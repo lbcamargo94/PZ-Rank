@@ -288,6 +288,13 @@
       "eyebrow": "Profil Psychologique",
       "guide_btn": "Voir le guide complet des profils"
     },
+    "weapons": {
+      "heading": "Armes",
+      "favorite": "Arme préférée",
+      "kills": "éliminations",
+      "by_type": "Éliminations par type d'arme",
+      "note": "L'arme du coup final obtient l'élimination. Enregistré depuis le mod 2.29.0."
+    },
     "highlights": {
       "heading": "Points forts",
       "kills": "Éliminations",

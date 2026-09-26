@@ -513,6 +513,15 @@ export interface ChampionshipStats {
       regions: Array<{ id: string; name: string; deaths: number; pct: number; avg_days: number; avg_kills: number; top_cause: string | null }>;
     };
   };
+  weapons: {
+    runs_with_data:  number;
+    runs_total:      number;
+    min_mod_version: string;
+    total_kills:     number;
+    categories:  Array<{ cat: string; kills: number; pct: number }>;
+    top_weapons: Array<{ id: string; kills: number; runs: number }>;
+    favorites:   Array<{ cat: string; runs: number; pct: number; avg_days: number; avg_kills: number }>;
+  };
   actions: {
     runs_with_data: number;
     runs_total:     number;

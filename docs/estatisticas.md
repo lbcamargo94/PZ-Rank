@@ -221,6 +221,23 @@ coordenadas.
 - O ponto de morte só entra no heatmap no sync da morte (antes era somado a cada sync).
 - Não foi e **não deve ser** adicionado rastreamento contínuo de posição.
 
+## 🟢 Armas que mais matam zumbis (v4.26.0 + mod 2.29.0)
+
+O mod guarda a arma do **último golpe** do jogador em cada zumbi (`OnHitZombie`) e credita o
+abate a ela no `OnZombieDead`. Tipo = `WeaponCategory` do B42 (machado, lança, lâmina
+longa/curta, contundente longo/curto, desarmado, improvisada) + arma de fogo (`isRanged`);
+morto pelo jogador sem golpe registrado (atropelado, fogo, empurrão) = "other".
+
+- Vai no arquivo de stats como chaves numéricas (`wk_<tipo>`, `wt:<item>` top 5) — assinadas
+  pelo Companion junto com o resto; não precisou de Companion novo.
+- `lib/weapons.ts` (`parseWeaponStats`) → `entries/run_history.weapon_kills` (JSON, migration_v43).
+- /estatisticas: abates por tipo, top 10 armas, tipo preferido × média de dias. Perfil: arma
+  preferida + abates por tipo da run.
+- Nomes pt-BR: `frontend/src/lib/weaponNames.ts`, GERADO de media/scripts + Translate/PTBR/ItemName.json.
+- Só abates a partir do mod 2.29.0 (histórico não recuperável).
+- 🟡 Próximo passo: selos do perfil psicológico (Lenhador, Lanceiro, Pistoleiro…) e critério
+  do Berserker por abates corpo a corpo — calibrar os limites com dados reais antes.
+
 ## 🟢 Mapa de calor (/mapa) corrigido (v4.25.5 + mod 2.28.0)
 
 Até o mod 2.27.0 o arquivo de heatmap levava contagens **acumuladas** de abates por

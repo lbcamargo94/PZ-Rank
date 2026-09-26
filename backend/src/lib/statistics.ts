@@ -17,6 +17,7 @@ import { SKILL_NAMES } from './skills';
 import { OFFICIAL_BASE_IDS } from './scoring';
 import { isVersionAtLeast } from './version';
 import { REGION_NAMES } from './mapRegions';
+import { WEAPON_KILL_CATS, WEAPON_KILLS_MIN_MOD_VERSION, favoriteCategory, readWeaponKills, totalWeaponKills } from './weapons';
 
 export interface StatsRow {
   id:             number | string;
@@ -651,6 +652,52 @@ export function computeDeathPlaces(dead: StatsRow[]) {
   return { tracked: withPlace.length, since: DEATH_PLACES_TRACKED_SINCE, regions };
 }
 
+/** Abates por arma (mod 2.29.0+, lib/weapons.ts). Só runs com dado de arma entram;
+ *  a seção mostra a cobertura (runs_with_data de runs_total). */
+export function computeWeapons(rows: StatsRow[]) {
+  const withData = rows
+    .map(r => ({ r, w: readWeaponKills(r['weapon_kills']) }))
+    .filter((x): x is { r: StatsRow; w: NonNullable<ReturnType<typeof readWeaponKills>> } => !!x.w && totalWeaponKills(x.w) > 0);
+
+  const catTotals = new Map<string, number>();
+  const items = new Map<string, { kills: number; runs: number }>();
+  const favs = new Map<string, StatsRow[]>();
+  for (const { r, w } of withData) {
+    for (const [cat, n] of Object.entries(w.cats)) catTotals.set(cat, (catTotals.get(cat) ?? 0) + (n ?? 0));
+    for (const [id, n] of w.top) {
+      const cur = items.get(id) ?? { kills: 0, runs: 0 };
+      cur.kills += n; cur.runs += 1;
+      items.set(id, cur);
+    }
+    const fav = favoriteCategory(w);
+    if (fav) { if (!favs.has(fav)) favs.set(fav, []); favs.get(fav)!.push(r); }
+  }
+  const total = [...catTotals.values()].reduce((s, n) => s + n, 0);
+  const favTotal = [...favs.values()].reduce((s, g) => s + g.length, 0);
+
+  return {
+    runs_with_data: withData.length,
+    runs_total:     rows.length,
+    min_mod_version: WEAPON_KILLS_MIN_MOD_VERSION,
+    total_kills:    total,
+    categories: WEAPON_KILL_CATS
+      .filter(c => (catTotals.get(c) ?? 0) > 0)
+      .map(c => ({ cat: c, kills: catTotals.get(c)!, pct: pct(catTotals.get(c)!, total) }))
+      .sort((a, b) => b.kills - a.kills),
+    top_weapons: [...items.entries()]
+      .map(([id, v]) => ({ id, kills: v.kills, runs: v.runs }))
+      .sort((a, b) => b.kills - a.kills || a.id.localeCompare(b.id))
+      .slice(0, 10),
+    // Tipo preferido de cada run → quantas runs, e como se saíram
+    favorites: [...favs.entries()]
+      .map(([cat, g]) => ({
+        cat, runs: g.length, pct: pct(g.length, favTotal),
+        avg_days: avg(g.map(r => r.days || 0)), avg_kills: avg(g.map(r => r.kills || 0)),
+      }))
+      .sort((a, b) => b.runs - a.runs),
+  };
+}
+
 // ── Rankings e recordes ────────────────────────────────────────────────────
 
 export const RANKING_METRICS = ['kills', 'days', 'score', 'skills10', 'skill_levels', 'bases'] as const;
@@ -795,6 +842,7 @@ export function computeChampionshipStats(allRows: StatsRow[], filters: StatsFilt
     records:      computeRecords(rows),
     actions:      computeActions(rows),
     deaths:       computeDeaths(rows),
+    weapons:      computeWeapons(rows),
     timeline:     timeline
       ? computeTimeline(rows, timeline.signups, timeline.from, timeline.to ? new Date(timeline.to) : new Date())
       : { weeks: [], deaths_tracked_since: DEATHS_TRACKED_SINCE_WEEK, restarts_tracked_since: RESTARTS_TRACKED_SINCE_WEEK },

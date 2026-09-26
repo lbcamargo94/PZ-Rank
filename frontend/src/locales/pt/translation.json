@@ -288,6 +288,13 @@
       "eyebrow": "Perfil Psicológico",
       "guide_btn": "Ver guia completo de perfis"
     },
+    "weapons": {
+      "heading": "Armas",
+      "favorite": "Arma preferida",
+      "kills": "abates",
+      "by_type": "Abates por tipo de arma",
+      "note": "A arma do golpe final leva o abate. Registrado a partir do mod 2.29.0."
+    },
     "highlights": {
       "heading": "Destaques",
       "kills": "Abates",

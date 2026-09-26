@@ -10,6 +10,7 @@ import { parsePzrCode } from '../lib/decoder';
 import { dbError } from '../lib/errors';
 import { computeScore } from '../lib/scoring';
 import { processHeatmapDelta, selectHeatPoints } from '../lib/heatmap';
+import { parseWeaponStats } from '../lib/weapons';
 import { COMPANION_STAT_KEYS, validateCompanionStats, type CompanionStatKey } from '../lib/companionStats';
 import { archiveRun, getActiveSeasonId, isNewRunOf } from '../lib/runHistory';
 import { normalizeDeathCause } from '../lib/statistics';
@@ -198,6 +199,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // passam a alimentar colunas, conquistas e /estatisticas. Inválidas → ignoradas,
   // o sync do rank segue normal.
   let companionStatsOk = false;
+  let weaponKills: string | null = null;   // mod 2.29.0+: abates por arma (lib/weapons.ts)
   if (stats != null) {
     const v = validateCompanionStats({
       stats,
@@ -213,6 +215,8 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
         (decoded as unknown as Record<string, number>)[field] = v.stats[key as CompanionStatKey];
       }
       companionStatsOk = true;
+      const w = parseWeaponStats(stats as Record<string, unknown>);
+      if (w) weaponKills = JSON.stringify(w);
     } else {
       console.warn(`[sync] stats do Companion ignoradas | player=${player.nick} | motivo=${v.reason}`);
     }
@@ -750,6 +754,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     // /estatisticas só usa ações de runs com esta coluna preenchida — valores
     // anteriores (PZRX≤8, congelados desde o mod v2.16) ficam de fora.
     // Em nova run sem stats, zera a marca pra não herdar a confiabilidade da anterior.
+    ...(weaponKills ? { weapon_kills: weaponKills } : isNewCharRun ? { weapon_kills: null } : {}),
     ...(companionStatsOk ? { stats_synced_at: new Date().toISOString() } : isNewCharRun ? { stats_synced_at: null } : {}),
     // Histórico de runs (migration_v38): temporada da run, início e causa da morte.
     // Temporada só no INÍCIO da run (ou se ainda não tiver): uma run que atravessa a
