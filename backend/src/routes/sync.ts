@@ -9,7 +9,7 @@ import { supabase } from '../supabase';
 import { parsePzrCode } from '../lib/decoder';
 import { dbError } from '../lib/errors';
 import { computeScore } from '../lib/scoring';
-import { processHeatmapDelta } from '../lib/heatmap';
+import { processHeatmapDelta, selectHeatPoints } from '../lib/heatmap';
 import { COMPANION_STAT_KEYS, validateCompanionStats, type CompanionStatKey } from '../lib/companionStats';
 import { archiveRun, getActiveSeasonId, isNewRunOf } from '../lib/runHistory';
 import { normalizeDeathCause } from '../lib/statistics';
@@ -306,7 +306,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // Filtra deleted_at IS NULL para nunca confundir entries soft-deletadas com a ativa.
   const { data: existingRaw, error: existingError } = await supabase
     .from(config.tableName)
-    .select('id, objectives, live_url, sandbox_ok, disqualification_reason, kills, time_raw, days, flagged_reason, flagged_at, updated_at, score, record_score, character_name, is_alive, deleted_at, no_live_streak, skills, season_id')
+    .select('id, objectives, live_url, sandbox_ok, disqualification_reason, kills, time_raw, days, flagged_reason, flagged_at, updated_at, score, record_score, character_name, is_alive, deleted_at, no_live_streak, skills, season_id, heatmap_batch')
     .eq('player_id', player.id)
     .eq('character_name', decoded.characterName)
     .is('deleted_at', null)
@@ -332,6 +332,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     no_live_streak: number;
     skills: string | null;
     season_id: number | null;
+    heatmap_batch: string | null;
   };
   const prev = existing as ExistingRow | null;
 
@@ -711,6 +712,11 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // depois da morte (era isso que inflava o mapa de calor de mortes).
   const diedNow = !decoded.isAlive && (!prev || prev.is_alive === true || isNewCharRun);
   const deathCell = diedNow ? deathCellFromDelta(heatmap_delta) : null;
+  // Lote do mapa de calor (só o id do último lote é guardado — nenhuma posição)
+  const heat = selectHeatPoints(heatmap_delta, {
+    diedNow,
+    lastBatch: prev && !isNewCharRun ? prev.heatmap_batch ?? null : null,
+  });
 
   // Partida nova com o mesmo nome de personagem: copia a run anterior para o
   // histórico ANTES de sobrescrever a linha (antes disso ela era apagada).
@@ -755,6 +761,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       ? { death_cause: normalizeDeathCause(decoded.deathCause) }
       : isNewCharRun ? { death_cause: null } : {}),
     // Região da morte (só o NOME — cidade/arredores, lib/mapRegions.ts)
+    ...(heat.batchId ? { heatmap_batch: heat.batchId } : {}),
     ...(deathCell ? { death_region: regionOfCell(deathCell.gx, deathCell.gy) } : isNewCharRun ? { death_region: null } : {}),
     // PZRX3: only write when present to avoid overwriting with zeros on PZRX2 syncs
     ...(hasExtended ? {
@@ -1035,11 +1042,8 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     })();
   }
 
-  // Heatmap: aceita delta opcional do Companion; obtém season ativa para o UPSERT
-  // Ponto de morte só no sync da morte (ver diedNow); abates/base seguem como antes
-  const heatPoints = Array.isArray(heatmap_delta)
-    ? heatmap_delta.filter(p => diedNow || !(p && typeof p === 'object' && (p as { type?: unknown }).type === 'death'))
-    : [];
+  // Heatmap: pontos já filtrados por selectHeatPoints (lote novo / morte só no sync da morte)
+  const heatPoints = heat.points;
   if (heatPoints.length > 0) {
     void (async () => {
       const { data: season } = await supabase

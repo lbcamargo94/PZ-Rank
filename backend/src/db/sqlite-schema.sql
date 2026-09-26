@@ -150,6 +150,7 @@ CREATE TABLE IF NOT EXISTS entries (
   death_cause                  TEXT     DEFAULT NULL,
   run_started_at               TEXT     DEFAULT NULL,
   death_region                 TEXT     DEFAULT NULL,  -- migration_v41
+  heatmap_batch                TEXT     DEFAULT NULL,  -- migration_v42 (id do último lote do mapa de calor)
   UNIQUE (player_id, character_name)
 );
 

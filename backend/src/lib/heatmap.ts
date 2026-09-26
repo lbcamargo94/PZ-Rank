@@ -21,6 +21,29 @@ function validatePoint(p: unknown): HeatmapDeltaPoint | null {
   return { type: type as HeatmapDeltaPoint['type'], gx: x, gy: y, count: c };
 }
 
+/**
+ * Escolhe quais pontos do heatmap_delta entram no mapa de calor (puro — testado).
+ *
+ * Mod >= 2.28.0 manda lotes: 1º item {"type":"batch","id":"..."} + só o que mudou
+ * desde o lote anterior. O Companion relê e reenvia o mesmo arquivo (reinício,
+ * reenvio manual), então um lote com o mesmo id do último já processado é ignorado.
+ * Mods antigos mandam contagens ACUMULADAS a cada sync (inflava o mapa): abates e
+ * base deles são ignorados. O ponto de morte só vale no sync da morte (diedNow).
+ */
+export function selectHeatPoints(
+  delta: unknown,
+  opts: { diedNow: boolean; lastBatch: string | null },
+): { points: unknown[]; batchId: string | null } {
+  if (!Array.isArray(delta)) return { points: [], batchId: null };
+  const isType = (p: unknown, t: string) => !!p && typeof p === 'object' && (p as { type?: unknown }).type === t;
+  const marker = delta.find(p => isType(p, 'batch')) as { id?: unknown } | undefined;
+  const batchId = marker && typeof marker.id === 'string' && marker.id.length > 0 && marker.id.length <= 64
+    ? marker.id : null;
+  const deaths = opts.diedNow ? delta.filter(p => isType(p, 'death')).slice(0, 1) : [];
+  if (!batchId || batchId === opts.lastBatch) return { points: deaths, batchId };
+  return { points: [...delta.filter(p => !isType(p, 'death') && !isType(p, 'batch')), ...deaths], batchId };
+}
+
 export async function processHeatmapDelta(
   seasonId: number,
   raw:      unknown[],
@@ -30,8 +53,8 @@ export async function processHeatmapDelta(
   const points = raw.map(validatePoint).filter(Boolean) as HeatmapDeltaPoint[];
   if (points.length === 0) return;
 
-  // Limita a 50 pontos por sync para evitar abuso
-  const capped = points.slice(0, 50);
+  // Limita pontos por sync para evitar abuso (lote de ~5 min de jogo)
+  const capped = points.slice(0, 200);
 
   // Agrega duplicatas dentro do mesmo batch (ex: dois kills na mesma célula)
   const deltaMap = new Map<string, HeatmapDeltaPoint>();

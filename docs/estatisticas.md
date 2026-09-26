@@ -221,11 +221,18 @@ coordenadas.
 - O ponto de morte só entra no heatmap no sync da morte (antes era somado a cada sync).
 - Não foi e **não deve ser** adicionado rastreamento contínuo de posição.
 
-## 🔴 Mapa de calor (/mapa) inflado
+## 🟢 Mapa de calor (/mapa) corrigido (v4.25.5 + mod 2.28.0)
 
-O mod grava contagens **acumuladas** de kills por célula e o servidor soma a cada
-sync (kills ~1,5 bi vs ~2,4 mi reais). Correção no mod: enviar só o delta desde o
-último envio; depois zerar `heatmap_events`.
+Até o mod 2.27.0 o arquivo de heatmap levava contagens **acumuladas** de abates por
+célula e o servidor somava a cada sync (kills ~1,5 bi vs ~2,4 mi reais). Agora:
+
+- mod 2.28.0 grava lotes: 1º item `{"type":"batch","id"}` + só o que mudou desde o
+  lote anterior; base só quando muda de célula;
+- `selectHeatPoints` (`lib/heatmap.ts`) ignora lote repetido (`entries.heatmap_batch`,
+  migration_v42 — só o id, nenhuma posição) e abates/base de mods antigos; morte só
+  no sync da morte;
+- `heatmap_events` foi zerado em 2026-09-26 (backup diário antes). Lote perdido
+  (Companion fechado enquanto joga) = subcontagem, nunca inflação.
 
 ## 🟡 Evolução histórica
 
