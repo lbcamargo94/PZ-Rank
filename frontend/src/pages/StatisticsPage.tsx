@@ -91,8 +91,11 @@ export function StatisticsPage() {
           <button type="button" className="btn-primary btn-sm" onClick={() => navigate(-1)} style={{ marginBottom: '20px' }}>
             <i className="ti ti-arrow-left" /> Voltar
           </button>
-          <h1 className="legends-title"><i className="ti ti-chart-bar" /> Estatísticas do Brasileirão PZ</h1>
-          <p className="legends-sub">O que os sobreviventes do campeonato escolhem, quanto duram e até onde evoluem.</p>
+          {/* Painel escuro: o fundo padrão do site é claro atrás do título (céu) */}
+          <div className="stats-hero">
+            <h1 className="legends-title"><i className="ti ti-chart-bar" /> Estatísticas do Brasileirão PZ</h1>
+            <p className="legends-sub">O que os sobreviventes do campeonato escolhem, quanto duram e até onde evoluem.</p>
+          </div>
         </div>
 
         <StatsFiltersBar

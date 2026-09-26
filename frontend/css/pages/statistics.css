@@ -415,3 +415,21 @@
 /* semana sem registro: contorno tracejado de altura cheia (não é zero) */
 .stats-tl-bar--nodata { align-self: stretch; height: auto !important; background: transparent; border: 1px dashed var(--border-mid); border-bottom: 0; }
 .stats-tl-notes { padding-left: 20px; display: flex; flex-direction: column; gap: 4px; }
+
+/* ── Cabeçalho legível sobre o fundo claro (céu) do site ─── */
+.stats-hero {
+  background: var(--bg-2);
+  border: 1px solid var(--border-mid);
+  border-left: 4px solid var(--gold);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.stats-hero .legends-title { margin-bottom: 6px; }
+.stats-hero .legends-sub { color: var(--text-2); }
+.stats-page .legends-header { margin-bottom: 16px; }
+@media (max-width: 460px) {
+  .stats-hero { padding: 14px 14px; }
+  .stats-hero .legends-title { font-size: 26px; }
+}
