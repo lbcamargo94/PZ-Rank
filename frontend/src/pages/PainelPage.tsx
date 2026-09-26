@@ -9,6 +9,7 @@ import { Pagination } from '../components/Pagination';
 import { PainelLogin }           from '../components/painel/PainelLogin';
 import { PendingPlayers }        from '../components/painel/PendingPlayers';
 import { BannedIdentitiesManager } from '../components/painel/BannedIdentitiesManager';
+import { YoutubeLinkIssues } from '../components/painel/YoutubeLinkIssues';
 import { UpdateRankModal }       from '../components/painel/UpdateRankModal';
 import { EditObjectivesModal }   from '../components/painel/EditObjectivesModal';
 import { ModeratorsList }        from '../components/painel/ModeratorsList';
@@ -759,7 +760,10 @@ export function PainelPage({ session, onSession, onBack }: Props) {
         {/* ── Content ──────────────────────────────────────────── */}
         <main className="painel-content">
         {tab === 'players' && (
-          <PendingPlayers token={session.token} showToast={showToast} />
+          <>
+            <YoutubeLinkIssues token={session.token} showToast={showToast} />
+            <PendingPlayers token={session.token} showToast={showToast} />
+          </>
         )}
 
         {tab === 'banidos' && (

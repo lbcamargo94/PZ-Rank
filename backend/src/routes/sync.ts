@@ -18,6 +18,12 @@ import { deathCellFromDelta, regionOfCell } from '../lib/mapRegions';
 import { config } from '../config';
 import type { Objectives } from '../types';
 
+// Checagem de live do YouTube no sync: no máximo 1 a cada YT_SYNC_CHECK_MS por
+// jogador. O mod sincroniza a cada ~5 min (e a cada 5 kills); checar em todo sync
+// esgotava a cota diária da Data API (10.000 unidades) — ver lib/youtube.ts.
+const YT_SYNC_CHECK_MS = 10 * 60 * 1000;
+const ytSyncCheckAt = new Map<number, number>();
+
 const router = Router();
 
 // ── Rate limiters ──────────────────────────────────────────────────────────
@@ -1070,6 +1076,9 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       };
       const p = player as unknown as SyncPlayer;
       if (!p.yt_channel_id) return;
+      const lastCheck = ytSyncCheckAt.get(p.id) ?? 0;
+      if (Date.now() - lastCheck < YT_SYNC_CHECK_MS) return;
+      ytSyncCheckAt.set(p.id, Date.now());
 
       const { getChannelCurrentLive, checkIsLive, YT_LIVE_MAX_AGE_MS } = await import('../lib/youtube');
       const { sendLiveNotification } = await import('../lib/discord');

@@ -11,7 +11,7 @@ import { Router } from 'express';
 import type { Request, Response } from 'express';
 import { broadcast } from '../lib/sse';
 import { supabase } from '../supabase';
-import { subscribePubSub, getChannelCurrentLive, checkIsLive, YT_LIVE_MAX_AGE_MS } from '../lib/youtube';
+import { subscribePubSub, getChannelCurrentLive, checkIsLive, YT_LIVE_MAX_AGE_MS, YT_RESOLVE_MAX_ATTEMPTS } from '../lib/youtube';
 import { extractTwitchLogin, getLiveStreams } from '../lib/twitch';
 import { sendLiveNotification } from '../lib/discord';
 import { isChampionshipTitle, isChampionshipTwitchGame } from '../lib/championship';
@@ -31,26 +31,33 @@ function requireCronSecret(req: Request, res: Response): boolean {
   return false;
 }
 
-// GET /cron/backfill-yt-subs — inscreve jogadores aprovados que ainda não têm inscrição
-// Chamar uma única vez após configurar as env vars
+// GET /cron/backfill-yt-subs — resolve o canal de quem cadastrou link do YouTube e
+// ainda não tem yt_channel_id, e inscreve no Pub/Sub. Diário às 07:20 UTC (logo
+// depois da renovação da cota da Data API, meia-noite do Pacífico).
+//
+// Antes: pegava sempre os mesmos 20 jogadores (sem ordem nem contagem) e a cota vivia
+// esgotada, então links bons eram dados como "não encontrados" e a fila não andava
+// (102 jogadores parados em 2026-09-26). Agora: resolve pela página pública do canal
+// (sem cota) antes da API; só falha DEFINITIVA (canal não existe) conta tentativa;
+// cota esgotada interrompe o lote sem penalizar ninguém; depois de
+// YT_RESOLVE_MAX_ATTEMPTS o link sai da fila e aparece no painel da moderação.
 router.get('/backfill-yt-subs', async (req: Request, res: Response): Promise<void> => {
   if (!requireCronSecret(req, res)) return;
 
-  // Teto de segurança de cota: o fallback resolveChannelBySearch custa 100 unidades
-  // por chamada (search.list). Sem limite, jogadores com youtube_url permanentemente
-  // inválida (nunca resolvem) são retentados todo dia e sozinhos podem estourar as
-  // 10.000 unidades/dia da YouTube Data API (visto em produção em 2026-09-21).
-  // 20 jogadores/dia = no máximo 2.000 unidades no pior caso, deixando margem de
-  // sobra para o /cron/scan-lives (barato, RSS-first) rodar no mesmo dia.
-  const BACKFILL_BATCH = 20;
+  // A página pública não gasta cota; o teto protege o fallback de busca da API
+  // (search.list = 100 unidades) quando a página não resolve.
+  const BACKFILL_BATCH = 60;
 
   const { data: players, error } = await supabase
     .from('players')
-    .select('id, nick, youtube_url, yt_channel_id')
+    .select('id, nick, youtube_url, yt_resolve_attempts')
     .eq('status', 'approved')
     .is('deleted_at', null)
     .is('yt_channel_id', null)
     .not('youtube_url', 'is', null)
+    .lt('yt_resolve_attempts', YT_RESOLVE_MAX_ATTEMPTS)
+    .order('yt_resolve_attempts', { ascending: true })
+    .order('id', { ascending: true })
     .limit(BACKFILL_BATCH);
 
   if (error) {
@@ -58,29 +65,44 @@ router.get('/backfill-yt-subs', async (req: Request, res: Response): Promise<voi
     return;
   }
 
-  const { extractChannelId, subscribePubSub } = await import('../lib/youtube');
+  const { resolveChannelId, subscribePubSub, isYouTubeQuotaBlocked } = await import('../lib/youtube');
   const results: Array<{ nick: string; channelId: string | null; ok: boolean; error?: string }> = [];
+  let stoppedByQuota = false;
 
-  for (const player of (players ?? []) as Array<{ id: number; nick: string; youtube_url: string }>) {
-    const channelId = await extractChannelId(player.youtube_url);
-    if (!channelId) {
-      results.push({ nick: player.nick, channelId: null, ok: false, error: 'channel_id não encontrado' });
+  type Row = { id: number; nick: string; youtube_url: string; yt_resolve_attempts: number | null };
+  for (const player of (players ?? []) as Row[]) {
+    const r = await resolveChannelId(player.youtube_url);
+
+    if ('error' in r) {
+      // Não deu pra saber agora (rede/cota) — tenta de novo amanhã sem contar
+      results.push({ nick: player.nick, channelId: null, ok: false, error: 'indisponível agora' });
+      if (isYouTubeQuotaBlocked()) { stoppedByQuota = true; break; }
       continue;
     }
 
-    const sub = await subscribePubSub(channelId);
-    results.push({ nick: player.nick, channelId, ok: sub.ok, error: sub.error });
+    if ('notFound' in r) {
+      const attempts = (player.yt_resolve_attempts ?? 0) + 1;
+      await supabase.from('players')
+        .update({ yt_resolve_attempts: attempts, yt_resolve_failed_at: new Date().toISOString() })
+        .eq('id', player.id);
+      results.push({ nick: player.nick, channelId: null, ok: false, error: `canal não encontrado (${attempts}/${YT_RESOLVE_MAX_ATTEMPTS})` });
+      continue;
+    }
 
+    const sub = await subscribePubSub(r.id);
+    results.push({ nick: player.nick, channelId: r.id, ok: sub.ok, error: sub.error });
     await supabase
       .from('players')
       .update({
-        yt_channel_id:     channelId,
-        yt_sub_expires_at: sub.ok ? sub.expiresAt : null,
+        yt_channel_id:        r.id,
+        yt_sub_expires_at:    sub.ok ? sub.expiresAt : null,
+        yt_resolve_attempts:  0,
+        yt_resolve_failed_at: null,
       })
       .eq('id', player.id);
   }
 
-  res.json({ processed: results.length, results });
+  res.json({ processed: results.length, stopped_by_quota: stoppedByQuota, results });
 });
 
 // GET /cron/renew-yt-subs

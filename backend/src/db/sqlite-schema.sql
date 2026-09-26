@@ -33,6 +33,8 @@ CREATE TABLE IF NOT EXISTS players (
   yt_live_confirmed_at    TEXT     DEFAULT NULL,
   twitch_last_live_id     TEXT     DEFAULT NULL,
   ban_match               TEXT     DEFAULT NULL,  -- migration_v40: bateu com banned_identities
+  yt_resolve_attempts     INTEGER  NOT NULL DEFAULT 0,     -- migration_v44: tentativas de achar o canal (link quebrado)
+  yt_resolve_failed_at    TEXT     DEFAULT NULL,           -- migration_v44
   created_at         TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
 );
 

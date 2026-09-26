@@ -232,6 +232,14 @@ export function apiDeleteBannedIdentity(token: string, id: number): Promise<{ ok
   return request(`/banned-identities/${id}`, { method: 'DELETE', ...auth(token) });
 }
 
+export interface YtUnresolvedPlayer { id: number; nick: string; youtube_url: string; yt_resolve_attempts: number; yt_resolve_failed_at: string | null }
+export function apiGetYtUnresolved(token: string): Promise<{ players: YtUnresolvedPlayer[] }> {
+  return request('/players/yt-unresolved', auth(token));
+}
+export function apiRetryYtResolve(token: string, id: number): Promise<{ ok: true }> {
+  return request(`/players/${id}/yt-retry`, { method: 'PATCH', ...auth(token) });
+}
+
 export function apiBlockPlayer(token: string, id: number, reason: string, note?: string): Promise<Player> {
   return request(`/players/${id}/block`, { method: 'PATCH', ...json(token, { reason, note }) });
 }

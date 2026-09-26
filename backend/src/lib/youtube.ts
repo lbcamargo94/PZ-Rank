@@ -18,6 +18,44 @@ const LEASE_SECONDS     = 864_000; // 10 dias
 const FEED_BASE         = 'https://www.youtube.com/feeds/videos.xml?channel_id=';
 const YT_API_BASE       = 'https://www.googleapis.com/youtube/v3';
 
+// ── Cota da YouTube Data API ──────────────────────────────────────────────────
+// 10.000 unidades/dia, renovadas à meia-noite do Pacífico. Depois de estourar, toda
+// chamada volta 403 — em 2026-09 eram ~16 mil chamadas perdidas por dia, e o cron
+// que resolve canais marcava links bons como "não encontrado". Ao ver quotaExceeded,
+// para de chamar a API até a renovação.
+let quotaBlockedUntil = 0;
+
+/** Falhas DEFINITIVAS (canal não existe) antes do cron desistir do link — ver /cron/backfill-yt-subs. */
+export const YT_RESOLVE_MAX_ATTEMPTS = 5;
+
+export function isYouTubeQuotaBlocked(now = Date.now()): boolean {
+  return now < quotaBlockedUntil;
+}
+
+/** Próxima meia-noite em America/Los_Angeles (renovação da cota), +5 min de folga. */
+export function nextQuotaReset(now = new Date()): number {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Los_Angeles', year: 'numeric', month: '2-digit', day: '2-digit', timeZoneName: 'shortOffset',
+  }).formatToParts(now);
+  const get = (t: string) => parts.find(p => p.type === t)?.value ?? '0';
+  const offH = Number(get('timeZoneName').match(/GMT([+-]\d+)/)?.[1] ?? 0);
+  return Date.UTC(Number(get('year')), Number(get('month')) - 1, Number(get('day')) + 1) - offH * 3_600_000 + 5 * 60_000;
+}
+
+/** fetch da Data API com o disjuntor de cota. null = bloqueado pela cota (nenhuma chamada feita). */
+async function ytApiFetch(url: string): Promise<Response | null> {
+  if (isYouTubeQuotaBlocked()) return null;
+  const res = await fetch(url, { signal: AbortSignal.timeout(8_000) });
+  if (res.status === 403) {
+    const body = await res.clone().text().catch(() => '');
+    if (/quotaExceeded|dailyLimitExceeded/.test(body)) {
+      quotaBlockedUntil = nextQuotaReset();
+      console.warn(`[youtube] cota diária esgotada — API pausada até ${new Date(quotaBlockedUntil).toISOString()}`);
+    }
+  }
+  return res;
+}
+
 // ── Extração de channel_id ────────────────────────────────────────────────────
 
 /**
@@ -30,8 +68,72 @@ const YT_API_BASE       = 'https://www.googleapis.com/youtube/v3';
  *   - youtube.com/c/customname   (legado)
  *   - youtube.com/NAME           (URL curta sem prefixo)
  *   - www.youtube/NAME           (domínio sem .com)
+ * (ver resolveChannelId / extractChannelIdViaApi abaixo)
  */
+export type ChannelResolution = { id: string } | { notFound: true } | { error: true };
+
+/** Caminho do canal no youtube.com a partir do link cadastrado ('@handle', 'user/x', 'c/x', 'x'). */
+export function channelPathOf(url: string): string | null {
+  const normalized = url.trim().replace(/[?#].*$/, '').replace(/\/$/, '');
+  const bare = normalized.match(/^(?:https?:\/\/)?@([^/?&#\s]+)$/i);
+  if (bare) return `@${bare[1]}`;
+  if (!/(?:www\.|m\.)?youtube(?:\.com)?\//i.test(normalized)) return null;
+  const m = normalized.match(/youtube(?:\.com)?\/+(@[^/?&#\s]+|user\/[^/?&#\s]+|c\/[^/?&#\s]+|[^@/?&#\s]+)$/i);
+  return m ? m[1] : null;
+}
+
+/**
+ * Resolve o canal pela página pública do youtube.com (o link canônico traz o
+ * UC... do canal). Não gasta cota da Data API. 'not_found' = página 404.
+ */
+async function resolveChannelByPage(path: string): Promise<string | 'not_found' | null> {
+  try {
+    const url = 'https://www.youtube.com/' + path.split('/').map(encodeURIComponent).join('/');
+    const res = await fetch(url, {
+      signal:  AbortSignal.timeout(8_000),
+      headers: { 'User-Agent': 'Mozilla/5.0', 'Accept-Language': 'en', Cookie: 'CONSENT=YES+1' },
+    });
+    if (res.status === 404) return 'not_found';
+    if (!res.ok) return null;
+    const html = await res.text();
+    return html.match(/<link rel="canonical" href="https:\/\/www\.youtube\.com\/channel\/(UC[\w-]{22})"/)?.[1]
+      ?? html.match(/"externalId":"(UC[\w-]{22})"/)?.[1]
+      ?? null;
+  } catch (err) {
+    console.warn('[resolveChannelByPage] erro:', path, err instanceof Error ? err.message : err);
+    return null;
+  }
+}
+
+/**
+ * Resolve o channel_id distinguindo "não existe" (link quebrado — conta tentativa)
+ * de "não deu pra saber agora" (rede, cota — tenta de novo depois sem penalizar).
+ * Ordem: UC no link → página pública (sem cota) → Data API (com cota).
+ */
+export async function resolveChannelId(url: string): Promise<ChannelResolution> {
+  const uc = url.match(/(UC[\w-]{22})/);
+  if (uc) return { id: uc[1] };
+  const path = channelPathOf(url);
+  if (!path) return { notFound: true };   // nem é link de canal do YouTube
+
+  const page = await resolveChannelByPage(path);
+  if (page && page !== 'not_found') return { id: page };
+  // Página 404 de @handle é definitivo — a API diria o mesmo, não gasta cota
+  if (page === 'not_found' && path.startsWith('@')) return { notFound: true };
+
+  const viaApi = await extractChannelIdViaApi(url);
+  if (viaApi) return { id: viaApi };
+  if (page === null && (isYouTubeQuotaBlocked() || !process.env.YOUTUBE_API_KEY)) return { error: true };
+  return { notFound: true };
+}
+
+/** Compat: channel_id ou null (sem distinguir o motivo). */
 export async function extractChannelId(url: string): Promise<string | null> {
+  const r = await resolveChannelId(url);
+  return 'id' in r ? r.id : null;
+}
+
+async function extractChannelIdViaApi(url: string): Promise<string | null> {
   const normalized = url.trim().replace(/\/$/, '');
 
   // UC... channel ID em qualquer lugar da string (ex: https://UCVIjtLxXgL6uSXRU84pTdBQ)
@@ -81,7 +183,8 @@ export async function extractChannelId(url: string): Promise<string | null> {
 async function resolveChannelByHandle(handle: string, apiKey: string): Promise<string | null> {
   try {
     const url = `${YT_API_BASE}/channels?part=id&forHandle=${encodeURIComponent(handle)}&key=${apiKey}`;
-    const res  = await fetch(url, { signal: AbortSignal.timeout(8_000) });
+    const res  = await ytApiFetch(url);
+    if (!res) return null;
     if (!res.ok) { console.warn('[resolveChannelByHandle] API erro:', res.status, handle); return null; }
     const json = await res.json() as { items?: Array<{ id: string }> };
     return json.items?.[0]?.id ?? null;
@@ -91,7 +194,8 @@ async function resolveChannelByHandle(handle: string, apiKey: string): Promise<s
 async function resolveChannelByUsername(username: string, apiKey: string): Promise<string | null> {
   try {
     const url = `${YT_API_BASE}/channels?part=id&forUsername=${encodeURIComponent(username)}&key=${apiKey}`;
-    const res  = await fetch(url, { signal: AbortSignal.timeout(8_000) });
+    const res  = await ytApiFetch(url);
+    if (!res) return null;
     if (!res.ok) { console.warn('[resolveChannelByUsername] API erro:', res.status, username); return null; }
     const json = await res.json() as { items?: Array<{ id: string }> };
     return json.items?.[0]?.id ?? null;
@@ -101,7 +205,8 @@ async function resolveChannelByUsername(username: string, apiKey: string): Promi
 async function resolveChannelBySearch(name: string, apiKey: string): Promise<string | null> {
   try {
     const url = `${YT_API_BASE}/search?part=snippet&type=channel&q=${encodeURIComponent(name)}&maxResults=1&key=${apiKey}`;
-    const res  = await fetch(url, { signal: AbortSignal.timeout(8_000) });
+    const res  = await ytApiFetch(url);
+    if (!res) return null;
     if (!res.ok) { console.warn('[resolveChannelBySearch] API erro:', res.status, name); return null; }
     const json = await res.json() as { items?: Array<{ snippet: { channelId: string } }> };
     return json.items?.[0]?.snippet?.channelId ?? null;
@@ -273,7 +378,8 @@ export async function checkIsLive(videoId: string): Promise<LiveInfo | null> {
 
   try {
     const url = `${YT_API_BASE}/videos?part=snippet,liveStreamingDetails&id=${videoId}&key=${apiKey}`;
-    const res  = await fetch(url, { signal: AbortSignal.timeout(8_000) });
+    const res  = await ytApiFetch(url);
+    if (!res) return null;   // cota esgotada: incerteza, igual a falha de API
     if (!res.ok) {
       console.warn('[checkIsLive] YouTube API erro:', res.status);
       return null;

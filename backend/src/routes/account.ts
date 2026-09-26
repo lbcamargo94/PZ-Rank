@@ -187,21 +187,30 @@ router.patch('/me/links', requirePlayer, async (req: PlayerRequest, res: Respons
 
   const normalizedYt = normalizeUrl(youtube_url);
 
-  // Extrai channel_id e inscreve no Pub/Sub quando youtube_url muda
-  let ytFields: Record<string, string | null> = {};
-  if (normalizedYt) {
+  // Extrai channel_id e inscreve no Pub/Sub quando youtube_url MUDA. Link novo que
+  // não resolve agora: limpa o canal antigo (senão a live do canal anterior seguiria
+  // valendo) e zera as tentativas — o cron /cron/backfill-yt-subs tenta de novo.
+  const { data: current } = await supabase
+    .from('players').select('youtube_url, yt_channel_id').eq('id', req.playerId!).maybeSingle();
+  const cur = current as { youtube_url: string | null; yt_channel_id: string | null } | null;
+  let ytFields: Record<string, string | number | null> = {};
+  if (normalizedYt && (normalizedYt !== cur?.youtube_url || !cur?.yt_channel_id)) {
     const { extractChannelId, subscribePubSub } = await import('../lib/youtube');
     const channelId = await extractChannelId(normalizedYt);
     if (channelId) {
       const sub = await subscribePubSub(channelId);
       ytFields = {
-        yt_channel_id:     channelId,
-        yt_sub_expires_at: sub.ok ? sub.expiresAt : null,
+        yt_channel_id:        channelId,
+        yt_sub_expires_at:    sub.ok ? sub.expiresAt : null,
+        yt_resolve_attempts:  0,
+        yt_resolve_failed_at: null,
       };
       if (!sub.ok) console.warn(`[account/links] Falha ao inscrever ${channelId}: ${sub.error}`);
+    } else {
+      ytFields = { yt_channel_id: null, yt_sub_expires_at: null, yt_resolve_attempts: 0, yt_resolve_failed_at: null };
     }
   } else if (youtube_url === null || youtube_url === '') {
-    ytFields = { yt_channel_id: null, yt_sub_expires_at: null };
+    ytFields = { yt_channel_id: null, yt_sub_expires_at: null, yt_resolve_attempts: 0, yt_resolve_failed_at: null };
   }
 
   const { data, error } = await supabase

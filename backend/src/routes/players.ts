@@ -6,6 +6,7 @@ import jwt from 'jsonwebtoken';
 import { supabase } from '../supabase';
 import { dbError } from '../lib/errors';
 import { requireModerator, requireMaster } from '../middleware/moderator';
+import { YT_RESOLVE_MAX_ATTEMPTS } from '../lib/youtube';
 import type { ModRequest } from '../middleware/moderator';
 import { requirePlayer } from '../middleware/player';
 import type { PlayerRequest } from '../middleware/player';
@@ -169,6 +170,33 @@ async function buildPlayerProfilePayload(id: number) {
 
   return { player: playerRes.data as { id: number; is_featured_streamer?: boolean; is_moderator?: boolean }, entries: entriesWithRank };
 }
+
+// GET /players/yt-unresolved — moderação: links do YouTube que o cron desistiu de
+// resolver (canal não existe). Sem canal, a live desse jogador nunca é detectada.
+// Precisa vir antes de GET /:id.
+router.get('/yt-unresolved', requireModerator, async (_req: ModRequest, res: Response): Promise<void> => {
+  const { data, error } = await supabase
+    .from('players')
+    .select('id, nick, youtube_url, yt_resolve_attempts, yt_resolve_failed_at')
+    .eq('status', 'approved')
+    .is('deleted_at', null)
+    .is('yt_channel_id', null)
+    .not('youtube_url', 'is', null)
+    .gte('yt_resolve_attempts', YT_RESOLVE_MAX_ATTEMPTS)
+    .order('nick', { ascending: true });
+  if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
+  res.json({ players: data ?? [] });
+});
+
+// PATCH /players/:id/yt-retry — moderação: devolve o link à fila do cron
+router.patch('/:id/yt-retry', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
+  const id = parseInt(String(req.params.id), 10);
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
+  const { error } = await supabase.from('players')
+    .update({ yt_resolve_attempts: 0, yt_resolve_failed_at: null }).eq('id', id);
+  if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
+  res.json({ ok: true });
+});
 
 // GET /players/:id — público: retorna dados do jogador + todas as entradas dele no rank
 router.get('/:id', async (req: Request, res: Response): Promise<void> => {
