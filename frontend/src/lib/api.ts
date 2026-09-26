@@ -217,6 +217,21 @@ export function apiUpdatePlayerStatus(
   });
 }
 
+// ── Lista de banidos (nick/canais de quem ainda não tem cadastro) ──
+export type BanKind = 'nick' | 'twitch' | 'youtube' | 'kick' | 'tiktok';
+export interface BannedIdentity { id: number; kind: BanKind; value: string; reason: string; created_by: string | null; created_at: string }
+
+export function apiGetBannedIdentities(token: string): Promise<BannedIdentity[]> {
+  return request('/banned-identities', auth(token));
+}
+export function apiAddBannedIdentity(token: string, kind: BanKind, value: string, reason: string):
+  Promise<{ entry: BannedIdentity; existing_matches: Array<{ id: number; nick: string; status: string; blocked: boolean }> }> {
+  return request('/banned-identities', { method: 'POST', ...json(token, { kind, value, reason }) });
+}
+export function apiDeleteBannedIdentity(token: string, id: number): Promise<{ ok: true }> {
+  return request(`/banned-identities/${id}`, { method: 'DELETE', ...auth(token) });
+}
+
 export function apiBlockPlayer(token: string, id: number, reason: string, note?: string): Promise<Player> {
   return request(`/players/${id}/block`, { method: 'PATCH', ...json(token, { reason, note }) });
 }

@@ -14,6 +14,7 @@ import { sendApprovalEmail, sendActivationEmail, sendOtpEmail } from '../lib/ema
 import { validatePassword } from '../lib/password';
 import { config } from '../config';
 import { YT_LIVE_MAX_AGE_MS } from '../lib/youtube';
+import { describeBan, findBanMatch } from '../lib/bannedIdentities';
 
 const router = Router();
 
@@ -389,6 +390,10 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
+  // Lista de banidos (nick/canais): não recusa — marca pra revisão da moderação
+  const banHit = await findBanMatch({ nick, twitch_url, youtube_url, kick_url, tiktok_url });
+  if (banHit) console.warn(`[banned-identities] cadastro marcado pra revisão | nick=${nick.trim()} | ${describeBan(banHit)}`);
+
   try {
     const password_hash = await bcrypt.hash(password!, 10);
 
@@ -405,6 +410,7 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
         status:             'pending',
         blocked:            false,
         terms_accepted_at:  new Date().toISOString(),
+        ban_match:          banHit ? describeBan(banHit) : null,
       }])
       .select('id')
       .single();
@@ -457,7 +463,7 @@ router.get('/', requireModerator, async (req: ModRequest, res: Response): Promis
   try {
     let query = supabase
       .from('players')
-      .select('id, nick, email, email_verified_at, twitch_url, youtube_url, kick_url, tiktok_url, status, blocked, blocked_reason, blocked_at, blocked_by, blocked_note, is_supporter, supporter_until, is_featured_streamer, is_moderator, deleted_at, created_at')
+      .select('id, nick, email, email_verified_at, twitch_url, youtube_url, kick_url, tiktok_url, status, blocked, blocked_reason, blocked_at, blocked_by, blocked_note, is_supporter, supporter_until, is_featured_streamer, is_moderator, deleted_at, created_at, ban_match')
       .order('created_at', { ascending: false });
 
     if (statusParam === 'deleted') {

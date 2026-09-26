@@ -8,6 +8,7 @@ import { Toast } from '../components/Toast';
 import { Pagination } from '../components/Pagination';
 import { PainelLogin }           from '../components/painel/PainelLogin';
 import { PendingPlayers }        from '../components/painel/PendingPlayers';
+import { BannedIdentitiesManager } from '../components/painel/BannedIdentitiesManager';
 import { UpdateRankModal }       from '../components/painel/UpdateRankModal';
 import { EditObjectivesModal }   from '../components/painel/EditObjectivesModal';
 import { ModeratorsList }        from '../components/painel/ModeratorsList';
@@ -43,7 +44,7 @@ function fmtEntryDate(iso: string | null | undefined): string {
   );
 }
 
-type Tab         = 'players' | 'entries' | 'moderators' | 'mods' | 'decoder' | 'seasons' | 'jornal' | 'financas';
+type Tab         = 'players' | 'entries' | 'moderators' | 'mods' | 'decoder' | 'seasons' | 'jornal' | 'financas' | 'banidos';
 type EntryFilter = 'all' | 'alive' | 'dead' | 'disqualified' | 'anomalies' | 'conflicts' | 'no_live';
 
 const ENTRY_FILTER_CONFIG: { key: EntryFilter; label: string; icon: string }[] = [
@@ -645,6 +646,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
       items: [
         { key: 'players'    as Tab, icon: 'ti-users',        label: 'Jogadores' },
         { key: 'entries'    as Tab, icon: 'ti-list-numbers', label: 'Entradas',  badge: entries.length || null, action: fetchEntries },
+        { key: 'banidos'    as Tab, icon: 'ti-ban',          label: 'Lista de banidos' },
       ],
     },
     {
@@ -758,6 +760,10 @@ export function PainelPage({ session, onSession, onBack }: Props) {
         <main className="painel-content">
         {tab === 'players' && (
           <PendingPlayers token={session.token} showToast={showToast} />
+        )}
+
+        {tab === 'banidos' && (
+          <BannedIdentitiesManager token={session.token} isMaster={session.role === 'master'} showToast={showToast} />
         )}
 
         {tab === 'mods' && (

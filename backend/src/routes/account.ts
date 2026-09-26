@@ -8,6 +8,7 @@ import { requirePlayer } from '../middleware/player';
 import type { PlayerRequest } from '../middleware/player';
 import { sendVerificationEmail, sendOtpEmail } from '../lib/email';
 import { validatePassword } from '../lib/password';
+import { describeBan, findBanMatch, type PlayerIdentity } from '../lib/bannedIdentities';
 
 const router = Router();
 
@@ -213,11 +214,20 @@ router.patch('/me/links', requirePlayer, async (req: PlayerRequest, res: Respons
       ...ytFields,
     })
     .eq('id', req.playerId!)
-    .select('id, twitch_url, youtube_url, kick_url, tiktok_url, yt_channel_id')
+    .select('id, nick, twitch_url, youtube_url, kick_url, tiktok_url, yt_channel_id')
     .single();
 
   if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
-  res.json(data);
+
+  // Vinculou um canal da lista de banidos → volta a pendente pra revisão da
+  // moderação (sem isso, bastava cadastrar limpo e colocar o canal depois).
+  const banHit = await findBanMatch(data as PlayerIdentity);
+  if (banHit) {
+    await supabase.from('players').update({ ban_match: describeBan(banHit), status: 'pending' }).eq('id', req.playerId!);
+    console.warn(`[banned-identities] links marcados pra revisão | player=${req.playerId} | ${describeBan(banHit)}`);
+  }
+  const { nick: _nick, ...pub } = data as Record<string, unknown>;
+  res.json(pub);
 });
 
 // POST /account/me/otp/send — envia OTP para confirmar troca de email ou senha

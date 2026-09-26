@@ -135,6 +135,7 @@ export interface Player {
   status:             PlayerStatus;
   blocked:            boolean;
   blocked_reason?:    string | null;
+  ban_match?:         string | null;   // bateu com a lista de banidos (nick/canal)
   blocked_at?:        string | null;
   blocked_by?:        string | null;
   blocked_note?:      string | null;

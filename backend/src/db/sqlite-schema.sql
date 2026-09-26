@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS players (
   yt_last_live_video_id   TEXT     DEFAULT NULL,
   yt_live_confirmed_at    TEXT     DEFAULT NULL,
   twitch_last_live_id     TEXT     DEFAULT NULL,
+  ban_match               TEXT     DEFAULT NULL,  -- migration_v40: bateu com banned_identities
   created_at         TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
 );
 
@@ -325,6 +326,17 @@ CREATE TABLE IF NOT EXISTS run_history (
   created_at           TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
 );
 CREATE INDEX IF NOT EXISTS idx_run_history_player ON run_history(player_id);
+
+-- Identidades banidas (nick/canais) de quem ainda não tem cadastro (migration_v40)
+CREATE TABLE IF NOT EXISTS banned_identities (
+  id          INTEGER  PRIMARY KEY AUTOINCREMENT,
+  kind        TEXT     NOT NULL CHECK (kind IN ('nick', 'twitch', 'youtube', 'kick', 'tiktok')),
+  value       TEXT     NOT NULL,
+  reason      TEXT     NOT NULL,
+  created_by  TEXT     DEFAULT NULL,
+  created_at  TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+  UNIQUE (kind, value)
+);
 
 -- Jornal do Apocalipse: eventos notáveis durante uma run (morte, milestones, skills)
 CREATE TABLE IF NOT EXISTS journal_events (

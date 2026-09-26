@@ -7,6 +7,7 @@ import { supabase } from '../supabase';
 import { sendPasswordResetEmail, sendVerificationEmail, sendOtpEmail } from '../lib/email';
 import { validatePassword } from '../lib/password';
 import { config } from '../config';
+import { statusAfterVerification } from '../lib/bannedIdentities';
 
 const router = Router();
 
@@ -43,13 +44,17 @@ router.get('/verify', async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  // Marca token como usado e verifica o email do jogador
+  // Marca token como usado e verifica o email do jogador. Marcado na lista de
+  // banidos (players.ban_match) → continua pendente pra revisão da moderação.
+  const nextStatus = await statusAfterVerification(row.player_id);
   await Promise.all([
     supabase.from('player_tokens').update({ used_at: now }).eq('id', row.id),
-    supabase.from('players').update({ email_verified_at: now, status: 'approved' }).eq('id', row.player_id),
+    supabase.from('players').update({ email_verified_at: now, status: nextStatus }).eq('id', row.player_id),
   ]);
 
-  res.json({ message: 'Email verificado com sucesso! Sua conta já está ativa.' });
+  res.json({ message: nextStatus === 'approved'
+    ? 'Email verificado com sucesso! Sua conta já está ativa.'
+    : 'Email verificado! Seu cadastro está em análise pela moderação.' });
 });
 
 // POST /auth/player/resend-verification — reenvia email de verificação
@@ -261,12 +266,15 @@ router.post('/activate', async (req: Request, res: Response): Promise<void> => {
 
   const password_hash = await bcrypt.hash(password!, 10);
 
+  const nextStatus = await statusAfterVerification(row.player_id);
   await Promise.all([
     supabase.from('player_tokens').update({ used_at: now }).eq('id', row.id),
-    supabase.from('players').update({ password_hash, email_verified_at: now, status: 'approved' }).eq('id', row.player_id),
+    supabase.from('players').update({ password_hash, email_verified_at: now, status: nextStatus }).eq('id', row.player_id),
   ]);
 
-  res.json({ message: 'Conta ativada com sucesso! Agora faça login no Companion com seu email e senha.' });
+  res.json({ message: nextStatus === 'approved'
+    ? 'Conta ativada com sucesso! Agora faça login no Companion com seu email e senha.'
+    : 'Conta ativada! Seu cadastro está em análise pela moderação.' });
 });
 
 // POST /auth/player/reset-password — redefine senha com token
@@ -356,12 +364,15 @@ router.post('/otp/confirm-registration', async (req: Request, res: Response): Pr
     return;
   }
 
+  const nextStatus = await statusAfterVerification(playerRow.id);
   await Promise.all([
     supabase.from('player_tokens').update({ used_at: now }).eq('id', otp.id),
-    supabase.from('players').update({ email_verified_at: now, status: 'approved' }).eq('id', playerRow.id),
+    supabase.from('players').update({ email_verified_at: now, status: nextStatus }).eq('id', playerRow.id),
   ]);
 
-  res.json({ message: 'Email verificado! Sua conta já está ativa.' });
+  res.json({ message: nextStatus === 'approved'
+    ? 'Email verificado! Sua conta já está ativa.'
+    : 'Email verificado! Seu cadastro está em análise pela moderação.' });
 });
 
 // POST /auth/player/otp/resend-registration — reenvia OTP de cadastro

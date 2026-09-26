@@ -438,6 +438,14 @@ export function PendingPlayers({ token, showToast }: Props) {
               </div>
             </div>
 
+            {/* Bateu com a lista de banidos (nick/canal) — revisar antes de aprovar */}
+            {p.ban_match && (
+              <div className="player-ban-info player-ban-match">
+                <i className="ti ti-alert-triangle" />
+                <span>Na lista de banidos: <strong>{p.ban_match}</strong>. Revise antes de aprovar.</span>
+              </div>
+            )}
+
             {/* Informações do banimento */}
             {p.blocked && p.blocked_reason && (
               <div className="player-ban-info">
