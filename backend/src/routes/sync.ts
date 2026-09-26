@@ -1118,7 +1118,8 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       } else {
         const live = await getChannelCurrentLive(p.yt_channel_id);
         if (!live) return;
-        await supabase.from('players').update({ yt_last_live_video_id: live.videoId, yt_live_confirmed_at: new Date().toISOString() }).eq('id', p.id);
+        const { claimYoutubeLive } = await import('../lib/liveScan');
+        if (!await claimYoutubeLive(p.id, null, live.videoId)) return;   // cron/webhook já registrou
         if (isChampionshipTitle(live.title, live.description)) {
           await sendLiveNotification({
             nick:      p.nick,
@@ -1177,7 +1178,8 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
         .gt('score', score);
       const rank = liveRankCount !== null ? liveRankCount + 1 : null;
 
-      await supabase.from('players').update({ twitch_last_live_id: live.id }).eq('id', p.id);
+      const { claimTwitchLive } = await import('../lib/liveScan');
+      if (!await claimTwitchLive(p.id, p.twitch_last_live_id, live.id)) return;   // cron já registrou
       if (isChampionshipTwitchGame(live.game)) {
         await sendLiveNotification({
           nick:      p.nick,

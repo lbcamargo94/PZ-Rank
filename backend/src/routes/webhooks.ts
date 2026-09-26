@@ -132,10 +132,12 @@ router.post('/youtube', async (req: Request, res: Response): Promise<void> => {
   // a deduplicação já está garantida no próximo ciclo. Sempre grava — o
   // badge "Ao Vivo" do site e o aviso de transmissão não dependem de o
   // conteúdo ser do campeonato, só a notificação do Discord depende.
-  await supabase
-    .from('players')
-    .update({ yt_last_live_video_id: entry.videoId, yt_live_confirmed_at: new Date().toISOString() })
-    .eq('id', player.id);
+  // Reserva atômica: sync/cron podem ter visto a mesma live ao mesmo tempo
+  const { claimYoutubeLive } = await import('../lib/liveScan');
+  if (!await claimYoutubeLive(player.id, player.yt_last_live_video_id ?? null, entry.videoId)) {
+    console.log('[webhook/youtube] live já registrada por outro caminho — sem nova notificação:', entry.videoId);
+    res.sendStatus(200); return;
+  }
 
   if (isChampionshipTitle(liveInfo.title, liveInfo.description)) {
     console.log('[webhook/youtube] enviando Discord:', { nick: player.nick });

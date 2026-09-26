@@ -9,12 +9,10 @@
 
 import { Router } from 'express';
 import type { Request, Response } from 'express';
-import { broadcast } from '../lib/sse';
 import { supabase } from '../supabase';
-import { subscribePubSub, getChannelCurrentLive, checkIsLive, YT_LIVE_MAX_AGE_MS, YT_RESOLVE_MAX_ATTEMPTS } from '../lib/youtube';
-import { extractTwitchLogin, getLiveStreams } from '../lib/twitch';
+import { subscribePubSub, YT_RESOLVE_MAX_ATTEMPTS } from '../lib/youtube';
+import { scanYoutubeLives, scanTwitchLives } from '../lib/liveScan';
 import { sendLiveNotification } from '../lib/discord';
-import { isChampionshipTitle, isChampionshipTwitchGame } from '../lib/championship';
 import { computeScore, sumSkillLevels, OFFICIAL_BASE_IDS } from '../lib/scoring';
 import type { Objectives, BaseObjectives } from '../types';
 
@@ -158,206 +156,23 @@ router.get('/renew-yt-subs', async (req: Request, res: Response): Promise<void> 
   res.json({ renewed: results.filter(r => r.ok).length, total: results.length, results });
 });
 
-// GET /cron/scan-lives — verifica quem está ao vivo agora e notifica o Discord
+// GET /cron/scan-lives-youtube — a cada 2h. GET /cron/scan-lives-twitch — a cada
+// 10 min (GraphQL sem cota). Independentes: um não espera nem derruba o outro
+// (lib/liveScan.ts). GET /cron/scan-lives roda os dois em paralelo (compat).
+router.get('/scan-lives-youtube', async (req: Request, res: Response): Promise<void> => {
+  if (!requireCronSecret(req, res)) return;
+  res.json({ youtube: await scanYoutubeLives() });
+});
+
+router.get('/scan-lives-twitch', async (req: Request, res: Response): Promise<void> => {
+  if (!requireCronSecret(req, res)) return;
+  res.json({ twitch: await scanTwitchLives() });
+});
+
 router.get('/scan-lives', async (req: Request, res: Response): Promise<void> => {
   if (!requireCronSecret(req, res)) return;
-
-  const { data: players, error } = await supabase
-    .from('players')
-    .select('id, nick, yt_channel_id, yt_last_live_video_id, yt_live_confirmed_at')
-    .eq('status', 'approved')
-    .not('yt_channel_id', 'is', null)
-    .is('deleted_at', null);
-
-  if (error) {
-    res.status(500).json({ error: 'Erro ao buscar jogadores.' });
-    return;
-  }
-
-  // Busca ranking global uma única vez
-  const { data: allAlive } = await supabase
-    .from('entries')
-    .select('player_id, score')
-    .eq('is_alive', true)
-    .eq('sandbox_ok', true)
-    .is('deleted_at', null)
-    .order('score', { ascending: false });
-
-  type PlayerRow = {
-    id: number; nick: string; yt_channel_id: string;
-    yt_last_live_video_id: string | null; yt_live_confirmed_at: string | null;
-  };
-  const playerList = (players ?? []) as PlayerRow[];
-
-  const liveStarted: string[] = [];
-  const liveEnded:   string[] = [];
-  const liveOngoing: string[] = [];
-  const BATCH = 10;
-
-  for (let i = 0; i < playerList.length; i += BATCH) {
-    const batch = playerList.slice(i, i + BATCH);
-
-    await Promise.allSettled(batch.map(async (player) => {
-      const pos   = (allAlive ?? []).findIndex((e: { player_id: number }) => e.player_id === player.id);
-      const rank  = pos >= 0 ? pos + 1 : null;
-      const score = (allAlive ?? []).find((e: { player_id: number; score: number }) => e.player_id === player.id)?.score ?? null;
-
-      if (player.yt_last_live_video_id) {
-        const confirmedAtMs = player.yt_live_confirmed_at ? new Date(player.yt_live_confirmed_at).getTime() : 0;
-        if (Date.now() - confirmedAtMs > YT_LIVE_MAX_AGE_MS) {
-          // Teto de segurança: nunca reconfirmada de forma confiável — limpa sem gastar
-          // chamada tentando confirmar de novo (ver YT_LIVE_MAX_AGE_MS em lib/youtube.ts).
-          await supabase
-            .from('players')
-            .update({ yt_last_live_video_id: null, yt_live_confirmed_at: null })
-            .eq('id', player.id);
-          liveEnded.push(player.nick);
-          return;
-        }
-
-        // Jogador estava ao vivo na última verificação — confirma se ainda está
-        const liveInfo = await checkIsLive(player.yt_last_live_video_id);
-
-        // null = API falhou — não tratar como live encerrada
-        if (liveInfo !== null && !liveInfo.isLive) {
-          // Live encerrou
-          await supabase
-            .from('players')
-            .update({ yt_last_live_video_id: null, yt_live_confirmed_at: null })
-            .eq('id', player.id);
-          liveEnded.push(player.nick);
-        } else {
-          // Ainda ao vivo — sem nova notificação. Só renova o timer de confiança em
-          // confirmação real (não "modo degradado" por falta de API key).
-          if (liveInfo?.isLive && !liveInfo.degraded) {
-            await supabase
-              .from('players')
-              .update({ yt_live_confirmed_at: new Date().toISOString() })
-              .eq('id', player.id);
-          }
-          liveOngoing.push(player.nick);
-        }
-      } else {
-        // Jogador não estava ao vivo — verifica se iniciou agora
-        const live = await getChannelCurrentLive(player.yt_channel_id);
-        if (!live) return;
-
-        await supabase
-          .from('players')
-          .update({ yt_last_live_video_id: live.videoId, yt_live_confirmed_at: new Date().toISOString() })
-          .eq('id', player.id);
-        if (isChampionshipTitle(live.title, live.description)) {
-          await sendLiveNotification({
-            nick:      player.nick,
-            title:     live.title,
-            videoUrl:  live.videoUrl,
-            thumbnail: live.thumbnail,
-            rank,
-            score,
-          });
-        }
-        liveStarted.push(player.nick);
-      }
-    }));
-  }
-
-  // ── Twitch: sem webhook próprio, então a checagem em lote via GraphQL (sem
-  // cota) é a única forma de detectar início/fim independente do Companion ──
-  const { data: twitchPlayers, error: twitchError } = await supabase
-    .from('players')
-    .select('id, nick, twitch_url, twitch_last_live_id')
-    .eq('status', 'approved')
-    .not('twitch_url', 'is', null)
-    .is('deleted_at', null);
-
-  type TwitchPlayerRow = { id: number; nick: string; twitch_url: string; twitch_last_live_id: string | null };
-  const twitchList = twitchError ? [] : (twitchPlayers ?? []) as TwitchPlayerRow[];
-
-  const twitchStarted: string[] = [];
-  const twitchEnded:   string[] = [];
-  const twitchOngoing: string[] = [];
-  const twitchFailedChecks: string[] = [];
-
-  const loginByPlayer = new Map<string, TwitchPlayerRow>();
-  for (const p of twitchList) {
-    const login = extractTwitchLogin(p.twitch_url);
-    if (login) loginByPlayer.set(login, p);
-  }
-
-  if (loginByPlayer.size > 0) {
-    const { live: liveNow, failed: twitchFailed } = await getLiveStreams([...loginByPlayer.keys()]);
-
-    await Promise.allSettled([...loginByPlayer.entries()].map(async ([login, p]) => {
-      // Checagem falhou (API instável) — inconclusivo, não mexe no estado
-      // para não confundir "offline de verdade" com "não deu pra checar"
-      // (isso causava notificação duplicada quando a checagem seguinte funcionava).
-      if (twitchFailed.has(login)) { twitchFailedChecks.push(p.nick); return; }
-
-      const live = liveNow.get(login);
-
-      if (!live) {
-        if (p.twitch_last_live_id) {
-          await supabase.from('players').update({ twitch_last_live_id: null }).eq('id', p.id);
-          twitchEnded.push(p.nick);
-        }
-        return;
-      }
-
-      if (p.twitch_last_live_id === live.id) {
-        twitchOngoing.push(p.nick);
-        return;
-      }
-
-      const pos   = (allAlive ?? []).findIndex((e: { player_id: number }) => e.player_id === p.id);
-      const rank  = pos >= 0 ? pos + 1 : null;
-      const score = (allAlive ?? []).find((e: { player_id: number; score: number }) => e.player_id === p.id)?.score ?? null;
-
-      await supabase.from('players').update({ twitch_last_live_id: live.id }).eq('id', p.id);
-      if (isChampionshipTwitchGame(live.game)) {
-        await sendLiveNotification({
-          nick:      p.nick,
-          title:     live.title,
-          videoUrl:  `https://twitch.tv/${live.login}`,
-          thumbnail: live.thumbnail,
-          rank,
-          score,
-          platform:  'twitch',
-        });
-      }
-      twitchStarted.push(p.nick);
-    }));
-  }
-
-  // SSE: notifica clientes se houve qualquer mudança de status de live.
-  if (liveStarted.length > 0 || liveEnded.length > 0 || twitchStarted.length > 0 || twitchEnded.length > 0) {
-    broadcast('live-status', {
-      started: [...liveStarted, ...twitchStarted],
-      ended:   [...liveEnded,   ...twitchEnded],
-    });
-  }
-
-  res.json({
-    youtube: {
-      checked:     playerList.length,
-      liveStarted: liveStarted.length,
-      liveEnded:   liveEnded.length,
-      liveOngoing: liveOngoing.length,
-      started:     liveStarted,
-      ended:       liveEnded,
-      ongoing:     liveOngoing,
-    },
-    twitch: {
-      checked:      loginByPlayer.size,
-      liveStarted:  twitchStarted.length,
-      liveEnded:    twitchEnded.length,
-      liveOngoing:  twitchOngoing.length,
-      checkFailed:  twitchFailedChecks.length,
-      started:      twitchStarted,
-      ended:        twitchEnded,
-      ongoing:      twitchOngoing,
-      failedChecks: twitchFailedChecks,
-    },
-  });
+  const [youtube, twitch] = await Promise.all([scanYoutubeLives(), scanTwitchLives()]);
+  res.json({ youtube, twitch });
 });
 
 // GET /cron/test-discord — envia uma notificação de teste ao Discord (verifica se o webhook está funcional)
