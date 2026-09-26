@@ -49,3 +49,18 @@ describe('computeWeapons', () => {
     expect(readWeaponKills({ cats: { axe: 'x', spear: 2 }, top: [['bad id', 1]] })).toEqual({ cats: { spear: 2 }, top: [] });
   });
 });
+
+describe('computeStartPlaces', () => {
+  it('agrupa por região de nascimento; média de dias só das mortas separada', async () => {
+    const { computeStartPlaces } = await import('../lib/statistics');
+    const r = (days: number, alive: boolean, start: string | null) => ({
+      id: Math.random(), player_id: 1, name: 'x', character_name: 'c', profession: null, days, kills: 10,
+      score: 0, skills: null, traits: null, objectives: null, is_alive: alive, sandbox_ok: true,
+      created_at: '2026-09-26', start_region: start,
+    } as unknown as StatsRow);
+    const out = computeStartPlaces([r(10, false, 'Muldraugh'), r(30, true, 'Muldraugh'), r(5, false, 'Rosewood'), r(99, true, null)]);
+    expect(out.tracked).toBe(3);
+    expect(out.regions[0]).toMatchObject({ id: 'Muldraugh', runs: 2, dead: 1, avg_days: 20, avg_days_dead: 10 });
+    expect(out.regions[1]).toMatchObject({ id: 'Rosewood', runs: 1, avg_days_dead: 5 });
+  });
+});

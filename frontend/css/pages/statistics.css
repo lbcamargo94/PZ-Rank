@@ -294,19 +294,10 @@
 .stats-holder .ti { color: var(--gold); }
 .stats-holder a { color: var(--green-light); text-decoration: none; }
 
-/* ── Curiosidades e "em breve" ───────────────────────────── */
+/* ── Curiosidades ─────────────────────────────────────────── */
 .stats-curiosities { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; font-size: 16px; color: var(--text-2); line-height: 1.5; }
 .stats-curiosities strong { color: var(--green-light); }
 
-.stats-pending { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.stats-pending li {
-  display: flex; gap: 12px;
-  background: var(--bg-3); border: 1px dashed var(--border-mid); border-radius: var(--radius);
-  padding: 12px; font-size: 16px; color: var(--text-3);
-}
-.stats-pending li > span { font-size: 22px; }
-.stats-pending strong { color: var(--text-1); }
-.stats-pending p { margin: 4px 0 0; }
 
 /* ── Estados ─────────────────────────────────────────────── */
 .stats-loading, .stats-empty, .stats-error { font-size: 16px; color: var(--text-3); margin: 8px 0; }
@@ -329,7 +320,6 @@
   .stats-records { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .stats-action-grid,
   .stats-action-detail .stats-cards--compact { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .stats-pending { grid-template-columns: 1fr; }
   .stats-bar-row { grid-template-columns: minmax(0, 1fr) 64px; gap: 4px 10px; }
   .stats-bar-label { grid-column: 1 / -1; }
   .stats-section { padding: 16px; }

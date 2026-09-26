@@ -221,6 +221,16 @@ coordenadas.
 - O ponto de morte só entra no heatmap no sync da morte (antes era somado a cada sync).
 - Não foi e **não deve ser** adicionado rastreamento contínuo de posição.
 
+## 🟢 Onde os jogadores começam (v4.27.0 + mod 2.30.0)
+
+O mod grava a célula de nascimento uma vez por personagem (`recordStartCell`, no
+`OnGameStart` e `OnCreatePlayer`), só se o personagem tem < 2h de jogo — quem atualiza
+no meio da run fica -1 (sem dado). Vai no arquivo de stats (`start_gx`/`start_gy`,
+assinado); o servidor guarda só o nome da região (`startRegionFromStats` →
+`entries/run_history.start_region`, migration_v45). /estatisticas: runs por cidade
+inicial, média de dias e kills, e duração média de quem já morreu.
+Com isso a seção "Em breve" saiu da página (não sobrou item).
+
 ## 🟢 Armas que mais matam zumbis (v4.26.0 + mod 2.29.0)
 
 O mod guarda a arma do **último golpe** do jogador em cada zumbi (`OnHitZombie`) e credita o

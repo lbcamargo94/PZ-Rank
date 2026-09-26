@@ -521,6 +521,12 @@ export interface ChampionshipStats {
       regions: Array<{ id: string; name: string; deaths: number; pct: number; avg_days: number; avg_kills: number; top_cause: string | null }>;
     };
   };
+  starts: {
+    tracked:         number;
+    runs_total:      number;
+    min_mod_version: string;
+    regions: Array<{ id: string; name: string; runs: number; pct: number; dead: number; avg_days: number; avg_kills: number; avg_days_dead: number | null }>;
+  };
   weapons: {
     runs_with_data:  number;
     runs_total:      number;

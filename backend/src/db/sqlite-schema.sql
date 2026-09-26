@@ -154,6 +154,7 @@ CREATE TABLE IF NOT EXISTS entries (
   death_region                 TEXT     DEFAULT NULL,  -- migration_v41
   heatmap_batch                TEXT     DEFAULT NULL,  -- migration_v42 (id do último lote do mapa de calor)
   weapon_kills                 TEXT     DEFAULT NULL,  -- migration_v43 (JSON, lib/weapons.ts)
+  start_region                 TEXT     DEFAULT NULL,  -- migration_v45 (região onde nasceu)
   UNIQUE (player_id, character_name)
 );
 
@@ -291,6 +292,7 @@ CREATE TABLE IF NOT EXISTS run_history (
   death_cause          TEXT,
   death_region         TEXT,
   weapon_kills         TEXT,
+  start_region         TEXT,
   animals_killed INTEGER,
   fish_caught INTEGER,
   crops_harvested INTEGER,

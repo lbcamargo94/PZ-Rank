@@ -698,6 +698,35 @@ export function computeWeapons(rows: StatsRow[]) {
   };
 }
 
+/** Onde os jogadores começam (mod 2.30.0+): região de nascimento de cada run e como
+ *  as runs de cada cidade se saem. Só runs com start_region entram. */
+export const START_PLACES_MIN_MOD_VERSION = '2.30.0';
+
+export function computeStartPlaces(rows: StatsRow[]) {
+  const withPlace = rows.filter(r => typeof r['start_region'] === 'string' && r['start_region']);
+  const groups = new Map<string, StatsRow[]>();
+  for (const r of withPlace) {
+    const k = r['start_region'] as string;
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k)!.push(r);
+  }
+  const regions = [...groups.entries()].map(([id, g]) => {
+    const dead = g.filter(r => !isTrue(r.is_alive));
+    return {
+      id,
+      name:      REGION_NAMES[id] ?? id,
+      runs:      g.length,
+      pct:       pct(g.length, withPlace.length),
+      dead:      dead.length,
+      avg_days:  avg(g.map(r => r.days || 0)),
+      avg_kills: avg(g.map(r => r.kills || 0)),
+      // Duração média só de quem já morreu (run encerrada) — a das vivas ainda cresce
+      avg_days_dead: dead.length > 0 ? avg(dead.map(r => r.days || 0)) : null,
+    };
+  }).sort((a, b) => b.runs - a.runs || a.name.localeCompare(b.name));
+  return { tracked: withPlace.length, runs_total: rows.length, min_mod_version: START_PLACES_MIN_MOD_VERSION, regions };
+}
+
 // ── Rankings e recordes ────────────────────────────────────────────────────
 
 export const RANKING_METRICS = ['kills', 'days', 'score', 'skills10', 'skill_levels', 'bases'] as const;
@@ -843,6 +872,7 @@ export function computeChampionshipStats(allRows: StatsRow[], filters: StatsFilt
     actions:      computeActions(rows),
     deaths:       computeDeaths(rows),
     weapons:      computeWeapons(rows),
+    starts:       computeStartPlaces(rows),
     timeline:     timeline
       ? computeTimeline(rows, timeline.signups, timeline.from, timeline.to ? new Date(timeline.to) : new Date())
       : { weeks: [], deaths_tracked_since: DEATHS_TRACKED_SINCE_WEEK, restarts_tracked_since: RESTARTS_TRACKED_SINCE_WEEK },

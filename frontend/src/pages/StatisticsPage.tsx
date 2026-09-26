@@ -11,10 +11,10 @@ import { SkillSection }       from '../components/statistics/SkillSection';
 import { ActionSection }      from '../components/statistics/ActionSection';
 import { DeathSection }       from '../components/statistics/DeathSection';
 import { WeaponSection }      from '../components/statistics/WeaponSection';
+import { StartSection }       from '../components/statistics/StartSection';
 import { TimelineSection }    from '../components/statistics/TimelineSection';
 import { RecordsSection, recordTarget } from '../components/statistics/RecordsSection';
 import { CuriositiesSection } from '../components/statistics/CuriositiesSection';
-import { ComingSoonSection }  from '../components/statistics/ComingSoonSection';
 import { RankingModal, type RankingTarget } from '../components/statistics/StatsUi';
 
 const SECTIONS = [
@@ -26,11 +26,11 @@ const SECTIONS = [
   { id: 'zumbis',        label: 'Zumbis' },
   { id: 'mortes',        label: 'Mortes' },
   { id: 'armas',         label: 'Armas' },
+  { id: 'cidade-inicial', label: 'Cidade inicial' },
   { id: 'skills',        label: 'Skills' },
   { id: 'acoes',         label: 'Ações' },
   { id: 'recordes',      label: 'Recordes' },
   { id: 'curiosidades',  label: 'Curiosidades' },
-  { id: 'em-breve',      label: 'Em breve' },
 ];
 
 const STATUSES: StatsStatus[] = ['all', 'alive', 'inactive', 'dead'];
@@ -136,6 +136,7 @@ export function StatisticsPage() {
                 <ZombieSection data={data.zombies} onRanking={() => setRanking(recordTarget('kills'))} />
                 <DeathSection data={data.deaths} />
                 <WeaponSection data={data.weapons} />
+                <StartSection data={data.starts} />
                 <SkillSection
                   data={data.skills}
                   runs={data.overview.runs}
@@ -146,7 +147,6 @@ export function StatisticsPage() {
                 <CuriositiesSection data={data.curiosities} />
               </>
             )}
-            <ComingSoonSection />
             <p className="stats-updated">
               Atualizado em {new Date(data.generated_at).toLocaleString('pt-BR')} · os números são recalculados a cada poucos minutos.
             </p>

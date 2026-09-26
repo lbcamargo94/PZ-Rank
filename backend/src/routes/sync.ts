@@ -11,6 +11,7 @@ import { dbError } from '../lib/errors';
 import { computeScore } from '../lib/scoring';
 import { processHeatmapDelta, selectHeatPoints } from '../lib/heatmap';
 import { parseWeaponStats } from '../lib/weapons';
+import { startRegionFromStats } from '../lib/mapRegions';
 import { COMPANION_STAT_KEYS, validateCompanionStats, type CompanionStatKey } from '../lib/companionStats';
 import { archiveRun, getActiveSeasonId, isNewRunOf } from '../lib/runHistory';
 import { normalizeDeathCause } from '../lib/statistics';
@@ -206,6 +207,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // o sync do rank segue normal.
   let companionStatsOk = false;
   let weaponKills: string | null = null;   // mod 2.29.0+: abates por arma (lib/weapons.ts)
+  let startRegion: string | null = null;   // mod 2.30.0+: região onde o personagem nasceu
   if (stats != null) {
     const v = validateCompanionStats({
       stats,
@@ -223,6 +225,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       companionStatsOk = true;
       const w = parseWeaponStats(stats as Record<string, unknown>);
       if (w) weaponKills = JSON.stringify(w);
+      startRegion = startRegionFromStats(stats as Record<string, unknown>);
     } else {
       console.warn(`[sync] stats do Companion ignoradas | player=${player.nick} | motivo=${v.reason}`);
     }
@@ -761,6 +764,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     // anteriores (PZRX≤8, congelados desde o mod v2.16) ficam de fora.
     // Em nova run sem stats, zera a marca pra não herdar a confiabilidade da anterior.
     ...(weaponKills ? { weapon_kills: weaponKills } : isNewCharRun ? { weapon_kills: null } : {}),
+    ...(startRegion ? { start_region: startRegion } : isNewCharRun ? { start_region: null } : {}),
     ...(companionStatsOk ? { stats_synced_at: new Date().toISOString() } : isNewCharRun ? { stats_synced_at: null } : {}),
     // Histórico de runs (migration_v38): temporada da run, início e causa da morte.
     // Temporada só no INÍCIO da run (ou se ainda não tiver): uma run que atravessa a

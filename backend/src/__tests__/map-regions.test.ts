@@ -48,3 +48,13 @@ describe('deathCellFromDelta', () => {
     expect(deathCellFromDelta([{ type: 'death', gx: -1, gy: 5 }])).toBeNull();
   });
 });
+
+describe('startRegionFromStats', () => {
+  it('converte a célula de nascimento em região; sem dado = null', async () => {
+    const { startRegionFromStats, regionOfCell } = await import('../lib/mapRegions');
+    expect(startRegionFromStats({ start_gx: 108, start_gy: 97 })).toBe(regionOfCell(108, 97));
+    expect(startRegionFromStats({ start_gx: -1, start_gy: -1 })).toBeNull();
+    expect(startRegionFromStats({ trees_cut: 3 })).toBeNull();
+    expect(startRegionFromStats({ start_gx: '108', start_gy: 97 })).toBeNull();
+  });
+});

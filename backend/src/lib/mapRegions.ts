@@ -85,3 +85,13 @@ export function deathCellFromDelta(delta: unknown): { gx: number; gy: number } |
   }
   return null;
 }
+
+/** Mod 2.30.0+: célula onde o personagem nasceu (start_gx/start_gy no arquivo de
+ *  stats, assinado pelo Companion) → região. null = sem dado (mod antigo ou quem
+ *  atualizou no meio da run). Só o nome da região é guardado. */
+export function startRegionFromStats(raw: Record<string, unknown>): string | null {
+  const gx = raw['start_gx'];
+  const gy = raw['start_gy'];
+  const ok = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= 300;
+  return ok(gx) && ok(gy) ? regionOfCell(gx, gy) : null;
+}
