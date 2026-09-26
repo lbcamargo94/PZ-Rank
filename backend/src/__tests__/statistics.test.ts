@@ -333,6 +333,23 @@ describe('evolução semanal', () => {
   });
 });
 
+describe('onde morrem', () => {
+  it('agrupa mortes por região, % sobre as que têm região, causa mais comum; vivos fora', () => {
+    const rows = [
+      row({ is_alive: false, days: 10, kills: 5, death_region: 'Muldraugh', death_cause: 'zombie_horde' }),
+      row({ is_alive: false, days: 30, kills: 5, death_region: 'Muldraugh', death_cause: 'zombie_horde' }),
+      row({ is_alive: false, days: 5,  kills: 5, death_region: 'Muldraugh', death_cause: 'poison' }),
+      row({ is_alive: false, days: 50, kills: 5, death_region: 'Rural',     death_cause: null }),
+      row({ is_alive: false, days: 70, kills: 5 }),                                   // sem região (antigo)
+      row({ is_alive: true,  days: 90, kills: 5, death_region: 'Rosewood' }),         // vivo: fora
+    ];
+    const p = computeDeaths(rows).places;
+    expect(p.tracked).toBe(4);
+    expect(p.regions[0]).toMatchObject({ id: 'Muldraugh', name: 'Muldraugh', deaths: 3, pct: 75, avg_days: 15, top_cause: 'zombie_horde' });
+    expect(p.regions[1]).toMatchObject({ id: 'Rural', name: 'Zona rural', deaths: 1, top_cause: null });
+  });
+});
+
 describe('temporada', () => {
   it('filtra por season_id; null = todas; runs sem temporada só aparecem em "todas"', () => {
     const rows = [row({ season_id: 2 }), row({ season_id: 2 }), row({ season_id: 3 }), row({ season_id: null })];

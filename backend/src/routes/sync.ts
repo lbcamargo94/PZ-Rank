@@ -13,6 +13,7 @@ import { processHeatmapDelta } from '../lib/heatmap';
 import { COMPANION_STAT_KEYS, validateCompanionStats, type CompanionStatKey } from '../lib/companionStats';
 import { archiveRun, getActiveSeasonId, isNewRunOf } from '../lib/runHistory';
 import { normalizeDeathCause } from '../lib/statistics';
+import { deathCellFromDelta, regionOfCell } from '../lib/mapRegions';
 import { config } from '../config';
 import type { Objectives } from '../types';
 
@@ -705,6 +706,12 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
 
   const activeSeasonId = await getActiveSeasonId();
 
+  // Morreu NESTE sync (vivo → morto, ou run nova que já chega morta). Só aqui o
+  // ponto de morte do heatmap_delta vale: o mod reenvia o mesmo ponto em todo sync
+  // depois da morte (era isso que inflava o mapa de calor de mortes).
+  const diedNow = !decoded.isAlive && (!prev || prev.is_alive === true || isNewCharRun);
+  const deathCell = diedNow ? deathCellFromDelta(heatmap_delta) : null;
+
   // Partida nova com o mesmo nome de personagem: copia a run anterior para o
   // histórico ANTES de sobrescrever a linha (antes disso ela era apagada).
   if (prev && isNewCharRun) await archiveRun(prev.id, 'sync');
@@ -747,6 +754,8 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     ...(!decoded.isAlive && normalizeDeathCause(decoded.deathCause)
       ? { death_cause: normalizeDeathCause(decoded.deathCause) }
       : isNewCharRun ? { death_cause: null } : {}),
+    // Região da morte (só o NOME — cidade/arredores, lib/mapRegions.ts)
+    ...(deathCell ? { death_region: regionOfCell(deathCell.gx, deathCell.gy) } : isNewCharRun ? { death_region: null } : {}),
     // PZRX3: only write when present to avoid overwriting with zeros on PZRX2 syncs
     ...(hasExtended ? {
       animals_killed:      decoded.animalsKilled,
@@ -1027,12 +1036,16 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   }
 
   // Heatmap: aceita delta opcional do Companion; obtém season ativa para o UPSERT
-  if (heatmap_delta && Array.isArray(heatmap_delta) && heatmap_delta.length > 0) {
+  // Ponto de morte só no sync da morte (ver diedNow); abates/base seguem como antes
+  const heatPoints = Array.isArray(heatmap_delta)
+    ? heatmap_delta.filter(p => diedNow || !(p && typeof p === 'object' && (p as { type?: unknown }).type === 'death'))
+    : [];
+  if (heatPoints.length > 0) {
     void (async () => {
       const { data: season } = await supabase
         .from('seasons').select('id').eq('is_active', true).maybeSingle();
       if (season) {
-        void processHeatmapDelta((season as { id: number }).id, heatmap_delta)
+        void processHeatmapDelta((season as { id: number }).id, heatPoints)
           .catch(e => console.error('[heatmap]', e));
       }
     })();

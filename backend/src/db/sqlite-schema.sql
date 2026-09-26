@@ -149,6 +149,7 @@ CREATE TABLE IF NOT EXISTS entries (
   -- v4.23.0: histórico de runs (migration_v38)
   death_cause                  TEXT     DEFAULT NULL,
   run_started_at               TEXT     DEFAULT NULL,
+  death_region                 TEXT     DEFAULT NULL,  -- migration_v41
   UNIQUE (player_id, character_name)
 );
 
@@ -284,6 +285,7 @@ CREATE TABLE IF NOT EXISTS run_history (
   sandbox_ok           INTEGER  NOT NULL DEFAULT 1,
   disqualification_reason TEXT,
   death_cause          TEXT,
+  death_region         TEXT,
   animals_killed INTEGER,
   fish_caught INTEGER,
   crops_harvested INTEGER,

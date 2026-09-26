@@ -24,7 +24,7 @@ export { isEmptyRun };
 const COPY_COLS = [
   'id', 'player_id', 'season_id', 'name', 'character_name', 'profession',
   'days', 'time_raw', 'time_str', 'kills', 'score', 'skills', 'traits', 'objectives',
-  'is_alive', 'sandbox_ok', 'disqualification_reason', 'death_cause',
+  'is_alive', 'sandbox_ok', 'disqualification_reason', 'death_cause', 'death_region',
   'stats_synced_at', 'run_started_at', 'created_at', 'updated_at',
   ...ACTION_KEYS,
 ];

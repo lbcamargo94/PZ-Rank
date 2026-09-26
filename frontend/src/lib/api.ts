@@ -506,6 +506,12 @@ export interface ChampionshipStats {
     coverage:   number;   // % das mortes com causa conhecida
     zombie_pct: number;   // % das causas conhecidas que foram por zumbi
     causes: Array<{ cause: string; deaths: number; pct: number; avg_days: number; avg_kills: number }>;
+    // Região da morte (só nome, sem coordenadas) — registrada desde places.since
+    places: {
+      tracked: number;
+      since:   string;
+      regions: Array<{ id: string; name: string; deaths: number; pct: number; avg_days: number; avg_kills: number; top_cause: string | null }>;
+    };
   };
   actions: {
     runs_with_data: number;

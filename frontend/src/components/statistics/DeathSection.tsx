@@ -10,6 +10,35 @@ const CAUSE_ICON: Record<string, string> = {
   cold: '🥶', sick: '🤢', hunger: '🍽️', thirst: '💧',
 };
 
+function DeathPlaces({ data, label }: { data: ChampionshipStats['deaths']['places']; label: (c: string) => string }) {
+  const since = data.since.split('-').reverse().join('/');
+  return (
+    <>
+      <h3 className="stats-subtitle">📍 Onde os sobreviventes mais morrem</h3>
+      {data.tracked === 0 ? (
+        <EmptyState text={`O local das mortes é registrado desde ${since}. Assim que houver mortes com local registrado, elas aparecem aqui.`} />
+      ) : (
+        <BarList items={data.regions.map(r => ({
+          key:     r.id,
+          value:   r.deaths,
+          display: fmtPct(r.pct),
+          tip:     `${r.name} — ${fmtInt(r.deaths)} mortes (${fmtPct(r.pct)}) · sobreviveram em média ${fmtDays(r.avg_days)} · ${fmtInt(r.avg_kills)} kills em média${r.top_cause ? ` · causa mais comum: ${label(r.top_cause)}` : ''}`,
+          label: (
+            <>
+              <span>{r.name}</span>
+              <span className="stats-bar-meta">{fmtInt(r.deaths)} mortes · média {fmtDays(r.avg_days)}</span>
+            </>
+          ),
+        }))} />
+      )}
+      <p className="stats-section-sub stats-note">
+        Registrado desde {since}: {fmtInt(data.tracked)} mortes com local conhecido. Guardamos apenas
+        o nome da região onde o personagem morreu (cidade ou "Zona rural"), nunca a posição exata.
+      </p>
+    </>
+  );
+}
+
 export function DeathSection({ data }: { data: ChampionshipStats['deaths'] }) {
   const { t } = useTranslation();
   const label = (c: string) => t(`journal.cause.${c}`, { defaultValue: c });
@@ -56,6 +85,7 @@ export function DeathSection({ data }: { data: ChampionshipStats['deaths'] }) {
           </p>
         </>
       )}
+      <DeathPlaces data={data.places} label={label} />
     </section>
   );
 }

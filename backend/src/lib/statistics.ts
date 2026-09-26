@@ -16,6 +16,7 @@ import { normalizeProfession } from './professions';
 import { SKILL_NAMES } from './skills';
 import { OFFICIAL_BASE_IDS } from './scoring';
 import { isVersionAtLeast } from './version';
+import { REGION_NAMES } from './mapRegions';
 
 export interface StatsRow {
   id:             number | string;
@@ -521,6 +522,7 @@ export function computeDeaths(rows: StatsRow[]) {
     coverage:      pct(known.length, dead.length),
     zombie_pct:    pct(zombieDeaths, known.length),
     causes,
+    places:        computeDeathPlaces(dead),
   };
 }
 
@@ -613,6 +615,40 @@ export function computeTimeline(rows: StatsRow[], signups: SignupRow[], from: st
     deaths_tracked_since:   DEATHS_TRACKED_SINCE_WEEK,
     restarts_tracked_since: RESTARTS_TRACKED_SINCE_WEEK,
   };
+}
+
+/** Registro da região da morte começou na v4.25.4 (antes o mapa de calor somava
+ *  o mesmo ponto de morte a cada sync e não servia). */
+export const DEATH_PLACES_TRACKED_SINCE = '2026-09-26';
+
+/** Onde morreram: por região (entries/run_history.death_region). % sobre as mortes
+ *  com região registrada; "tracked" = quantas mortes têm região. */
+export function computeDeathPlaces(dead: StatsRow[]) {
+  const withPlace = dead.filter(r => typeof r['death_region'] === 'string' && r['death_region']);
+  const groups = new Map<string, StatsRow[]>();
+  for (const r of withPlace) {
+    const k = r['death_region'] as string;
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k)!.push(r);
+  }
+  const regions = [...groups.entries()].map(([id, g]) => {
+    const causes = new Map<string, number>();
+    for (const r of g) {
+      const c = normalizeDeathCause(r['death_cause']);
+      if (c) causes.set(c, (causes.get(c) ?? 0) + 1);
+    }
+    const top = [...causes.entries()].sort((a, b) => b[1] - a[1])[0];
+    return {
+      id,
+      name:      REGION_NAMES[id] ?? id,
+      deaths:    g.length,
+      pct:       pct(g.length, withPlace.length),
+      avg_days:  avg(g.map(r => r.days || 0)),
+      avg_kills: avg(g.map(r => r.kills || 0)),
+      top_cause: top ? top[0] : null,
+    };
+  }).sort((a, b) => b.deaths - a.deaths || a.name.localeCompare(b.name));
+  return { tracked: withPlace.length, since: DEATH_PLACES_TRACKED_SINCE, regions };
 }
 
 // ── Rankings e recordes ────────────────────────────────────────────────────

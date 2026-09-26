@@ -121,7 +121,7 @@ para o nome PTBR atual. Profissões desconhecidas (mods) passam inalteradas.
 | Filtros na URL | 🟢 | `?status=`, `?profissao=`, `?dq=1` |
 | Temporada | 🟢 | v4.23.3 — filtro real por `season_id` (atual, passadas, todas). Ver abaixo |
 | Causas de morte | 🟢 | v4.23.3 — seção própria, com cobertura exibida. Ver abaixo |
-| Onde os jogadores morrem | 🟡 | Ver abaixo |
+| Onde os jogadores morrem | 🟢 | Por região, desde 26/09 (v4.25.4) |
 | Evolução histórica | 🟡 | Ver abaixo |
 | Ações dos sobreviventes / ranking de ações | 🟢 | Desde v4.22.0 — cobertura cresce conforme o Companion v2.5.0 é adotado. Ver abaixo |
 | Locais de início | 🔴 | Ver abaixo |
@@ -204,19 +204,28 @@ Caminho barato: gravar `time_raw`/`days` no `data` do evento `skill_maxed` em
 - "Horda de zumbis" (`zombie_horde`) = morrer cercado por 2+ zumbis ou derrubado
   (`RankDeathCause.lua`). Domina os dados (~80% das causas conhecidas em 2026-09).
 
-## 🟡 Onde os jogadores morrem
+## 🟢 Onde os jogadores morrem (v4.25.4)
 
-`heatmap_events` já tem mortes agregadas por célula de 100×100 tiles, por temporada,
-**sem vínculo com jogador** (bom para privacidade). Limitações:
+Desde 2026-09-26 o servidor grava `death_region` (entries e run_history, migration_v41)
+**só no sync em que a run passa de viva para morta** — só o nome da região, nunca
+coordenadas.
 
-- não existe tabela de limites das cidades para transformar célula → nome de cidade
-  (criar a partir do mapa do B42; validar Louisville, que ocupa várias áreas);
+- A célula (100×100 tiles) vem do ponto `type:"death"` que o mod já manda no
+  `heatmap_delta`; `lib/mapRegions.ts` converte célula → região.
+- Limites: `lib/mapRegionsData.ts`, extraído do próprio jogo
+  (`media/maps/Muldraugh, KY/regions.lua` — áreas oficiais — e
+  `worldmap-annotations.lua` — rótulos das cidades do B42 sem área oficial, com raio
+  de 1000 tiles). Fora de tudo = "Zona rural". Louisville inclui o aeroporto (LAA).
+- Mortes anteriores a 26/09 não têm local e não são recuperáveis (o heatmap antigo
+  não liga ponto a run e estava inflado — ver abaixo).
+- O ponto de morte só entra no heatmap no sync da morte (antes era somado a cada sync).
+- Não foi e **não deve ser** adicionado rastreamento contínuo de posição.
 
-- como não liga com a run, não dá para filtrar por profissão/status nem calcular
-  "tempo médio até a morte" por local.
+## 🔴 Mapa de calor (/mapa) inflado
 
-A página `/mapa` já mostra esse heatmap. Não foi e **não deve ser** adicionado
-rastreamento contínuo de posição para melhorar isso.
+O mod grava contagens **acumuladas** de kills por célula e o servidor soma a cada
+sync (kills ~1,5 bi vs ~2,4 mi reais). Correção no mod: enviar só o delta desde o
+último envio; depois zerar `heatmap_events`.
 
 ## 🟡 Evolução histórica
 
