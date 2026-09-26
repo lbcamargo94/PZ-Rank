@@ -433,3 +433,16 @@
   .stats-hero { padding: 14px 14px; }
   .stats-hero .legends-title { font-size: 26px; }
 }
+
+/* ── Menu de seções: nada cortado ─────────────────────────────
+ * Desktop/tablet: quebra em mais de uma linha (todos os itens visíveis).
+ * Celular: também quebra em linhas, e o menu deixa de ser fixo. */
+.stats-nav { flex-wrap: wrap; overflow-x: visible; row-gap: 4px; }
+.stats-section-header { scroll-margin-top: 170px; }   /* menu fixo pode ter 2 linhas */
+@media (max-width: 460px) {
+  /* celular: todos os itens visíveis em linhas; menu deixa de ser fixo (fixo com 3
+     linhas tomaria boa parte da tela ao rolar) */
+  .stats-nav { position: static; gap: 4px 2px; }
+  .stats-nav a { padding: 6px 10px; }
+  .stats-section-header { scroll-margin-top: 76px; }
+}
