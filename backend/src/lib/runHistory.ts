@@ -17,6 +17,20 @@ export function isNewRunOf(prevTimeRaw: number, newTimeRaw: number): boolean {
   return newTimeRaw < prevTimeRaw * 0.5;
 }
 
+/** Dias máximos de uma "partida nova" que libera um personagem desclassificado. */
+export const DQ_NEW_RUN_MAX_DAYS = 1;
+
+/**
+ * Run desclassificada (sandbox/debug) + código de partida nova com o MESMO nome de
+ * personagem: libera só se for mesmo um personagem recém-criado. Sem o limite de
+ * dias, restaurar um backup do save de ANTES da violação (sem a marca no ModData,
+ * tempo de jogo menor que a metade) passaria por "partida nova" e burlaria a
+ * desclassificação.
+ */
+export function canRestartAfterDisqualification(prevTimeRaw: number, newTimeRaw: number, newDays: number): boolean {
+  return isNewRunOf(prevTimeRaw, newTimeRaw) && newDays <= DQ_NEW_RUN_MAX_DAYS;
+}
+
 // isEmptyRun mora em statistics.ts (regra oficial também das estatísticas);
 // reexportada aqui pra quem arquiva runs.
 export { isEmptyRun };

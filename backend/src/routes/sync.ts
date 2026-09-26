@@ -13,7 +13,7 @@ import { processHeatmapDelta, selectHeatPoints } from '../lib/heatmap';
 import { parseWeaponStats } from '../lib/weapons';
 import { startRegionFromStats } from '../lib/mapRegions';
 import { COMPANION_STAT_KEYS, validateCompanionStats, type CompanionStatKey } from '../lib/companionStats';
-import { archiveRun, getActiveSeasonId, isNewRunOf } from '../lib/runHistory';
+import { archiveRun, canRestartAfterDisqualification, getActiveSeasonId, isNewRunOf } from '../lib/runHistory';
 import { normalizeDeathCause } from '../lib/statistics';
 import { deathCellFromDelta, regionOfCell } from '../lib/mapRegions';
 import { config } from '../config';
@@ -362,6 +362,12 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
         .update({ sandbox_ok: true, disqualification_reason: null, disqualified_at: null })
         .eq('id', prev.id);
       justReactivated = true;
+    } else if (canRestartAfterDisqualification(prev.time_raw, decoded.timeRaw, decoded.days)) {
+      // Desclassificado por sandbox/debug e começou uma partida NOVA com o mesmo nome:
+      // a run desclassificada vai pro histórico (archiveRun mais abaixo, com o motivo)
+      // e a nova entra normalmente. Antes o personagem ficava preso para sempre.
+      console.log(`[sync] run desclassificada substituída por partida nova | player=${player.nick} | char=${decoded.characterName} | motivo=${prev.disqualification_reason}`);
+      justReactivated = true;
     } else {
       res.status(200).json({
         success:        true,
@@ -634,7 +640,11 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     const reasonToStore = existingRow.disqualification_reason ?? validatedReason;
     const { data, error } = await supabase
       .from(config.tableName)
-      .update({ sandbox_ok: false, is_alive: decoded.isAlive, score: 0, disqualification_reason: reasonToStore })
+      .update({
+        sandbox_ok: false, is_alive: decoded.isAlive, score: 0, disqualification_reason: reasonToStore,
+        // Data da desclassificação (antes ficava nula para sandbox/debug)
+        ...(prev.sandbox_ok !== false ? { disqualified_at: new Date().toISOString() } : {}),
+      })
       .eq('id', existingRow.id)
       .select('id, character_name, score, is_alive')
       .single();
@@ -765,6 +775,8 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     // Em nova run sem stats, zera a marca pra não herdar a confiabilidade da anterior.
     ...(weaponKills ? { weapon_kills: weaponKills } : isNewCharRun ? { weapon_kills: null } : {}),
     ...(startRegion ? { start_region: startRegion } : isNewCharRun ? { start_region: null } : {}),
+    // Partida nova depois de uma desclassificação: a run nova começa limpa
+    ...(isNewCharRun ? { disqualification_reason: null, disqualified_at: null, disqualification_note: null, disqualified_by: null } : {}),
     ...(companionStatsOk ? { stats_synced_at: new Date().toISOString() } : isNewCharRun ? { stats_synced_at: null } : {}),
     // Histórico de runs (migration_v38): temporada da run, início e causa da morte.
     // Temporada só no INÍCIO da run (ou se ainda não tiver): uma run que atravessa a
