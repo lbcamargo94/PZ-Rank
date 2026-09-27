@@ -18,6 +18,8 @@ const PUBLIC_ENTRY_COLUMNS = [
   'is_alive', 'sandbox_ok', 'traits', 'objectives', 'score', 'record_score',
   'disqualification_reason', 'disqualified_at', 'deleted_at', 'updated_at',
   'no_live_streak',
+  // Anistia de debug é pública (transparência): a comunidade vê por que a run voltou
+  'debug_amnesty_note', 'debug_amnesty_at',
 ].join(', ');
 
 function isModRequest(req: Request): boolean {
@@ -269,7 +271,7 @@ router.patch('/:id/status', requireModerator, async (req: ModRequest, res: Respo
 
   const { data: existing, error: fetchError } = await supabase
     .from(config.tableName)
-    .select('id, name, character_name, score, kills, skills, objectives, disqualified_at, sandbox_ok')
+    .select('id, name, character_name, score, kills, skills, objectives, disqualified_at, sandbox_ok, disqualification_reason, time_raw, debug_seen_min')
     .eq('id', id)
     .single();
 
@@ -278,10 +280,29 @@ router.patch('/:id/status', requireModerator, async (req: ModRequest, res: Respo
   const row = existing as {
     id: number; name: string; character_name: string; score: number; kills: number;
     skills: string | null; objectives: Objectives | null; disqualified_at?: string | null;
-    sandbox_ok: boolean;
+    sandbox_ok: boolean; disqualification_reason: string | null;
+    time_raw: number; debug_seen_min: number | null;
   };
+
+  // Reabilitar uma desclassificação por debug = anistia (lib/debugAmnesty.ts). A marca
+  // continua no save do jogador, então o servidor precisa saber até que hora perdoar.
+  // Nota obrigatória: fica pública no perfil da run.
+  const isDebugAmnesty = sandbox_ok === true && row.sandbox_ok === false && row.disqualification_reason === 'debug';
+  if (isDebugAmnesty && !note?.trim()) {
+    res.status(400).json({ error: 'Explique a anistia de debug: a nota fica pública no perfil da run.' });
+    return;
+  }
+
   const patch: Record<string, unknown> = {};
   let moderatorLogin: string | null = null;
+  const loadModeratorLogin = async (): Promise<string> => {
+    const { data: mod } = await supabase
+      .from('moderators')
+      .select('login')
+      .eq('id', req.userId!)
+      .single();
+    return mod?.login ?? String(req.userId ?? 'moderador');
+  };
   if (is_alive  !== undefined) {
     patch.is_alive = is_alive;
     // Ao marcar como morto por qualquer via, limpa o marcador de conflito
@@ -298,18 +319,21 @@ router.patch('/:id/status', requireModerator, async (req: ModRequest, res: Respo
       patch.disqualification_reason = 'manual';
       patch.disqualification_note   = note!.trim();
 
-      const { data: mod } = await supabase
-        .from('moderators')
-        .select('login')
-        .eq('id', req.userId!)
-        .single();
-      moderatorLogin = mod?.login ?? String(req.userId ?? 'moderador');
+      moderatorLogin = await loadModeratorLogin();
       patch.disqualified_by = moderatorLogin;
     } else {
       patch.disqualified_at         = null;
       patch.disqualification_reason = null;
       patch.disqualification_note   = null;
       patch.disqualified_by         = null;
+      if (isDebugAmnesty) {
+        // Perdoa até a última hora em que o debug foi visto (ou o último estado gravado,
+        // se o mod for anterior à v2.31.0 e não informar a hora).
+        patch.debug_amnesty_until_min = Math.max(row.debug_seen_min ?? 0, row.time_raw ?? 0);
+        patch.debug_amnesty_note      = note!.trim();
+        patch.debug_amnesty_by        = await loadModeratorLogin();
+        patch.debug_amnesty_at        = new Date().toISOString();
+      }
     }
     // Ao desclassificar manualmente: zera score. Ao reclassificar: recalcula.
     patch.score = sandbox_ok ? computeScore(row.kills, sumSkillLevels(row.skills), row.objectives) : 0;

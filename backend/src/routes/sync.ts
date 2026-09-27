@@ -16,6 +16,7 @@ import { COMPANION_STAT_KEYS, validateCompanionStats, type CompanionStatKey } fr
 import { archiveRun, canRestartAfterDisqualification, getActiveSeasonId, isNewRunOf } from '../lib/runHistory';
 import { normalizeDeathCause } from '../lib/statistics';
 import { deathCellFromDelta, regionOfCell } from '../lib/mapRegions';
+import { isDebugAmnestied, newModGapFlag } from '../lib/debugAmnesty';
 import { config } from '../config';
 import type { Objectives } from '../types';
 
@@ -319,7 +320,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // Filtra deleted_at IS NULL para nunca confundir entries soft-deletadas com a ativa.
   const { data: existingRaw, error: existingError } = await supabase
     .from(config.tableName)
-    .select('id, objectives, live_url, sandbox_ok, disqualification_reason, kills, time_raw, days, flagged_reason, flagged_at, updated_at, score, record_score, character_name, is_alive, deleted_at, no_live_streak, skills, season_id, heatmap_batch')
+    .select('id, objectives, live_url, sandbox_ok, disqualification_reason, kills, time_raw, days, flagged_reason, flagged_at, updated_at, score, record_score, character_name, is_alive, deleted_at, no_live_streak, skills, season_id, heatmap_batch, debug_seen_min, debug_amnesty_until_min, mod_gap_at_min')
     .eq('player_id', player.id)
     .eq('character_name', decoded.characterName)
     .is('deleted_at', null)
@@ -346,6 +347,9 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     skills: string | null;
     season_id: number | null;
     heatmap_batch: string | null;
+    debug_seen_min: number | null;
+    debug_amnesty_until_min: number | null;
+    mod_gap_at_min: number | null;
   };
   const prev = existing as ExistingRow | null;
 
@@ -369,6 +373,14 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       console.log(`[sync] run desclassificada substituída por partida nova | player=${player.nick} | char=${decoded.characterName} | motivo=${prev.disqualification_reason}`);
       justReactivated = true;
     } else {
+      // Guarda a última hora de jogo em que o debug foi visto (mod v2.31.0+): é o
+      // limite que o moderador vê e usa ao conceder a anistia de debug no painel.
+      if (decoded.debugSeenMin != null && decoded.debugSeenMin !== prev.debug_seen_min) {
+        await supabase
+          .from(config.tableName)
+          .update({ debug_seen_min: Math.max(decoded.debugSeenMin, prev.debug_seen_min ?? 0) })
+          .eq('id', prev.id);
+      }
       res.status(200).json({
         success:        true,
         character_name: decoded.characterName,
@@ -563,6 +575,14 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     return;
   }
 
+  // ── Anistia de debug (lib/debugAmnesty.ts) ─────────────────────────────────
+  // O save continua com a marca de debug, mas o moderador perdoou até esta hora de jogo:
+  // o sync segue como limpo. Debug visto depois do limite desclassifica normalmente.
+  if (prev && isDebugAmnestied(decoded, prev.debug_amnesty_until_min)) {
+    decoded.sandboxOk = true;
+    decoded.disqualificationReason = null;
+  }
+
   // ── Detecção de mods não permitidos (legado — via flag no payload) ─────────
   // Mantido para compatibilidade com mods < v2.18.0 que usam a whitelist local.
   // A partir do v2.18.0, a detecção server-side acima é mais confiável.
@@ -623,6 +643,14 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       flaggedReason = prev.flagged_reason;
       flaggedAt     = prev.flagged_at ?? null;
     }
+  }
+
+  // Possível sessão sem o mod: vira anomalia para revisão, sem desclassificar. Se a run já
+  // tem outra anomalia pendente, o aviso espera (o mod repete em todo sync da sessão).
+  const modGapFlag = !flaggedReason ? newModGapFlag(decoded.modGap, prev?.mod_gap_at_min) : null;
+  if (modGapFlag) {
+    flaggedReason = modGapFlag.flaggedReason;
+    flaggedAt     = new Date().toISOString();
   }
 
   // Desclassificação: apenas sandbox e debug causam desclassificação.
@@ -777,6 +805,12 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     ...(startRegion ? { start_region: startRegion } : isNewCharRun ? { start_region: null } : {}),
     // Partida nova depois de uma desclassificação: a run nova começa limpa
     ...(isNewCharRun ? { disqualification_reason: null, disqualified_at: null, disqualification_note: null, disqualified_by: null } : {}),
+    // Anistia de debug e avisos de gap valem só para a run em que foram dados
+    ...(isNewCharRun ? {
+      debug_seen_min: null, debug_amnesty_until_min: null, debug_amnesty_note: null,
+      debug_amnesty_by: null, debug_amnesty_at: null, mod_gap_at_min: null,
+    } : {}),
+    ...(modGapFlag ? { mod_gap_at_min: modGapFlag.atMin } : {}),
     ...(companionStatsOk ? { stats_synced_at: new Date().toISOString() } : isNewCharRun ? { stats_synced_at: null } : {}),
     // Histórico de runs (migration_v38): temporada da run, início e causa da morte.
     // Temporada só no INÍCIO da run (ou se ainda não tiver): uma run que atravessa a

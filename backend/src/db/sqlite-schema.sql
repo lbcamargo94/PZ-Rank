@@ -155,6 +155,13 @@ CREATE TABLE IF NOT EXISTS entries (
   heatmap_batch                TEXT     DEFAULT NULL,  -- migration_v42 (id do último lote do mapa de calor)
   weapon_kills                 TEXT     DEFAULT NULL,  -- migration_v43 (JSON, lib/weapons.ts)
   start_region                 TEXT     DEFAULT NULL,  -- migration_v45 (região onde nasceu)
+  -- migration_v47: anistia de debug e aviso de gap (mod 2.31.0)
+  debug_seen_min               INTEGER  DEFAULT NULL,
+  debug_amnesty_until_min      INTEGER  DEFAULT NULL,
+  debug_amnesty_note           TEXT     DEFAULT NULL,
+  debug_amnesty_by             TEXT     DEFAULT NULL,
+  debug_amnesty_at             TEXT     DEFAULT NULL,
+  mod_gap_at_min               INTEGER  DEFAULT NULL,
   UNIQUE (player_id, character_name)
 );
 

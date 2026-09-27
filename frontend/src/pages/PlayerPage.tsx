@@ -512,6 +512,12 @@ function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | nul
             : entry.is_alive
               ? <span className="alive-badge alive"><i className="ti ti-heartbeat" /> {t('rank.status.alive')}</span>
               : <span className="alive-badge dead"><i className="ti ti-skull" /> {t('rank.status.dead')}</span>}
+          {/* Anistia de debug é pública: a nota do moderador explica por que a run voltou */}
+          {!isDisqualified && entry.debug_amnesty_note && (
+            <span className="pp-disq-mods" title={entry.debug_amnesty_note}>
+              <i className="ti ti-shield-check" /> {t('rank.status.amnesty')}: “{entry.debug_amnesty_note}”
+            </span>
+          )}
         </div>
       </div>
 

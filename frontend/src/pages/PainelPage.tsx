@@ -131,6 +131,14 @@ function parseFlaggedReason(flaggedReason: string): { label: string; detail: str
         : 'Um mod fora da whitelist foi detectado, mas o código não trouxe o nome. Revise e decida manualmente.',
     };
   }
+  if (flaggedReason.startsWith('mod_gap:')) {
+    const minutes = parseInt(flaggedReason.slice('mod_gap:'.length), 10) || 0;
+    const hours   = (minutes / 60).toLocaleString('pt-BR', { maximumFractionDigits: 1 });
+    return {
+      label:  'Possível sessão sem o mod',
+      detail: `Ao carregar o save, o mod viu cerca de ${hours} h de jogo sem registro do PZ Community Rank ativo (mod 2.31.0+). Não desclassifica: se precisar, peça o PZRank_log.txt do jogador para conferir.`,
+    };
+  }
   if (flaggedReason.startsWith('unknown_mods:')) {
     const ids = flaggedReason.slice('unknown_mods:'.length).split(',').filter(Boolean);
     return {
@@ -145,7 +153,8 @@ function DisqDetail({ entry }: { entry: Entry }) {
   const hasDisq    = entry.sandbox_ok === false;
   const hasAnomaly = !!entry.flagged_reason;
   const hasNoLive  = entry.sandbox_ok !== false && entry.is_alive && hasLiveWarning(entry);
-  if (!hasDisq && !hasAnomaly && !hasNoLive) return null;
+  const hasAmnesty = entry.sandbox_ok !== false && !!entry.debug_amnesty_note;
+  if (!hasDisq && !hasAnomaly && !hasNoLive && !hasAmnesty) return null;
 
   const disqReason = entry.disqualification_reason ?? 'sandbox';
   const disq        = DISQ_INFO[disqReason] ?? parseDisqReason(disqReason) ?? DISQ_INFO.sandbox;
@@ -185,6 +194,21 @@ function DisqDetail({ entry }: { entry: Entry }) {
           )}
         </div>
       )}
+      {hasAmnesty && (
+        <div className="painel-disq-row painel-disq-row--anomaly">
+          <i className="ti ti-shield-check painel-disq-icon" />
+          <div className="painel-disq-text">
+            <span className="painel-disq-label">Anistia de debug</span>
+            <span className="painel-disq-note">
+              “{entry.debug_amnesty_note}”
+              {entry.debug_amnesty_by && <> — <strong>{entry.debug_amnesty_by}</strong></>}
+            </span>
+          </div>
+          {entry.debug_amnesty_at && (
+            <span className="painel-disq-date"><i className="ti ti-clock" /> {fmtEntryDate(entry.debug_amnesty_at)}</span>
+          )}
+        </div>
+      )}
       {hasNoLive && (
         <div className="painel-disq-row painel-disq-row--anomaly">
           <i className="ti ti-broadcast-off painel-disq-icon" />
@@ -209,6 +233,82 @@ const DISQUALIFY_REASONS = [
   'Suspeita de múltiplas contas',
   'Outro motivo',
 ];
+
+// Reabilitar desclassificação por debug = anistia (backend/src/lib/debugAmnesty.ts):
+// o servidor perdoa o debug visto até a hora registrada, e um debug posterior desclassifica
+// de novo. A nota é obrigatória e fica pública no perfil da run.
+function DebugAmnestyModal({ entry, onConfirm, onCancel }: DisqualifyModalProps) {
+  const [note, setNote] = useState('');
+
+  useEffect(() => {
+    const prev  = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onCancel(); };
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
+  }, [onCancel]);
+
+  const untilMin = Math.max(entry.debug_seen_min ?? 0, entry.time_raw ?? 0);
+
+  return (
+    <div className="modal-overlay active" role="alertdialog" aria-modal="true">
+      <div className="modal-box modal-box--sm ban-modal-box" onClick={e => e.stopPropagation()}>
+        <button className="modal-close" aria-label="Fechar" onClick={onCancel}>
+          <i className="ti ti-x" />
+        </button>
+
+        <h2 className="modal-title">
+          <i className="ti ti-shield-check" /> Anistia de debug
+        </h2>
+
+        <div className="ban-modal-body">
+          <p className="ban-modal-nick">
+            Reabilitando: <strong>{entry.character_name || entry.name}</strong>
+          </p>
+          <p className="painel-disq-desc">
+            O debug visto até <strong>{fmtGameMinutes(untilMin)}</strong> de jogo fica perdoado.
+            Se o mod detectar debug de novo depois disso, a run é desclassificada outra vez.
+            {entry.debug_seen_min == null && ' O mod deste jogador não informou a hora do debug: vale o último estado gravado.'}
+          </p>
+
+          <div className="ban-modal-field">
+            <label className="form-label" htmlFor="amnesty-note">
+              Motivo da anistia <span style={{ color: 'var(--red)' }}>*</span>
+            </label>
+            <textarea
+              id="amnesty-note"
+              className="form-input ban-note-textarea"
+              value={note}
+              onChange={e => setNote(e.target.value)}
+              placeholder="O que foi analisado e por que a run volta. Fica público no perfil da run."
+              rows={4}
+            />
+          </div>
+        </div>
+
+        <div className="confirm-modal-actions">
+          <button className="btn-secondary" onClick={onCancel}>
+            Cancelar
+          </button>
+          <button
+            className="btn-success"
+            disabled={!note.trim()}
+            onClick={() => onConfirm(note.trim())}
+          >
+            <i className="ti ti-shield-check" /> Conceder anistia
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Minutos de jogo (time_raw) em "Xd Yh"
+function fmtGameMinutes(min: number): string {
+  const d = Math.floor(min / 1440);
+  const h = Math.floor((min % 1440) / 60);
+  return d > 0 ? `${d}d ${h}h` : `${h}h`;
+}
 
 interface DisqualifyModalProps {
   entry:     Entry;
@@ -310,6 +410,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
   const [confirmDeathEntryId,  setConfirmDeathEntryId]  = useState<number | null>(null);
   const [sandboxEntry,         setSandboxEntry]         = useState<Entry | null>(null);
   const [disqualifyEntry,      setDisqualifyEntry]      = useState<Entry | null>(null);
+  const [amnestyRequest,       setAmnestyRequest]       = useState<{ entry: Entry; patch: { is_alive?: boolean; sandbox_ok?: boolean }; label: string } | null>(null);
   const [entries,        setEntries]        = useState<Entry[]>([]);
   // Mais recente -> mais antigo, valido para qualquer aba selecionada (filteredEntries
   // so faz .filter() sobre este array, entao a ordem do fetch e a ordem exibida).
@@ -420,6 +521,35 @@ export function PainelPage({ session, onSession, onBack }: Props) {
     try {
       await apiUpdateEntryStatus(session.token, id, patch);
       showToast(`Personagem marcado como ${label}.`, 'success');
+      fetchEntries();
+    } catch (err) {
+      showToast((err as Error).message, 'error');
+    } finally {
+      setUpdatingEntry(null);
+    }
+  }
+
+  // Reabilitar desclassificação por debug passa pela anistia (nota obrigatória)
+  function requestEntryStatus(
+    entry: Entry,
+    patch: { is_alive?: boolean; sandbox_ok?: boolean },
+    label: string,
+  ) {
+    if (patch.sandbox_ok === true && entry.sandbox_ok === false && entry.disqualification_reason === 'debug') {
+      setAmnestyRequest({ entry, patch, label });
+      return;
+    }
+    handleEntryStatus(entry.id!, patch, label);
+  }
+
+  async function handleAmnestyConfirm(note: string) {
+    if (!session || !amnestyRequest) return;
+    const { entry, patch } = amnestyRequest;
+    setAmnestyRequest(null);
+    setUpdatingEntry(entry.id!);
+    try {
+      await apiUpdateEntryStatus(session.token, entry.id!, { ...patch, note });
+      showToast('Anistia concedida. A run volta no próximo sync.', 'success');
       fetchEntries();
     } catch (err) {
       showToast((err as Error).message, 'error');
@@ -557,7 +687,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
             className="btn-success btn-sm"
             disabled={busy || (entry.is_alive && entry.sandbox_ok !== false)}
             title="Marcar como Vivo"
-            onClick={() => handleEntryStatus(entry.id!, { is_alive: true, sandbox_ok: true }, 'Vivo')}
+            onClick={() => requestEntryStatus(entry, { is_alive: true, sandbox_ok: true }, 'Vivo')}
           >
             <i className="ti ti-heartbeat" /> Vivo
           </button>
@@ -565,7 +695,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
             className="btn-warning btn-sm"
             disabled={busy || (!entry.is_alive && entry.sandbox_ok !== false)}
             title="Marcar como Morto (preserva pontos)"
-            onClick={() => handleEntryStatus(entry.id!, { is_alive: false, sandbox_ok: true }, 'Morto')}
+            onClick={() => requestEntryStatus(entry, { is_alive: false, sandbox_ok: true }, 'Morto')}
           >
             <i className="ti ti-skull" /> Morto
           </button>
@@ -903,7 +1033,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
                             className="btn-success btn-sm"
                             disabled={busy}
                             title="Restaurar como Vivo"
-                            onClick={() => handleEntryStatus(entry.id!, { is_alive: true, sandbox_ok: true }, 'Vivo')}
+                            onClick={() => requestEntryStatus(entry, { is_alive: true, sandbox_ok: true }, 'Vivo')}
                           >
                             <i className="ti ti-heartbeat" /> Vivo
                           </button>
@@ -911,7 +1041,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
                             className="btn-warning btn-sm"
                             disabled={busy}
                             title="Restaurar como Morto"
-                            onClick={() => handleEntryStatus(entry.id!, { is_alive: false, sandbox_ok: true }, 'Morto')}
+                            onClick={() => requestEntryStatus(entry, { is_alive: false, sandbox_ok: true }, 'Morto')}
                           >
                             <i className="ti ti-skull" /> Morto
                           </button>
@@ -1038,6 +1168,13 @@ export function PainelPage({ session, onSession, onBack }: Props) {
           entry={disqualifyEntry}
           onConfirm={handleDisqualifyConfirm}
           onCancel={() => setDisqualifyEntry(null)}
+        />
+      )}
+      {amnestyRequest && (
+        <DebugAmnestyModal
+          entry={amnestyRequest.entry}
+          onConfirm={handleAmnestyConfirm}
+          onCancel={() => setAmnestyRequest(null)}
         />
       )}
     </div>

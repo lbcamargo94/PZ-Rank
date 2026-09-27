@@ -153,7 +153,8 @@
       "alive": "Vivo",
       "dead": "Muerto",
       "disqualified": "Descalificado",
-      "disqualified_short": "Desc."
+      "disqualified_short": "Desc.",
+      "amnesty": "Rehabilitada por la moderación"
     },
     "test_mod": "Mod. Prueba",
     "test_mod_title": "Participante con etiqueta de Moderador de Prueba",

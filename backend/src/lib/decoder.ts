@@ -17,6 +17,40 @@ const PZR_PREFIX_RE = /^PZRX[123456789]:([\s\S]+)$/;
 // Grupo 46 (v2.18.0): active_mods (IDs separados por ";")
 const PZR_PAYLOAD_RE = /^PZR\|([^|]*)\|([^|]*)\|(\d+)\|(\d+)\|([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?([^|]*)\|?(\d*)\|?([^|]*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?(\d*)\|?([^|]*)\|?([^|]*)$/;
 
+export type ReasonField = {
+  reason:         string | null;
+  debugSeenMin:   number | null;
+  presetViolated: boolean;
+  modGap:         { minutes: number; atMin: number } | null;
+};
+
+// Campo motivo: motivo principal seguido de extras separados por "&" (mod v2.31.0+):
+//   "debug&debug_min=12150&preset=1&gap=636@6407" — ver buildReasonExtra no RankMain.lua.
+// Os extras podem vir sozinhos (sandbox ok + aviso de gap), então o motivo principal é
+// o primeiro token só quando ele não é um extra "chave=valor".
+export function parseReasonField(raw: string | null | undefined): ReasonField {
+  const out: ReasonField = { reason: null, debugSeenMin: null, presetViolated: false, modGap: null };
+  const tokens = (raw ?? '').split('&').map(t => t.trim()).filter(Boolean);
+  for (const [i, token] of tokens.entries()) {
+    const eq = token.indexOf('=');
+    if (eq < 0) {
+      if (i === 0) out.reason = token;
+      continue;
+    }
+    const key = token.slice(0, eq);
+    const val = token.slice(eq + 1);
+    if (key === 'debug_min' && /^\d+$/.test(val)) {
+      out.debugSeenMin = parseInt(val, 10);
+    } else if (key === 'preset') {
+      out.presetViolated = val === '1';
+    } else if (key === 'gap') {
+      const m = /^(\d+)@(\d+)$/.exec(val);
+      if (m) out.modGap = { minutes: parseInt(m[1]!, 10), atMin: parseInt(m[2]!, 10) };
+    }
+  }
+  return out;
+}
+
 function xorBuffer(data: Buffer, key: string): Buffer {
   const keyBuf = Buffer.from(key, 'utf8');
   const out = Buffer.allocUnsafe(data.length);
@@ -88,6 +122,7 @@ export function parsePzrCode(raw: string): DecodedCode | null {
         ? activeModsRaw.trim().split(';').map(s => s.trim()).filter(Boolean)
         : []);
   const timeRawNum = parseInt(timeRaw!, 10);
+  const reasonField = parseReasonField(reasonRaw);
 
   // Traduz tokens de skill: mod v1.7+ exporta IDs em inglês ("Axe 6"), versões anteriores
   // exportavam nomes em PT-BR ("Machado 6"). SKILL_NAMES só tem chaves em inglês, então
@@ -140,7 +175,10 @@ export function parsePzrCode(raw: string): DecodedCode | null {
     isAlive: statusRaw !== 'morto',
     sandboxOk: sandboxRaw !== 'invalido',
     traits: traitsRaw ? traitsRaw.split(',').map(t => t.trim()).filter(Boolean) : [],
-    disqualificationReason: (reasonRaw && reasonRaw.trim()) ? reasonRaw.trim() : null,
+    disqualificationReason: reasonField.reason,
+    debugSeenMin:           reasonField.debugSeenMin,
+    presetViolated:         reasonField.presetViolated,
+    modGap:                 reasonField.modGap,
     codeTimestamp: (codeTimestamp && !isNaN(codeTimestamp)) ? codeTimestamp : null,
     modVersion,
     animalsKilled:     parseExt(animalsKilledRaw),
