@@ -24,3 +24,33 @@ describe('trava de plausibilidade dos abates', () => {
     expect(implausibleFlag(400000, 3368)).toBe('implausible_kills:400000@3368');
   });
 });
+
+import { isImplausibleSkillTotal, skillChangeIssue, parseSkillLevels, skillLevelSum } from '../lib/plausibility';
+
+describe('trava de habilidades', () => {
+  it('Aptidão Física e Força ficam fora da conta', () => {
+    expect(parseSkillLevels('Aptidão Física 9, Força 9, Machado 3')).toEqual({ Machado: 3 });
+    expect(skillLevelSum(['Força 10', 'Carpintaria 4'])).toBe(4);
+  });
+  it('personagem novo com profissão e traços passa (folga de 40 níveis)', () => {
+    expect(isImplausibleSkillTotal('Machado 3, Carpintaria 3, Pesca 3, Forrageamento 3, Mira 2', 0)).toBe(false);
+  });
+  it('várias habilidades em 7-10 com 56 h de jogo é barrado', () => {
+    const maxed = ['Machado', 'Contundente', 'Cont. Curto', 'Lâmina Longa', 'Lâmina Curta', 'Lança', 'Manutenção',
+      'Mira', 'Recarga', 'Carpintaria', 'Eletricidade', 'Soldagem', 'Mecânica', 'Costura'].map(n => `${n} 8`);
+    expect(isImplausibleSkillTotal(maxed, 3368)).toBe(true);
+  });
+  it('salto grande sem tempo entre syncs é recusado', () => {
+    expect(skillChangeIssue({ skills: 'Machado 1, Lança 1', time_raw: 3000 }, ['Machado 10', 'Lança 9'], 3010)).toBe('jump');
+  });
+  it('subida normal de um nível passa', () => {
+    expect(skillChangeIssue({ skills: 'Machado 4', time_raw: 3000 }, ['Machado 5'], 3060)).toBeNull();
+  });
+  it('habilidade que caiu vira só aviso; Força caindo não conta', () => {
+    expect(skillChangeIssue({ skills: 'Machado 8, Força 6', time_raw: 3000 }, ['Machado 0', 'Força 6'], 3010)).toBe('decrease');
+    expect(skillChangeIssue({ skills: 'Machado 8, Força 6', time_raw: 3000 }, ['Machado 8', 'Força 3'], 3010)).toBeNull();
+  });
+  it('run nova (tempo regrediu) não compara', () => {
+    expect(skillChangeIssue({ skills: 'Machado 10', time_raw: 90000 }, ['Machado 0'], 60)).toBeNull();
+  });
+});

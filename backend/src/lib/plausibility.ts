@@ -37,3 +37,72 @@ export function isImplausibleJump(
 export function implausibleFlag(kills: number, timeRaw: number): string {
   return `implausible_kills:${kills}@${timeRaw}`;
 }
+
+// ── Habilidades ─────────────────────────────────────────────────────────────
+// Caso Anastacia Glubby: em 10 minutos chegaram códigos com várias habilidades em 7-10 e,
+// no último, quase todas em 0 — habilidade não diminui no jogo, e nível 10 real mais
+// rápido visto em produção levou 136 h de jogo.
+//
+// Aptidão Física e Força ficam de fora: no jogo elas caem sem exercício ou abaixo do peso.
+// Referência (29/09/2026): profissão + traços dão até ~32 níveis somados no início; nenhuma
+// run real passa de 40 + 1 nível por hora de jogo (a mais próxima chega a 80%).
+const PASSIVE_SKILLS = new Set(['Aptidão Física', 'Força', 'Fitness', 'Strength']);
+export const SKILL_GRACE_LEVELS = 40;
+export const MAX_SKILL_LEVELS_PER_GAME_HOUR = 1;
+// Entre dois syncs: cada nível ganho dispara sync no mod, então ganho grande sem tempo = editado
+export const SKILL_JUMP_GRACE = 10;
+
+// "Machado 7, Força 5" (entries.skills) ou ["Machado 7", ...] (decoded.skills) → { Machado: 7 }
+export function parseSkillLevels(skills: string | string[] | null | undefined): Record<string, number> {
+  const list = Array.isArray(skills) ? skills : (skills ?? '').split(',');
+  const out: Record<string, number> = {};
+  for (const raw of list) {
+    const t = raw.trim();
+    const i = t.lastIndexOf(' ');
+    if (i <= 0) continue;
+    const name = t.slice(0, i);
+    const level = parseInt(t.slice(i + 1), 10);
+    if (!isNaN(level) && !PASSIVE_SKILLS.has(name)) out[name] = level;
+  }
+  return out;
+}
+
+function sumLevels(levels: Record<string, number>): number {
+  return Object.values(levels).reduce((a, b) => a + b, 0);
+}
+
+export function isImplausibleSkillTotal(skills: string | string[] | null | undefined, timeRaw: number): boolean {
+  return sumLevels(parseSkillLevels(skills)) > SKILL_GRACE_LEVELS + MAX_SKILL_LEVELS_PER_GAME_HOUR * Math.max(0, timeRaw) / 60;
+}
+
+// Mesma run (tempo não regrediu): ganho acima do possível no intervalo ('jump', recusa o
+// sync) ou nível que diminuiu ('decrease', só aviso: o B42.19 renomeou IDs de habilidade e um
+// mod com mapeamento errado informa 0 — recusar puniria jogador honesto).
+// Só compara habilidades presentes nos dois códigos.
+export function skillChangeIssue(
+  prev: { skills: string | null; time_raw: number },
+  skills: string | string[],
+  timeRaw: number,
+): 'jump' | 'decrease' | null {
+  if (timeRaw < prev.time_raw) return null; // run nova
+  const before = parseSkillLevels(prev.skills);
+  const after  = parseSkillLevels(skills);
+  let gained = 0;
+  let decreased = false;
+  for (const [name, level] of Object.entries(after)) {
+    const old = before[name];
+    if (old === undefined) continue;
+    if (level < old) decreased = true;
+    else gained += level - old;
+  }
+  if (gained > SKILL_JUMP_GRACE + MAX_SKILL_LEVELS_PER_GAME_HOUR * (timeRaw - prev.time_raw) / 60) return 'jump';
+  return decreased ? 'decrease' : null;
+}
+
+export function implausibleSkillsFlag(sum: number, timeRaw: number): string {
+  return `implausible_skills:${sum}@${timeRaw}`;
+}
+
+export function skillLevelSum(skills: string | string[] | null | undefined): number {
+  return sumLevels(parseSkillLevels(skills));
+}

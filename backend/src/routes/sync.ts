@@ -17,7 +17,10 @@ import { archiveRun, canRestartAfterDisqualification, getActiveSeasonId, isNewRu
 import { normalizeDeathCause } from '../lib/statistics';
 import { deathCellFromDelta, regionOfCell } from '../lib/mapRegions';
 import { isDebugAmnestied, newModGapFlag } from '../lib/debugAmnesty';
-import { isImplausibleTotal, isImplausibleJump, implausibleFlag } from '../lib/plausibility';
+import {
+  isImplausibleTotal, isImplausibleJump, implausibleFlag,
+  isImplausibleSkillTotal, skillChangeIssue, implausibleSkillsFlag, skillLevelSum,
+} from '../lib/plausibility';
 import { config } from '../config';
 import type { Objectives } from '../types';
 
@@ -578,21 +581,26 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   }
 
   // ── Trava de plausibilidade (lib/plausibility.ts) ──────────────────────────
-  // Abates impossíveis para o tempo de jogo = código editado. Nada é gravado: run nova é
-  // recusada; run existente fica com os dados anteriores e ganha anomalia para o moderador.
+  // Abates ou habilidades impossíveis para o tempo de jogo = código editado. Nada é gravado:
+  // run nova é recusada; run existente fica com os dados anteriores e ganha anomalia.
   // O salto entre syncs não vale logo após reabilitar (prev vem de estado desclassificado).
-  const implausible = isImplausibleTotal(decoded.kills, decoded.timeRaw)
-    || (!!prev && prev.sandbox_ok !== false && !justReactivated
-        && isImplausibleJump(prev, decoded.kills, decoded.timeRaw));
-  if (implausible) {
-    console.log(`[sync] abates impossiveis recusados | player=${player.nick} | char=${decoded.characterName} | kills=${decoded.kills} | time=${decoded.timeRaw} | prev=${prev ? `${prev.kills}@${prev.time_raw}` : '-'}`);
+  const comparable = !!prev && prev.sandbox_ok !== false && !justReactivated;
+  const killsImpossible = isImplausibleTotal(decoded.kills, decoded.timeRaw)
+    || (comparable && isImplausibleJump(prev!, decoded.kills, decoded.timeRaw));
+  const skillIssue = comparable ? skillChangeIssue(prev!, decoded.skills, decoded.timeRaw) : null;
+  const skillsImpossible = isImplausibleSkillTotal(decoded.skills, decoded.timeRaw) || skillIssue === 'jump';
+  if (killsImpossible || skillsImpossible) {
+    const flag = killsImpossible
+      ? implausibleFlag(decoded.kills, decoded.timeRaw)
+      : implausibleSkillsFlag(skillLevelSum(decoded.skills), decoded.timeRaw);
+    console.log(`[sync] dados impossiveis recusados | player=${player.nick} | char=${decoded.characterName} | ${flag} | prev=${prev ? `${prev.kills}@${prev.time_raw}` : '-'}`);
     if (!prev) {
       res.status(400).json({ error: 'Dados do personagem fora do possível. Sincronização recusada.' });
       return;
     }
     await supabase
       .from(config.tableName)
-      .update({ flagged_reason: implausibleFlag(decoded.kills, decoded.timeRaw), flagged_at: new Date().toISOString() })
+      .update({ flagged_reason: flag, flagged_at: new Date().toISOString() })
       .eq('id', prev.id);
     // 200 + stale: o Companion descarta o código da fila (mesmo padrão do kills_regression)
     res.status(200).json({
@@ -678,6 +686,12 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
 
   // Possível sessão sem o mod: vira anomalia para revisão, sem desclassificar. Se a run já
   // tem outra anomalia pendente, o aviso espera (o mod repete em todo sync da sessão).
+  // Habilidade que caiu (fora Aptidão Física e Força): só aviso, ver skillChangeIssue
+  if (!flaggedReason && skillIssue === 'decrease') {
+    flaggedReason = 'skills_regression';
+    flaggedAt     = new Date().toISOString();
+  }
+
   const modGapFlag = !flaggedReason ? newModGapFlag(decoded.modGap, prev?.mod_gap_at_min) : null;
   if (modGapFlag) {
     flaggedReason = modGapFlag.flaggedReason;

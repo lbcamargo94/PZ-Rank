@@ -83,6 +83,7 @@ const DISQ_INFO: Record<string, { icon: string; label: string; detail: string; c
 const ANOMALY_INFO: Record<string, { label: string; detail: string }> = {
   kills_regression: { label: 'Regressão de kills',              detail: 'O total de kills diminuiu entre dois syncs — impossível legitimamente.' },
   days_regression:  { label: 'Regressão de dias sobrevividos',  detail: 'Os dias sobrevividos diminuíram entre dois syncs.' },
+  skills_regression: { label: 'Habilidade diminuiu',            detail: 'Uma habilidade (fora Aptidão Física e Força) caiu de nível entre dois syncs — não acontece no jogo. Pode ser código editado ou erro do mod ao ler a habilidade: o sync foi aceito, revise.' },
   code_replay:      { label: 'Replay de código antigo',         detail: 'O timestamp do código é anterior ao último sync gravado — possível reenvio de código desatualizado.' },
 };
 
@@ -137,6 +138,14 @@ function parseFlaggedReason(flaggedReason: string): { label: string; detail: str
     return {
       label:  'Abates impossíveis recusados',
       detail: `Chegou um código com ${kills!.toLocaleString('pt-BR')} abates em ${hours} h de jogo — acima de 50 por hora, o que nenhum jogo produz. O sync foi recusado e a run ficou com os dados anteriores. Forte indício de código editado: revise e desclassifique se for o caso.`,
+    };
+  }
+  if (flaggedReason.startsWith('implausible_skills:')) {
+    const [sum, minutes] = flaggedReason.slice('implausible_skills:'.length).split('@').map(v => parseInt(v, 10) || 0);
+    const hours = (minutes! / 60).toLocaleString('pt-BR', { maximumFractionDigits: 1 });
+    return {
+      label:  'Habilidades impossíveis recusadas',
+      detail: `Chegou um código com ${sum} níveis de habilidade somados (fora Aptidão Física e Força) em ${hours} h de jogo, ou um salto grande demais desde o último sync. O sync foi recusado e a run ficou com os dados anteriores. Forte indício de código editado.`,
     };
   }
   if (flaggedReason.startsWith('mod_gap:')) {

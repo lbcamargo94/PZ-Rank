@@ -2,6 +2,7 @@ import { Router } from 'express';
 import type { Request, Response } from 'express';
 import { supabase } from '../supabase';
 import { dbError } from '../lib/errors';
+import { config } from '../config';
 import { requireModerator, requireMaster } from '../middleware/moderator';
 import type { ModRequest } from '../middleware/moderator';
 
@@ -38,23 +39,33 @@ router.get('/player/:id', async (req: Request, res: Response): Promise<void> => 
     query = (query as any).eq('character_name', characterName);
   }
 
-  const [{ data: unlocked, error: e1 }, { data: defs, error: e2 }] = await Promise.all([
+  const [{ data: unlocked, error: e1 }, { data: defs, error: e2 }, { data: dqEntries, error: e3 }] = await Promise.all([
     query,
     supabase
       .from('achievements')
       .select('id, slug, name, description, icon, tier, stat, threshold'),
+    // Conquistas de runs desclassificadas não aparecem no perfil (caso Anastacia Glubby:
+    // código editado concedeu 65 conquistas antes da desclassificação manual)
+    supabase
+      .from(config.tableName)
+      .select('id')
+      .eq('player_id', playerId)
+      .eq('sandbox_ok', false),
   ]);
 
-  if (e1 || e2) {
-    res.status(500).json({ error: dbError((e1 ?? e2)!).message });
+  if (e1 || e2 || e3) {
+    res.status(500).json({ error: dbError((e1 ?? e2 ?? e3)!).message });
     return;
   }
+
+  const dqIds = new Set((dqEntries ?? []).map((e: { id: number }) => e.id));
 
   const defMap = Object.fromEntries(
     (defs ?? []).map((d: { id: number }) => [d.id, d]),
   );
 
-  const result = (unlocked ?? []).map((u: { achievement_id: number; character_name: string; unlocked_at: string; entry_id: number | null }) => ({
+  type Unlocked = { achievement_id: number; character_name: string; unlocked_at: string; entry_id: number | null };
+  const result = (unlocked ?? []).filter((u: Unlocked) => u.entry_id == null || !dqIds.has(u.entry_id)).map((u: Unlocked) => ({
     ...defMap[u.achievement_id],
     character_name: u.character_name,
     unlocked_at:    u.unlocked_at,
