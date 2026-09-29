@@ -6,16 +6,25 @@ import type { DecodedCode } from '../types';
 // sync desde que a ÚLTIMA hora em que o debug foi visto (debug_min, mod v2.31.0+) não
 // passe do limite. Debug usado de novo depois disso tem hora maior e desclassifica.
 //
+// Anistia "sem hora" (amnestyLegacy): dada quando o mod do jogador ainda não informava a
+// hora do debug (< v2.31.0). Ao atualizar, o mod carimba a marca antiga com a hora do
+// CARREGAMENTO e avisa que é estimada (debug_est=1) — essa hora passa do limite da anistia
+// sem o jogador ter usado debug de novo (caso n4ndo, 29/09). Por isso a anistia sem hora
+// aceita a marca estimada. Debug visto de verdade depois troca por uma hora real, sem o
+// debug_est, e volta a ser comparado com o limite.
+//
 // Não cobre: preset alterado junto (preset=1), código sem debug_min (mod antigo — não dá
 // para saber quando o debug foi visto) nem qualquer outro motivo.
 export function isDebugAmnestied(
-  decoded: Pick<DecodedCode, 'sandboxOk' | 'disqualificationReason' | 'debugSeenMin' | 'presetViolated'>,
+  decoded: Pick<DecodedCode, 'sandboxOk' | 'disqualificationReason' | 'debugSeenMin' | 'debugSeenEstimated' | 'presetViolated'>,
   amnestyUntilMin: number | null | undefined,
+  amnestyLegacy = false,
 ): boolean {
   if (decoded.sandboxOk) return false;
   if (decoded.disqualificationReason !== 'debug') return false;
   if (decoded.presetViolated) return false;
   if (amnestyUntilMin == null || decoded.debugSeenMin == null) return false;
+  if (amnestyLegacy && decoded.debugSeenEstimated) return true;
   return decoded.debugSeenMin <= amnestyUntilMin;
 }
 

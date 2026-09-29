@@ -30,6 +30,7 @@
   debug_amnesty_by?:          string | null;
   debug_amnesty_until_min?:   number | null;
   debug_seen_min?:            number | null;
+  debug_amnesty_legacy?:      boolean | null;
   mod_gap_at_min?:            number | null;
   flagged_reason?:            string | null;
   flagged_at?:                string | null;

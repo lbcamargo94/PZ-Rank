@@ -17,6 +17,7 @@ import { archiveRun, canRestartAfterDisqualification, getActiveSeasonId, isNewRu
 import { normalizeDeathCause } from '../lib/statistics';
 import { deathCellFromDelta, regionOfCell } from '../lib/mapRegions';
 import { isDebugAmnestied, newModGapFlag } from '../lib/debugAmnesty';
+import { isImplausibleTotal, isImplausibleJump, implausibleFlag } from '../lib/plausibility';
 import { config } from '../config';
 import type { Objectives } from '../types';
 
@@ -320,7 +321,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // Filtra deleted_at IS NULL para nunca confundir entries soft-deletadas com a ativa.
   const { data: existingRaw, error: existingError } = await supabase
     .from(config.tableName)
-    .select('id, objectives, live_url, sandbox_ok, disqualification_reason, kills, time_raw, days, flagged_reason, flagged_at, updated_at, score, record_score, character_name, is_alive, deleted_at, no_live_streak, skills, season_id, heatmap_batch, debug_seen_min, debug_amnesty_until_min, mod_gap_at_min')
+    .select('id, objectives, live_url, sandbox_ok, disqualification_reason, kills, time_raw, days, flagged_reason, flagged_at, updated_at, score, record_score, character_name, is_alive, deleted_at, no_live_streak, skills, season_id, heatmap_batch, debug_seen_min, debug_amnesty_until_min, debug_amnesty_legacy, mod_gap_at_min')
     .eq('player_id', player.id)
     .eq('character_name', decoded.characterName)
     .is('deleted_at', null)
@@ -349,6 +350,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     heatmap_batch: string | null;
     debug_seen_min: number | null;
     debug_amnesty_until_min: number | null;
+    debug_amnesty_legacy: boolean | null;
     mod_gap_at_min: number | null;
   };
   const prev = existing as ExistingRow | null;
@@ -575,10 +577,39 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     return;
   }
 
+  // ── Trava de plausibilidade (lib/plausibility.ts) ──────────────────────────
+  // Abates impossíveis para o tempo de jogo = código editado. Nada é gravado: run nova é
+  // recusada; run existente fica com os dados anteriores e ganha anomalia para o moderador.
+  // O salto entre syncs não vale logo após reabilitar (prev vem de estado desclassificado).
+  const implausible = isImplausibleTotal(decoded.kills, decoded.timeRaw)
+    || (!!prev && prev.sandbox_ok !== false && !justReactivated
+        && isImplausibleJump(prev, decoded.kills, decoded.timeRaw));
+  if (implausible) {
+    console.log(`[sync] abates impossiveis recusados | player=${player.nick} | char=${decoded.characterName} | kills=${decoded.kills} | time=${decoded.timeRaw} | prev=${prev ? `${prev.kills}@${prev.time_raw}` : '-'}`);
+    if (!prev) {
+      res.status(400).json({ error: 'Dados do personagem fora do possível. Sincronização recusada.' });
+      return;
+    }
+    await supabase
+      .from(config.tableName)
+      .update({ flagged_reason: implausibleFlag(decoded.kills, decoded.timeRaw), flagged_at: new Date().toISOString() })
+      .eq('id', prev.id);
+    // 200 + stale: o Companion descarta o código da fila (mesmo padrão do kills_regression)
+    res.status(200).json({
+      success:        true,
+      stale:          true,
+      character_name: prev.character_name,
+      score:          prev.score,
+      is_alive:       prev.is_alive,
+      rank_position:  null,
+    });
+    return;
+  }
+
   // ── Anistia de debug (lib/debugAmnesty.ts) ─────────────────────────────────
   // O save continua com a marca de debug, mas o moderador perdoou até esta hora de jogo:
   // o sync segue como limpo. Debug visto depois do limite desclassifica normalmente.
-  if (prev && isDebugAmnestied(decoded, prev.debug_amnesty_until_min)) {
+  if (prev && isDebugAmnestied(decoded, prev.debug_amnesty_until_min, prev.debug_amnesty_legacy === true)) {
     decoded.sandboxOk = true;
     decoded.disqualificationReason = null;
   }
@@ -808,7 +839,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     // Anistia de debug e avisos de gap valem só para a run em que foram dados
     ...(isNewCharRun ? {
       debug_seen_min: null, debug_amnesty_until_min: null, debug_amnesty_note: null,
-      debug_amnesty_by: null, debug_amnesty_at: null, mod_gap_at_min: null,
+      debug_amnesty_by: null, debug_amnesty_at: null, debug_amnesty_legacy: null, mod_gap_at_min: null,
     } : {}),
     ...(modGapFlag ? { mod_gap_at_min: modGapFlag.atMin } : {}),
     ...(companionStatsOk ? { stats_synced_at: new Date().toISOString() } : isNewCharRun ? { stats_synced_at: null } : {}),

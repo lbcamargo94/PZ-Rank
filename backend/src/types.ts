@@ -78,6 +78,7 @@ export interface DecodedCode {
   disqualificationReason: string | null;
   // Extras do campo motivo (mod v2.31.0+, ver parseReasonField em lib/decoder.ts)
   debugSeenMin:           number | null;
+  debugSeenEstimated:     boolean;
   presetViolated:         boolean;
   modGap:                 { minutes: number; atMin: number } | null;
   codeTimestamp:          number | null;

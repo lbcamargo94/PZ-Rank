@@ -20,16 +20,18 @@ const PZR_PAYLOAD_RE = /^PZR\|([^|]*)\|([^|]*)\|(\d+)\|(\d+)\|([^|]*)\|?([^|]*)\
 export type ReasonField = {
   reason:         string | null;
   debugSeenMin:   number | null;
+  debugSeenEstimated: boolean;
   presetViolated: boolean;
   modGap:         { minutes: number; atMin: number } | null;
 };
 
 // Campo motivo: motivo principal seguido de extras separados por "&" (mod v2.31.0+):
-//   "debug&debug_min=12150&preset=1&gap=636@6407" — ver buildReasonExtra no RankMain.lua.
+//   "debug&debug_min=12150&debug_est=1&preset=1&gap=636@6407" — ver buildReasonExtra no RankMain.lua.
+// debug_est=1 (mod v2.31.1+): a hora do debug é estimada (marca antiga, sem hora registrada).
 // Os extras podem vir sozinhos (sandbox ok + aviso de gap), então o motivo principal é
 // o primeiro token só quando ele não é um extra "chave=valor".
 export function parseReasonField(raw: string | null | undefined): ReasonField {
-  const out: ReasonField = { reason: null, debugSeenMin: null, presetViolated: false, modGap: null };
+  const out: ReasonField = { reason: null, debugSeenMin: null, debugSeenEstimated: false, presetViolated: false, modGap: null };
   const tokens = (raw ?? '').split('&').map(t => t.trim()).filter(Boolean);
   for (const [i, token] of tokens.entries()) {
     const eq = token.indexOf('=');
@@ -41,6 +43,8 @@ export function parseReasonField(raw: string | null | undefined): ReasonField {
     const val = token.slice(eq + 1);
     if (key === 'debug_min' && /^\d+$/.test(val)) {
       out.debugSeenMin = parseInt(val, 10);
+    } else if (key === 'debug_est') {
+      out.debugSeenEstimated = val === '1';
     } else if (key === 'preset') {
       out.presetViolated = val === '1';
     } else if (key === 'gap') {
@@ -177,6 +181,7 @@ export function parsePzrCode(raw: string): DecodedCode | null {
     traits: traitsRaw ? traitsRaw.split(',').map(t => t.trim()).filter(Boolean) : [],
     disqualificationReason: reasonField.reason,
     debugSeenMin:           reasonField.debugSeenMin,
+    debugSeenEstimated:     reasonField.debugSeenEstimated,
     presetViolated:         reasonField.presetViolated,
     modGap:                 reasonField.modGap,
     codeTimestamp: (codeTimestamp && !isNaN(codeTimestamp)) ? codeTimestamp : null,

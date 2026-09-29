@@ -162,6 +162,7 @@ CREATE TABLE IF NOT EXISTS entries (
   debug_amnesty_by             TEXT     DEFAULT NULL,
   debug_amnesty_at             TEXT     DEFAULT NULL,
   mod_gap_at_min               INTEGER  DEFAULT NULL,
+  debug_amnesty_legacy         INTEGER  DEFAULT NULL,  -- migration_v48
   UNIQUE (player_id, character_name)
 );
 

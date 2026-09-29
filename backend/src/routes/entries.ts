@@ -330,6 +330,9 @@ router.patch('/:id/status', requireModerator, async (req: ModRequest, res: Respo
         // Perdoa até a última hora em que o debug foi visto (ou o último estado gravado,
         // se o mod for anterior à v2.31.0 e não informar a hora).
         patch.debug_amnesty_until_min = Math.max(row.debug_seen_min ?? 0, row.time_raw ?? 0);
+        // Sem hora conhecida (mod < v2.31.0): aceita a marca antiga com hora estimada
+        // quando o jogador atualizar o mod (lib/debugAmnesty.ts, caso n4ndo)
+        patch.debug_amnesty_legacy    = row.debug_seen_min == null;
         patch.debug_amnesty_note      = note!.trim();
         patch.debug_amnesty_by        = await loadModeratorLogin();
         patch.debug_amnesty_at        = new Date().toISOString();
