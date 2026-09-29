@@ -58,14 +58,15 @@ router.get('/player/:id', async (req: Request, res: Response): Promise<void> => 
     return;
   }
 
-  const dqIds = new Set((dqEntries ?? []).map((e: { id: number }) => e.id));
+  // Number(): o PostgreSQL devolve ids bigint como texto ("279") e a conquista traz número
+  const dqIds = new Set((dqEntries ?? []).map((e: { id: number | string }) => Number(e.id)));
 
   const defMap = Object.fromEntries(
     (defs ?? []).map((d: { id: number }) => [d.id, d]),
   );
 
   type Unlocked = { achievement_id: number; character_name: string; unlocked_at: string; entry_id: number | null };
-  const result = (unlocked ?? []).filter((u: Unlocked) => u.entry_id == null || !dqIds.has(u.entry_id)).map((u: Unlocked) => ({
+  const result = (unlocked ?? []).filter((u: Unlocked) => u.entry_id == null || !dqIds.has(Number(u.entry_id))).map((u: Unlocked) => ({
     ...defMap[u.achievement_id],
     character_name: u.character_name,
     unlocked_at:    u.unlocked_at,
