@@ -13,7 +13,7 @@ import { processHeatmapDelta, selectHeatPoints } from '../lib/heatmap';
 import { parseWeaponStats } from '../lib/weapons';
 import { startRegionFromStats } from '../lib/mapRegions';
 import { COMPANION_STAT_KEYS, validateCompanionStats, type CompanionStatKey } from '../lib/companionStats';
-import { archiveRun, canRestartAfterDisqualification, getActiveSeasonId, isNewRunOf } from '../lib/runHistory';
+import { archiveRun, getActiveSeasonId, isNewRunOf, normalizeCharName } from '../lib/runHistory';
 import { normalizeDeathCause } from '../lib/statistics';
 import { deathCellFromDelta, regionOfCell } from '../lib/mapRegions';
 import { isDebugAmnestied, newModGapFlag } from '../lib/debugAmnesty';
@@ -363,6 +363,32 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // justReactivated=true sinaliza que o baseline de prev (score/kills) não é confiável:
   // o score era 0 por desclassificação, não por progressão legítima — a detecção de
   // anomalias deve ser pulada para este sync para não travar o score em 0.
+  // Variação do nome de um personagem desclassificado (maiúsculas, acentos, espaços) conta
+  // como o mesmo personagem: continua bloqueado (v4.28.5, ver normalizeCharName)
+  if (!prev) {
+    const { data: dqRows } = await supabase
+      .from(config.tableName)
+      .select('character_name, disqualification_reason')
+      .eq('player_id', player.id)
+      .eq('sandbox_ok', false)
+      .is('deleted_at', null);
+    const wanted = normalizeCharName(decoded.characterName);
+    const blocked = ((dqRows ?? []) as { character_name: string; disqualification_reason: string | null }[])
+      .find(r => !isModsReason(r.disqualification_reason) && normalizeCharName(r.character_name) === wanted);
+    if (blocked) {
+      console.log(`[sync] nome de personagem desclassificado recusado | player=${player.nick} | char=${decoded.characterName} | igual a=${blocked.character_name}`);
+      res.status(200).json({
+        success:        true,
+        character_name: decoded.characterName,
+        score:          0,
+        is_alive:       decoded.isAlive,
+        disqualified:   true,
+        message:        'Personagem desclassificado. Para voltar ao ranking, crie um personagem com outro nome.',
+      });
+      return;
+    }
+  }
+
   let justReactivated = false;
   if (prev && prev.sandbox_ok === false) {
     if (isModsReason(prev.disqualification_reason)) {
@@ -371,13 +397,12 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
         .update({ sandbox_ok: true, disqualification_reason: null, disqualified_at: null })
         .eq('id', prev.id);
       justReactivated = true;
-    } else if (canRestartAfterDisqualification(prev.time_raw, decoded.timeRaw, decoded.days)) {
-      // Desclassificado por sandbox/debug e começou uma partida NOVA com o mesmo nome:
-      // a run desclassificada vai pro histórico (archiveRun mais abaixo, com o motivo)
-      // e a nova entra normalmente. Antes o personagem ficava preso para sempre.
-      console.log(`[sync] run desclassificada substituída por partida nova | player=${player.nick} | char=${decoded.characterName} | motivo=${prev.disqualification_reason}`);
-      justReactivated = true;
     } else {
+      // Sandbox, debug e manual: o NOME do personagem fica desclassificado de vez. Nenhum
+      // código com esse nome volta ao ranking, nem partida nova (v4.28.5). A v4.27.2 liberava
+      // "partida nova" (até 1 dia) e isso virou brecha: personagem novo com o mesmo nome
+      // liberava a vaga e o save desclassificado voltava como continuação (caso Chris
+      // Pereira, 30/09). Para jogar de novo, só com outro nome — ou o moderador reabilita.
       // Guarda a última hora de jogo em que o debug foi visto (mod v2.31.0+): é o
       // limite que o moderador vê e usa ao conceder a anistia de debug no painel.
       if (decoded.debugSeenMin != null && decoded.debugSeenMin !== prev.debug_seen_min) {
@@ -392,6 +417,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
         score:          0,
         is_alive:       (existing as { is_alive?: boolean }).is_alive ?? false,
         disqualified:   true,
+        message:        'Personagem desclassificado. Para voltar ao ranking, crie um personagem com outro nome.',
       });
       return;
     }

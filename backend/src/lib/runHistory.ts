@@ -17,20 +17,6 @@ export function isNewRunOf(prevTimeRaw: number, newTimeRaw: number): boolean {
   return newTimeRaw < prevTimeRaw * 0.5;
 }
 
-/** Dias máximos de uma "partida nova" que libera um personagem desclassificado. */
-export const DQ_NEW_RUN_MAX_DAYS = 1;
-
-/**
- * Run desclassificada (sandbox/debug) + código de partida nova com o MESMO nome de
- * personagem: libera só se for mesmo um personagem recém-criado. Sem o limite de
- * dias, restaurar um backup do save de ANTES da violação (sem a marca no ModData,
- * tempo de jogo menor que a metade) passaria por "partida nova" e burlaria a
- * desclassificação.
- */
-export function canRestartAfterDisqualification(prevTimeRaw: number, newTimeRaw: number, newDays: number): boolean {
-  return isNewRunOf(prevTimeRaw, newTimeRaw) && newDays <= DQ_NEW_RUN_MAX_DAYS;
-}
-
 // isEmptyRun mora em statistics.ts (regra oficial também das estatísticas);
 // reexportada aqui pra quem arquiva runs.
 export { isEmptyRun };
@@ -110,4 +96,13 @@ export async function getActiveSeasonId(): Promise<number | null> {
   const { data } = await supabase.from('seasons').select('id').eq('is_active', true).maybeSingle();
   _season = { id: (data as { id: number } | null)?.id ?? null, at: Date.now() };
   return _season.id;
+}
+
+/**
+ * Nome de personagem para comparar com os desclassificados do jogador: sem diferença de
+ * maiúsculas, acentos ou espaços. "chris  pereira" e "Chrís Pereira" contam como
+ * "Chris Pereira" — senão uma variação mínima do nome driblaria o bloqueio (v4.28.5).
+ */
+export function normalizeCharName(name: string): string {
+  return name.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
 }
