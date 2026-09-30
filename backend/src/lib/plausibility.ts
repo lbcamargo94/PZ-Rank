@@ -106,3 +106,18 @@ export function implausibleSkillsFlag(sum: number, timeRaw: number): string {
 export function skillLevelSum(skills: string | string[] | null | undefined): number {
   return sumLevels(parseSkillLevels(skills));
 }
+
+// Habilidades que caíram entre dois syncs, para o aviso skills_regression mostrar qual foi:
+// "skills_regression:Machado 8>0,Lança 3>1" (no máximo 5, para não inflar a coluna)
+export function skillsRegressionFlag(
+  prev: { skills: string | null },
+  skills: string | string[],
+): string {
+  const before = parseSkillLevels(prev.skills);
+  const after  = parseSkillLevels(skills);
+  const fell = Object.entries(after)
+    .filter(([name, level]) => before[name] !== undefined && level < before[name]!)
+    .slice(0, 5)
+    .map(([name, level]) => `${name} ${before[name]}>${level}`);
+  return `skills_regression:${fell.join(',')}`;
+}

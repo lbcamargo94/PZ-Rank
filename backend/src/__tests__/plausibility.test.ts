@@ -54,3 +54,10 @@ describe('trava de habilidades', () => {
     expect(skillChangeIssue({ skills: 'Machado 10', time_raw: 90000 }, ['Machado 0'], 60)).toBeNull();
   });
 });
+
+import { skillsRegressionFlag } from '../lib/plausibility';
+describe('aviso de habilidade que caiu', () => {
+  it('registra qual habilidade caiu e de quanto para quanto', () => {
+    expect(skillsRegressionFlag({ skills: 'Machado 8, Lança 3, Força 6' }, ['Machado 0', 'Lança 3', 'Força 2'])).toBe('skills_regression:Machado 8>0');
+  });
+});

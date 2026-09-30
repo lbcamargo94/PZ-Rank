@@ -19,7 +19,7 @@ import { deathCellFromDelta, regionOfCell } from '../lib/mapRegions';
 import { isDebugAmnestied, newModGapFlag } from '../lib/debugAmnesty';
 import {
   isImplausibleTotal, isImplausibleJump, implausibleFlag,
-  isImplausibleSkillTotal, skillChangeIssue, implausibleSkillsFlag, skillLevelSum,
+  isImplausibleSkillTotal, skillChangeIssue, implausibleSkillsFlag, skillLevelSum, skillsRegressionFlag,
 } from '../lib/plausibility';
 import { config } from '../config';
 import type { Objectives } from '../types';
@@ -688,7 +688,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // tem outra anomalia pendente, o aviso espera (o mod repete em todo sync da sessão).
   // Habilidade que caiu (fora Aptidão Física e Força): só aviso, ver skillChangeIssue
   if (!flaggedReason && skillIssue === 'decrease') {
-    flaggedReason = 'skills_regression';
+    flaggedReason = skillsRegressionFlag(prev!, decoded.skills);
     flaggedAt     = new Date().toISOString();
   }
 

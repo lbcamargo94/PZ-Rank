@@ -140,6 +140,14 @@ function parseFlaggedReason(flaggedReason: string): { label: string; detail: str
       detail: `Chegou um código com ${kills!.toLocaleString('pt-BR')} abates em ${hours} h de jogo — acima de 50 por hora, o que nenhum jogo produz. O sync foi recusado e a run ficou com os dados anteriores. Forte indício de código editado: revise e desclassifique se for o caso.`,
     };
   }
+  if (flaggedReason.startsWith('skills_regression:')) {
+    const fell = flaggedReason.slice('skills_regression:'.length).split(',').filter(Boolean)
+      .map(f => f.replace('>', ' → '));
+    return {
+      label:  'Habilidade diminuiu',
+      detail: `${fell.length ? fell.join(', ') + '. ' : ''}Uma habilidade (fora Aptidão Física e Força) caiu de nível entre dois syncs — não acontece no jogo. Pode ser código editado ou erro do mod ao ler a habilidade: o sync foi aceito, revise.`,
+    };
+  }
   if (flaggedReason.startsWith('implausible_skills:')) {
     const [sum, minutes] = flaggedReason.slice('implausible_skills:'.length).split('@').map(v => parseInt(v, 10) || 0);
     const hours = (minutes! / 60).toLocaleString('pt-BR', { maximumFractionDigits: 1 });
