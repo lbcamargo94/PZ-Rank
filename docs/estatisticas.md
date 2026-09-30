@@ -7,6 +7,9 @@ com o caminho para implementar cada item no futuro.
 Auditoria feita em 2026-09-24 contra o código dos 3 repos (PZ-Rank, PZCommunityRank,
 PZ-Rank-Companion) e contra os dados públicos de produção (`GET /entries`).
 
+Desclassificações, dados manipulados e o impacto de cada caso nos números estão em
+[moderacao.md](moderacao.md), com o checklist de verificação.
+
 ---
 
 ## Arquitetura
