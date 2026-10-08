@@ -4,7 +4,7 @@ Guia para verificar o que acontece com os números do campeonato quando uma run 
 desclassificada, reabilitada ou corrigida à mão, e registro dos casos já tratados.
 Complementa [estatisticas.md](estatisticas.md) (como cada estatística é calculada).
 
-Última revisão: 2026-09-30 (v4.28.5).
+Última revisão: 2026-10-08 (v4.29.0).
 
 ---
 
@@ -18,6 +18,7 @@ Complementa [estatisticas.md](estatisticas.md) (como cada estatística é calcul
 | **Habilidades impossíveis são recusadas:** soma de níveis (fora Aptidão Física e Força) acima de 40 + 1 por hora de jogo, ou salto acima de 10 + 1/h entre syncs. Anomalia `implausible_skills`. | `lib/plausibility.ts` | v4.28.3 |
 | **Habilidade que diminuiu só gera aviso** (`skills_regression:<habilidade> <antes>><depois>`). O sync é aceito, porque o B42.19 renomeou IDs e um mod com mapeamento errado informa 0. | `lib/plausibility.ts` | v4.28.3 |
 | **Anistia de debug:** reabilitar uma run desclassificada por debug exige nota pública e perdoa o debug só até a hora registrada. | `lib/debugAmnesty.ts` | v4.28.0 |
+| **Histórico de syncs:** todo sync decodificado vira uma linha em `sync_history` com o resultado (aceito, recusado, desclassificado, mod desatualizado), inclusive os que não mudam a run. Retenção de 90 dias (cron `/cron/prune-sync-history`). No painel: botão **Syncs** em cada run. | `lib/syncHistory.ts` | v4.29.0 |
 
 A v4.27.2 permitia recomeçar com o mesmo nome (partida nova com até 1 dia de jogo).
 Isso foi **removido na v4.28.5** porque virou brecha (caso Chris Pereira, abaixo).
@@ -60,6 +61,14 @@ ssh -i ~/.ssh/id_ed25519 root@179.199.141.241
 cd /var/www/pzrank/backend && DBURL=$(grep -E "^DATABASE_URL=" .env | cut -d= -f2-)
 ```
 
+0. **Linha do tempo dos syncs** (a partir de 08/10/2026; antes disso não existe). No painel, botão **Syncs** na run, ou:
+   ```sql
+   select at, result, detail, time_raw, kills, score, sandbox_ok, code_reason, mod_version, flagged
+     from sync_history where entry_id = <ID> order by at;
+   ```
+   Mostra cada envio, inclusive os recusados pelas travas e os que chegaram com desclassificação.
+   Teria resolvido direto os casos abaixo: os 4 códigos editados da Anastacia, a sequência
+   desclassificação → personagem novo → save antigo do Chris e a última hora limpa do cocranmac.
 1. **Estado da run e histórico:**
    ```sql
    select id, sandbox_ok, disqualification_reason, disqualified_at, days, time_raw, kills, score, record_score, flagged_reason, mod_version

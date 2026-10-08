@@ -14,6 +14,7 @@ import { parseWeaponStats } from '../lib/weapons';
 import { startRegionFromStats } from '../lib/mapRegions';
 import { COMPANION_STAT_KEYS, validateCompanionStats, type CompanionStatKey } from '../lib/companionStats';
 import { archiveRun, getActiveSeasonId, isNewRunOf, normalizeCharName } from '../lib/runHistory';
+import { recordSync } from '../lib/syncHistory';
 import { normalizeDeathCause } from '../lib/statistics';
 import { deathCellFromDelta, regionOfCell } from '../lib/mapRegions';
 import { isDebugAmnestied, newModGapFlag } from '../lib/debugAmnesty';
@@ -173,6 +174,22 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     res.status(400).json({ error: 'Código inválido ou corrompido.' });
     return;
   }
+
+  // Histórico de syncs (lib/syncHistory.ts): toda resposta daqui em diante — aceito,
+  // recusado, desclassificado, mod desatualizado — vira uma linha, gravada depois de enviada.
+  const syncLog: { entryId: number | null; flag: string | null } = { entryId: null, flag: null };
+  let syncBody: Record<string, unknown> | null = null;
+  const sendJson = res.json.bind(res);
+  res.json = ((body: unknown) => {
+    syncBody = (body && typeof body === 'object') ? body as Record<string, unknown> : null;
+    return sendJson(body);
+  }) as typeof res.json;
+  res.on('finish', () => {
+    void recordSync({
+      playerId: player.id, entryId: syncLog.entryId, decoded,
+      status: res.statusCode, body: syncBody, flag: syncLog.flag,
+    });
+  });
 
   // ── Verificação de versão do mod ──────────────────────────────────────────
   // Se MIN_MOD_VERSION estiver configurado, rejeita syncs de versões antigas.
@@ -357,6 +374,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     mod_gap_at_min: number | null;
   };
   const prev = existing as ExistingRow | null;
+  syncLog.entryId = prev ? Number(prev.id) : null;
 
   // Se já está desclassificado por mods, reabilita automaticamente (mods não desclassificam mais).
   // Para outros motivos (sandbox, debug, manual), mantém a desclassificação.
@@ -619,6 +637,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     const flag = killsImpossible
       ? implausibleFlag(decoded.kills, decoded.timeRaw)
       : implausibleSkillsFlag(skillLevelSum(decoded.skills), decoded.timeRaw);
+    syncLog.flag = flag;
     console.log(`[sync] dados impossiveis recusados | player=${player.nick} | char=${decoded.characterName} | ${flag} | prev=${prev ? `${prev.kills}@${prev.time_raw}` : '-'}`);
     if (!prev) {
       res.status(400).json({ error: 'Dados do personagem fora do possível. Sincronização recusada.' });
@@ -942,6 +961,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     } : {}),
   };
 
+  syncLog.flag = flaggedReason;
   let data, error;
   if (prev) {
     ({ data, error } = await supabase
@@ -963,6 +983,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     return;
   }
 
+  syncLog.entryId = Number((data as { id: number }).id);
   const finalScore = (data as { score: number }).score;
 
   // SSE: notifica clientes conectados sobre mudança de score ou morte.

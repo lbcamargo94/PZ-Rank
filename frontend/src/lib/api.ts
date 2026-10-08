@@ -856,3 +856,17 @@ export function apiGetPlayerActiveMods(playerId: number): Promise<import('../typ
 export function apiGetHealth(): Promise<{ ok: boolean; ts: number; min_mod_version: string | null }> {
   return request('/health');
 }
+
+// Histórico de syncs de uma run (moderador, v4.29.0 — backend/src/lib/syncHistory.ts)
+export interface SyncHistoryRow {
+  id: number; at: string;
+  result: 'aceito' | 'recusado' | 'desclassificado' | 'mod_desatualizado';
+  detail: string | null; http_status: number | null;
+  time_raw: number | null; days: number | null; kills: number | null; score: number | null;
+  is_alive: boolean | null; sandbox_ok: boolean | null; code_reason: string | null;
+  mod_version: string | null; skills: string | null; flagged: string | null;
+}
+
+export function apiGetSyncHistory(token: string, entryId: number): Promise<{ history: SyncHistoryRow[] }> {
+  return request(`/entries/${entryId}/sync-history`, auth(token));
+}

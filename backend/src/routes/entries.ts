@@ -443,6 +443,23 @@ router.patch('/:id/confirm-death', requireModerator, async (req: ModRequest, res
   res.json(data);
 });
 
+// GET /entries/:id/sync-history — moderador: linha do tempo dos syncs da run (últimos 90
+// dias, mais recente primeiro). Ver lib/syncHistory.ts e docs/moderacao.md.
+router.get('/:id/sync-history', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
+  const id = parseInt(String(req.params.id), 10);
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
+  const limit = Math.min(Math.max(parseInt(String(req.query['limit'] ?? '200'), 10) || 200, 1), 1000);
+  const { data, error } = await supabase
+    .from('sync_history')
+    .select('id, at, result, detail, http_status, time_raw, days, kills, score, is_alive, sandbox_ok, code_reason, mod_version, skills, flagged')
+    .eq('entry_id', id)
+    .order('at', { ascending: false })
+    .limit(limit);
+  if (error) { res.status(500).json({ error: dbError(error).message }); return; }
+  res.setHeader('Cache-Control', 'no-store');
+  res.json({ history: data ?? [] });
+});
+
 // PATCH /entries/:id/clear-anomaly — moderador: limpa flagged_reason e flagged_at
 router.patch('/:id/clear-anomaly', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
   const id = parseInt(String(req.params.id), 10);

@@ -175,6 +175,21 @@ router.get('/scan-lives', async (req: Request, res: Response): Promise<void> => 
   res.json({ youtube, twitch });
 });
 
+// GET /cron/prune-sync-history — apaga do histórico de syncs o que passou da retenção
+// (lib/syncHistory.ts, 90 dias). Diário às 04:40 UTC, depois do backup do banco.
+router.get('/prune-sync-history', async (req: Request, res: Response): Promise<void> => {
+  if (!requireCronSecret(req, res)) return;
+  try {
+    const { pruneSyncHistory, SYNC_HISTORY_RETENTION_DAYS } = await import('../lib/syncHistory');
+    const removed = await pruneSyncHistory();
+    console.log(`[cron] prune-sync-history | removidas=${removed} | retencao=${SYNC_HISTORY_RETENTION_DAYS}d`);
+    res.json({ removed, retention_days: SYNC_HISTORY_RETENTION_DAYS });
+  } catch (err) {
+    console.error('[cron] prune-sync-history falhou:', err);
+    res.status(500).json({ error: 'Falha ao limpar o histórico de syncs.' });
+  }
+});
+
 // GET /cron/test-discord — envia uma notificação de teste ao Discord (verifica se o webhook está funcional)
 router.get('/test-discord', async (req: Request, res: Response): Promise<void> => {
   if (!requireCronSecret(req, res)) return;

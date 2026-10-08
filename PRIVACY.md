@@ -63,6 +63,14 @@ Data sent by the official mod (PZCommunityRank) via the PZ Rank Companion:
 | Mod version | Compatibility validation | Internal |
 | Sync code timestamp | Anti-replay validation | Internal |
 
+**Sync history (since v4.29.0):** each sync received from the Companion is also
+stored as one line in a history table, including syncs that were rejected or
+disqualified. It contains the same fields listed above (character name, survival
+time, kills, score, skill levels, alive/dead status, sandbox/debug status, mod
+version) plus the time the sync was received and its result. No new data is
+collected for it. It is visible only to moderators and is used to review
+suspected cheating. Lines older than 90 days are deleted automatically.
+
 ### 2.3 Extended Stats (Optional — sent only if present)
 
 Additional statistics sent by newer versions of the mod:
@@ -153,10 +161,12 @@ Policy. TODO: CONFIRM EXACT YOUTUBE API DATA USED.
 
 ## 5. Data Retention
 
-TODO: CONFIRM DATA RETENTION PERIODS FOR EACH CATEGORY:
+- **Sync history:** 90 days, then deleted automatically (daily job).
+
+TODO: CONFIRM DATA RETENTION PERIODS FOR THE OTHER CATEGORIES:
 - Player accounts
 - Soft-deleted accounts (deleted_at field)
-- Game sync data / entry history
+- Game sync data / entry history (current state of each run)
 - IP logs
 - Moderator accounts
 

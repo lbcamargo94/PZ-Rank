@@ -367,6 +367,31 @@ CREATE TABLE IF NOT EXISTS journal_events (
 );
 CREATE INDEX IF NOT EXISTS idx_journal_created ON journal_events(created_at DESC);
 
+-- migration_v49: histórico de syncs (lib/syncHistory.ts), retenção de 90 dias
+CREATE TABLE IF NOT EXISTS sync_history (
+  id             INTEGER  PRIMARY KEY AUTOINCREMENT,
+  at             TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+  player_id      INTEGER  REFERENCES players(id) ON DELETE CASCADE,
+  entry_id       INTEGER  DEFAULT NULL,
+  character_name TEXT     NOT NULL DEFAULT '',
+  result         TEXT     NOT NULL,
+  detail         TEXT     DEFAULT NULL,
+  http_status    INTEGER  DEFAULT NULL,
+  time_raw       INTEGER  DEFAULT NULL,
+  days           INTEGER  DEFAULT NULL,
+  kills          INTEGER  DEFAULT NULL,
+  score          INTEGER  DEFAULT NULL,
+  is_alive       INTEGER  DEFAULT NULL,
+  sandbox_ok     INTEGER  DEFAULT NULL,
+  code_reason    TEXT     DEFAULT NULL,
+  mod_version    TEXT     DEFAULT NULL,
+  skills         TEXT     DEFAULT NULL,
+  flagged        TEXT     DEFAULT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_sync_history_entry  ON sync_history(entry_id, at);
+CREATE INDEX IF NOT EXISTS idx_sync_history_player ON sync_history(player_id, at);
+CREATE INDEX IF NOT EXISTS idx_sync_history_at     ON sync_history(at);
+
 -- ── Transparência Financeira v2 ─────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS financial_transactions (
   id               INTEGER PRIMARY KEY AUTOINCREMENT,

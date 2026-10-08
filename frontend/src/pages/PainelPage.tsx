@@ -21,6 +21,7 @@ import { ModManagement }        from '../components/painel/ModManagement';
 import { SeasonManager }        from '../components/painel/SeasonManager';
 import { NewsManager }          from '../components/painel/NewsManager';
 import { FinancesManager }      from '../components/painel/FinancesManager';
+import { SyncHistoryModal }     from '../components/painel/SyncHistoryModal';
 
 const DEAD_ZONE_DAYS   = 15;
 const PAINEL_PAGE_SIZE = 20;
@@ -435,6 +436,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
   const [confirmDeathEntryId,  setConfirmDeathEntryId]  = useState<number | null>(null);
   const [sandboxEntry,         setSandboxEntry]         = useState<Entry | null>(null);
   const [disqualifyEntry,      setDisqualifyEntry]      = useState<Entry | null>(null);
+  const [syncHistoryEntry,     setSyncHistoryEntry]     = useState<Entry | null>(null);
   const [amnestyRequest,       setAmnestyRequest]       = useState<{ entry: Entry; patch: { is_alive?: boolean; sandbox_ok?: boolean }; label: string } | null>(null);
   const [entries,        setEntries]        = useState<Entry[]>([]);
   // Mais recente -> mais antigo, valido para qualquer aba selecionada (filteredEntries
@@ -752,6 +754,14 @@ export function PainelPage({ session, onSession, onBack }: Props) {
               <i className="ti ti-flag-off" /> Anomalia
             </button>
           )}
+          <button
+            className="btn-secondary btn-sm"
+            disabled={busy}
+            title="Histórico de syncs da run (últimos 90 dias)"
+            onClick={() => setSyncHistoryEntry(entry)}
+          >
+            <i className="ti ti-history" /> Syncs
+          </button>
           <button
             className="btn-secondary btn-sm"
             disabled={busy}
@@ -1193,6 +1203,13 @@ export function PainelPage({ session, onSession, onBack }: Props) {
           entry={disqualifyEntry}
           onConfirm={handleDisqualifyConfirm}
           onCancel={() => setDisqualifyEntry(null)}
+        />
+      )}
+      {syncHistoryEntry && session && (
+        <SyncHistoryModal
+          entry={syncHistoryEntry}
+          token={session.token}
+          onClose={() => setSyncHistoryEntry(null)}
         />
       )}
       {amnestyRequest && (
