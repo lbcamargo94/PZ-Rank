@@ -787,8 +787,9 @@ router.patch('/:id/verify-email', requireModerator, async (req: ModRequest, res:
   }
 });
 
-// DELETE /players/:id/permanent — master: exclusão permanente (hard delete)
-router.delete('/:id/permanent', requireMaster, async (req: ModRequest, res: Response): Promise<void> => {
+// DELETE /players/:id/permanent — qualquer moderador: exclusão permanente (hard delete)
+// Só de jogadores já na aba de excluídos (soft-delete). Até 08/10/2026 era só master.
+router.delete('/:id/permanent', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
   const id = parseInt(String(req.params.id), 10);
   if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
 
@@ -806,6 +807,8 @@ router.delete('/:id/permanent', requireMaster, async (req: ModRequest, res: Resp
 
     const { error } = await supabase.from('players').delete().eq('id', id);
     if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
+    // Ação irreversível: registra quem excluiu
+    console.log(`[players] exclusao permanente | player=${(player as { nick: string }).nick} (id ${id}) | moderador=${req.userId}`);
     res.status(204).send();
   } catch (err) {
     console.error('[DELETE /players/:id/permanent] Erro inesperado:', err);
