@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { SANDBOX_RULES, validateSandbox, getNestedValue } from '../../lib/sandboxRules';
+import { SANDBOX_RULES, validateSandbox, getNestedValue, matchesRule } from '../../lib/sandboxRules';
 import type { Entry } from '../../types';
 import type { RuleResult } from '../../lib/sandboxRules';
 
@@ -29,10 +29,7 @@ function fmtValue(v: unknown): string {
 }
 
 function ruleOk(rule: (typeof SANDBOX_RULES)[0], actual: unknown): boolean {
-  if (typeof rule.expected === 'boolean') return actual === rule.expected;
-  if (typeof rule.expected === 'number' && typeof actual === 'number')
-    return Math.abs(actual - rule.expected) <= (rule.tol ?? 0.01);
-  return actual === rule.expected;
+  return matchesRule(rule, actual);
 }
 
 // ── Agrupamento por categoria ──────────────────────────────────────────────

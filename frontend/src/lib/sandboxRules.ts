@@ -6,6 +6,10 @@ export interface SandboxRule {
   expected: number | boolean;
   label:    string;
   tol?:     number;
+  // Carência de transição (igual ao TRANSITION_ACCEPT do RankSandbox.lua): quando o valor
+  // do preset muda, o antigo também vale até `transitionUntil`.
+  transitionAccept?: number[];
+  transitionUntil?:  string;   // ISO
 }
 
 export const SANDBOX_RULES: SandboxRule[] = [
@@ -31,7 +35,9 @@ export const SANDBOX_RULES: SandboxRule[] = [
   { key: 'ZombieLore.Memory',                      expected: 1,    label: 'Memória (Longa=1)' },
   { key: 'ZombieLore.Cognition',                   expected: 1,    label: 'Percepção/Portas (Avançado=1)' },
   { key: 'ZombieConfig.FollowSoundDistance',        expected: 600,  label: 'Raio de Audição (600)' },
-  { key: 'ZombieLore.DisableFakeDead',             expected: 2,    label: 'Fake Dead Ativado Total (2)' },
+  // 10/10/2026: 2 -> 1 (mod 2.32.0). 1 = só zumbis do mundo, 2 = mundo e de combate, 3 = nunca
+  { key: 'ZombieLore.DisableFakeDead',             expected: 1,    label: 'Reanimação de Mortos Falsos (Só do Mundo=1)',
+    transitionAccept: [2], transitionUntil: '2026-10-16T02:59:59Z' },
   { key: 'ZombieLore.ZombiesCrawlersDragDown',     expected: true, label: 'Rastejadores Derrubam' },
   { key: 'ZombieConfig.RallyGroupSize',            expected: 0,    label: 'Tamanho da Horda (0)' },
   // Loot — todas as 22 categorias do B42 (0.04 = Muito Baixo)
@@ -122,20 +128,23 @@ export interface RuleResult {
   missing:  boolean;
 }
 
+// Valor confere com a regra (inclui a carência de transição, ver SandboxRule)
+export function matchesRule(rule: SandboxRule, actual: unknown, now: Date = new Date()): boolean {
+  if (typeof rule.expected === 'boolean') return actual === rule.expected;
+  if (typeof rule.expected === 'number' && typeof actual === 'number') {
+    if (Math.abs(actual - rule.expected) <= (rule.tol ?? 0.01)) return true;
+    return !!rule.transitionAccept && !!rule.transitionUntil
+      && now.getTime() <= new Date(rule.transitionUntil).getTime()
+      && rule.transitionAccept.some(v => Math.abs(actual - v) <= (rule.tol ?? 0.01));
+  }
+  return actual === rule.expected;
+}
+
 export function validateSandbox(sandboxData: Record<string, unknown>): RuleResult[] {
   return SANDBOX_RULES.map(rule => {
     const actual = getNestedValue(sandboxData, rule.key);
     const missing = actual === undefined || actual === null;
     if (missing) return { rule, actual: null, ok: false, missing: true };
-
-    let ok = false;
-    if (typeof rule.expected === 'boolean') {
-      ok = actual === rule.expected;
-    } else if (typeof rule.expected === 'number' && typeof actual === 'number') {
-      ok = Math.abs(actual - rule.expected) <= (rule.tol ?? 0.01);
-    } else {
-      ok = actual === rule.expected;
-    }
-    return { rule, actual, ok, missing: false };
+    return { rule, actual, ok: matchesRule(rule, actual), missing: false };
   });
 }

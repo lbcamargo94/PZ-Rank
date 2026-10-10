@@ -418,7 +418,7 @@
             { "label": "Memória", "value": "Longa" },
             { "label": "Visão", "value": "Olhos de Águia" },
             { "label": "Audição", "value": "Alta" },
-            { "label": "Fake Dead", "value": "Total (incl. mortos pelo jogador)" },
+            { "label": "Reanimação de zumbis que parecem mortos", "value": "Só zumbis do mundo" },
             { "label": "Derrubar sobrevivente", "value": "Sim" },
             { "label": "Rastejadores derrubam", "value": "Sim" },
             { "label": "Dano em cercas — multiplicador", "value": "2.0×" },

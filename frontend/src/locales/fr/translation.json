@@ -418,7 +418,7 @@
             { "label": "Mémoire", "value": "Longue" },
             { "label": "Vision", "value": "Œil de Faucon" },
             { "label": "Audition", "value": "Élevée" },
-            { "label": "Fake Dead", "value": "Total (incl. tués par le joueur)" },
+            { "label": "Réanimation des zombies faussement morts", "value": "Zombies du monde uniquement" },
             { "label": "Renverser le survivant", "value": "Oui" },
             { "label": "Les rampants renversent", "value": "Oui" },
             { "label": "Multiplicateur de dégâts sur clôtures", "value": "2.0×" },

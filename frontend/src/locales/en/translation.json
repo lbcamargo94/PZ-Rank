@@ -418,7 +418,7 @@
             { "label": "Memory", "value": "Long" },
             { "label": "Sight", "value": "Eagle Eyed" },
             { "label": "Hearing", "value": "High" },
-            { "label": "Fake Dead", "value": "Total (incl. player kills)" },
+            { "label": "Fake dead zombie reanimation", "value": "World zombies only" },
             { "label": "Knock survivor down", "value": "Yes" },
             { "label": "Crawlers knock down", "value": "Yes" },
             { "label": "Fence damage multiplier", "value": "2.0×" },

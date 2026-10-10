@@ -418,7 +418,7 @@
             { "label": "Memoria", "value": "Larga" },
             { "label": "Visión", "value": "Ojo de Águila" },
             { "label": "Audición", "value": "Alta" },
-            { "label": "Fake Dead", "value": "Total (incl. muertos por el jugador)" },
+            { "label": "Reanimación de zombis que parecen muertos", "value": "Solo zombis del mundo" },
             { "label": "Derribar al superviviente", "value": "Sí" },
             { "label": "Rastreros derriban", "value": "Sí" },
             { "label": "Multiplicador de daño en cercas", "value": "2.0×" },
