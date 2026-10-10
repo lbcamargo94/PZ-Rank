@@ -23,6 +23,21 @@ Complementa [estatisticas.md](estatisticas.md) (como cada estatística é calcul
 A v4.27.2 permitia recomeçar com o mesmo nome (partida nova com até 1 dia de jogo).
 Isso foi **removido na v4.28.5** porque virou brecha (caso Chris Pereira, abaixo).
 
+### Mudanças no preset do desafio
+
+| Data | Configuração | Antes → depois | Motivo | Carência |
+| --- | --- | --- | --- | --- |
+| 10/10/2026 (mod 2.32.0) | Reanimação de Zumbis que Parecem Mortos (`ZombieLore.DisableFakeDead`) | 2 (mundo **e** abatidos pelo jogador) → 1 (só zumbis do mundo) | Desempenho: hordas abatidas deixavam zumbis "fingindo de mortos" ativos perto do jogador (proposta dos jogadores) | Valor antigo aceito até **15/10/2026 23:59** (Brasília), no mod e no painel |
+
+Como funciona a troca: o mod reaplica o preset inteiro quando o save carrega, então a run
+passa ao valor novo sozinha ao atualizar o mod. O mod antigo também reaplica o valor
+antigo ao carregar, por isso quem ainda não atualizou não é desclassificado. A carência
+(`TRANSITION_ACCEPT` em `RankSandbox.lua`, `transitionAccept` em
+`frontend/src/lib/sandboxRules.ts`) cobre o caso de a reaplicação falhar em algum save.
+
+**Pendente:** depois de 15/10, subir `MIN_MOD_VERSION` para 2.32.0 no `.env` da VPS, para
+todos jogarem com o mesmo valor.
+
 ---
 
 ## O que uma desclassificação muda sozinha
