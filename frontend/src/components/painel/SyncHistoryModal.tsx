@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { apiGetSyncHistory, type SyncHistoryRow } from '../../lib/api';
+import { apiGetSyncHistory, apiGetEntryModerationLog, type SyncHistoryRow, type ModerationLogRow } from '../../lib/api';
 import type { Entry } from '../../types';
 
 // Linha do tempo dos syncs de uma run (últimos 90 dias). Mostra também os syncs recusados
@@ -35,8 +35,25 @@ function fmtGame(min: number | null): string {
 
 const cell: React.CSSProperties = { padding: '6px 8px' };
 
+// Nomes das ações gravadas em moderation_log (backend/src/lib/moderationLog.ts)
+const ACTION_LABEL: Record<string, string> = {
+  desclassificar_run: 'Desclassificou', reabilitar_run: 'Reabilitou (viva)', reabilitar_run_morta: 'Reabilitou (morta)',
+  marcar_viva: 'Marcou como viva', marcar_morta: 'Marcou como morta', alterar_status_run: 'Alterou o status',
+  editar_objetivos: 'Editou objetivos', confirmar_morte: 'Confirmou a morte', limpar_anomalia: 'Limpou anomalia',
+  restaurar_run: 'Restaurou a run', remover_run: 'Removeu a run', criar_run: 'Criou a run',
+};
+
+function fmtDetails(details: string | null): string {
+  if (!details) return '';
+  try {
+    const d = JSON.parse(details) as Record<string, unknown>;
+    return Object.entries(d).map(([k, v]) => `${k}: ${String(v)}`).join(' · ');
+  } catch { return details; }
+}
+
 export function SyncHistoryModal({ entry, token, onClose }: Props) {
   const [rows, setRows]   = useState<SyncHistoryRow[] | null>(null);
+  const [modLog, setModLog] = useState<ModerationLogRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -51,6 +68,9 @@ export function SyncHistoryModal({ entry, token, onClose }: Props) {
     apiGetSyncHistory(token, entry.id!)
       .then(r => setRows(r.history))
       .catch(err => setError((err as Error).message));
+    apiGetEntryModerationLog(token, entry.id!)
+      .then(r => setModLog(r.log))
+      .catch(() => setModLog([]));
   }, [token, entry.id]);
 
   return (
@@ -118,6 +138,38 @@ export function SyncHistoryModal({ entry, token, onClose }: Props) {
         <p className="painel-disq-desc" style={{ marginTop: 12 }}>
           Passe o mouse sobre uma linha para ver as habilidades daquele envio.
         </p>
+
+        <h3 className="modal-title" style={{ marginTop: 20 }}>
+          <i className="ti ti-gavel" /> Ações da moderação
+        </h3>
+        {modLog === null && <p className="painel-disq-desc">Carregando…</p>}
+        {modLog !== null && modLog.length === 0 && (
+          <p className="painel-disq-desc">Nenhuma ação registrada. O registro começou na v4.29.5.</p>
+        )}
+        {modLog !== null && modLog.length > 0 && (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 16 }}>
+              <thead>
+                <tr style={{ textAlign: 'left' }}>
+                  <th style={cell}>Quando</th>
+                  <th style={cell}>Moderador</th>
+                  <th style={cell}>Ação</th>
+                  <th style={cell}>Detalhes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {modLog.map(l => (
+                  <tr key={l.id} style={{ borderTop: '1px solid var(--border, #333)' }}>
+                    <td style={{ ...cell, whiteSpace: 'nowrap' }}>{fmtAt(l.at)}</td>
+                    <td style={cell}>{l.moderator_login ?? '—'}</td>
+                    <td style={cell}>{ACTION_LABEL[l.action] ?? l.action}</td>
+                    <td style={cell}>{fmtDetails(l.details) || '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -870,3 +870,13 @@ export interface SyncHistoryRow {
 export function apiGetSyncHistory(token: string, entryId: number): Promise<{ history: SyncHistoryRow[] }> {
   return request(`/entries/${entryId}/sync-history`, auth(token));
 }
+
+// Ações da moderação numa run (v4.29.5 — backend/src/lib/moderationLog.ts)
+export interface ModerationLogRow {
+  id: number; at: string; moderator_login: string | null; action: string;
+  entry_id: number | null; player_id: number | null; target: string | null; details: string | null;
+}
+
+export function apiGetEntryModerationLog(token: string, entryId: number): Promise<{ log: ModerationLogRow[] }> {
+  return request(`/entries/${entryId}/moderation-log`, auth(token));
+}

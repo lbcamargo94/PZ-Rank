@@ -16,8 +16,11 @@ import { validatePassword } from '../lib/password';
 import { config } from '../config';
 import { YT_LIVE_MAX_AGE_MS } from '../lib/youtube';
 import { describeBan, findBanMatch } from '../lib/bannedIdentities';
+import { auditModeration } from '../lib/moderationLog';
 
 const router = Router();
+// Registro das ações da moderação (lib/moderationLog.ts): toda ação de moderador que dá certo
+router.use(auditModeration('players'));
 
 // Normaliza URLs de canal: adiciona https:// se o protocolo estiver ausente.
 // Retorna null para strings vazias ou inválidas.
@@ -785,6 +788,21 @@ router.patch('/:id/verify-email', requireModerator, async (req: ModRequest, res:
     console.error('[PATCH /players/:id/verify-email] Erro inesperado:', err);
     res.status(500).json({ error: 'Erro interno ao verificar email.' });
   }
+});
+
+// GET /players/:id/moderation-log — moderador: ações da moderação neste jogador (inclui as runs dele) (lib/moderationLog.ts)
+router.get('/:id/moderation-log', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
+  const id = parseInt(String(req.params.id), 10);
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
+  const { data, error } = await supabase
+    .from('moderation_log')
+    .select('id, at, moderator_login, action, entry_id, player_id, target, details')
+    .eq('player_id', id)
+    .order('at', { ascending: false })
+    .limit(200);
+  if (error) { res.status(500).json({ error: dbError(error).message }); return; }
+  res.setHeader('Cache-Control', 'no-store');
+  res.json({ log: data ?? [] });
 });
 
 // DELETE /players/:id/permanent — qualquer moderador: exclusão permanente (hard delete)

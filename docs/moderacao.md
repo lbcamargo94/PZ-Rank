@@ -20,6 +20,7 @@ Complementa [estatisticas.md](estatisticas.md) (como cada estatística é calcul
 | **Anistia de debug:** reabilitar uma run desclassificada por debug exige nota pública e perdoa o debug só até a hora registrada. | `lib/debugAmnesty.ts` | v4.28.0 |
 | **Personagem morto não volta:** run morta + código do mesmo personagem vivo só vira partida nova se tiver até 1 dia de jogo (a morte vai pro histórico). Vivo com mais de 1 dia = save restaurado de antes da morte: sync recusado, run continua morta, anomalia `resurrection_attempt`. Se for mesmo um personagem novo que só sincronizou depois, o moderador remove a run antiga para liberar o nome. | `aliveAfterDeath` em `lib/runHistory.ts` | v4.29.4 |
 | **Trava de habilidades só compara runs estabelecidas:** salto e queda entre syncs só com 12 h+ de jogo e run anterior viva. O total vale sempre. | `canCompareSkills` em `lib/plausibility.ts` | v4.29.3 |
+| **Registro das ações da moderação:** toda ação de moderador que dá certo em runs e jogadores (desclassificar, reabilitar, marcar viva/morta, limpar anomalia, bloquear, excluir etc.) vira uma linha em `moderation_log`: quem, quando, o quê e em qual run/jogador. E-mail e links entram só como "alterado". No painel: seção **Ações da moderação** no modal **Syncs** da run. | `lib/moderationLog.ts` | v4.29.5 |
 | **Histórico de syncs:** todo sync decodificado vira uma linha em `sync_history` com o resultado (aceito, recusado, desclassificado, mod desatualizado), inclusive os que não mudam a run. Retenção de 90 dias (cron `/cron/prune-sync-history`). No painel: botão **Syncs** em cada run. | `lib/syncHistory.ts` | v4.29.0 |
 
 A v4.27.2 permitia recomeçar com o mesmo nome (partida nova com até 1 dia de jogo).
@@ -91,6 +92,11 @@ cd /var/www/pzrank/backend && DBURL=$(grep -E "^DATABASE_URL=" .env | cut -d= -f
    Mostra cada envio, inclusive os recusados pelas travas e os que chegaram com desclassificação.
    Teria resolvido direto os casos abaixo: os 4 códigos editados da Anastacia, a sequência
    desclassificação → personagem novo → save antigo do Chris e a última hora limpa do cocranmac.
+0b. **Quem mexeu na run pelo painel** (a partir de 10/10/2026):
+   ```sql
+   select at, moderator_login, action, details from moderation_log where entry_id = <ID> order by at;
+   select at, moderator_login, action, target, details from moderation_log where player_id = <PLAYER_ID> order by at;
+   ```
 1. **Estado da run e histórico:**
    ```sql
    select id, sandbox_ok, disqualification_reason, disqualified_at, days, time_raw, kills, score, record_score, flagged_reason, mod_version

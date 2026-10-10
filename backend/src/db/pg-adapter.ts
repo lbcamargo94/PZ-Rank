@@ -19,7 +19,7 @@ const ALLOWED_TABLES = new Set([
   'mod_dependencies', 'player_tokens', 'seasons', 'hall_of_fame',
   'daily_news', 'season_finances', 'achievements', 'player_achievements',
   'heatmap_events', 'player_likes', 'journal_events', 'run_history', 'banned_identities',
-  'financial_transactions', 'prize_fund', 'prize_distribution', 'sync_history',
+  'financial_transactions', 'prize_fund', 'prize_distribution', 'sync_history', 'moderation_log',
 ]);
 
 const ALLOWED_COLS: Record<string, Set<string>> = {
@@ -40,6 +40,7 @@ const ALLOWED_COLS: Record<string, Set<string>> = {
   heatmap_events:      new Set(['id','season_id','event_type','grid_x','grid_y','count']),
   journal_events:      new Set(['id','type','player_id','player_nick','char_name','data','created_at']),
   sync_history:     new Set(['id','at','player_id','entry_id','character_name','result','detail','http_status','time_raw','days','kills','score','is_alive','sandbox_ok','code_reason','mod_version','skills','flagged']),
+  moderation_log:   new Set(['id','at','moderator_id','moderator_login','action','entry_id','player_id','target','details','http_status']),
   run_history:      new Set(['id','entry_id','player_id','season_id','name','character_name','profession','days','time_raw','time_str','kills','score','skills','traits','objectives','is_alive','sandbox_ok','disqualification_reason','death_cause','death_region','weapon_kills','start_region','animals_killed','fish_caught','crops_harvested','items_crafted','houses_looted','hours_without_sleep','trees_cut','books_read','structures_built','crops_planted','spiffo_visited','eggs_collected','milk_produced','stone_structures','ceramic_items','forged_weapons','km_driven','cities_visited','military_visited','meals_cooked','water_collected','materials_crafted','animal_tracks','weapons_crafted','furniture_crafted','clothes_crafted','cheese_produced','doors_opened','sleep_locations','basements_explored','stations_used','animal_species','days_no_canned','stats_synced_at','run_started_at','run_ended_at','source','is_partial','created_at']),
   banned_identities: new Set(['id','kind','value','reason','created_by','created_at']),
   financial_transactions: new Set(['id','season_id','type','category','description','amount_brl','funding_source','is_prize_fund','is_public','transaction_date','created_at','updated_at','deleted_at']),

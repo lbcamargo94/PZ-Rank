@@ -392,6 +392,23 @@ CREATE INDEX IF NOT EXISTS idx_sync_history_entry  ON sync_history(entry_id, at)
 CREATE INDEX IF NOT EXISTS idx_sync_history_player ON sync_history(player_id, at);
 CREATE INDEX IF NOT EXISTS idx_sync_history_at     ON sync_history(at);
 
+-- migration_v50: registro das ações da moderação (lib/moderationLog.ts)
+CREATE TABLE IF NOT EXISTS moderation_log (
+  id              INTEGER  PRIMARY KEY AUTOINCREMENT,
+  at              TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+  moderator_id    TEXT     DEFAULT NULL,
+  moderator_login TEXT     DEFAULT NULL,
+  action          TEXT     NOT NULL,
+  entry_id        INTEGER  DEFAULT NULL,
+  player_id       INTEGER  DEFAULT NULL,
+  target          TEXT     DEFAULT NULL,
+  details         TEXT     DEFAULT NULL,
+  http_status     INTEGER  DEFAULT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_moderation_log_entry  ON moderation_log(entry_id, at);
+CREATE INDEX IF NOT EXISTS idx_moderation_log_player ON moderation_log(player_id, at);
+CREATE INDEX IF NOT EXISTS idx_moderation_log_at     ON moderation_log(at);
+
 -- ── Transparência Financeira v2 ─────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS financial_transactions (
   id               INTEGER PRIMARY KEY AUTOINCREMENT,

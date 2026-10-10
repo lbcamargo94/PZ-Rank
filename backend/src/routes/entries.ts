@@ -11,6 +11,7 @@ import { requireModerator } from '../middleware/moderator';
 import type { ModRequest } from '../middleware/moderator';
 import { config } from '../config';
 import type { Player, Objectives } from '../types';
+import { auditModeration } from '../lib/moderationLog';
 
 const PUBLIC_ENTRY_COLUMNS = [
   'id', 'player_id', 'name', 'character_name', 'profession',
@@ -32,6 +33,8 @@ function isModRequest(req: Request): boolean {
 }
 
 const router = Router();
+// Registro das ações da moderação (lib/moderationLog.ts): toda ação de moderador que dá certo
+router.use(auditModeration('entries'));
 
 const SORT_COLS: Record<string, string> = {
   days:       'days',
@@ -458,6 +461,21 @@ router.get('/:id/sync-history', requireModerator, async (req: ModRequest, res: R
   if (error) { res.status(500).json({ error: dbError(error).message }); return; }
   res.setHeader('Cache-Control', 'no-store');
   res.json({ history: data ?? [] });
+});
+
+// GET /entries/:id/moderation-log — moderador: ações da moderação nesta run (lib/moderationLog.ts)
+router.get('/:id/moderation-log', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
+  const id = parseInt(String(req.params.id), 10);
+  if (isNaN(id)) { res.status(400).json({ error: 'ID inválido.' }); return; }
+  const { data, error } = await supabase
+    .from('moderation_log')
+    .select('id, at, moderator_login, action, entry_id, player_id, target, details')
+    .eq('entry_id', id)
+    .order('at', { ascending: false })
+    .limit(200);
+  if (error) { res.status(500).json({ error: dbError(error).message }); return; }
+  res.setHeader('Cache-Control', 'no-store');
+  res.json({ log: data ?? [] });
 });
 
 // PATCH /entries/:id/clear-anomaly — moderador: limpa flagged_reason e flagged_at
