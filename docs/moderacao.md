@@ -36,8 +36,12 @@ mas divergência não corrige nem desclassifica. Fica em `UNVERIFIED_KEYS` no
 não acusa). Substituiu a carência com prazo da 2.32.0. Para voltar a verificar, tirar a
 chave das duas listas e publicar uma versão nova do mod.
 
-**Versão mínima:** com a 2.32.1 publicada, subir `MIN_MOD_VERSION` para 2.32.1 quando a
-maioria tiver atualizado (conferir na `entries.mod_version` dos syncs recentes).
+**Versão mínima (agendada):** o script `/usr/local/bin/pzrank-bump-min-mod.sh` na VPS roda
+todo dia às 12:00 UTC (09:00 de Brasília) a partir de 15/10/2026. Ele sobe `MIN_MOD_VERSION`
+para 2.32.1 quando pelo menos 95% das runs que sincronizaram nos últimos 3 dias (mínimo de 20)
+já estiverem na 2.32.1. Faz backup do `.env`, reinicia a API, confere o `/health` e remove a
+própria linha do crontab. Cada execução fica registrada em `/var/log/pzrank-cron.log`
+(`grep bump-min-mod`). Teste sem alterar nada: `DRY_RUN=1 /usr/local/bin/pzrank-bump-min-mod.sh`.
 
 ---
 
