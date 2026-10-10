@@ -149,7 +149,7 @@ Antes de apagar dados de produção, salve as linhas em `/var/backups/pzrank/pon
 - **Decisão:** desclassificação manual por *camarada pz* (02:24). Depois a run foi reabilitada como personagem de teste e **zerada**.
 - **Limpeza feita:** 65 conquistas apagadas (backup em `/var/backups/pzrank/pontuais/conquistas-anastacia-glubby-2026-09-29.csv`); 17 eventos falsos apagados do Jornal; todos os números da run zerados.
 - **Impacto que ficou:**
-  - o aviso "#1 no rank" no Discord;
+  - o aviso "#1 no rank" no Discord — apagado pela organização em 10/10/2026;
   - as células do mapa de calor, se houver: a run não enviou pontos;
   - o Jornal diário de 30/09 não registrou os 400 mil, porque a foto do dia foi tirada fora da janela em que a run valia.
 - **Resultado:** as travas de abates (v4.28.2) e de habilidades (v4.28.3) foram criadas por causa deste caso.
