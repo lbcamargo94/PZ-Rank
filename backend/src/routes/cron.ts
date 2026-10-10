@@ -110,7 +110,11 @@ router.get('/backfill-yt-subs', async (req: Request, res: Response): Promise<voi
 router.get('/renew-yt-subs', async (req: Request, res: Response): Promise<void> => {
   if (!requireCronSecret(req, res)) return;
 
-  const BATCH      = 30;  // jogadores por chamada
+  // Até 10/10/2026 eram 30 por dia, mas cada inscrição vale ~10 dias e há ~610 canais: são
+  // precisas ~60 renovações/dia. O atraso acumulou desde setembro (316 vencidas, lives sem
+  // detecção em tempo real). Renovar não gasta cota da Data API (é só o hub do Pub/Sub).
+  // Agora 150 por chamada, mais vencidas primeiro, cron a cada 6 h (= até 600/dia).
+  const BATCH      = 150; // jogadores por chamada
   const CONCURRENT = 5;   // paralelo por lote — mais causa rate-limit no hub do Google
   const threshold  = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString();
 
@@ -121,6 +125,7 @@ router.get('/renew-yt-subs', async (req: Request, res: Response): Promise<void> 
     .not('yt_channel_id', 'is', null)
     .is('deleted_at', null)
     .or(`yt_sub_expires_at.is.null,yt_sub_expires_at.lt.${threshold}`)
+    .order('yt_sub_expires_at', { ascending: true })
     .limit(BATCH);
 
   if (error) {
