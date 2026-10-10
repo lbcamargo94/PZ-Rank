@@ -75,6 +75,20 @@ export function isImplausibleSkillTotal(skills: string | string[] | null | undef
   return sumLevels(parseSkillLevels(skills)) > SKILL_GRACE_LEVELS + MAX_SKILL_LEVELS_PER_GAME_HOUR * Math.max(0, timeRaw) / 60;
 }
 
+// Comparar habilidades entre dois syncs só faz sentido numa run já estabelecida (v4.29.3).
+// No começo de um personagem os primeiros códigos chegam com as habilidades zeradas e depois
+// aparecem os níveis da profissão — isso virava "salto impossível" e recusava o sync. E quando
+// um personagem novo com o mesmo nome substitui um anterior curto (o tempo não cai pela metade),
+// a comparação misturava os dois. Casos reais em 01-10/10: Pedroza, Negan Smith, Socorro Valles
+// (recusados) e Derik Chaves, Jack Smous, Tiago Jacob (aviso de queda).
+// O TOTAL (isImplausibleSkillTotal) continua valendo sempre.
+export const SKILL_COMPARE_MIN_GAME_MINUTES = 12 * 60;
+
+export function canCompareSkills(prev: { time_raw: number; is_alive: boolean | null }): boolean {
+  if (prev.is_alive === false) return false;           // morto não continua: código vivo é outro personagem
+  return prev.time_raw >= SKILL_COMPARE_MIN_GAME_MINUTES;
+}
+
 // Mesma run (tempo não regrediu): ganho acima do possível no intervalo ('jump', recusa o
 // sync) ou nível que diminuiu ('decrease', só aviso: o B42.19 renomeou IDs de habilidade e um
 // mod com mapeamento errado informa 0 — recusar puniria jogador honesto).

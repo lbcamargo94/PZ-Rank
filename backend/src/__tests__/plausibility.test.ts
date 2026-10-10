@@ -61,3 +61,23 @@ describe('aviso de habilidade que caiu', () => {
     expect(skillsRegressionFlag({ skills: 'Machado 8, Lança 3, Força 6' }, ['Machado 0', 'Lança 3', 'Força 2'])).toBe('skills_regression:Machado 8>0');
   });
 });
+
+import { canCompareSkills, SKILL_COMPARE_MIN_GAME_MINUTES } from '../lib/plausibility';
+describe('quando comparar habilidades entre syncs (v4.29.3)', () => {
+  it('personagem recém-criado (< 12 h de jogo) não é comparado: habilidades chegam zeradas no começo', () => {
+    expect(canCompareSkills({ time_raw: 116, is_alive: true })).toBe(false);   // caso Pedroza
+    expect(canCompareSkills({ time_raw: SKILL_COMPARE_MIN_GAME_MINUTES - 1, is_alive: true })).toBe(false);
+  });
+  it('run estabelecida é comparada', () => {
+    expect(canCompareSkills({ time_raw: SKILL_COMPARE_MIN_GAME_MINUTES, is_alive: true })).toBe(true);
+    expect(canCompareSkills({ time_raw: 300000, is_alive: true })).toBe(true);
+  });
+  it('run anterior morta nunca é comparada: o código vivo é de outro personagem', () => {
+    expect(canCompareSkills({ time_raw: 300000, is_alive: false })).toBe(false);
+  });
+  it('o total continua barrando habilidades no máximo com pouco tempo (caso Anastacia)', () => {
+    const maxed = ['Machado', 'Contundente', 'Cont. Curto', 'Lâmina Longa', 'Lâmina Curta', 'Lança', 'Manutenção',
+      'Mira', 'Recarga', 'Carpintaria', 'Eletricidade', 'Soldagem', 'Mecânica', 'Costura'].map(n => `${n} 8`);
+    expect(isImplausibleSkillTotal(maxed, 3368)).toBe(true);
+  });
+});

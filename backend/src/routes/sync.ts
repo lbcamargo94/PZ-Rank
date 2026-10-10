@@ -21,6 +21,7 @@ import { isDebugAmnestied, newModGapFlag } from '../lib/debugAmnesty';
 import {
   isImplausibleTotal, isImplausibleJump, implausibleFlag,
   isImplausibleSkillTotal, skillChangeIssue, implausibleSkillsFlag, skillLevelSum, skillsRegressionFlag,
+  canCompareSkills,
 } from '../lib/plausibility';
 import { config } from '../config';
 import type { Objectives } from '../types';
@@ -631,7 +632,9 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   const comparable = !!prev && prev.sandbox_ok !== false && !justReactivated;
   const killsImpossible = isImplausibleTotal(decoded.kills, decoded.timeRaw)
     || (comparable && isImplausibleJump(prev!, decoded.kills, decoded.timeRaw));
-  const skillIssue = comparable ? skillChangeIssue(prev!, decoded.skills, decoded.timeRaw) : null;
+  const skillIssue = comparable && canCompareSkills(prev!)
+    ? skillChangeIssue(prev!, decoded.skills, decoded.timeRaw)
+    : null;
   const skillsImpossible = isImplausibleSkillTotal(decoded.skills, decoded.timeRaw) || skillIssue === 'jump';
   if (killsImpossible || skillsImpossible) {
     const flag = killsImpossible
@@ -702,6 +705,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     if (!isNewRun) {
       if (decoded.kills < prev.kills) {
         flaggedReason = 'kills_regression';
+        syncLog.flag  = 'kills_regression';   // histórico de syncs: recusa com motivo
       }
     }
 
