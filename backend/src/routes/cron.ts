@@ -169,6 +169,14 @@ router.get('/scan-lives-youtube', async (req: Request, res: Response): Promise<v
   res.json({ youtube: await scanYoutubeLives() });
 });
 
+// GET /cron/check-youtube-live-ends — a cada 5 min: tira do "ao vivo" as lives do YouTube
+// que já encerraram (lib/liveScan.ts checkYoutubeLiveEnds, ~1 unidade de cota por execução).
+router.get('/check-youtube-live-ends', async (req: Request, res: Response): Promise<void> => {
+  if (!requireCronSecret(req, res)) return;
+  const { checkYoutubeLiveEnds } = await import('../lib/liveScan');
+  res.json(await checkYoutubeLiveEnds());
+});
+
 router.get('/scan-lives-twitch', async (req: Request, res: Response): Promise<void> => {
   if (!requireCronSecret(req, res)) return;
   res.json({ twitch: await scanTwitchLives() });

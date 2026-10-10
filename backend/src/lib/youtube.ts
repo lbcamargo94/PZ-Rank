@@ -358,6 +358,63 @@ export function parsePubSubAtom(xml: string): PubSubEntry | null {
 // 12h cobre folgadamente qualquer transmissão real do desafio.
 export const YT_LIVE_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 
+// ── Consulta em lote (v4.29.8) ────────────────────────────────────────────────
+// videos.list aceita até 50 ids e custa 1 unidade por CHAMADA (não por vídeo): conferir
+// todas as lives marcadas no site custa 1 unidade, em vez de 1 por live.
+export const YT_BATCH_MAX_IDS = 50;
+
+export interface LiveBatchResult {
+  /** id → está ao vivo. Vídeo que não voltou numa chamada bem-sucedida = false (deletado/privado). */
+  status: Map<string, boolean>;
+  /** ids cujo lote falhou (erro de API, cota, rede) — INCONCLUSIVO, nunca tratar como encerrado. */
+  failed: Set<string>;
+  /** chamadas feitas à Data API (= unidades de cota gastas). */
+  calls:  number;
+}
+
+export async function checkLivesBatch(videoIds: string[]): Promise<LiveBatchResult> {
+  const out: LiveBatchResult = { status: new Map(), failed: new Set(), calls: 0 };
+  const ids = [...new Set(videoIds.filter(Boolean))];
+  const apiKey = process.env.YOUTUBE_API_KEY;
+  if (!apiKey) { ids.forEach(id => out.failed.add(id)); return out; }   // sem key: inconclusivo
+
+  for (let i = 0; i < ids.length; i += YT_BATCH_MAX_IDS) {
+    const chunk = ids.slice(i, i + YT_BATCH_MAX_IDS);
+    try {
+      const url = `${YT_API_BASE}/videos?part=snippet,liveStreamingDetails&id=${chunk.join(',')}&key=${apiKey}`;
+      const res = await ytApiFetch(url);
+      if (!res) { chunk.forEach(id => out.failed.add(id)); continue; }   // cota bloqueada: nenhuma chamada
+      out.calls++;
+      if (!res.ok) {
+        console.warn('[checkLivesBatch] YouTube API erro:', res.status);
+        chunk.forEach(id => out.failed.add(id));
+        continue;
+      }
+      const json = await res.json() as {
+        items?: Array<{
+          id: string;
+          snippet: { liveBroadcastContent: string };
+          liveStreamingDetails?: { actualStartTime?: string; actualEndTime?: string };
+        }>;
+      };
+      const seen = new Set<string>();
+      for (const item of json.items ?? []) {
+        const details = item.liveStreamingDetails;
+        // Mesmo critério de checkIsLive
+        const isLive = item.snippet.liveBroadcastContent === 'live'
+                    || (!!details?.actualStartTime && !details?.actualEndTime);
+        out.status.set(item.id, isLive);
+        seen.add(item.id);
+      }
+      // Chamada OK sem o vídeo na resposta = deletado/privado: sinal definitivo de "não está ao vivo"
+      chunk.filter(id => !seen.has(id)).forEach(id => out.status.set(id, false));
+    } catch {
+      chunk.forEach(id => out.failed.add(id));
+    }
+  }
+  return out;
+}
+
 export interface LiveInfo {
   isLive:      boolean;
   title:       string;

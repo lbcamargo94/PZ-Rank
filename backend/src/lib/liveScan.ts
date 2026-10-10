@@ -7,7 +7,7 @@
 // E sync + cron podiam ver a mesma live como "nova" ao mesmo tempo e notificar 2x.
 
 import { supabase } from '../supabase';
-import { getChannelCurrentLive, checkIsLive, YT_LIVE_MAX_AGE_MS } from './youtube';
+import { getChannelCurrentLive, checkLivesBatch, isYouTubeQuotaBlocked, YT_LIVE_MAX_AGE_MS, YT_BATCH_MAX_IDS } from './youtube';
 import { extractTwitchLogin, getLiveStreams } from './twitch';
 import { sendLiveNotification } from './discord';
 import { isChampionshipTitle, isChampionshipTwitchGame } from './championship';
@@ -84,6 +84,13 @@ export async function scanYoutubeLives(): Promise<ScanResult> {
     const rankOf = await loadRankIndex();
     const BATCH = 10;
 
+    // Lives já marcadas: confere todas numa consulta em lote (1 unidade por até 50 vídeos,
+    // em vez de 1 por live). Ausente do resultado = inconclusivo, mantém o estado.
+    const liveIds = list
+      .filter(p => p.yt_last_live_video_id && Date.now() - (p.yt_live_confirmed_at ? new Date(p.yt_live_confirmed_at).getTime() : 0) <= YT_LIVE_MAX_AGE_MS)
+      .map(p => p.yt_last_live_video_id!);
+    const liveCheck = await checkLivesBatch(liveIds);
+
     for (let i = 0; i < list.length; i += BATCH) {
       await Promise.allSettled(list.slice(i, i + BATCH).map(async (player) => {
         if (player.yt_last_live_video_id) {
@@ -95,14 +102,14 @@ export async function scanYoutubeLives(): Promise<ScanResult> {
             out.ended.push(player.nick);
             return;
           }
-          const liveInfo = await checkIsLive(player.yt_last_live_video_id);
-          // null = API falhou (ou cota esgotada) — não tratar como live encerrada
-          if (liveInfo !== null && !liveInfo.isLive) {
+          const isLive = liveCheck.status.get(player.yt_last_live_video_id);
+          // undefined = lote falhou (ou cota esgotada) — não tratar como live encerrada
+          if (isLive === false) {
             await supabase.from('players').update({ yt_last_live_video_id: null, yt_live_confirmed_at: null }).eq('id', player.id);
             out.ended.push(player.nick);
           } else {
-            // Só renova o timer de confiança em confirmação real (não "modo degradado")
-            if (liveInfo?.isLive && !liveInfo.degraded) {
+            // Só renova o timer de confiança em confirmação real
+            if (isLive === true) {
               await supabase.from('players').update({ yt_live_confirmed_at: new Date().toISOString() }).eq('id', player.id);
             }
             out.ongoing.push(player.nick);
@@ -128,6 +135,68 @@ export async function scanYoutubeLives(): Promise<ScanResult> {
   }
   out.liveStarted = out.started.length; out.liveEnded = out.ended.length; out.liveOngoing = out.ongoing.length;
   if (out.started.length > 0 || out.ended.length > 0) broadcast('live-status', { started: out.started, ended: out.ended });
+  return out;
+}
+
+// ── Fim das lives do YouTube, a cada 5 min (v4.29.8) ─────────────────────────
+// A varredura completa roda a cada 2 h, e uma live encerrada continuava "ao vivo" no site
+// até lá (6 casos em 10/10/2026). Aqui só as lives marcadas, todas numa consulta em lote:
+// ~1 unidade por execução (288/dia). Proteções: não roda com a cota bloqueada nem durante a
+// varredura completa; teto diário próprio; lote que falha nunca encerra live.
+export const LIVE_END_CHECK_MAX_CALLS_PER_DAY = 600;
+const endCheckUsage = { day: '', calls: 0 };
+
+export function endCheckBudgetLeft(now = new Date()): number {
+  const day = now.toISOString().slice(0, 10);
+  if (endCheckUsage.day !== day) { endCheckUsage.day = day; endCheckUsage.calls = 0; }
+  return LIVE_END_CHECK_MAX_CALLS_PER_DAY - endCheckUsage.calls;
+}
+
+export interface EndCheckResult { checked: number; ended: string[]; ongoing: number; calls: number; skipped?: string }
+
+export async function checkYoutubeLiveEnds(): Promise<EndCheckResult> {
+  const out: EndCheckResult = { checked: 0, ended: [], ongoing: 0, calls: 0 };
+  if (isYouTubeQuotaBlocked()) return { ...out, skipped: 'cota da API bloqueada' };
+  if (youtubeRunning)          return { ...out, skipped: 'varredura completa em andamento' };
+
+  const { data, error } = await supabase
+    .from('players')
+    .select('id, nick, yt_last_live_video_id, yt_live_confirmed_at')
+    .eq('status', 'approved')
+    .not('yt_last_live_video_id', 'is', null)
+    .is('deleted_at', null);
+  if (error) return { ...out, skipped: 'erro ao buscar jogadores' };
+  type Row = { id: number; nick: string; yt_last_live_video_id: string; yt_live_confirmed_at: string | null };
+  const rows = (data ?? []) as Row[];
+  out.checked = rows.length;
+  if (rows.length === 0) return out;
+
+  const needed = Math.ceil(rows.length / YT_BATCH_MAX_IDS);
+  const left = endCheckBudgetLeft();
+  if (needed > left) {
+    console.warn(`[live-ends] teto diario de ${LIVE_END_CHECK_MAX_CALLS_PER_DAY} chamadas atingido - aguardando a virada do dia`);
+    return { ...out, skipped: 'teto diário do job atingido' };
+  }
+
+  const result = await checkLivesBatch(rows.map(r => r.yt_last_live_video_id));
+  endCheckUsage.calls += result.calls;
+  out.calls = result.calls;
+  if (endCheckBudgetLeft() < LIVE_END_CHECK_MAX_CALLS_PER_DAY * 0.2) {
+    console.warn(`[live-ends] ${endCheckUsage.calls} de ${LIVE_END_CHECK_MAX_CALLS_PER_DAY} chamadas usadas hoje`);
+  }
+
+  const now = new Date().toISOString();
+  for (const r of rows) {
+    const isLive = result.status.get(r.yt_last_live_video_id);
+    if (isLive === false) {
+      await supabase.from('players').update({ yt_last_live_video_id: null, yt_live_confirmed_at: null }).eq('id', r.id);
+      out.ended.push(r.nick);
+    } else if (isLive === true) {
+      await supabase.from('players').update({ yt_live_confirmed_at: now }).eq('id', r.id);
+      out.ongoing++;
+    }
+  }
+  if (out.ended.length > 0) broadcast('live-status', { started: [], ended: out.ended });
   return out;
 }
 
