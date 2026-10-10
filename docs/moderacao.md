@@ -25,18 +25,19 @@ Isso foi **removido na v4.28.5** porque virou brecha (caso Chris Pereira, abaixo
 
 ### Mudanças no preset do desafio
 
-| Data | Configuração | Antes → depois | Motivo | Carência |
-| --- | --- | --- | --- | --- |
-| 10/10/2026 (mod 2.32.0) | Reanimação de Zumbis que Parecem Mortos (`ZombieLore.DisableFakeDead`) | 2 (mundo **e** abatidos pelo jogador) → 1 (só zumbis do mundo) | Desempenho: hordas abatidas deixavam zumbis "fingindo de mortos" ativos perto do jogador (proposta dos jogadores) | Valor antigo aceito até **15/10/2026 23:59** (Brasília), no mod e no painel |
+| Data | Configuração | Antes → depois | Motivo |
+| --- | --- | --- | --- |
+| 10/10/2026 (mod 2.32.0) | Reanimação de Zumbis que Parecem Mortos (`ZombieLore.DisableFakeDead`) | 2 (mundo **e** abatidos pelo jogador) → 1 (só zumbis do mundo) | Desempenho: hordas abatidas deixavam zumbis "fingindo de mortos" ativos perto do jogador (proposta dos jogadores) |
 
-Como funciona a troca: o mod reaplica o preset inteiro quando o save carrega, então a run
-passa ao valor novo sozinha ao atualizar o mod. O mod antigo também reaplica o valor
-antigo ao carregar, por isso quem ainda não atualizou não é desclassificado. A carência
-(`TRANSITION_ACCEPT` em `RankSandbox.lua`, `transitionAccept` em
-`frontend/src/lib/sandboxRules.ts`) cobre o caso de a reaplicação falhar em algum save.
+**Fora da verificação (mod 2.32.1, 10/10/2026):** por decisão da organização, essa opção
+deixou de ser conferida. O valor 1 do preset continua sendo aplicado quando o save carrega,
+mas divergência não corrige nem desclassifica. Fica em `UNVERIFIED_KEYS` no
+`RankSandbox.lua` e com `unverified: true` em `frontend/src/lib/sandboxRules.ts` (o painel
+não acusa). Substituiu a carência com prazo da 2.32.0. Para voltar a verificar, tirar a
+chave das duas listas e publicar uma versão nova do mod.
 
-**Pendente:** depois de 15/10, subir `MIN_MOD_VERSION` para 2.32.0 no `.env` da VPS, para
-todos jogarem com o mesmo valor.
+**Versão mínima:** com a 2.32.1 publicada, subir `MIN_MOD_VERSION` para 2.32.1 quando a
+maioria tiver atualizado (conferir na `entries.mod_version` dos syncs recentes).
 
 ---
 

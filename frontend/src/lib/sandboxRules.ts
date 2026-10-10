@@ -6,10 +6,9 @@ export interface SandboxRule {
   expected: number | boolean;
   label:    string;
   tol?:     number;
-  // Carência de transição (igual ao TRANSITION_ACCEPT do RankSandbox.lua): quando o valor
-  // do preset muda, o antigo também vale até `transitionUntil`.
-  transitionAccept?: number[];
-  transitionUntil?:  string;   // ISO
+  // Fora da verificação (igual ao UNVERIFIED_KEYS do RankSandbox.lua): o valor do preset
+  // continua sendo aplicado no jogo, mas o painel não acusa divergência.
+  unverified?: boolean;
 }
 
 export const SANDBOX_RULES: SandboxRule[] = [
@@ -36,8 +35,8 @@ export const SANDBOX_RULES: SandboxRule[] = [
   { key: 'ZombieLore.Cognition',                   expected: 1,    label: 'Percepção/Portas (Avançado=1)' },
   { key: 'ZombieConfig.FollowSoundDistance',        expected: 600,  label: 'Raio de Audição (600)' },
   // 10/10/2026: 2 -> 1 (mod 2.32.0). 1 = só zumbis do mundo, 2 = mundo e de combate, 3 = nunca
-  { key: 'ZombieLore.DisableFakeDead',             expected: 1,    label: 'Reanimação de Mortos Falsos (Só do Mundo=1)',
-    transitionAccept: [2], transitionUntil: '2026-10-16T02:59:59Z' },
+  { key: 'ZombieLore.DisableFakeDead',             expected: 1,    label: 'Reanimação de Mortos Falsos (Só do Mundo=1) — não verificado',
+    unverified: true },
   { key: 'ZombieLore.ZombiesCrawlersDragDown',     expected: true, label: 'Rastejadores Derrubam' },
   { key: 'ZombieConfig.RallyGroupSize',            expected: 0,    label: 'Tamanho da Horda (0)' },
   // Loot — todas as 22 categorias do B42 (0.04 = Muito Baixo)
@@ -128,15 +127,12 @@ export interface RuleResult {
   missing:  boolean;
 }
 
-// Valor confere com a regra (inclui a carência de transição, ver SandboxRule)
-export function matchesRule(rule: SandboxRule, actual: unknown, now: Date = new Date()): boolean {
+// Valor confere com a regra (regra fora da verificação sempre confere, ver SandboxRule)
+export function matchesRule(rule: SandboxRule, actual: unknown): boolean {
+  if (rule.unverified) return true;
   if (typeof rule.expected === 'boolean') return actual === rule.expected;
-  if (typeof rule.expected === 'number' && typeof actual === 'number') {
-    if (Math.abs(actual - rule.expected) <= (rule.tol ?? 0.01)) return true;
-    return !!rule.transitionAccept && !!rule.transitionUntil
-      && now.getTime() <= new Date(rule.transitionUntil).getTime()
-      && rule.transitionAccept.some(v => Math.abs(actual - v) <= (rule.tol ?? 0.01));
-  }
+  if (typeof rule.expected === 'number' && typeof actual === 'number')
+    return Math.abs(actual - rule.expected) <= (rule.tol ?? 0.01);
   return actual === rule.expected;
 }
 
