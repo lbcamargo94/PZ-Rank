@@ -141,6 +141,13 @@ function parseFlaggedReason(flaggedReason: string): { label: string; detail: str
       detail: `Chegou um código com ${kills!.toLocaleString('pt-BR')} abates em ${hours} h de jogo — acima de 50 por hora, o que nenhum jogo produz. O sync foi recusado e a run ficou com os dados anteriores. Forte indício de código editado: revise e desclassifique se for o caso.`,
     };
   }
+  if (flaggedReason.startsWith('resurrection_attempt:')) {
+    const [days] = flaggedReason.slice('resurrection_attempt:'.length).split('@').map(v => parseInt(v, 10) || 0);
+    return {
+      label:  'Personagem morto voltou vivo',
+      detail: `A run já estava morta e chegou um código do mesmo personagem vivo, com ${days} dia(s) de jogo — típico de save restaurado de antes da morte. O sync foi recusado e a run continua morta. Se for mesmo um personagem novo que só sincronizou depois de 1 dia, remova a run antiga para liberar o nome.`,
+    };
+  }
   if (flaggedReason.startsWith('skills_regression:')) {
     const fell = flaggedReason.slice('skills_regression:'.length).split(',').filter(Boolean)
       .map(f => f.replace('>', ' → '));

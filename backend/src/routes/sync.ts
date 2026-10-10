@@ -13,7 +13,7 @@ import { processHeatmapDelta, selectHeatPoints } from '../lib/heatmap';
 import { parseWeaponStats } from '../lib/weapons';
 import { startRegionFromStats } from '../lib/mapRegions';
 import { COMPANION_STAT_KEYS, validateCompanionStats, type CompanionStatKey } from '../lib/companionStats';
-import { archiveRun, getActiveSeasonId, isNewRunOf, normalizeCharName } from '../lib/runHistory';
+import { aliveAfterDeath, archiveRun, getActiveSeasonId, isNewRunOf, normalizeCharName } from '../lib/runHistory';
 import { recordSync } from '../lib/syncHistory';
 import { normalizeDeathCause } from '../lib/statistics';
 import { deathCellFromDelta, regionOfCell } from '../lib/mapRegions';
@@ -457,6 +457,30 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     }
   }
 
+  // Run morta + código vivo: personagem novo (até 1 dia) ou save restaurado de antes da
+  // morte (lib/runHistory.ts aliveAfterDeath). Restauração: recusa, run continua morta.
+  const afterDeath = prev && prev.is_alive === false && decoded.isAlive && !justReactivated
+    ? aliveAfterDeath(decoded.days)
+    : null;
+  if (prev && afterDeath === 'resurrection') {
+    const flag = `resurrection_attempt:${decoded.days}@${decoded.timeRaw}`;
+    syncLog.flag = flag;
+    console.log(`[sync] personagem morto voltou vivo, recusado | player=${player.nick} | char=${decoded.characterName} | morto=${prev.days}d | codigo=${decoded.days}d`);
+    await supabase
+      .from(config.tableName)
+      .update({ flagged_reason: flag, flagged_at: new Date().toISOString() })
+      .eq('id', prev.id);
+    res.status(200).json({
+      success:        true,
+      stale:          true,
+      character_name: prev.character_name,
+      score:          prev.score,
+      is_alive:       false,
+      message:        'Este personagem já morreu no ranking. Para jogar de novo, crie um personagem novo.',
+    });
+    return;
+  }
+
   // Detecta nova run: timeRaw regrediu = personagem morreu e reiniciou com mesmo nome.
   // Nesse caso, objectives definidos pelo moderador NÃO são herdados — cada run começa do zero.
   //
@@ -466,7 +490,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // (glitch pontual do Companion/decoder) já bastava pra zerar objectives de uma
   // run de centenas de dias que nunca morreu de verdade — foi o que aconteceu com
   // o DrChatO (base de Rosewood sumiu do nada, personagem seguia vivo e íntegro).
-  const isNewCharRun = prev !== null && isNewRunOf(prev.time_raw, decoded.timeRaw);
+  const isNewCharRun = prev !== null && (isNewRunOf(prev.time_raw, decoded.timeRaw) || afterDeath === 'new');
   const existingObjectives = isNewCharRun
     ? null
     : (existing?.objectives as Objectives | null) ?? null;

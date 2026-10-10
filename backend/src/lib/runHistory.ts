@@ -17,6 +17,23 @@ export function isNewRunOf(prevTimeRaw: number, newTimeRaw: number): boolean {
   return newTimeRaw < prevTimeRaw * 0.5;
 }
 
+/** Dias máximos de um personagem novo que chega depois de uma run morta com o mesmo nome. */
+export const NEW_CHARACTER_MAX_DAYS = 1;
+
+/**
+ * Run MORTA no banco + código de personagem VIVO com o mesmo nome (v4.29.4). Personagem
+ * morto não volta, então só pode ser:
+ *  - 'new': personagem recém-criado (até 1 dia de jogo) — vira partida nova e a morta vai
+ *    pro histórico. Antes, se o tempo não caísse pela metade (run anterior curta), a run
+ *    morta "ressuscitava" e a morte se perdia do histórico.
+ *  - 'resurrection': vivo com mais de 1 dia = save restaurado de antes da morte. Antes
+ *    passava como partida nova (tempo < metade) ou ressuscitava a run (tempo >= metade).
+ *    Recusado; a run continua morta e o moderador recebe a anomalia.
+ */
+export function aliveAfterDeath(newDays: number): 'new' | 'resurrection' {
+  return newDays <= NEW_CHARACTER_MAX_DAYS ? 'new' : 'resurrection';
+}
+
 // isEmptyRun mora em statistics.ts (regra oficial também das estatísticas);
 // reexportada aqui pra quem arquiva runs.
 export { isEmptyRun };

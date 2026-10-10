@@ -18,6 +18,8 @@ Complementa [estatisticas.md](estatisticas.md) (como cada estatística é calcul
 | **Habilidades impossíveis são recusadas:** soma de níveis (fora Aptidão Física e Força) acima de 40 + 1 por hora de jogo, ou salto acima de 10 + 1/h entre syncs. Anomalia `implausible_skills`. | `lib/plausibility.ts` | v4.28.3 |
 | **Habilidade que diminuiu só gera aviso** (`skills_regression:<habilidade> <antes>><depois>`). O sync é aceito, porque o B42.19 renomeou IDs e um mod com mapeamento errado informa 0. | `lib/plausibility.ts` | v4.28.3 |
 | **Anistia de debug:** reabilitar uma run desclassificada por debug exige nota pública e perdoa o debug só até a hora registrada. | `lib/debugAmnesty.ts` | v4.28.0 |
+| **Personagem morto não volta:** run morta + código do mesmo personagem vivo só vira partida nova se tiver até 1 dia de jogo (a morte vai pro histórico). Vivo com mais de 1 dia = save restaurado de antes da morte: sync recusado, run continua morta, anomalia `resurrection_attempt`. Se for mesmo um personagem novo que só sincronizou depois, o moderador remove a run antiga para liberar o nome. | `aliveAfterDeath` em `lib/runHistory.ts` | v4.29.4 |
+| **Trava de habilidades só compara runs estabelecidas:** salto e queda entre syncs só com 12 h+ de jogo e run anterior viva. O total vale sempre. | `canCompareSkills` em `lib/plausibility.ts` | v4.29.3 |
 | **Histórico de syncs:** todo sync decodificado vira uma linha em `sync_history` com o resultado (aceito, recusado, desclassificado, mod desatualizado), inclusive os que não mudam a run. Retenção de 90 dias (cron `/cron/prune-sync-history`). No painel: botão **Syncs** em cada run. | `lib/syncHistory.ts` | v4.29.0 |
 
 A v4.27.2 permitia recomeçar com o mesmo nome (partida nova com até 1 dia de jogo).
@@ -57,13 +59,13 @@ cache de `lib/statsData.ts`):
 | `/estatisticas` (todas as seções, inclusive evolução semanal, armas, cidades iniciais, onde morrem, ações, profissões e traços) | A run sai de todas as contas |
 | Lendas (`GET /stats/legends`) | A run sai (atuais e histórico usam `sandbox_ok is not false`) |
 | Conquistas no perfil (`GET /achievements/player/:id`) | As conquistas da run somem do perfil, mas **continuam no banco** e voltam se a run for reabilitada |
+| Jornal (`GET /journal`, página /jornal) | Os eventos da run (do início dela em diante) somem, mas **continuam no banco** e voltam se a run for reabilitada. Runs anteriores legítimas com o mesmo nome continuam aparecendo (`lib/journalFilter.ts`, desde v4.29.4) |
 | Fechamento de temporada / Hall da Fama | Usa as mesmas regras oficiais |
 
 ## O que NÃO se ajusta sozinho
 
 | Onde | Por quê | O que fazer |
 | --- | --- | --- |
-| **Jornal** (`journal_events`, página /jornal) | `routes/journal.ts` não filtra desclassificados. Os eventos continuam públicos. | Apagar à mão os eventos falsos (ver consultas) |
 | **Mapa de calor** (`heatmap_events`) | É uma contagem por célula do mapa, sem vínculo com a run. | Não dá para reverter. Uma run só pesa poucas células; aceitar. |
 | **Jornal diário** (`daily_news`, "abates de hoje") | `kills_today = max(0, total de hoje − total de ontem)`. Tirar uma run do total **reduz os abates do dia** em que isso acontece. | Registrar o motivo; o dia seguinte volta ao normal |
 | **Mensagens no Discord** (morte, "#1 no rank", desclassificação) | Já foram enviadas. | Apagar no Discord, se preciso |
