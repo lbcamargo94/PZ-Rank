@@ -15,7 +15,12 @@
 
 const TWITCH_GQL_URL       = 'https://gql.twitch.tv/gql';
 const TWITCH_GQL_CLIENT_ID = 'kimne78kx3ncx6brgo4mv6wki5h1ko';
-const BATCH_SIZE           = 50; // aliases por request — margem segura sob o limite de complexidade do GQL
+// A Twitch limita cada query a 15 aliases de raiz ("root field aliases limit allowed (15)").
+// Com 50, TODOS os lotes voltavam HTTP 400 e nenhum streamer da Twitch aparecia ao vivo no
+// site nem gerava aviso no Discord (achado em 10/10/2026, caso haou). Lotes de 15 rodam
+// em paralelo, BATCH_CONCURRENCY por vez, para a lista de lives não ficar lenta.
+export const BATCH_SIZE    = 15;
+const BATCH_CONCURRENCY    = 4;
 
 /**
  * Extrai o login (username) de uma URL da Twitch.
@@ -64,8 +69,10 @@ export async function getLiveStreams(logins: string[]): Promise<TwitchLiveCheckR
   const failed = new Set<string>();
   if (logins.length === 0) return { live, failed };
 
-  for (let i = 0; i < logins.length; i += BATCH_SIZE) {
-    const batch  = logins.slice(i, i + BATCH_SIZE);
+  const batches: string[][] = [];
+  for (let i = 0; i < logins.length; i += BATCH_SIZE) batches.push(logins.slice(i, i + BATCH_SIZE));
+
+  const runBatch = async (batch: string[]): Promise<void> => {
     const fields = batch.map((login, idx) =>
       `u${idx}: user(login: ${JSON.stringify(login)}) { login stream { id type title previewImageURL(width: 440, height: 248) game { name } } }`
     ).join('\n');
@@ -77,10 +84,14 @@ export async function getLiveStreams(logins: string[]): Promise<TwitchLiveCheckR
         body:    JSON.stringify({ query: `query { ${fields} }` }),
         signal:  AbortSignal.timeout(8_000),
       });
-      if (!res.ok) { batch.forEach(l => failed.add(l.toLowerCase())); continue; }
+      if (!res.ok) {
+        console.warn(`[twitch] lote recusado (HTTP ${res.status}): ${(await res.text().catch(() => '')).slice(0, 200)}`);
+        batch.forEach(l => failed.add(l.toLowerCase()));
+        return;
+      }
 
       const json = await res.json() as { data?: Record<string, GqlUserNode | null> };
-      if (!json.data) { batch.forEach(l => failed.add(l.toLowerCase())); continue; }
+      if (!json.data) { batch.forEach(l => failed.add(l.toLowerCase())); return; }
 
       for (const node of Object.values(json.data)) {
         if (!node?.stream || node.stream.type !== 'live') continue;
@@ -96,6 +107,10 @@ export async function getLiveStreams(logins: string[]): Promise<TwitchLiveCheckR
       // falha de rede/timeout — lote inteiro fica inconclusivo, não "offline"
       batch.forEach(l => failed.add(l.toLowerCase()));
     }
+  };
+
+  for (let i = 0; i < batches.length; i += BATCH_CONCURRENCY) {
+    await Promise.all(batches.slice(i, i + BATCH_CONCURRENCY).map(runBatch));
   }
 
   return { live, failed };
