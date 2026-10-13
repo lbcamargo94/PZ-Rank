@@ -880,3 +880,20 @@ export interface ModerationLogRow {
 export function apiGetEntryModerationLog(token: string, entryId: number): Promise<{ log: ModerationLogRow[] }> {
   return request(`/entries/${entryId}/moderation-log`, auth(token));
 }
+
+// Estatísticas de uso dos mods (moderador, v4.30.0 — backend/src/lib/modStats.ts)
+export interface ModUsageItem {
+  key: string; name: string; workshop_id: string | null; mod_ids: string[];
+  status: 'permitido' | 'bloqueado' | 'misto' | 'nao_cadastrado';
+  required: boolean; players: number; percent: number; player_ids: number[];
+}
+export interface ModStatsResponse {
+  days: number | null; participants: number;
+  summary: { avg_mods_per_participant: number; mods_in_use: number; registered_unused: number; unregistered_in_use: number };
+  players: Record<string, { nick: string | null; character: string }>;
+  items: ModUsageItem[];
+}
+
+export function apiGetModStats(token: string, days: number | 'all'): Promise<ModStatsResponse> {
+  return request(`/mods/stats?days=${days}`, auth(token));
+}

@@ -22,6 +22,7 @@ import { SeasonManager }        from '../components/painel/SeasonManager';
 import { NewsManager }          from '../components/painel/NewsManager';
 import { FinancesManager }      from '../components/painel/FinancesManager';
 import { SyncHistoryModal }     from '../components/painel/SyncHistoryModal';
+import { ModStatsPanel }        from '../components/painel/ModStatsPanel';
 
 const DEAD_ZONE_DAYS   = 15;
 const PAINEL_PAGE_SIZE = 20;
@@ -443,6 +444,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
   const [confirmDeathEntryId,  setConfirmDeathEntryId]  = useState<number | null>(null);
   const [sandboxEntry,         setSandboxEntry]         = useState<Entry | null>(null);
   const [disqualifyEntry,      setDisqualifyEntry]      = useState<Entry | null>(null);
+  const [modsView,             setModsView]             = useState<'cadastro' | 'estatisticas'>('cadastro');
   const [syncHistoryEntry,     setSyncHistoryEntry]     = useState<Entry | null>(null);
   const [amnestyRequest,       setAmnestyRequest]       = useState<{ entry: Entry; patch: { is_alive?: boolean; sandbox_ok?: boolean }; label: string } | null>(null);
   const [entries,        setEntries]        = useState<Entry[]>([]);
@@ -943,7 +945,21 @@ export function PainelPage({ session, onSession, onBack }: Props) {
         )}
 
         {tab === 'mods' && (
-          <ModManagement token={session.token} showToast={showToast} />
+          <>
+            <div className="painel-section-filter" style={{ marginBottom: 12 }}>
+              <div className="filter-bar">
+                <button className={`sort-btn${modsView === 'cadastro' ? ' active' : ''}`} onClick={() => setModsView('cadastro')}>
+                  <i className="ti ti-list-details" /> Cadastro
+                </button>
+                <button className={`sort-btn${modsView === 'estatisticas' ? ' active' : ''}`} onClick={() => setModsView('estatisticas')}>
+                  <i className="ti ti-chart-bar" /> Estatísticas
+                </button>
+              </div>
+            </div>
+            {modsView === 'cadastro'
+              ? <ModManagement token={session.token} showToast={showToast} />
+              : <ModStatsPanel token={session.token} showToast={showToast} />}
+          </>
         )}
 
         {tab === 'decoder' && <CodeDecoder />}

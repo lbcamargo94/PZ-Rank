@@ -5,6 +5,8 @@ import { dbError, translateSupabaseError } from '../lib/errors';
 import { requireModerator } from '../middleware/moderator';
 import type { ModRequest } from '../middleware/moderator';
 import { notifyModAllowed, notifyModRemoved, notifyModBlocked } from '../lib/discord';
+import { computeModStats, type StatsRun, type StatsMod } from '../lib/modStats';
+import { config } from '../config';
 
 const router = Router();
 
@@ -115,6 +117,28 @@ router.get('/list', handleGetMods);
 router.get('/', handleGetMods);
 
 // GET /mods/all — moderator: returns all mods (active + blocked)
+// GET /mods/stats?days=14 — moderador: quantos participantes usam cada mod (lib/modStats.ts).
+// days = 7 | 14 | 30 ou "all" (todas as runs vivas). Padrão 14.
+router.get('/stats', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
+  const raw  = String(req.query['days'] ?? '14');
+  const days = raw === 'all' ? null : Math.min(Math.max(parseInt(raw, 10) || 14, 1), 365);
+  const [runsRes, modsRes] = await Promise.all([
+    supabase.from(config.tableName)
+      .select('player_id, name, character_name, active_mods, updated_at, is_alive, sandbox_ok')
+      .eq('is_alive', true)
+      .is('deleted_at', null),
+    supabase.from('mods').select('mod_id, name, workshop_id, status, is_required'),
+  ]);
+  if (runsRes.error || modsRes.error) {
+    res.status(500).json({ error: dbError((runsRes.error ?? modsRes.error)!).message });
+    return;
+  }
+  const runs = ((runsRes.data ?? []) as Array<StatsRun & { name: string | null }>)
+    .map(r => ({ ...r, nick: r.name }));
+  res.setHeader('Cache-Control', 'no-store');
+  res.json(computeModStats(runs, (modsRes.data ?? []) as StatsMod[], days));
+});
+
 router.get('/all', requireModerator, async (_req: ModRequest, res: Response): Promise<void> => {
   try {
     const { data, error } = await supabase
