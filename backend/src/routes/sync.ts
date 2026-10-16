@@ -279,7 +279,13 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       return;
     }
     if (ageSec < -300) {
-      res.status(400).json({ error: 'Timestamp do código inválido (futuro).' });
+      // O timestamp vem do relógio do PC do jogador. Diz quanto está adiantado para ele
+      // poder corrigir (caso Gets, 13-16/10: fila presa por relógio adiantado).
+      const aheadMin = Math.ceil(-ageSec / 60);
+      console.log(`[sync] relogio do PC adiantado | player=${player.nick} | char=${decoded.characterName} | adiantado=${aheadMin} min`);
+      res.status(400).json({
+        error: `Relógio do seu computador está ${aheadMin} min adiantado. Ative "Definir horário automaticamente" e o fuso horário correto no Windows e gere um novo sync.`,
+      });
       return;
     }
   }
