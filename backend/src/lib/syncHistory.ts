@@ -57,6 +57,7 @@ export async function recordSync(r: SyncRecord): Promise<void> {
       sandbox_ok:     r.decoded.sandboxOk,
       code_reason:    r.decoded.disqualificationReason,
       mod_version:    r.decoded.modVersion,
+      code_ts:        r.decoded.codeTimestamp ?? null,   // hora de geração (relógio do PC do jogador)
       skills:         r.decoded.skills.join(', ') || null,
       flagged:        r.flag,
     }]);

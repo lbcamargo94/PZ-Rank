@@ -142,6 +142,14 @@ function parseFlaggedReason(flaggedReason: string): { label: string; detail: str
       detail: `Chegou um código com ${kills!.toLocaleString('pt-BR')} abates em ${hours} h de jogo — acima de 50 por hora, o que nenhum jogo produz. O sync foi recusado e a run ficou com os dados anteriores. Forte indício de código editado: revise e desclassifique se for o caso.`,
     };
   }
+  if (flaggedReason.startsWith('save_reload:')) {
+    const [before, after] = flaggedReason.slice('save_reload:'.length).split('>').map(v => parseInt(v, 10) || 0);
+    const fmt = (m: number) => `${Math.floor(m / 1440)}d ${Math.floor((m % 1440) / 60)}h`;
+    return {
+      label:  'Save recarregado (jogo voltou no tempo)',
+      detail: `Chegou um código gerado DEPOIS do último aceito, mas com menos tempo de jogo: ${fmt(before)} → ${fmt(after)}. Típico de save restaurado (backup) ou de outro save com o mesmo personagem. O sync foi recusado e a run ficou com o estado mais novo. Veja a linha do tempo no botão Syncs.`,
+    };
+  }
   if (flaggedReason.startsWith('resurrection_attempt:')) {
     const [days] = flaggedReason.slice('resurrection_attempt:'.length).split('@').map(v => parseInt(v, 10) || 0);
     return {

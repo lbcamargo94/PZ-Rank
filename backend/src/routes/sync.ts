@@ -15,6 +15,7 @@ import { startRegionFromStats } from '../lib/mapRegions';
 import { COMPANION_STAT_KEYS, validateCompanionStats, type CompanionStatKey } from '../lib/companionStats';
 import { aliveAfterDeath, archiveRun, getActiveSeasonId, isNewRunOf, normalizeCharName } from '../lib/runHistory';
 import { recordSync } from '../lib/syncHistory';
+import { codeOrderIssue, saveReloadFlag } from '../lib/codeOrder';
 import { normalizeDeathCause } from '../lib/statistics';
 import { deathCellFromDelta, regionOfCell } from '../lib/mapRegions';
 import { isDebugAmnestied, newModGapFlag } from '../lib/debugAmnesty';
@@ -282,7 +283,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       // O timestamp vem do relógio do PC do jogador. Diz quanto está adiantado para ele
       // poder corrigir (caso Gets, 13-16/10: fila presa por relógio adiantado).
       const aheadMin = Math.ceil(-ageSec / 60);
-      console.log(`[sync] relogio do PC adiantado | player=${player.nick} | char=${decoded.characterName} | adiantado=${aheadMin} min`);
+      console.log(`[sync] relogio do PC adiantado | player=${player.nick} | char=${decoded.characterName} | adiantado=${aheadMin} min | tempo_jogo=${decoded.timeRaw} | code_ts=${decoded.codeTimestamp}`);
       res.status(400).json({
         error: `Relógio do seu computador está ${aheadMin} min adiantado. Ative "Definir horário automaticamente" e o fuso horário correto no Windows e gere um novo sync.`,
       });
@@ -354,7 +355,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // Filtra deleted_at IS NULL para nunca confundir entries soft-deletadas com a ativa.
   const { data: existingRaw, error: existingError } = await supabase
     .from(config.tableName)
-    .select('id, objectives, live_url, sandbox_ok, disqualification_reason, kills, time_raw, days, flagged_reason, flagged_at, updated_at, score, record_score, character_name, is_alive, deleted_at, no_live_streak, skills, season_id, heatmap_batch, debug_seen_min, debug_amnesty_until_min, debug_amnesty_legacy, mod_gap_at_min')
+    .select('id, objectives, live_url, sandbox_ok, disqualification_reason, kills, time_raw, days, flagged_reason, flagged_at, updated_at, score, record_score, character_name, is_alive, deleted_at, no_live_streak, skills, season_id, heatmap_batch, debug_seen_min, debug_amnesty_until_min, debug_amnesty_legacy, mod_gap_at_min, last_code_ts')
     .eq('player_id', player.id)
     .eq('character_name', decoded.characterName)
     .is('deleted_at', null)
@@ -385,6 +386,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     debug_amnesty_until_min: number | null;
     debug_amnesty_legacy: boolean | null;
     mod_gap_at_min: number | null;
+    last_code_ts: number | string | null;
   };
   const prev = existing as ExistingRow | null;
   syncLog.entryId = prev ? Number(prev.id) : null;
@@ -503,6 +505,35 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // run de centenas de dias que nunca morreu de verdade — foi o que aconteceu com
   // o DrChatO (base de Rosewood sumiu do nada, personagem seguia vivo e íntegro).
   const isNewCharRun = prev !== null && (isNewRunOf(prev.time_raw, decoded.timeRaw) || afterDeath === 'new');
+
+  // Ordem dos códigos da mesma run (lib/codeOrder.ts): reenvio atrasado da fila não pode
+  // sobrescrever progresso mais novo; jogo que volta no tempo = save recarregado/backup.
+  const orderIssue = prev && !isNewCharRun && !justReactivated && prev.sandbox_ok !== false
+    ? codeOrderIssue(prev, decoded)
+    : null;
+  if (prev && orderIssue) {
+    if (orderIssue === 'save_reload') {
+      const flag = saveReloadFlag(prev.time_raw, decoded.timeRaw);
+      syncLog.flag = flag;
+      console.log(`[sync] save recarregado (jogo voltou no tempo) | player=${player.nick} | char=${decoded.characterName} | ${prev.time_raw} > ${decoded.timeRaw} min`);
+      await supabase
+        .from(config.tableName)
+        .update({ flagged_reason: flag, flagged_at: new Date().toISOString() })
+        .eq('id', prev.id);
+    } else {
+      syncLog.flag = 'codigo_antigo';
+    }
+    // 200 + stale: o Companion descarta da fila; a run fica com o estado mais novo
+    res.status(200).json({
+      success:        true,
+      stale:          true,
+      character_name: prev.character_name,
+      score:          prev.score,
+      is_alive:       prev.is_alive,
+      rank_position:  null,
+    });
+    return;
+  }
   const existingObjectives = isNewCharRun
     ? null
     : (existing?.objectives as Objectives | null) ?? null;
@@ -926,6 +957,8 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     updated_at:   new Date().toISOString(),
     no_live_streak,
     mod_version:  decoded.modVersion ?? null,
+    // Hora (relógio do PC) do código aceito — base da ordem dos códigos (lib/codeOrder.ts)
+    ...(decoded.codeTimestamp ? { last_code_ts: decoded.codeTimestamp } : {}),
     active_mods: JSON.stringify(decoded.activeMods),
     // Marca a run como tendo contadores de ações confiáveis (fonte: Companion).
     // /estatisticas só usa ações de runs com esta coluna preenchida — valores

@@ -163,6 +163,7 @@ CREATE TABLE IF NOT EXISTS entries (
   debug_amnesty_at             TEXT     DEFAULT NULL,
   mod_gap_at_min               INTEGER  DEFAULT NULL,
   debug_amnesty_legacy         INTEGER  DEFAULT NULL,  -- migration_v48
+  last_code_ts                 INTEGER  DEFAULT NULL,  -- migration_v51
   UNIQUE (player_id, character_name)
 );
 
@@ -386,7 +387,8 @@ CREATE TABLE IF NOT EXISTS sync_history (
   code_reason    TEXT     DEFAULT NULL,
   mod_version    TEXT     DEFAULT NULL,
   skills         TEXT     DEFAULT NULL,
-  flagged        TEXT     DEFAULT NULL
+  flagged        TEXT     DEFAULT NULL,
+  code_ts        INTEGER  DEFAULT NULL  -- migration_v51
 );
 CREATE INDEX IF NOT EXISTS idx_sync_history_entry  ON sync_history(entry_id, at);
 CREATE INDEX IF NOT EXISTS idx_sync_history_player ON sync_history(player_id, at);
