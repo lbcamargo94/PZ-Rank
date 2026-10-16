@@ -156,23 +156,29 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     res.status(401).json({ error: 'Token inválido.' });
     return;
   }
+  // Recusas antes de ler o código não entram no histórico de syncs (que precisa do código
+  // decodificado); com o jogador já identificado, ficam no log (v4.30.1 — caso bysouaip).
+  const refuseEarly = (status: number, error: string) => {
+    console.log(`[sync] recusado antes de ler o codigo | player=${player.nick} | ${status} ${error} | tamanho_codigo=${code.length} | prefixo=${code.slice(0, 6)}`);
+    res.status(status).json({ error });
+  };
   if (player.status !== 'approved') {
-    res.status(403).json({ error: 'Jogador aguardando aprovação.' });
+    refuseEarly(403, 'Jogador aguardando aprovação.');
     return;
   }
   if (player.blocked) {
-    res.status(403).json({ error: 'Jogador bloqueado.' });
+    refuseEarly(403, 'Jogador bloqueado.');
     return;
   }
   if (!player.youtube_url?.trim()) {
-    res.status(403).json({ error: 'Cadastre o link do seu canal do YouTube no site do rank para enviar atualizações.' });
+    refuseEarly(403, 'Cadastre o link do seu canal do YouTube no site do rank para enviar atualizações.');
     return;
   }
 
   // Decodifica o código do mod
   const decoded = parsePzrCode(code);
   if (!decoded) {
-    res.status(400).json({ error: 'Código inválido ou corrompido.' });
+    refuseEarly(400, 'Código inválido ou corrompido.');
     return;
   }
 
