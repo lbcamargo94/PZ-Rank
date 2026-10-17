@@ -1,0 +1,132 @@
+name: Uptime Monitor
+
+# Checa o site a cada 5 min de fora da VPS (se a VPS cai, um monitor lá dentro cai junto)
+# e avisa no canal #bugs-erros-e-correções só quando o estado muda: caiu / voltou.
+# O estado da última checagem fica no cache do Actions (uptime-state-*).
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  actions: write   # apagar os estados antigos do cache
+  contents: read
+
+concurrency:
+  group: uptime-monitor
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Restaurar estado anterior
+        uses: actions/cache/restore@v4
+        with:
+          path: uptime-state.json
+          key: uptime-state-${{ github.run_id }}
+          restore-keys: uptime-state-
+
+      - name: Checar site, API e banco
+        env:
+          WEBHOOK_URL: ${{ secrets.DISCORD_BUGS_WEBHOOK_URL }}
+        run: |
+          python3 - <<'PYEOF'
+          import json, os, time, urllib.request, urllib.error
+          from datetime import datetime, timezone, timedelta
+
+          BASE = "https://www.pzrank.com.br"
+          CHECKS = [
+              # (nome, caminho, texto que precisa vir na resposta)
+              ("Site",  "/",                 None),
+              ("API",   "/health",           None),
+              ("Banco", "/entries?limit=1",  '"id"'),
+          ]
+          BRT = timezone(timedelta(hours=-3))
+
+          def probe(path, must):
+              # 3 tentativas com 20s de intervalo: evita alarme por um soluço de rede
+              err = ""
+              for i in range(3):
+                  try:
+                      req = urllib.request.Request(BASE + path, headers={"User-Agent": "PZRank-Uptime/1.0"})
+                      with urllib.request.urlopen(req, timeout=15) as r:
+                          body = r.read(200_000).decode("utf-8", "replace")
+                          if r.status == 200 and (must is None or must in body):
+                              return True, ""
+                          err = f"HTTP {r.status}" if r.status != 200 else "resposta inesperada"
+                  except urllib.error.HTTPError as e:
+                      err = f"HTTP {e.code}"
+                  except Exception as e:
+                      err = type(e).__name__
+                  if i < 2:
+                      time.sleep(20)
+              return False, err
+
+          try:
+              prev = json.load(open("uptime-state.json"))
+          except Exception:
+              prev = {}
+
+          now = datetime.now(BRT)
+          state, changes = {}, []
+          for name, path, must in CHECKS:
+              ok, err = probe(path, must)
+              before = prev.get(name, {"ok": True, "since": now.isoformat()})
+              since = before["since"] if before["ok"] == ok else now.isoformat()
+              state[name] = {"ok": ok, "since": since, "err": err}
+              print(f"{name:6} {'OK' if ok else 'FALHA ' + err}")
+              if before["ok"] != ok:
+                  changes.append((name, ok, err, before.get("since")))
+
+          json.dump(state, open("uptime-state.json", "w"))
+
+          webhook = os.environ.get("WEBHOOK_URL")
+          if not changes or not webhook:
+              raise SystemExit(0)
+
+          lines = []
+          for name, ok, err, since in changes:
+              if ok:
+                  dur = ""
+                  try:
+                      mins = int((now - datetime.fromisoformat(since)).total_seconds() // 60)
+                      dur = f" (fora por ~{mins} min)"
+                  except Exception:
+                      pass
+                  lines.append(f"✅ **{name}** voltou{dur}")
+              else:
+                  lines.append(f"🔴 **{name}** fora do ar — {err}")
+          all_ok = all(s["ok"] for s in state.values())
+          embed = {
+              "title": "PZ-Rank voltou ao ar" if all_ok else "PZ-Rank com instabilidade",
+              "description": "\n".join(lines),
+              "color": 0x2EA043 if all_ok else 0xE04040,
+              "footer": {"text": "Monitor automático • checagem a cada 5 min"},
+              "timestamp": datetime.now(timezone.utc).isoformat(),
+          }
+          req = urllib.request.Request(
+              webhook,
+              data=json.dumps({"embeds": [embed]}).encode("utf-8"),
+              headers={"Content-Type": "application/json", "User-Agent": "PZRank-Uptime/1.0"},
+          )
+          with urllib.request.urlopen(req) as r:
+              print("Discord respondeu:", r.status)
+          PYEOF
+
+      - name: Salvar estado
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: uptime-state.json
+          key: uptime-state-${{ github.run_id }}
+
+      - name: Apagar estados antigos do cache
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh cache list --key uptime-state- --sort created_at --order desc --limit 100 --json id --jq '.[1:][].id' \
+            | xargs -r -n1 gh cache delete || true
