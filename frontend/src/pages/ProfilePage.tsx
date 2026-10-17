@@ -525,7 +525,9 @@ export function ProfilePage() {
     } catch (err) {
       const status = err instanceof ApiError ? err.status : 0;
       if (status === 401 || status === 403) {
-        sessionStorage.removeItem(PLAYER_SESSION_KEY);
+        // Limpa as DUAS cópias: com "lembrar de mim" a sessão fica no localStorage, e se só o
+        // sessionStorage fosse limpo o /login veria a sessão e mandaria de volta ao /perfil (loop)
+        clearPlayerSession();
         setSession(null);
       } else {
         setLoadError((err as Error).message);

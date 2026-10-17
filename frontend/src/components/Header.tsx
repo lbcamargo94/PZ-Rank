@@ -21,7 +21,8 @@ function readPlayerSession(): { nick: string; player_id: number } | null {
 export function Header({ onPainel }: HeaderProps) {
   const { t } = useTranslation();
   const { pathname } = useLocation();
-  const [playerSession] = useState(readPlayerSession);
+  // Relido a cada render (troca de rota): se a sessão expirou e foi limpa, o nick some do topo
+  const playerSession = readPlayerSession();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const close = () => setDrawerOpen(false);
