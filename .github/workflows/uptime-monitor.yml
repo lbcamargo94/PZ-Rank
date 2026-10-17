@@ -7,6 +7,11 @@ on:
   schedule:
     - cron: '*/5 * * * *'
   workflow_dispatch:
+    inputs:
+      teste:
+        description: 'Enviar um aviso de teste no Discord (não altera o estado)'
+        type: boolean
+        default: false
 
 permissions:
   actions: write   # apagar os estados antigos do cache
@@ -31,6 +36,7 @@ jobs:
       - name: Checar site, API e banco
         env:
           WEBHOOK_URL: ${{ secrets.DISCORD_BUGS_WEBHOOK_URL }}
+          TESTE: ${{ inputs.teste && '1' || '' }}
         run: |
           python3 - <<'PYEOF'
           import json, os, time, urllib.request, urllib.error
@@ -83,6 +89,10 @@ jobs:
           json.dump(state, open("uptime-state.json", "w"))
 
           webhook = os.environ.get("WEBHOOK_URL")
+          teste = bool(os.environ.get("TESTE"))
+          if teste:
+              # Aviso de exemplo: mostra o formato de queda e de volta, sem mexer no estado real
+              changes = [("Site", False, "HTTP 502", None), ("Site", True, "", (now - timedelta(minutes=40)).isoformat())]
           if not changes or not webhook:
               raise SystemExit(0)
 
@@ -99,8 +109,12 @@ jobs:
               else:
                   lines.append(f"🔴 **{name}** fora do ar — {err}")
           all_ok = all(s["ok"] for s in state.values())
+          title = "PZ-Rank voltou ao ar" if all_ok else "PZ-Rank com instabilidade"
+          if teste:
+              title = "🧪 TESTE do monitor de uptime — o site está no ar"
+              lines.append("\n_Mensagem de teste. Exemplo de como chegam os avisos de queda e de volta._")
           embed = {
-              "title": "PZ-Rank voltou ao ar" if all_ok else "PZ-Rank com instabilidade",
+              "title": title,
               "description": "\n".join(lines),
               "color": 0x2EA043 if all_ok else 0xE04040,
               "footer": {"text": "Monitor automático • checagem a cada 5 min"},
