@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isImplausibleTotal, isImplausibleJump, implausibleFlag } from '../lib/plausibility';
+import { isImplausibleTotal, isImplausibleJump, implausibleFlag, implausibleJumpFlag } from '../lib/plausibility';
 
 describe('trava de plausibilidade dos abates', () => {
   it('caso Anastacia Glubby (400.000 abates em 56 h) é barrado', () => {
@@ -16,6 +16,16 @@ describe('trava de plausibilidade dos abates', () => {
   it('salto entre syncs impossível para o tempo jogado é barrado', () => {
     expect(isImplausibleJump({ kills: 1000, time_raw: 10000 }, 50000, 10060)).toBe(true);
     expect(isImplausibleJump({ kills: 1000, time_raw: 10000 }, 1300, 10060)).toBe(false);
+  });
+  it('pico real de horda entre syncs passa (caso Bone, 18/10/2026)', () => {
+    expect(isImplausibleJump({ kills: 146486, time_raw: 899029 }, 147036, 899286)).toBe(false); // +550 em 4,3 h
+    expect(isImplausibleJump({ kills: 146486, time_raw: 899029 }, 147491, 899577)).toBe(false); // +1.005 em 9,1 h
+  });
+  it('salto de código editado continua barrado com a folga maior', () => {
+    expect(isImplausibleJump({ kills: 1000, time_raw: 10000 }, 2100, 10010)).toBe(true);
+  });
+  it('anomalia do salto registra abates novos e tempo desde o último sync', () => {
+    expect(implausibleJumpFlag({ kills: 146486, time_raw: 899029 }, 147036, 899286)).toBe('implausible_kills_jump:550@257');
   });
   it('run nova (tempo regrediu) não compara salto', () => {
     expect(isImplausibleJump({ kills: 50000, time_raw: 90000 }, 10, 60)).toBe(false);

@@ -20,7 +20,7 @@ import { normalizeDeathCause } from '../lib/statistics';
 import { deathCellFromDelta, regionOfCell } from '../lib/mapRegions';
 import { isDebugAmnestied, newModGapFlag } from '../lib/debugAmnesty';
 import {
-  isImplausibleTotal, isImplausibleJump, implausibleFlag,
+  isImplausibleTotal, isImplausibleJump, implausibleFlag, implausibleJumpFlag,
   isImplausibleSkillTotal, skillChangeIssue, implausibleSkillsFlag, skillLevelSum, skillsRegressionFlag,
   canCompareSkills,
 } from '../lib/plausibility';
@@ -697,14 +697,18 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // run nova é recusada; run existente fica com os dados anteriores e ganha anomalia.
   // O salto entre syncs não vale logo após reabilitar (prev vem de estado desclassificado).
   const comparable = !!prev && prev.sandbox_ok !== false && !justReactivated;
-  const killsImpossible = isImplausibleTotal(decoded.kills, decoded.timeRaw)
-    || (comparable && isImplausibleJump(prev!, decoded.kills, decoded.timeRaw));
+  const killsTotalImpossible = isImplausibleTotal(decoded.kills, decoded.timeRaw);
+  const killsJumpImpossible = !killsTotalImpossible && comparable
+    && isImplausibleJump(prev!, decoded.kills, decoded.timeRaw);
+  const killsImpossible = killsTotalImpossible || killsJumpImpossible;
   const skillIssue = comparable && canCompareSkills(prev!)
     ? skillChangeIssue(prev!, decoded.skills, decoded.timeRaw)
     : null;
   const skillsImpossible = isImplausibleSkillTotal(decoded.skills, decoded.timeRaw) || skillIssue === 'jump';
   if (killsImpossible || skillsImpossible) {
-    const flag = killsImpossible
+    const flag = killsJumpImpossible
+      ? implausibleJumpFlag(prev!, decoded.kills, decoded.timeRaw)
+      : killsImpossible
       ? implausibleFlag(decoded.kills, decoded.timeRaw)
       : implausibleSkillsFlag(skillLevelSum(decoded.skills), decoded.timeRaw);
     syncLog.flag = flag;

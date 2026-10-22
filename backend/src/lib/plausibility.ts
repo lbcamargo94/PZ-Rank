@@ -22,6 +22,16 @@ export function isImplausibleTotal(kills: number, timeRaw: number): boolean {
   return kills > maxPlausibleKills(timeRaw);
 }
 
+// Salto entre dois syncs da MESMA run: folga fixa maior que a do total (v4.30.5). Caso Bone
+// (18 e 20/10/2026): segurando horda, ~500 abates em 10 min reais / ~4 h de jogo — o topo do
+// ranking (Guto, Fricke, uDantt) chega a 425–475 no mesmo intervalo. Com a folga de 300 esses
+// picos reais eram recusados. 1.000 de folga ainda barra código editado (Anastacia: +400.000).
+export const JUMP_KILLS_GRACE = 1000;
+
+export function maxPlausibleJumpKills(gameMinutes: number): number {
+  return JUMP_KILLS_GRACE + MAX_KILLS_PER_GAME_HOUR * Math.max(0, gameMinutes) / 60;
+}
+
 // Salto entre dois syncs da MESMA run (tempo não regrediu): abates novos acima do possível
 // para o tempo jogado desde o último sync.
 export function isImplausibleJump(
@@ -30,12 +40,22 @@ export function isImplausibleJump(
   timeRaw: number,
 ): boolean {
   if (timeRaw < prev.time_raw) return false; // run nova: só o total vale
-  return kills - prev.kills > maxPlausibleKills(timeRaw - prev.time_raw);
+  return kills - prev.kills > maxPlausibleJumpKills(timeRaw - prev.time_raw);
 }
 
 // Anomalia gravada na run para o moderador revisar: "implausible_kills:<abates>@<minutos>"
 export function implausibleFlag(kills: number, timeRaw: number): string {
   return `implausible_kills:${kills}@${timeRaw}`;
+}
+
+// Anomalia do salto: "implausible_kills_jump:<abates novos>@<minutos de jogo desde o último sync>"
+// — o painel mostra o salto e o limite, não o total da run (que estava dentro do limite).
+export function implausibleJumpFlag(
+  prev: { kills: number; time_raw: number },
+  kills: number,
+  timeRaw: number,
+): string {
+  return `implausible_kills_jump:${kills - prev.kills}@${timeRaw - prev.time_raw}`;
 }
 
 // ── Habilidades ─────────────────────────────────────────────────────────────
