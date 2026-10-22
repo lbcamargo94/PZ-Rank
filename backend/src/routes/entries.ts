@@ -12,6 +12,7 @@ import type { ModRequest } from '../middleware/moderator';
 import { config } from '../config';
 import type { Player, Objectives } from '../types';
 import { auditModeration } from '../lib/moderationLog';
+import { forbidSelfModeration } from '../lib/selfModeration';
 
 const PUBLIC_ENTRY_COLUMNS = [
   'id', 'player_id', 'name', 'character_name', 'profession',
@@ -35,6 +36,8 @@ function isModRequest(req: Request): boolean {
 const router = Router();
 // Registro das ações da moderação (lib/moderationLog.ts): toda ação de moderador que dá certo
 router.use(auditModeration('entries'));
+// Moderador não modera a própria conta/run (lib/selfModeration.ts)
+router.use(forbidSelfModeration('entries'));
 
 const SORT_COLS: Record<string, string> = {
   days:       'days',

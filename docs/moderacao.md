@@ -14,6 +14,7 @@ Complementa [estatisticas.md](estatisticas.md) (como cada estatística é calcul
 | --- | --- | --- |
 | **Sandbox, debug e manual desclassificam de vez.** Todo sync com o nome do personagem recebe `disqualified: true`, inclusive partida nova. Variações do nome (maiúsculas, acentos, espaços) contam como o mesmo nome. Só o moderador reabilita. | `routes/sync.ts`, `normalizeCharName` em `lib/runHistory.ts` | v4.28.5 |
 | **Mods não desclassificam de vez:** o primeiro sync sem o mod proibido reabilita a run. | `isModsReason` em `routes/sync.ts` | antigo |
+| **Moderador não modera a própria conta ou run:** qualquer ação (objetivos, anomalia, status, desclassificar, reabilitar, excluir…) cujo alvo é o jogador com o mesmo nome do login do moderador é recusada com 403; outro moderador faz a ação. Vale para o master. | `lib/selfModeration.ts` | v4.30.6 |
 | **Abates impossíveis são recusados:** mais de 300 + 50 por hora de jogo no total (anomalia `implausible_kills`), ou mais de 1.000 + 50 por hora de jogo no salto entre dois syncs (anomalia `implausible_kills_jump`; a folga do salto era 300 até a v4.30.5, ver caso Bone). A run fica com os dados anteriores. | `lib/plausibility.ts` | v4.28.2 / v4.30.5 |
 | **Habilidades impossíveis são recusadas:** soma de níveis (fora Aptidão Física e Força) acima de 40 + 1 por hora de jogo, ou salto acima de 10 + 1/h entre syncs. Anomalia `implausible_skills`. | `lib/plausibility.ts` | v4.28.3 |
 | **Habilidade que diminuiu só gera aviso** (`skills_regression:<habilidade> <antes>><depois>`). O sync é aceito, porque o B42.19 renomeou IDs e um mod com mapeamento errado informa 0. | `lib/plausibility.ts` | v4.28.3 |
@@ -189,3 +190,5 @@ Antes de apagar dados de produção, salve as linhas em `/var/backups/pzrank/pon
 ### Bone (Lenore Bostic) — falso positivo da trava de salto de abates, 18 e 20/10/2026
 
 Syncs recusados como "abates impossíveis": +550 abates em 4,3 h de jogo (limite 514) e, hoje, picos parecidos. O total da run (≈10 abates/h) estava normal; o próximo sync com mais tempo de jogo passava com todos os abates — nenhum dado perdido. Ritmo de horda real: o Bone chega a ~500 abates por sync de 10 min, e Guto, Fricke e uDantt a 425–475 no mesmo intervalo. Correção (v4.30.5): folga fixa do salto entre syncs 300 → 1.000 e anomalia própria (`implausible_kills_jump`) que mostra o salto e o limite em vez do total. Anomalia da run limpa; sem punição.
+
+Na mesma verificação: o próprio Bone (moderador `bone`) tinha limpado a anomalia da sua run 4 vezes (21–22/10) e editado os objetivos dela em 18/10 21:55 — a pontuação foi de 42.579 para 47.579 (+5.000) no sync seguinte. Correção (v4.30.6): bloqueio de moderação em causa própria. Os +5.000 ficam para outro moderador conferir a prova das bases.

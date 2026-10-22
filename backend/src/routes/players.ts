@@ -17,10 +17,13 @@ import { config } from '../config';
 import { YT_LIVE_MAX_AGE_MS } from '../lib/youtube';
 import { describeBan, findBanMatch } from '../lib/bannedIdentities';
 import { auditModeration } from '../lib/moderationLog';
+import { forbidSelfModeration } from '../lib/selfModeration';
 
 const router = Router();
 // Registro das ações da moderação (lib/moderationLog.ts): toda ação de moderador que dá certo
 router.use(auditModeration('players'));
+// Moderador não modera a própria conta/run (lib/selfModeration.ts)
+router.use(forbidSelfModeration('players'));
 
 // Normaliza URLs de canal: adiciona https:// se o protocolo estiver ausente.
 // Retorna null para strings vazias ou inválidas.
