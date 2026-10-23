@@ -74,40 +74,12 @@ const MAX_KILLS            = 800_000;
 const MAX_DAYS             = 36_500; // ~100 anos em dias de jogo
 
 
-// GET /sync/lookup?nick=<nick> — público (rate limited: 10/hora por IP)
-// Retorna player_token se o jogador está aprovado e ativo.
-// Usado pelo mod para obter o token na primeira execução.
-router.get('/lookup', lookupLimiter, async (req: Request, res: Response): Promise<void> => {
-  const nick = typeof req.query.nick === 'string' ? req.query.nick.trim() : '';
-  if (!nick) {
-    res.status(400).json({ error: 'nick é obrigatório.' });
-    return;
-  }
-
-  const { data, error } = await supabase
-    .from('players')
-    .select('id, nick, player_token, status, blocked')
-    .ilike('nick', nick)
-    .maybeSingle();
-
-  if (error || !data) {
-    res.status(404).json({ error: 'Jogador não encontrado.' });
-    return;
-  }
-  if (data.status !== 'approved') {
-    res.status(403).json({ error: 'Jogador aguardando aprovação.' });
-    return;
-  }
-  if (data.blocked) {
-    res.status(403).json({ error: 'Jogador bloqueado.' });
-    return;
-  }
-  if (!data.player_token) {
-    res.status(404).json({ error: 'Token não disponível. Execute a migration v8.' });
-    return;
-  }
-
-  res.json({ player_token: data.player_token, player_id: data.id });
+// GET /sync/lookup?nick=<nick> — DESATIVADO (v4.30.8).
+// Devolvia o player_token de QUALQUER jogador só pelo nick; com ele (e a chave HMAC, que vai
+// dentro do Companion) dava para enviar sync em nome de outro jogador (relato da comunidade,
+// 23/10/2026). O Companion obtém o token pelo login (POST /auth/player/login), só da própria conta.
+router.get('/lookup', lookupLimiter, (_req: Request, res: Response): void => {
+  res.status(410).json({ error: 'Busca por nick desativada. Entre com e-mail e senha no Companion.' });
 });
 
 // POST /sync/update — público, autenticado por player_token (rate limited: 30/15min por IP)
