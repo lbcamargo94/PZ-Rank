@@ -486,14 +486,35 @@ describe('requireModerator — autenticação', () => {
     expect(next).toHaveBeenCalledOnce();
   });
 
-  it('token JWT sem campo role → next() chamado (role undefined, authenticate só valida a assinatura)', () => {
-    // jwt.sign sem role — o middleware não rejeita na autenticação, só verifica assinatura
+  it('token JWT sem campo role → 401 (assinatura válida não basta)', () => {
     const token = jwt.sign({ sub: 'mod-999' }, TEST_JWT_SECRET, { expiresIn: '1h' });
     const req   = mockReq(`Bearer ${token}`);
     const res   = mockRes();
     const next  = vi.fn();
     requireModerator(req, res as unknown as Response, next);
-    expect(next).toHaveBeenCalledOnce();
+    expect(res._status).toBe(401);
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it('JWT da sessão de JOGADOR usado como moderador → 401 (relato da comunidade, 23/10/2026)', () => {
+    const token = jwt.sign({ sub: '42', type: 'player', nick: 'Fulano' }, TEST_JWT_SECRET, { expiresIn: '7d' });
+    for (const mw of [requireModerator, requireMaster]) {
+      const req  = mockReq(`Bearer ${token}`);
+      const res  = mockRes();
+      const next = vi.fn();
+      mw(req, res as unknown as Response, next);
+      expect(res._status).toBe(401);
+      expect(next).not.toHaveBeenCalled();
+    }
+  });
+
+  it('token com role inventada → 401', () => {
+    const token = jwt.sign({ sub: 'x', role: 'admin' }, TEST_JWT_SECRET, { expiresIn: '1h' });
+    const req   = mockReq(`Bearer ${token}`);
+    const res   = mockRes();
+    const next  = vi.fn();
+    requireModerator(req, res as unknown as Response, next);
+    expect(res._status).toBe(401);
   });
 
 });

@@ -20,7 +20,15 @@ function authenticate(req: ModRequest, res: Response): boolean {
     return false;
   }
   try {
-    const payload = jwt.verify(authHeader.slice(7), config.jwtSecret) as JwtPayload;
+    const payload = jwt.verify(authHeader.slice(7), config.jwtSecret) as JwtPayload & { type?: string };
+    // Jogador e moderador assinam a sessão com o mesmo JWT_SECRET: só a assinatura não basta.
+    // Sem esta checagem o JWT da sessão de JOGADOR (cookie player_session) passava como
+    // moderador (relatado pela comunidade, 23/10/2026). Só vale token emitido pelo login de
+    // moderador (/auth), que sempre carrega role moderator/master.
+    if (payload.type === 'player' || (payload.role !== 'moderator' && payload.role !== 'master')) {
+      res.status(401).json({ error: 'Token inválido ou expirado.' });
+      return false;
+    }
     req.userId  = payload.sub;
     req.modRole = payload.role;
     return true;

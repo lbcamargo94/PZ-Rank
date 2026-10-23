@@ -29,7 +29,8 @@ function isModRequest(req: Request): boolean {
   if (!auth?.startsWith('Bearer ')) return false;
   try {
     const payload = jwt.verify(auth.slice(7), config.jwtSecret);
-    return typeof payload === 'object' && payload !== null && 'role' in payload;
+    const role = typeof payload === 'object' && payload !== null ? (payload as { role?: string }).role : undefined;
+    return role === 'moderator' || role === 'master';
   } catch { return false; }
 }
 
