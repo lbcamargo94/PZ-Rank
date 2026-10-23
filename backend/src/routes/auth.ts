@@ -70,7 +70,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
     const maxAge    = persist ? MOD_COOKIE_30D_MS : undefined;
 
     const token = jwt.sign(
-      { sub: modRow.id, role: modRow.role },
+      { sub: modRow.id, role: modRow.role, type: 'moderator' },
       config.jwtSecret,
       { expiresIn },
     );

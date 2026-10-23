@@ -175,7 +175,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
 
   const token = jwt.sign(
     { sub: String(row.id), type: 'player', nick: row.nick },
-    config.jwtSecret,
+    config.playerJwtSecret,
     { expiresIn },
   );
 

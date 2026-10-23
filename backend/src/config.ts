@@ -16,6 +16,10 @@ export const config = {
   supabaseUrl:        required('SUPABASE_URL',         true),
   supabaseServiceKey: required('SUPABASE_SERVICE_KEY', true),
   jwtSecret:          required('JWT_SECRET'),
+  // Sessão de JOGADOR assina com chave própria (v4.30.9): um JWT de jogador nunca verifica com a
+  // chave de moderador, nem por engano de rota. Sem a variável (dev/testes) deriva uma chave
+  // distinta da JWT_SECRET; em produção PLAYER_JWT_SECRET é definida no .env.
+  playerJwtSecret:    process.env.PLAYER_JWT_SECRET || `${process.env.JWT_SECRET ?? ''}:player-session`,
   corsOrigin:         process.env.CORS_ORIGIN ?? 'http://localhost:5173',
   tableName:          process.env.TABLE_NAME  ?? 'entries',
   resendApiKey:       process.env.RESEND_API_KEY ?? '',

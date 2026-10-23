@@ -38,7 +38,7 @@ export async function requirePlayer(req: PlayerRequest, res: Response, next: Nex
 
   let payload: PlayerJwtPayload;
   try {
-    payload = jwt.verify(token, config.jwtSecret) as PlayerJwtPayload;
+    payload = jwt.verify(token, config.playerJwtSecret) as PlayerJwtPayload;
   } catch {
     res.status(401).json({ error: 'Token inválido ou expirado.' });
     return;

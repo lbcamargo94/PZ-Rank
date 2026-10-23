@@ -261,7 +261,7 @@ function getOptionalPlayerId(req: Request): number | null {
   const auth = req.headers.authorization;
   if (!auth?.startsWith('Bearer ')) return null;
   try {
-    const payload = jwt.verify(auth.slice(7).trim(), config.jwtSecret) as { sub: string; type: string };
+    const payload = jwt.verify(auth.slice(7).trim(), config.playerJwtSecret) as { sub: string; type: string };
     if (payload.type !== 'player') return null;
     const id = parseInt(payload.sub, 10);
     return isNaN(id) ? null : id;

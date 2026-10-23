@@ -24,6 +24,7 @@ const { TEST_JWT_SECRET, TEST_HMAC_SECRET } = vi.hoisted(() => ({
 vi.mock('../config', () => ({
   config: {
     jwtSecret:          TEST_JWT_SECRET,
+    playerJwtSecret:    `${TEST_JWT_SECRET}:player-session`,
     syncHmacSecret:     TEST_HMAC_SECRET,
     minModVersion:      '',
     tableName:          'entries',
@@ -505,6 +506,17 @@ describe('requireModerator — autenticação', () => {
       mw(req, res as unknown as Response, next);
       expect(res._status).toBe(401);
       expect(next).not.toHaveBeenCalled();
+    }
+  });
+
+  it('JWT assinado com a chave de JOGADOR não passa como moderador, mesmo com role', () => {
+    const token = jwt.sign({ sub: 'x', role: 'master' }, `${TEST_JWT_SECRET}:player-session`, { expiresIn: '1h' });
+    for (const mw of [requireModerator, requireMaster]) {
+      const req  = mockReq(`Bearer ${token}`);
+      const res  = mockRes();
+      const next = vi.fn();
+      mw(req, res as unknown as Response, next);
+      expect(res._status).toBe(401);
     }
   });
 
