@@ -145,7 +145,7 @@ function parseFlaggedReason(flaggedReason: string): { label: string; detail: str
   if (flaggedReason.startsWith('implausible_kills_jump:')) {
     const [delta, minutes] = flaggedReason.slice('implausible_kills_jump:'.length).split('@').map(v => parseInt(v, 10) || 0);
     const hours = (minutes! / 60).toLocaleString('pt-BR', { maximumFractionDigits: 1 });
-    const limit = Math.floor(1000 + 50 * minutes! / 60);
+    const limit = Math.floor(5000 + 100 * minutes! / 60);
     return {
       label:  'Salto de abates impossível recusado',
       detail: `Chegou um código com +${delta!.toLocaleString('pt-BR')} abates em ${hours} h de jogo desde o último sync aceito (limite ${limit.toLocaleString('pt-BR')}). O sync foi recusado e a run ficou com os dados anteriores; se os próximos syncs passarem com os mesmos abates, foi só um pico. Confira a linha do tempo no botão Syncs.`,

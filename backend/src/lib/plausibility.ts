@@ -25,11 +25,19 @@ export function isImplausibleTotal(kills: number, timeRaw: number): boolean {
 // Salto entre dois syncs da MESMA run: folga fixa maior que a do total (v4.30.5). Caso Bone
 // (18 e 20/10/2026): segurando horda, ~500 abates em 10 min reais / ~4 h de jogo — o topo do
 // ranking (Guto, Fricke, uDantt) chega a 425–475 no mesmo intervalo. Com a folga de 300 esses
-// picos reais eram recusados. 1.000 de folga ainda barra código editado (Anastacia: +400.000).
-export const JUMP_KILLS_GRACE = 1000;
+// picos reais eram recusados.
+//
+// Folga 5.000 + 100/h (v4.30.11). Caso Bone e jpcharleaux (24-30/10/2026, segundo os jogadores,
+// matando com bombas): picos de +3.739 em 4,7 h de jogo e ~90 abates/h sustentados. Como a
+// comparação é com o último sync ACEITO, uma recusa acumulava: o salto crescia a cada sync
+// (+21.314 em 239 h, limite 12.937) e a run ficava congelada mesmo com o total normal (~12/h).
+// Com este limite, os ~69.800 syncs de 08 a 30/10/2026 não teriam nenhuma recusa. Ainda barra código
+// editado (Anastacia: +400.000). Custo: alguém que edite um pouco a cada sync passa mais fácil.
+export const JUMP_KILLS_GRACE = 5000;
+export const MAX_JUMP_KILLS_PER_GAME_HOUR = 100;
 
 export function maxPlausibleJumpKills(gameMinutes: number): number {
-  return JUMP_KILLS_GRACE + MAX_KILLS_PER_GAME_HOUR * Math.max(0, gameMinutes) / 60;
+  return JUMP_KILLS_GRACE + MAX_JUMP_KILLS_PER_GAME_HOUR * Math.max(0, gameMinutes) / 60;
 }
 
 // Salto entre dois syncs da MESMA run (tempo não regrediu): abates novos acima do possível

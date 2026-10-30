@@ -22,7 +22,12 @@ describe('trava de plausibilidade dos abates', () => {
     expect(isImplausibleJump({ kills: 146486, time_raw: 899029 }, 147491, 899577)).toBe(false); // +1.005 em 9,1 h
   });
   it('salto de código editado continua barrado com a folga maior', () => {
-    expect(isImplausibleJump({ kills: 1000, time_raw: 10000 }, 2100, 10010)).toBe(true);
+    expect(isImplausibleJump({ kills: 1000, time_raw: 10000 }, 7000, 10010)).toBe(true);
+    expect(isImplausibleJump({ kills: 1000, time_raw: 10000 }, 401000, 13360)).toBe(true); // Anastacia: +400.000 em 56 h
+  });
+  it('pico e ritmo sustentado de abates em massa passam (Bone e jpcharleaux, 10/2026)', () => {
+    expect(isImplausibleJump({ kills: 100000, time_raw: 500000 }, 103739, 500283)).toBe(false); // +3.739 em 4,7 h
+    expect(isImplausibleJump({ kills: 233113, time_raw: 1197901 }, 254427, 1212226)).toBe(false); // +21.314 em 239 h
   });
   it('anomalia do salto registra abates novos e tempo desde o último sync', () => {
     expect(implausibleJumpFlag({ kills: 146486, time_raw: 899029 }, 147036, 899286)).toBe('implausible_kills_jump:550@257');
