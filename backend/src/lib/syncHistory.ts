@@ -67,6 +67,31 @@ export async function recordSync(r: SyncRecord): Promise<void> {
   }
 }
 
+// Sync aceito mais antigo da run na janela do limite diário. Nunca lança: se a consulta falhar,
+// o sync segue só com as outras travas.
+export async function oldestAcceptedSince(
+  entryId: number,
+  windowMs: number,
+  now = new Date(),
+): Promise<{ kills: number; time_raw: number } | null> {
+  try {
+    const since = new Date(now.getTime() - windowMs).toISOString();
+    const { data, error } = await supabase
+      .from('sync_history')
+      .select('kills, time_raw')
+      .eq('entry_id', entryId)
+      .eq('result', 'aceito')
+      .gte('at', since)
+      .order('at', { ascending: true })
+      .limit(1);
+    if (error) throw error;
+    return (data as Array<{ kills: number; time_raw: number }> | null)?.[0] ?? null;
+  } catch (err) {
+    console.error('[sync-history] falha ao consultar a janela de abates:', err);
+    return null;
+  }
+}
+
 export async function pruneSyncHistory(now = new Date()): Promise<number> {
   const cutoff = new Date(now.getTime() - SYNC_HISTORY_RETENTION_DAYS * 86_400_000).toISOString();
   // delete() dos adaptadores não devolve as linhas: conta antes de apagar

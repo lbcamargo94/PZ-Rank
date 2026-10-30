@@ -142,6 +142,13 @@ function parseFlaggedReason(flaggedReason: string): { label: string; detail: str
       detail: `Chegou um código com ${kills!.toLocaleString('pt-BR')} abates em ${hours} h de jogo — acima de 50 por hora, o que nenhum jogo produz. O sync foi recusado e a run ficou com os dados anteriores. Forte indício de código editado: revise e desclassifique se for o caso.`,
     };
   }
+  if (flaggedReason.startsWith('implausible_kills_24h:')) {
+    const delta = parseInt(flaggedReason.slice('implausible_kills_24h:'.length), 10) || 0;
+    return {
+      label:  'Abates acima do limite de 24 h',
+      detail: `Chegou um código com +${delta.toLocaleString('pt-BR')} abates em menos de 24 h (limite 100.000). O sync foi recusado e a run ficou com os dados anteriores. Confira a linha do tempo no botão Syncs.`,
+    };
+  }
   if (flaggedReason.startsWith('implausible_kills_jump:')) {
     const [delta, minutes] = flaggedReason.slice('implausible_kills_jump:'.length).split('@').map(v => parseInt(v, 10) || 0);
     const hours = (minutes! / 60).toLocaleString('pt-BR', { maximumFractionDigits: 1 });

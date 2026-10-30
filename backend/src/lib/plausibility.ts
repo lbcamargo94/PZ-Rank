@@ -27,8 +27,8 @@ export function isImplausibleTotal(kills: number, timeRaw: number): boolean {
 // ranking (Guto, Fricke, uDantt) chega a 425–475 no mesmo intervalo. Com a folga de 300 esses
 // picos reais eram recusados.
 //
-// Folga 5.000 + 100/h (v4.30.11). Caso Bone e jpcharleaux (24-30/10/2026, segundo os jogadores,
-// matando com bombas): picos de +3.739 em 4,7 h de jogo e ~90 abates/h sustentados. Como a
+// Folga 5.000 + 100/h (v4.30.11). Caso Bone e jpcharleaux (24-30/10/2026, farm com bombas, que é
+// permitido; Base.PipeBomb soma 15-17 mil abates em cada run): picos de +3.739 em 4,7 h de jogo e ~90 abates/h sustentados. Como a
 // comparação é com o último sync ACEITO, uma recusa acumulava: o salto crescia a cada sync
 // (+21.314 em 239 h, limite 12.937) e a run ficava congelada mesmo com o total normal (~12/h).
 // Com este limite, os ~69.800 syncs de 08 a 30/10/2026 não teriam nenhuma recusa. Ainda barra código
@@ -49,6 +49,27 @@ export function isImplausibleJump(
 ): boolean {
   if (timeRaw < prev.time_raw) return false; // run nova: só o total vale
   return kills - prev.kills > maxPlausibleJumpKills(timeRaw - prev.time_raw);
+}
+
+// Limite de abates em 24 h reais (v4.30.12), medido desde o sync aceito mais antigo da janela.
+// Fecha a brecha da folga do salto: quem editasse um pouco a cada sync podia somar 5.000 por
+// sync. O maior volume real medido (08 a 30/10/2026) foi ~39.000 em 24 h.
+export const MAX_KILLS_PER_24H = 100_000;
+export const KILLS_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+// Mesma run (tempo não regrediu) acima do limite. Sem sync aceito na janela, só o salto vale.
+export function isImplausible24h(
+  baseline: { kills: number; time_raw: number } | null,
+  kills: number,
+  timeRaw: number,
+): boolean {
+  if (!baseline || timeRaw < baseline.time_raw) return false;
+  return kills - baseline.kills > MAX_KILLS_PER_24H;
+}
+
+// Anomalia do limite diário: "implausible_kills_24h:<abates novos na janela>"
+export function implausible24hFlag(baselineKills: number, kills: number): string {
+  return `implausible_kills_24h:${kills - baselineKills}`;
 }
 
 // Anomalia gravada na run para o moderador revisar: "implausible_kills:<abates>@<minutos>"

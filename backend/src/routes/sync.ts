@@ -14,13 +14,14 @@ import { parseWeaponStats } from '../lib/weapons';
 import { startRegionFromStats } from '../lib/mapRegions';
 import { COMPANION_STAT_KEYS, validateCompanionStats, type CompanionStatKey } from '../lib/companionStats';
 import { aliveAfterDeath, archiveRun, getActiveSeasonId, isNewRunOf, normalizeCharName } from '../lib/runHistory';
-import { recordSync } from '../lib/syncHistory';
+import { recordSync, oldestAcceptedSince } from '../lib/syncHistory';
 import { codeOrderIssue, saveReloadFlag } from '../lib/codeOrder';
 import { normalizeDeathCause } from '../lib/statistics';
 import { deathCellFromDelta, regionOfCell } from '../lib/mapRegions';
 import { isDebugAmnestied, newModGapFlag } from '../lib/debugAmnesty';
 import {
   isImplausibleTotal, isImplausibleJump, implausibleFlag, implausibleJumpFlag,
+  isImplausible24h, implausible24hFlag, KILLS_WINDOW_MS,
   isImplausibleSkillTotal, skillChangeIssue, implausibleSkillsFlag, skillLevelSum, skillsRegressionFlag,
   canCompareSkills,
 } from '../lib/plausibility';
@@ -672,7 +673,11 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   const killsTotalImpossible = isImplausibleTotal(decoded.kills, decoded.timeRaw);
   const killsJumpImpossible = !killsTotalImpossible && comparable
     && isImplausibleJump(prev!, decoded.kills, decoded.timeRaw);
-  const killsImpossible = killsTotalImpossible || killsJumpImpossible;
+  const killsBaseline24h = comparable && !killsTotalImpossible && !killsJumpImpossible
+    ? await oldestAcceptedSince(prev!.id, KILLS_WINDOW_MS)
+    : null;
+  const kills24hImpossible = isImplausible24h(killsBaseline24h, decoded.kills, decoded.timeRaw);
+  const killsImpossible = killsTotalImpossible || killsJumpImpossible || kills24hImpossible;
   const skillIssue = comparable && canCompareSkills(prev!)
     ? skillChangeIssue(prev!, decoded.skills, decoded.timeRaw)
     : null;
@@ -680,6 +685,8 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   if (killsImpossible || skillsImpossible) {
     const flag = killsJumpImpossible
       ? implausibleJumpFlag(prev!, decoded.kills, decoded.timeRaw)
+      : kills24hImpossible
+      ? implausible24hFlag(killsBaseline24h!.kills, decoded.kills)
       : killsImpossible
       ? implausibleFlag(decoded.kills, decoded.timeRaw)
       : implausibleSkillsFlag(skillLevelSum(decoded.skills), decoded.timeRaw);

@@ -1,5 +1,23 @@
 import { describe, it, expect } from 'vitest';
-import { isImplausibleTotal, isImplausibleJump, implausibleFlag, implausibleJumpFlag } from '../lib/plausibility';
+import { isImplausibleTotal, isImplausibleJump, implausibleFlag, implausibleJumpFlag, isImplausible24h, implausible24hFlag } from '../lib/plausibility';
+
+describe('limite de abates em 24 h', () => {
+  const base = { kills: 200000, time_raw: 1000000 };
+  it('até 100.000 passa, inclusive o maior volume real medido', () => {
+    expect(isImplausible24h(base, 239219, 1108541)).toBe(false); // +39.219
+    expect(isImplausible24h(base, 300000, 1010000)).toBe(false); // exatamente no limite
+  });
+  it('acima de 100.000 é barrado', () => {
+    expect(isImplausible24h(base, 300001, 1010000)).toBe(true);
+  });
+  it('sem sync aceito na janela ou em run nova, o limite não vale', () => {
+    expect(isImplausible24h(null, 900000, 1010000)).toBe(false);
+    expect(isImplausible24h(base, 900000, 60)).toBe(false);
+  });
+  it('anomalia registra os abates novos da janela', () => {
+    expect(implausible24hFlag(200000, 300001)).toBe('implausible_kills_24h:100001');
+  });
+});
 
 describe('trava de plausibilidade dos abates', () => {
   it('caso Anastacia Glubby (400.000 abates em 56 h) é barrado', () => {
