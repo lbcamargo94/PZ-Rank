@@ -184,6 +184,7 @@
       "mod_removed_row": "Mod do desafio foi removido durante a run",
       "mod_removed": "Companion detectou que o mod foi removido enquanto o jogo rodava",
       "mods_list": "Mods não permitidos: {{list}}",
+      "local_mods": "Mod(s) fora da Oficina da Steam: {{list}}",
       "blocked_mod": "Mod bloqueado detectado: {{name}}",
       "unlisted_mods": "Mod(s) não cadastrado(s) no desafio: {{list}}"
     },

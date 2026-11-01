@@ -18,7 +18,7 @@ import { recordSync, oldestAcceptedSince } from '../lib/syncHistory';
 import { codeOrderIssue, saveReloadFlag } from '../lib/codeOrder';
 import { normalizeDeathCause } from '../lib/statistics';
 import { deathCellFromDelta, regionOfCell } from '../lib/mapRegions';
-import { isDebugAmnestied, newModGapFlag } from '../lib/debugAmnesty';
+import { isDebugAmnestied, isLocalModAmnestied, newModGapFlag } from '../lib/debugAmnesty';
 import {
   isImplausibleTotal, isImplausibleJump, implausibleFlag, implausibleJumpFlag,
   isImplausible24h, implausible24hFlag, KILLS_WINDOW_MS,
@@ -411,10 +411,12 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       // Pereira, 30/09). Para jogar de novo, só com outro nome — ou o moderador reabilita.
       // Guarda a última hora de jogo em que o debug foi visto (mod v2.31.0+): é o
       // limite que o moderador vê e usa ao conceder a anistia de debug no painel.
-      if (decoded.debugSeenMin != null && decoded.debugSeenMin !== prev.debug_seen_min) {
+      // O mesmo limite serve para mod fora da Oficina (local_min, mod v2.33.0+).
+      const seenMin = decoded.debugSeenMin ?? decoded.localSeenMin;
+      if (seenMin != null && seenMin !== prev.debug_seen_min) {
         await supabase
           .from(config.tableName)
-          .update({ debug_seen_min: Math.max(decoded.debugSeenMin, prev.debug_seen_min ?? 0) })
+          .update({ debug_seen_min: Math.max(seenMin, prev.debug_seen_min ?? 0) })
           .eq('id', prev.id);
       }
       res.status(200).json({
@@ -542,10 +544,18 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     }
   }
 
+  // Mod fora da Oficina da Steam (mod v2.33.0+): desclassifica de vez. Não entra em isModsReason,
+  // então tirar o mod depois não reabilita a run e o nome do personagem fica bloqueado; só a
+  // anistia do moderador reverte. Vale mesmo com o ID cadastrado: a cópia local pode ser alterada.
+  const localModsReason = decoded.localMods.length > 0
+    && !isLocalModAmnestied(decoded, prev?.debug_amnesty_until_min)
+    ? `local_mods:${decoded.localMods.slice(0, 5).join(',')}`
+    : null;
+
   // Mod bloqueado detectado server-side: desclassifica imediatamente e persiste no banco.
   // Formato "nome::mod_id" — o "::" separa os dois campos no reason armazenado; o
   // frontend faz split('::') pra exibir "Nome (mod_id)" ao jogador/moderador.
-  if (blockedModFound) {
+  if (blockedModFound && !localModsReason) {
     const reason     = `blocked_mod:${blockedModFound.name}::${blockedModFound.modId}`;
     const modPayload = {
       sandbox_ok:               false,
@@ -607,8 +617,8 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   }
 
   // Mods UNLISTED detectados server-side: desclassificam igual a BLOCKED
-  if (!blockedModFound && unlistedModIds.length > 0) {
-    const reason     = `unlisted_mods:${unlistedModIds.slice(0, 5).join(',')}`;
+  if (localModsReason || (!blockedModFound && unlistedModIds.length > 0)) {
+    const reason     = localModsReason ?? `unlisted_mods:${unlistedModIds.slice(0, 5).join(',')}`;
     const modPayload = {
       sandbox_ok:               false,
       score:                    0,

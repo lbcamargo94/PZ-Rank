@@ -294,7 +294,9 @@ router.patch('/:id/status', requireModerator, async (req: ModRequest, res: Respo
   // Reabilitar uma desclassificação por debug = anistia (lib/debugAmnesty.ts). A marca
   // continua no save do jogador, então o servidor precisa saber até que hora perdoar.
   // Nota obrigatória: fica pública no perfil da run.
-  const isDebugAmnesty = sandbox_ok === true && row.sandbox_ok === false && row.disqualification_reason === 'debug';
+  // Mod fora da Oficina usa a mesma anistia: a marca fica no save (lib/debugAmnesty.ts).
+  const isDebugAmnesty = sandbox_ok === true && row.sandbox_ok === false
+    && (row.disqualification_reason === 'debug' || !!row.disqualification_reason?.startsWith('local_mods:'));
   if (isDebugAmnesty && !note?.trim()) {
     res.status(400).json({ error: 'Explique a anistia de debug: a nota fica pública no perfil da run.' });
     return;

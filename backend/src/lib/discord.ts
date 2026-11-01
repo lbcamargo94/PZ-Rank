@@ -158,6 +158,9 @@ function formatDisqReason(reason: string): string {
     const ids = reason.slice('unlisted_mods:'.length).split(',').map(v => v.trim()).filter(Boolean);
     return ids.length > 0 ? `Mod(s) não cadastrado(s): ${ids.join(', ')}` : 'Mod(s) não cadastrado(s) no site';
   }
+  if (reason.startsWith('local_mods:')) {
+    return `Mod(s) fora da Oficina da Steam: ${reason.slice('local_mods:'.length).split(',').join(', ')}`;
+  }
   if (reason.startsWith('mods:')) return 'Uso de mods não permitidos';
   switch (reason) {
     case 'sandbox': return 'Configuração de sandbox divergente do preset oficial';

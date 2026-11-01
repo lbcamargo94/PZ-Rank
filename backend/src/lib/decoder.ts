@@ -23,15 +23,19 @@ export type ReasonField = {
   debugSeenEstimated: boolean;
   presetViolated: boolean;
   modGap:         { minutes: number; atMin: number } | null;
+  localMods:      string[];
+  localSeenMin:   number | null;
 };
 
 // Campo motivo: motivo principal seguido de extras separados por "&" (mod v2.31.0+):
 //   "debug&debug_min=12150&debug_est=1&preset=1&gap=636@6407" — ver buildReasonExtra no RankMain.lua.
 // debug_est=1 (mod v2.31.1+): a hora do debug é estimada (marca antiga, sem hora registrada).
+// local_mods=<ids>&local_min=<n> (mod v2.33.0+): mods fora da Oficina da Steam e a última hora
+// de jogo em que foram vistos.
 // Os extras podem vir sozinhos (sandbox ok + aviso de gap), então o motivo principal é
 // o primeiro token só quando ele não é um extra "chave=valor".
 export function parseReasonField(raw: string | null | undefined): ReasonField {
-  const out: ReasonField = { reason: null, debugSeenMin: null, debugSeenEstimated: false, presetViolated: false, modGap: null };
+  const out: ReasonField = { reason: null, debugSeenMin: null, debugSeenEstimated: false, presetViolated: false, modGap: null, localMods: [], localSeenMin: null };
   const tokens = (raw ?? '').split('&').map(t => t.trim()).filter(Boolean);
   for (const [i, token] of tokens.entries()) {
     const eq = token.indexOf('=');
@@ -50,6 +54,10 @@ export function parseReasonField(raw: string | null | undefined): ReasonField {
     } else if (key === 'gap') {
       const m = /^(\d+)@(\d+)$/.exec(val);
       if (m) out.modGap = { minutes: parseInt(m[1]!, 10), atMin: parseInt(m[2]!, 10) };
+    } else if (key === 'local_mods') {
+      out.localMods = val.split(',').map(s => s.trim()).filter(Boolean);
+    } else if (key === 'local_min' && /^\d+$/.test(val)) {
+      out.localSeenMin = parseInt(val, 10);
     }
   }
   return out;
@@ -184,6 +192,8 @@ export function parsePzrCode(raw: string): DecodedCode | null {
     debugSeenEstimated:     reasonField.debugSeenEstimated,
     presetViolated:         reasonField.presetViolated,
     modGap:                 reasonField.modGap,
+    localMods:              reasonField.localMods,
+    localSeenMin:           reasonField.localSeenMin,
     codeTimestamp: (codeTimestamp && !isNaN(codeTimestamp)) ? codeTimestamp : null,
     modVersion,
     animalsKilled:     parseExt(animalsKilledRaw),

@@ -81,6 +81,8 @@ export interface DecodedCode {
   debugSeenEstimated:     boolean;
   presetViolated:         boolean;
   modGap:                 { minutes: number; atMin: number } | null;
+  localMods:              string[];
+  localSeenMin:           number | null;
   codeTimestamp:          number | null;
   modVersion:             string | null;
   // PZRX3 — extended stats (0 when absent / PZRX2 code)

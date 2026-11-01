@@ -1,25 +1,46 @@
 import { describe, it, expect } from 'vitest';
 import { parseReasonField } from '../lib/decoder';
-import { isDebugAmnestied, newModGapFlag } from '../lib/debugAmnesty';
+import { isDebugAmnestied, isLocalModAmnestied, newModGapFlag } from '../lib/debugAmnesty';
 
 describe('parseReasonField', () => {
   it('motivo simples de mods antigos continua igual', () => {
-    expect(parseReasonField('debug')).toEqual({ reason: 'debug', debugSeenMin: null, debugSeenEstimated: false, presetViolated: false, modGap: null });
+    expect(parseReasonField('debug')).toEqual({ reason: 'debug', debugSeenMin: null, debugSeenEstimated: false, presetViolated: false, modGap: null, localMods: [], localSeenMin: null });
     expect(parseReasonField('mods:NAO_PERMITIDO:X,AUSENTE:Y').reason).toBe('mods:NAO_PERMITIDO:X,AUSENTE:Y');
-    expect(parseReasonField('')).toEqual({ reason: null, debugSeenMin: null, debugSeenEstimated: false, presetViolated: false, modGap: null });
+    expect(parseReasonField('')).toEqual({ reason: null, debugSeenMin: null, debugSeenEstimated: false, presetViolated: false, modGap: null, localMods: [], localSeenMin: null });
   });
   it('debug com hora, preset e gap (mod 2.31.0)', () => {
     expect(parseReasonField('debug&debug_min=12150&preset=1&gap=636@6407')).toEqual({
-      reason: 'debug', debugSeenMin: 12150, debugSeenEstimated: false, presetViolated: true, modGap: { minutes: 636, atMin: 6407 },
+      reason: 'debug', debugSeenMin: 12150, debugSeenEstimated: false, presetViolated: true, modGap: { minutes: 636, atMin: 6407 }, localMods: [], localSeenMin: null,
     });
   });
   it('só o aviso de gap, sem desclassificação', () => {
     expect(parseReasonField('gap=112@12140')).toEqual({
-      reason: null, debugSeenMin: null, debugSeenEstimated: false, presetViolated: false, modGap: { minutes: 112, atMin: 12140 },
+      reason: null, debugSeenMin: null, debugSeenEstimated: false, presetViolated: false, modGap: { minutes: 112, atMin: 12140 }, localMods: [], localSeenMin: null,
     });
   });
   it('extras malformados são ignorados', () => {
-    expect(parseReasonField('debug&debug_min=abc&gap=12')).toEqual({ reason: 'debug', debugSeenMin: null, debugSeenEstimated: false, presetViolated: false, modGap: null });
+    expect(parseReasonField('debug&debug_min=abc&gap=12')).toEqual({ reason: 'debug', debugSeenMin: null, debugSeenEstimated: false, presetViolated: false, modGap: null, localMods: [], localSeenMin: null });
+  });
+});
+
+describe('mods fora da Oficina', () => {
+  it('lê a lista e a hora, sem motivo principal', () => {
+    const out = parseReasonField('local_mods=PZCommunityRank,MeuMod&local_min=500');
+    expect(out.reason).toBeNull();
+    expect(out.localMods).toEqual(['PZCommunityRank', 'MeuMod']);
+    expect(out.localSeenMin).toBe(500);
+  });
+  it('convive com debug e gap', () => {
+    const out = parseReasonField('debug&debug_min=10&gap=5@20&local_mods=X&local_min=30');
+    expect(out.reason).toBe('debug');
+    expect(out.debugSeenMin).toBe(10);
+    expect(out.localMods).toEqual(['X']);
+  });
+  it('anistia cobre até o limite; depois disso ou sem hora, não', () => {
+    expect(isLocalModAmnestied({ localSeenMin: 500 }, 500)).toBe(true);
+    expect(isLocalModAmnestied({ localSeenMin: 501 }, 500)).toBe(false);
+    expect(isLocalModAmnestied({ localSeenMin: null }, 500)).toBe(false);
+    expect(isLocalModAmnestied({ localSeenMin: 500 }, null)).toBe(false);
   });
 });
 

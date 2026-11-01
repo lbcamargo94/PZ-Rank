@@ -184,6 +184,7 @@
       "mod_removed_row": "Challenge mod was removed during the run",
       "mod_removed": "Companion detected the mod was removed while the game was running",
       "mods_list": "Mods not allowed: {{list}}",
+      "local_mods": "Mod(s) outside the Steam Workshop: {{list}}",
       "blocked_mod": "Blocked mod detected: {{name}}",
       "unlisted_mods": "Unregistered mod(s): {{list}}"
     },

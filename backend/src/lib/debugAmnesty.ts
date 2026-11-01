@@ -28,6 +28,17 @@ export function isDebugAmnestied(
   return decoded.debugSeenMin <= amnestyUntilMin;
 }
 
+// Mod fora da Oficina (mod v2.33.0+) usa o mesmo limite da anistia: a marca fica no save para
+// sempre e o moderador perdoa até uma hora de jogo. Com o mod ainda ativo, a hora sobe e a run
+// cai de novo. Código sem hora não é anistiado.
+export function isLocalModAmnestied(
+  decoded: Pick<DecodedCode, 'localSeenMin'>,
+  amnestyUntilMin: number | null | undefined,
+): boolean {
+  if (amnestyUntilMin == null || decoded.localSeenMin == null) return false;
+  return decoded.localSeenMin <= amnestyUntilMin;
+}
+
 // Aviso de possível sessão sem o mod (mod v2.31.0+). Só vira anomalia para o moderador
 // revisar — não desclassifica. O mod repete o aviso em todos os syncs da sessão em que
 // detectou o gap; lastGapAtMin (entries.mod_gap_at_min) evita registrar o mesmo duas vezes.

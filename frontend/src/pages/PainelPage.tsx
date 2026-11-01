@@ -93,6 +93,7 @@ const ANOMALY_INFO: Record<string, { label: string; detail: string }> = {
 // gerados pela checagem server-side v2.18.0+ (backend/src/routes/sync.ts):
 //   "blocked_mod:<Nome>::<mod_id>" — mod com status='blocked' no cadastro do site
 //   "unlisted_mods:<id1>,<id2>"    — mods ativos no save que não estão cadastrados (nem permitidos nem bloqueados)
+//   "local_mods:<id1>,<id2>"       — mods fora da Oficina da Steam (cópia local, pode ser alterada)
 function parseDisqReason(reason: string): { icon: string; label: string; detail: string; color: string } | null {
   if (reason.startsWith('blocked_mod:')) {
     const [name, modId] = reason.slice('blocked_mod:'.length).split('::');
@@ -103,6 +104,15 @@ function parseDisqReason(reason: string): { icon: string; label: string; detail:
       detail: display
         ? `O jogador usou o mod "${display}", que está bloqueado no cadastro do site.`
         : 'O jogador usou um mod bloqueado no cadastro do site.',
+      color:  '#ef4444',
+    };
+  }
+  if (reason.startsWith('local_mods:')) {
+    const ids = reason.slice('local_mods:'.length).split(',').map(v => v.trim()).filter(Boolean);
+    return {
+      icon:   'ti-folder-x',
+      label:  `Mod(s) fora da Oficina (${ids.length})`,
+      detail: `Mods carregados de pasta local, e não da Oficina da Steam: ${ids.map(id => `"${id}"`).join(', ')}. Tirar o mod não reabilita a run; só a anistia do moderador.`,
       color:  '#ef4444',
     };
   }
@@ -307,6 +317,7 @@ function DebugAmnestyModal({ entry, onConfirm, onCancel }: DisqualifyModalProps)
   }, [onCancel]);
 
   const untilMin = Math.max(entry.debug_seen_min ?? 0, entry.time_raw ?? 0);
+  const isLocalMods = !!entry.disqualification_reason?.startsWith('local_mods:');
 
   return (
     <div className="modal-overlay active" role="alertdialog" aria-modal="true">
@@ -316,7 +327,7 @@ function DebugAmnestyModal({ entry, onConfirm, onCancel }: DisqualifyModalProps)
         </button>
 
         <h2 className="modal-title">
-          <i className="ti ti-shield-check" /> Anistia de debug
+          <i className="ti ti-shield-check" /> {isLocalMods ? 'Anistia de mod fora da Oficina' : 'Anistia de debug'}
         </h2>
 
         <div className="ban-modal-body">
@@ -324,9 +335,11 @@ function DebugAmnestyModal({ entry, onConfirm, onCancel }: DisqualifyModalProps)
             Reabilitando: <strong>{entry.character_name || entry.name}</strong>
           </p>
           <p className="painel-disq-desc">
-            O debug visto até <strong>{fmtGameMinutes(untilMin)}</strong> de jogo fica perdoado.
-            Se o mod detectar debug de novo depois disso, a run é desclassificada outra vez.
-            {entry.debug_seen_min == null && ' O mod deste jogador não informou a hora do debug: vale o último estado gravado.'}
+            {isLocalMods ? 'O mod fora da Oficina visto' : 'O debug visto'} até <strong>{fmtGameMinutes(untilMin)}</strong> de jogo fica perdoado.
+            {isLocalMods
+              ? ' Se o jogador continuar com esse mod depois disso, a run é desclassificada outra vez.'
+              : ' Se o mod detectar debug de novo depois disso, a run é desclassificada outra vez.'}
+            {!isLocalMods && entry.debug_seen_min == null && ' O mod deste jogador não informou a hora do debug: vale o último estado gravado.'}
           </p>
 
           <div className="ban-modal-field">
@@ -595,7 +608,8 @@ export function PainelPage({ session, onSession, onBack }: Props) {
     patch: { is_alive?: boolean; sandbox_ok?: boolean },
     label: string,
   ) {
-    if (patch.sandbox_ok === true && entry.sandbox_ok === false && entry.disqualification_reason === 'debug') {
+    if (patch.sandbox_ok === true && entry.sandbox_ok === false
+      && (entry.disqualification_reason === 'debug' || entry.disqualification_reason?.startsWith('local_mods:'))) {
       setAmnestyRequest({ entry, patch, label });
       return;
     }

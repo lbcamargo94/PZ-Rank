@@ -243,6 +243,9 @@ function ppDisqTooltip(t: TFunction, reason: string | null | undefined): string 
     const [name] = parseModViolations(reason);
     return name ? t('rank.disq.blocked_mod', { name }) : t('rank.disq.mods');
   }
+  if (reason.startsWith('local_mods:')) {
+    return t('rank.disq.local_mods', { list: reason.slice('local_mods:'.length).split(',').join(', ') });
+  }
   if (reason.startsWith('unlisted_mods:')) {
     const ids = parseModViolations(reason);
     return ids.length > 0 ? t('rank.disq.unlisted_mods', { list: ids.join(', ') }) : t('rank.disq.mods');
