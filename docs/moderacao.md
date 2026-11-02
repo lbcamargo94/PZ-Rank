@@ -198,3 +198,7 @@ Lenore Bostic (Bone) e Gean Klose Van Dame (jpcharleaux) tiveram sequências de 
 Syncs recusados como "abates impossíveis": +550 abates em 4,3 h de jogo (limite 514) e, hoje, picos parecidos. O total da run (≈10 abates/h) estava normal; o próximo sync com mais tempo de jogo passava com todos os abates — nenhum dado perdido. Ritmo de horda real: o Bone chega a ~500 abates por sync de 10 min, e Guto, Fricke e uDantt a 425–475 no mesmo intervalo. Correção (v4.30.5): folga fixa do salto entre syncs 300 → 1.000 e anomalia própria (`implausible_kills_jump`) que mostra o salto e o limite em vez do total. Anomalia da run limpa; sem punição.
 
 Na mesma verificação: o próprio Bone (moderador `bone`) tinha limpado a anomalia da sua run 4 vezes (21–22/10) e editado os objetivos dela em 18/10 21:55 — a pontuação foi de 42.579 para 47.579 (+5.000) no sync seguinte. Correção (v4.30.6): bloqueio de moderação em causa própria. Os +5.000 foram conferidos pelo master nas VODs em 22/10/2026: as bases existem e os pontos ficam. Caso encerrado.
+
+### Base Militar Secreta — objetivo passa a valer 1.000 pontos, 02/11/2026
+
+Decisão do master: o objetivo "Operação Base Militar" caiu de 5.000 para 1.000 pontos (v4.32.0). As duas runs que já tinham o objetivo, Lucille Rankataia (id 46) e Lenore Bostic (id 130), perderam 4.000 pontos em `score` e `record_score`. O objetivo continua marcado nelas. `sync_history` guarda os valores antigos de propósito. Linhas anteriores salvas em `/var/backups/pzrank/pontuais/base-militar-2026-11-02.csv`.

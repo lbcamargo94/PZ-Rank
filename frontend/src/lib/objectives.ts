@@ -79,7 +79,7 @@ export const SCORE_KILLS_MAX      = 800_000;  // máximo de kills contabilizados
 export const SCORE_SKILL_LEVEL    = 100;      // pts por nível de habilidade
 export const SCORE_SKILL_MAXED    = SCORE_SKILL_LEVEL * 10; // pts por habilidade no nível máximo (10)
 export const SCORE_SPIFFO_DONE    = 1_000;    // pts por Spiffo's com base estabelecida
-export const SCORE_MILITARY       = 5_000;    // pts por base militar conquistada
+export const SCORE_MILITARY       = 1_000;  // pts por base militar conquistada
 export const SCORE_SPIFFO_HQ      = 5_000;    // pts por Sede do Spiffo's conquistada
 export const SCORE_SPIFFO_RELIC   = 3_000;    // pts pela Relíquia do Spiffo
 

@@ -4,7 +4,7 @@ const SCORE_KILLS_PER_KILL = 0.1;
 const SCORE_KILLS_MAX      = 800_000;
 const SCORE_SKILL_LEVEL    = 100; // pts por nível de habilidade (10 níveis × 100 = 1000 no teto, igual ao valor antigo por skill maxada)
 const SCORE_SPIFFO_DONE    = 1_000;
-const SCORE_MILITARY       = 5_000;
+const SCORE_MILITARY       = 1_000;
 const SCORE_SPIFFO_HQ      = 5_000;
 const SCORE_SPIFFO_RELIC   = 3_000;
 

@@ -132,7 +132,7 @@ function getCatchUpCombos(gap: number, chaser: Entry, objs: Objectives): CatchUp
 
   // 2. Objectives + kills
   let objPts = 0; const objLabels: string[] = [];
-  if (milAvail)   { objPts += SCORE_MILITARY;    objLabels.push('Base Militar (+5.000)'); }
+  if (milAvail)   { objPts += SCORE_MILITARY;    objLabels.push('Base Militar (+1.000)'); }
   if (hqAvail)    { objPts += SCORE_SPIFFO_HQ;   objLabels.push("Sede do Spiffo's (+5.000)"); }
   if (relicAvail) { objPts += SCORE_SPIFFO_RELIC; objLabels.push('Relíquia (+3.000)'); }
   if (objPts > 0 && objPts < gap * 2) {
@@ -369,7 +369,7 @@ function ScoreCompositionCard({ bkA, bkB, nameA, nameB }: {
     { icon: 'ti-skull',          label: 'Kills',             a: bkA.killPts,     b: bkB.killPts,     note: `×${SCORE_KILLS_PER_KILL}` },
     { icon: 'ti-sparkles',       label: 'Habilidades',       a: bkA.skillPts,    b: bkB.skillPts,    note: `${SCORE_SKILL_LEVEL}pts/nível` },
     { icon: 'ti-building-store', label: "Spiffo's",          a: bkA.spiffoPts,   b: bkB.spiffoPts,   note: `${fmtNum(bkA.spiffoCount)}×1000 / ${fmtNum(bkB.spiffoCount)}×1000` },
-    { icon: 'ti-shield',         label: 'Base Militar',      a: bkA.militaryPts, b: bkB.militaryPts, note: '5.000 pts' },
+    { icon: 'ti-shield',         label: 'Base Militar',      a: bkA.militaryPts, b: bkB.militaryPts, note: '1.000 pts' },
     { icon: 'ti-building',       label: "Sede do Spiffo's",  a: bkA.hqPts,       b: bkB.hqPts,       note: '5.000 pts' },
     { icon: 'ti-diamond',        label: 'Relíquia',          a: bkA.relicPts,    b: bkB.relicPts,    note: '3.000 pts' },
   ];
