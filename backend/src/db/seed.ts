@@ -74,7 +74,7 @@ function obj(opts: ObjOpts = {}): string {
 function sc(kills: number, n10: number, opts: ObjOpts = {}): number {
   return Math.round(Math.min(kills, 800_000) * 0.1)
     + n10 * 1_000
-    + (opts.military_base ? 5_000 : 0)
+    + (opts.military_base ? 1_000 : 0)
     + (opts.spiffo_hq     ? 5_000 : 0)
     + (opts.spiffo_relic  ? 3_000 : 0)
     + (opts.bases ?? []).length * 1_000;
