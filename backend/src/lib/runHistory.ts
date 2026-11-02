@@ -34,6 +34,21 @@ export function aliveAfterDeath(newDays: number): 'new' | 'resurrection' {
   return newDays <= NEW_CHARACTER_MAX_DAYS ? 'new' : 'resurrection';
 }
 
+/**
+ * "Confirmar morte" só vale para tentativa de run nova sem sync aceito depois (v4.31.1).
+ * Marca sem sync posterior = jogador travado no personagem novo. Sync aceito depois da
+ * marca = ele segue jogando com a run, e confirmar a morte mata um personagem vivo (caso
+ * das 16 runs de 01/11, com marcas de até 12 dias). Retorna o motivo da recusa, ou null.
+ */
+export function confirmDeathBlock(
+  pendingSince: string | Date | null | undefined,
+  lastAcceptedSyncAt: string | Date | null | undefined,
+): 'no_attempt' | 'played_after' | null {
+  if (!pendingSince) return 'no_attempt';
+  if (lastAcceptedSyncAt && new Date(lastAcceptedSyncAt) > new Date(pendingSince)) return 'played_after';
+  return null;
+}
+
 // isEmptyRun mora em statistics.ts (regra oficial também das estatísticas);
 // reexportada aqui pra quem arquiva runs.
 export { isEmptyRun };

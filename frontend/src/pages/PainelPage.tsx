@@ -1252,7 +1252,13 @@ export function PainelPage({ session, onSession, onBack }: Props) {
       {confirmDeathEntryId !== null && (
         <ConfirmModal
           title="Confirmar morte não registrada"
-          message="O personagem será marcado como morto e os pontos serão zerados (score = 0), liberando o jogador para iniciar uma nova run do zero. Esta ação não pode ser desfeita."
+          message={(() => {
+            const target = entries.find(e => e.id === confirmDeathEntryId);
+            return `Tentativa de iniciar ${target?.pending_new_character ?? 'outra run'} em ${fmtEntryDate(target?.pending_new_character_since)}. `
+              + `Última atualização da run: ${fmtEntryDate(target?.updated_at ?? target?.created_at)}. `
+              + 'O personagem será marcado como morto e os pontos serão zerados (score = 0), liberando o jogador para iniciar uma nova run do zero. '
+              + 'Se o jogador ainda estiver jogando com ele, os próximos syncs serão recusados. Confira o botão Syncs antes de confirmar.';
+          })()}
           confirmLabel="Confirmar Morte"
           danger
           onConfirm={() => handleConfirmDeath(confirmDeathEntryId)}

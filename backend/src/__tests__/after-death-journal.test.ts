@@ -1,6 +1,20 @@
 import { describe, it, expect } from 'vitest';
-import { aliveAfterDeath } from '../lib/runHistory';
+import { aliveAfterDeath, confirmDeathBlock } from '../lib/runHistory';
 import { isHiddenJournalEvent } from '../lib/journalFilter';
+
+describe('confirmar morte não registrada (v4.31.1)', () => {
+  it('tentativa sem sync aceito depois pode ser confirmada', () => {
+    expect(confirmDeathBlock('2026-11-01T10:00:00Z', '2026-11-01T09:59:00Z')).toBeNull();
+    expect(confirmDeathBlock('2026-11-01T10:00:00Z', null)).toBeNull();
+  });
+  it('sync aceito depois da tentativa = jogador segue vivo, recusa', () => {
+    expect(confirmDeathBlock('2026-10-20T11:30:00Z', '2026-11-01T21:35:00Z')).toBe('played_after');
+    expect(confirmDeathBlock(new Date('2026-10-20T11:30:00Z'), new Date('2026-11-01T21:35:00Z'))).toBe('played_after');
+  });
+  it('sem tentativa registrada, recusa', () => {
+    expect(confirmDeathBlock(null, '2026-11-01T21:35:00Z')).toBe('no_attempt');
+  });
+});
 
 describe('run morta + código de personagem vivo (v4.29.4)', () => {
   it('personagem recém-criado (até 1 dia) é partida nova', () => {

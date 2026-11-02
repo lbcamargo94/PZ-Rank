@@ -948,6 +948,9 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     flagged_reason: flaggedReason,
     flagged_at:     flaggedAt,
     updated_at:   new Date().toISOString(),
+    // Sync aceito: o jogador segue nesta run, a tentativa de run nova ficou para trás
+    pending_new_character:       null,
+    pending_new_character_since: null,
     no_live_streak,
     mod_version:  decoded.modVersion ?? null,
     // Hora (relógio do PC) do código aceito — base da ordem dos códigos (lib/codeOrder.ts)

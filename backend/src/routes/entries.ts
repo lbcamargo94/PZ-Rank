@@ -5,7 +5,7 @@ import { supabase } from '../supabase';
 import { parsePzrCode } from '../lib/decoder';
 import { dbError } from '../lib/errors';
 import { computeScore, sumSkillLevels } from '../lib/scoring';
-import { archiveRun, getActiveSeasonId, isNewRunOf } from '../lib/runHistory';
+import { archiveRun, confirmDeathBlock, getActiveSeasonId, isNewRunOf } from '../lib/runHistory';
 import { normalizeDeathCause } from '../lib/statistics';
 import { requireModerator } from '../middleware/moderator';
 import type { ModRequest } from '../middleware/moderator';
@@ -421,7 +421,7 @@ router.patch('/:id/confirm-death', requireModerator, async (req: ModRequest, res
 
   const { data: existing, error: fetchError } = await supabase
     .from(config.tableName)
-    .select('id, is_alive, score, record_score')
+    .select('id, is_alive, score, record_score, pending_new_character_since')
     .eq('id', id)
     .single();
 
@@ -431,7 +431,26 @@ router.patch('/:id/confirm-death', requireModerator, async (req: ModRequest, res
     return;
   }
 
-  const row = existing as { id: number; is_alive: boolean; score: number; record_score: number };
+  const row = existing as { id: number; is_alive: boolean; score: number; record_score: number; pending_new_character_since: string | null };
+
+  const { data: lastSync } = await supabase
+    .from('sync_history')
+    .select('at')
+    .eq('entry_id', id)
+    .eq('result', 'aceito')
+    .order('at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const block = confirmDeathBlock(row.pending_new_character_since, (lastSync as { at: string } | null)?.at);
+  if (block) {
+    res.status(409).json({
+      error: block === 'played_after'
+        ? 'O jogador sincronizou esta run depois da tentativa de run nova: o personagem segue vivo. Veja o botão Syncs.'
+        : 'Esta run não tem tentativa de run nova registrada.',
+    });
+    return;
+  }
+
   const newRecord = Math.max(row.score, row.record_score ?? 0);
 
   const { data, error } = await supabase
