@@ -7,7 +7,7 @@
 // responde 404 para os downloads dele.
 const COMPANION_REPO = 'https://github.com/lbcamargo94/PZ-Rank-Companion-Releases';
 
-export const COMPANION_VERSION = '2.6.0';       // sem "v" — usado nos nomes de arquivo dos assets
+export const COMPANION_VERSION = '2.6.1';       // sem "v" — usado nos nomes de arquivo dos assets
 export const COMPANION_TAG     = `v${COMPANION_VERSION}`; // com "v" — usado na URL da tag e exibido ao usuário
 
 export const COMPANION_LATEST_URL     = `${COMPANION_REPO}/releases/latest`;
