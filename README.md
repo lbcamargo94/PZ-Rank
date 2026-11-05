@@ -176,7 +176,7 @@ Veja a página de [links e downloads](https://www.pzrank.com.br/links) para inst
 
 Software proprietário — todos os direitos reservados.
 
-Copyright (c) 2026 Lucas Buneo de Camargo / PZ Community.
+Copyright (c) 2026 Lucas Bueno de Camargo / PZ Community.
 
 O código-fonte pode estar visível para fins de transparência, mas visibilidade pública não concede permissão para copiar, modificar, distribuir ou criar obras derivadas.
 

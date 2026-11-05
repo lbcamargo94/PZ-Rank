@@ -86,7 +86,7 @@ check('docs/IP_PROTECTION',    'docs/IP_PROTECTION.md');
 
 // 2. LICENSE content checks
 console.log('\n── LICENSE content ──');
-containsText('LICENSE', 'Lucas Buneo de Camargo',   'Copyright holder present');
+containsText('LICENSE', 'Lucas Bueno de Camargo',   'Copyright holder present');
 containsText('LICENSE', 'PZ Community Proprietary', 'License name present');
 containsText('LICENSE', 'does not constitute a grant of rights', 'Public ≠ open-source clause present');
 containsText('LICENSE', 'cannot be excluded under applicable law', 'Reserved legal rights clause present');

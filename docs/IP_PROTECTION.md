@@ -22,8 +22,8 @@ the software, brand, content, and visual identity developed under the project.
 
 | Item | Status |
 |---|---|
-| Technical author | Lucas Buneo de Camargo (GitHub: lbcamargo94) |
-| Legal holder of the software | Lucas Buneo de Camargo / PZ Community |
+| Technical author | Lucas Bueno de Camargo (GitHub: lbcamargo94) |
+| Legal holder of the software | Lucas Bueno de Camargo / PZ Community |
 | Collaborators with IP agreements | TODO: LIST AND CONFIRM |
 | Assets created by third parties | TODO: CATALOG AND CONFIRM LICENSES/ASSIGNMENTS |
 
