@@ -3,7 +3,9 @@
 // ficavam duplicados em LinksUteisPage, Header e RegrasPage, e divergiam
 // silenciosamente quando só um dos lugares era atualizado (ficou 9 versões
 // desatualizado em dois deles antes de ser notado).
-const COMPANION_REPO = 'https://github.com/lbcamargo94/PZ-Rank-Companion';
+// Repositório público só com os instaladores: o do código-fonte é privado e o GitHub
+// responde 404 para os downloads dele.
+const COMPANION_REPO = 'https://github.com/lbcamargo94/PZ-Rank-Companion-Releases';
 
 export const COMPANION_VERSION = '2.6.0';       // sem "v" — usado nos nomes de arquivo dos assets
 export const COMPANION_TAG     = `v${COMPANION_VERSION}`; // com "v" — usado na URL da tag e exibido ao usuário
