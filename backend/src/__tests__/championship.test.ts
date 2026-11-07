@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { isChampionshipTitle, isChampionshipTwitchGame } from '../lib/championship';
+import { isChampionshipTitle, isChampionshipTwitchGame, isChampionshipTwitchLive, isRivalChampionshipContent } from '../lib/championship';
 
 describe('isChampionshipTitle', () => {
   it('reconhece títulos com o nome do campeonato', () => {
@@ -57,5 +57,29 @@ describe('isChampionshipTwitchGame', () => {
     expect(isChampionshipTwitchGame('Just Chatting')).toBe(false);
     expect(isChampionshipTwitchGame(null)).toBe(false);
     expect(isChampionshipTwitchGame('')).toBe(false);
+  });
+});
+
+describe('campeonatos de terceiros (ChallengeZ)', () => {
+  it('nunca anuncia live que cita o ChallengeZ, mesmo citando o Brasileirão', () => {
+    expect(isRivalChampionshipContent('ChallengeZ dia 3')).toBe(true);
+    expect(isRivalChampionshipContent('Challenge Z - temporada 1')).toBe(true);
+    expect(isRivalChampionshipContent('live', 'inscreva-se em challengez.online')).toBe(true);
+    expect(isRivalChampionshipContent('#ChallengeZ ao vivo')).toBe(true);
+    expect(isRivalChampionshipContent('challenge-z')).toBe(true);
+    expect(isChampionshipTitle('Brasileirão PZ e ChallengeZ')).toBe(false);
+  });
+
+  it('não confunde com "challenge zombie" nem com outros textos', () => {
+    expect(isRivalChampionshipContent('Zombie challenge zombies everywhere')).toBe(false);
+    expect(isRivalChampionshipContent('Brasileirão PZ dia 40')).toBe(false);
+    expect(isRivalChampionshipContent(null)).toBe(false);
+  });
+
+  it('Twitch: categoria PZ com título do ChallengeZ não é anunciada', () => {
+    expect(isChampionshipTwitchLive('Project Zomboid', 'ChallengeZ dia 1')).toBe(false);
+    expect(isChampionshipTwitchLive('Project Zomboid', 'Brasileirão PZ dia 1')).toBe(true);
+    expect(isChampionshipTwitchLive('Project Zomboid', null)).toBe(true);
+    expect(isChampionshipTwitchLive('Just Chatting', 'Brasileirão')).toBe(false);
   });
 });

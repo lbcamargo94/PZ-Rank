@@ -10,7 +10,8 @@ import { supabase } from '../supabase';
 import { getChannelCurrentLive, checkLivesBatch, isYouTubeQuotaBlocked, YT_LIVE_MAX_AGE_MS, YT_BATCH_MAX_IDS } from './youtube';
 import { extractTwitchLogin, getLiveStreams } from './twitch';
 import { sendLiveNotification } from './discord';
-import { isChampionshipTitle, isChampionshipTwitchGame } from './championship';
+import { isChampionshipTitle, isChampionshipTwitchLive } from './championship';
+import { canAnnounceLive } from './liveEligibility';
 import { broadcast } from './sse';
 
 // ── Reserva atômica ───────────────────────────────────────────────────────────
@@ -120,7 +121,7 @@ export async function scanYoutubeLives(): Promise<ScanResult> {
         const live = await getChannelCurrentLive(player.yt_channel_id);
         if (!live) return;
         if (!await claimYoutubeLive(player.id, null, live.videoId)) return;   // outro caminho já registrou
-        if (isChampionshipTitle(live.title, live.description)) {
+        if (isChampionshipTitle(live.title, live.description) && await canAnnounceLive(player.id, player.nick)) {
           const { rank, score } = rankOf(player.id);
           await sendLiveNotification({ nick: player.nick, title: live.title, videoUrl: live.videoUrl, thumbnail: live.thumbnail, rank, score });
         }
@@ -248,7 +249,7 @@ export async function scanTwitchLives(): Promise<ScanResult> {
       }
       if (p.twitch_last_live_id === live.id) { out.ongoing.push(p.nick); return; }
       if (!await claimTwitchLive(p.id, p.twitch_last_live_id, live.id)) return;   // outro caminho já registrou
-      if (isChampionshipTwitchGame(live.game)) {
+      if (isChampionshipTwitchLive(live.game, live.title) && await canAnnounceLive(p.id, p.nick)) {
         const { rank, score } = rankOf(p.id);
         await sendLiveNotification({
           nick: p.nick, title: live.title, videoUrl: `https://twitch.tv/${live.login}`,

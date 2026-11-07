@@ -202,3 +202,17 @@ Na mesma verificação: o próprio Bone (moderador `bone`) tinha limpado a anoma
 ### Base Militar Secreta — objetivo passa a valer 1.000 pontos, 02/11/2026
 
 Decisão do master: o objetivo "Operação Base Militar" caiu de 5.000 para 1.000 pontos (v4.32.0). As duas runs que já tinham o objetivo, Lucille Rankataia (id 46) e Lenore Bostic (id 130), perderam 4.000 pontos em `score` e `record_score`. O objetivo continua marcado nelas. `sync_history` guarda os valores antigos de propósito. Linhas anteriores salvas em `/var/backups/pzrank/pontuais/base-militar-2026-11-02.csv`.
+
+### Canal de lives do Discord — só jogadores do campeonato, 07/11/2026
+
+Decisão do master: o canal de lives anuncia só quem está no Brasileirão PZ (v4.33.0, `backend/src/lib/liveEligibility.ts`). Para a live ser anunciada:
+- **A conta precisa estar:** aprovada, ativa, sem bloqueio e sem alerta de identidade banida.
+- **A run precisa:** estar viva e válida no ranking; sem run viva, a última run válida precisa ter sido atualizada nos últimos 14 dias (`LIVE_GRACE_DAYS`), para quem acabou de morrer e ainda não sincronizou o personagem novo.
+- **Não anuncia:** run mais recente desclassificada (`sandbox_ok = false`), até a pessoa ter outra run válida.
+- **Conteúdo (`backend/src/lib/championship.ts`):** live que cita o ChallengeZ, campeonato que copiou o nosso formato, nunca é anunciada, mesmo de jogador nosso e mesmo citando o Brasileirão ("challengez", "challenge z", "#challengez", "challengez.online").
+
+Simulação com os dados de 07/11/2026, 730 contas aprovadas com canal:
+- **continuam anunciadas:** 393 (357 com run viva e 36 pela tolerância);
+- **saem do canal:** 337 (200 nunca jogaram, 114 sem run há mais de 14 dias, 22 desclassificados, 1 bloqueada).
+
+O motivo de cada bloqueio fica no log do backend (`[live-eligibility] live não anunciada: <nick> (<motivo>)`). O selo "Ao vivo" do site não mudou: ele continua aparecendo para qualquer conta aprovada.

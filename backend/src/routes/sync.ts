@@ -1327,7 +1327,8 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
         if (!live) return;
         const { claimYoutubeLive } = await import('../lib/liveScan');
         if (!await claimYoutubeLive(p.id, null, live.videoId)) return;   // cron/webhook já registrou
-        if (isChampionshipTitle(live.title, live.description)) {
+        const { canAnnounceLive } = await import('../lib/liveEligibility');
+        if (isChampionshipTitle(live.title, live.description) && await canAnnounceLive(p.id, p.nick)) {
           await sendLiveNotification({
             nick:      p.nick,
             title:     live.title,
@@ -1353,7 +1354,8 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
 
       const { extractTwitchLogin, getLiveStreams } = await import('../lib/twitch');
       const { sendLiveNotification } = await import('../lib/discord');
-      const { isChampionshipTwitchGame } = await import('../lib/championship');
+      const { isChampionshipTwitchLive } = await import('../lib/championship');
+      const { canAnnounceLive } = await import('../lib/liveEligibility');
 
       const login = extractTwitchLogin(p.twitch_url);
       if (!login) return;
@@ -1387,7 +1389,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
 
       const { claimTwitchLive } = await import('../lib/liveScan');
       if (!await claimTwitchLive(p.id, p.twitch_last_live_id, live.id)) return;   // cron já registrou
-      if (isChampionshipTwitchGame(live.game)) {
+      if (isChampionshipTwitchLive(live.game, live.title) && await canAnnounceLive(p.id, p.nick)) {
         await sendLiveNotification({
           nick:      p.nick,
           title:     live.title,

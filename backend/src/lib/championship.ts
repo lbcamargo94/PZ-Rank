@@ -29,11 +29,30 @@ const TITLE_KEYWORDS = [
   'pzrank',
 ];
 
+// Campeonatos de terceiros que copiam o nosso formato (ChallengeZ, 11/2026): live que os
+// cita nunca é anunciada, mesmo de jogador nosso e mesmo citando também o Brasileirão.
+// "challenge z" / "challenge-z" / "#challengez" / "challengez.online"; o \b depois do z
+// evita casar com "challenge zombie".
+const RIVAL_PATTERNS: RegExp[] = [
+  /\bchallenge[\s._-]*z\b/i,
+];
+
+export function isRivalChampionshipContent(title: string | null | undefined, description?: string | null): boolean {
+  const text = `${title ?? ''} ${description ?? ''}`;
+  return RIVAL_PATTERNS.some(re => re.test(text));
+}
+
 export function isChampionshipTitle(title: string, description?: string | null): boolean {
+  if (isRivalChampionshipContent(title, description)) return false;
   const text = `${title} ${description ?? ''}`.toLowerCase();
   return TITLE_KEYWORDS.some(k => text.includes(k));
 }
 
 export function isChampionshipTwitchGame(game: string | null): boolean {
   return !!game && game.trim().toLowerCase() === 'project zomboid';
+}
+
+/** Twitch: categoria Project Zomboid e título sem campeonato de terceiros. */
+export function isChampionshipTwitchLive(game: string | null, title: string | null | undefined): boolean {
+  return isChampionshipTwitchGame(game) && !isRivalChampionshipContent(title);
 }

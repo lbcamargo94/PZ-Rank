@@ -11,6 +11,7 @@ import { supabase } from '../supabase';
 import { verifyHmac, parsePubSubAtom, checkIsLive, subscribePubSub } from '../lib/youtube';
 import { sendLiveNotification } from '../lib/discord';
 import { isChampionshipTitle } from '../lib/championship';
+import { canAnnounceLive } from '../lib/liveEligibility';
 
 const router = Router();
 
@@ -139,7 +140,7 @@ router.post('/youtube', async (req: Request, res: Response): Promise<void> => {
     res.sendStatus(200); return;
   }
 
-  if (isChampionshipTitle(liveInfo.title, liveInfo.description)) {
+  if (isChampionshipTitle(liveInfo.title, liveInfo.description) && await canAnnounceLive(player.id, player.nick)) {
     console.log('[webhook/youtube] enviando Discord:', { nick: player.nick });
     await sendLiveNotification({
       nick:      player.nick,
