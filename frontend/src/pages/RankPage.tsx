@@ -204,12 +204,6 @@ export function RankPage() {
           <button className="btn-primary btn-sm" onClick={() => navigate(-1)} type="button">
             <i className="ti ti-arrow-left" /> {t('rank.back')}
           </button>
-          <div className="rank-mascot-wrap" aria-hidden="true">
-            <div className="rank-mascot-inner">
-              <img src="/duuhe.webp" alt="" className="rank-mascot rank-mascot--front" />
-              <img src="/duuhe-zumbi.webp" alt="" className="rank-mascot rank-mascot--back" />
-            </div>
-          </div>
           <div className="rank-search-wrap">
             <i className="ti ti-search rank-search-icon" aria-hidden="true" />
             <input
