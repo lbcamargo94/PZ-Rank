@@ -1,18 +1,15 @@
 import { useMemo, useState } from 'react';
 import type { ChampionshipStats } from '../../lib/api';
-import { TRAITS, getTraitImageUrl, resolveTrait, type TraitDef } from '../../lib/traits';
+import { getTraitImageUrl, resolveTrait, traitGroup, type TraitDef, type TraitGroup } from '../../lib/traits';
 import { fmtDays, fmtInt, fmtPct } from '../../lib/statsFormat';
 import { BarList, EmptyState, SectionHeader } from './StatsUi';
 
-type Group = 'positive' | 'negative' | 'other';
-
-const KNOWN = new Set<TraitDef>(Object.values(TRAITS));
+type Group = TraitGroup;
 
 // Traits de mods (namespace ≠ base) ou fora do mapa do site não têm polaridade
 // conhecida — ficam num grupo à parte em vez de serem chutados como positivos.
 function classify(key: string): { def: TraitDef; group: Group } {
-  const def = resolveTrait(key);
-  return { def, group: KNOWN.has(def) ? def.type : 'other' };
+  return { def: resolveTrait(key), group: traitGroup(key) };
 }
 
 const GROUP_LABEL: Record<Group, string> = { positive: 'Positivos', negative: 'Negativos', other: 'Outros (mods)' };

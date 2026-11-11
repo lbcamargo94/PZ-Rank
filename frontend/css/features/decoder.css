@@ -135,6 +135,7 @@
 .dc-trait-counter { border-radius: 20px; padding: 1px 8px; font-size: 14px; }
 .dc-trait-counter-pos { background: rgba(61,186,110,0.12); color: var(--green-light); border: 1px solid rgba(61,186,110,0.3); }
 .dc-trait-counter-neg { background: rgba(224,64,64,0.1);   color: var(--red);         border: 1px solid rgba(224,64,64,0.25); }
+.dc-trait-counter-other { background: var(--blue-dim);    color: var(--blue-light);  border: 1px solid var(--blue-border); }
 .dc-skill-maxed       { background: rgba(255,199,0,0.1);   color: var(--gold);        border: 1px solid rgba(255,199,0,0.3); }
 
 /* ── Traits ── */
@@ -154,6 +155,7 @@
 .dc-trait-img { width: 20px; height: 20px; object-fit: contain; flex-shrink: 0; filter: brightness(1.1); }
 .dc-trait-positive { background: rgba(61,186,110,0.1);  border-color: rgba(61,186,110,0.3); color: var(--green-light); }
 .dc-trait-negative { background: rgba(224,64,64,0.08);  border-color: rgba(224,64,64,0.25); color: var(--red); }
+.dc-trait-other    { background: var(--blue-dim);        border-color: var(--blue-border);    color: var(--blue-light); }
 
 /* ── Skills ── */
 .dc-skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 6px; }

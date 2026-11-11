@@ -44,3 +44,6 @@ desktop.ini
 # Updates
 /frontend/updates
 .vercel
+
+# graphify (grafo de conhecimento local)
+graphify-out/

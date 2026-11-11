@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { parsePzrCode } from '../../lib/decoder';
 import { computeScore, SCORE_KILLS_MAX } from '../../lib/objectives';
-import { resolveTrait, getTraitImageUrl } from '../../lib/traits';
+import { resolveTrait, getTraitImageUrl, traitGroup } from '../../lib/traits';
 import { SKILLS } from '../../lib/skills';
 import type { DecodedCode } from '../../types';
 
@@ -38,7 +38,7 @@ function TraitBadge({ raw }: { raw: string }) {
   const def    = resolveTrait(raw);
   const imgUrl = getTraitImageUrl(def);
   return (
-    <span className={`dc-trait-badge dc-trait-${def.type}`}>
+    <span className={`dc-trait-badge dc-trait-${traitGroup(raw)}`}>
       {imgUrl && <img src={imgUrl} alt="" className="dc-trait-img" />}
       {def.name}
     </span>
@@ -131,8 +131,9 @@ export function CodeDecoder() {
   const skillLevelSum = result?.skills.reduce((sum, s) => sum + parseSkillRaw(s).level, 0) ?? 0;
   const score        = result ? computeScore(result.kills, skillLevelSum) : 0;
 
-  const positiveTraits = result?.traits.filter(t => resolveTrait(t).type === 'positive') ?? [];
-  const negativeTraits = result?.traits.filter(t => resolveTrait(t).type === 'negative') ?? [];
+  const positiveTraits = result?.traits.filter(t => traitGroup(t) === 'positive') ?? [];
+  const negativeTraits = result?.traits.filter(t => traitGroup(t) === 'negative') ?? [];
+  const otherTraits    = result?.traits.filter(t => traitGroup(t) === 'other') ?? [];
 
   return (
     <div className="painel-section dc-page">
@@ -283,10 +284,16 @@ export function CodeDecoder() {
                 {negativeTraits.length > 0 && (
                   <span className="dc-trait-counter dc-trait-counter-neg">-{negativeTraits.length} negativos</span>
                 )}
+                {otherTraits.length > 0 && (
+                  <span className="dc-trait-counter dc-trait-counter-other" title="Traços fora do mapa do site (mods ou traços novos do jogo): polaridade desconhecida">
+                    {otherTraits.length} sem classificação
+                  </span>
+                )}
               </div>
               <div className="dc-traits-wrap">
                 {positiveTraits.map(t => <TraitBadge key={t} raw={t} />)}
                 {negativeTraits.map(t => <TraitBadge key={t} raw={t} />)}
+                {otherTraits.map(t => <TraitBadge key={t} raw={t} />)}
               </div>
             </div>
           )}

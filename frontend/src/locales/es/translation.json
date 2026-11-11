@@ -331,6 +331,7 @@
     "traits": {
       "positive": "Positivas",
       "negative": "Negativas",
+      "other": "Otras (mods)",
       "none": "Características no registradas en esta entrada."
     },
     "skills_max_label": "habilidades en nivel máximo"

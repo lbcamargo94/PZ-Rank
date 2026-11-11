@@ -732,6 +732,18 @@ export function resolveTrait(id: string): TraitDef {
   return _TRAITS_BY_PATH[pathNoSpace] ?? { name: id, type: "positive" };
 }
 
+export type TraitGroup = "positive" | "negative" | "other";
+
+const _KNOWN_DEFS = new Set<TraitDef>(Object.values(TRAITS));
+
+/** Polaridade para exibição. Traits fora do mapa (mods ou traits novos de um patch do
+ *  jogo) caem em "other": resolveTrait devolve "positive" como padrão para esses, e
+ *  usar esse padrão listaria um negativo desconhecido como positivo. */
+export function traitGroup(id: string): TraitGroup {
+  const def = resolveTrait(id);
+  return _KNOWN_DEFS.has(def) ? def.type : "other";
+}
+
 export function parseTraitList(raw: string | null | undefined): string[] {
   if (!raw) return [];
   return raw

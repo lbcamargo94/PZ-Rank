@@ -6,7 +6,7 @@ import avatarDefault from '../../assets/avatar.png';
 import perfilBg from '../../assets/background/perfil-usuario.webp';
 import { apiGetPlayerProfile, apiGetLiveStatus, apiGetPlayerLikes, apiLikePlayer, apiUnlikePlayer, apiGetPlayerActiveMods, apiGetHealth } from '../lib/api';
 import { parseSkillMap, SKILL_CATEGORIES, MAX_SKILL_LEVEL, TOTAL_SKILLS } from '../lib/skills';
-import { parseTraitList, resolveTrait, getTraitImageUrl } from '../lib/traits';
+import { parseTraitList, resolveTrait, getTraitImageUrl, traitGroup, type TraitGroup } from '../lib/traits';
 import { getProfessionImageUrl } from '../lib/professions';
 import { SPIFFOS_RESTAURANTS, BASE_ITEMS, initObjectives } from '../lib/objectives';
 import { ProgressBar } from '../components/ProgressBar';
@@ -175,20 +175,23 @@ function TraitsSection({ traitsRaw }: { traitsRaw: string | null | undefined }) 
   const ids = parseTraitList(traitsRaw);
   if (ids.length === 0) return <p className="pp-no-data">{t('player.traits.none')}</p>;
 
-  const positive = ids.filter(id => resolveTrait(id).type === 'positive');
-  const negative = ids.filter(id => resolveTrait(id).type === 'negative');
+  const groups: { group: TraitGroup; icon: string; ids: string[] }[] = [
+    { group: 'positive', icon: 'ti-circle-plus' },
+    { group: 'negative', icon: 'ti-circle-minus' },
+    { group: 'other',    icon: 'ti-puzzle' },
+  ].map(g => ({ ...g, group: g.group as TraitGroup, ids: ids.filter(id => traitGroup(id) === g.group) }));
 
   return (
     <div className="pp-traits">
-      {positive.length > 0 && (
-        <div className="pp-trait-group">
-          <span className="pp-trait-group-label"><i className="ti ti-circle-plus" /> {t('player.traits.positive')}</span>
+      {groups.filter(g => g.ids.length > 0).map(g => (
+        <div key={g.group} className="pp-trait-group">
+          <span className="pp-trait-group-label"><i className={`ti ${g.icon}`} /> {t(`player.traits.${g.group}`)}</span>
           <div className="pp-trait-list">
-            {positive.map(id => {
+            {g.ids.map(id => {
               const def = resolveTrait(id);
               const img = getTraitImageUrl(def);
               return (
-                <span key={id} className="trait-badge trait-positive" data-tip={def.description}>
+                <span key={id} className={`trait-badge trait-${g.group}`} data-tip={def.description}>
                   {img && <img src={img} alt="" className="trait-img" />}
                   {def.name}
                 </span>
@@ -196,24 +199,7 @@ function TraitsSection({ traitsRaw }: { traitsRaw: string | null | undefined }) 
             })}
           </div>
         </div>
-      )}
-      {negative.length > 0 && (
-        <div className="pp-trait-group">
-          <span className="pp-trait-group-label"><i className="ti ti-circle-minus" /> {t('player.traits.negative')}</span>
-          <div className="pp-trait-list">
-            {negative.map(id => {
-              const def = resolveTrait(id);
-              const img = getTraitImageUrl(def);
-              return (
-                <span key={id} className="trait-badge trait-negative" data-tip={def.description}>
-                  {img && <img src={img} alt="" className="trait-img" />}
-                  {def.name}
-                </span>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      ))}
     </div>
   );
 }

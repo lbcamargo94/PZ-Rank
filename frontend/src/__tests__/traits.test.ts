@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { parseTraitList, resolveTrait, TRAITS } from '../lib/traits';
+import { parseTraitList, resolveTrait, traitGroup, TRAITS } from '../lib/traits';
 
 // ─── IDs B42 conhecidos (mesma lista do backend) ────────────────────────────
 
@@ -254,4 +254,20 @@ describe('exibição — save em andamento', () => {
     expect(resolveTrait(ids[1]!).type).toBe('negative');
   });
 
+});
+
+// ─── traitGroup — polaridade para exibição ──────────────────────────────────
+
+describe('traitGroup', () => {
+  it('classifica traits conhecidos pela polaridade do mapa', () => {
+    expect(traitGroup('base:athletic')).toBe('positive');
+    expect(traitGroup('base:out of shape')).toBe('negative');
+    expect(traitGroup('SlowHealer')).toBe('negative');
+  });
+
+  it('traits desconhecidos (mods ou novos do jogo) ficam em "other", não em "positive"', () => {
+    expect(resolveTrait('meumod:maldicao').type).toBe('positive'); // padrão do resolveTrait
+    expect(traitGroup('meumod:maldicao')).toBe('other');
+    expect(traitGroup('base:TraitQueNaoExiste')).toBe('other');
+  });
 });

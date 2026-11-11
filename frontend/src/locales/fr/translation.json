@@ -331,6 +331,7 @@
     "traits": {
       "positive": "Positifs",
       "negative": "Négatifs",
+      "other": "Autres (mods)",
       "none": "Aucun trait enregistré pour cette entrée."
     },
     "skills_max_label": "compétences au niveau maximum"
