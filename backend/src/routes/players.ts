@@ -143,7 +143,7 @@ async function buildPlayerProfilePayload(id: number) {
   const [playerRes, entriesRes] = await Promise.all([
     supabase
       .from('players')
-      .select('id, nick, twitch_url, youtube_url, kick_url, tiktok_url, is_featured_streamer, is_moderator, gender')
+      .select('id, nick, twitch_url, youtube_url, kick_url, tiktok_url, is_featured_streamer, is_moderator, gender, companion_version')
       .eq('id', id)
       .single(),
     supabase

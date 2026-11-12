@@ -6,6 +6,7 @@ import avatarDefault from '../../assets/avatar.png';
 import perfilBg from '../../assets/background/perfil-usuario.webp';
 import { apiGetPlayerProfile, apiGetLiveStatus, apiGetPlayerLikes, apiLikePlayer, apiUnlikePlayer, apiGetPlayerActiveMods, apiGetHealth } from '../lib/api';
 import { parseSkillMap, SKILL_CATEGORIES, MAX_SKILL_LEVEL, TOTAL_SKILLS } from '../lib/skills';
+import { COMPANION_LATEST_URL, COMPANION_TAG, isCompanionOutdated } from '../lib/companion';
 import { parseTraitList, resolveTrait, getTraitImageUrl, traitGroup, type TraitGroup } from '../lib/traits';
 import { getProfessionImageUrl } from '../lib/professions';
 import { SPIFFOS_RESTAURANTS, BASE_ITEMS, initObjectives } from '../lib/objectives';
@@ -895,6 +896,14 @@ export function PlayerPage() {
             )}
           </div>
         </div>
+
+        {profile.entries.length > 0 && isCompanionOutdated(profile.player.companion_version) && (
+          <div className="pp-companion-warn" role="status">
+            <i className="ti ti-download" aria-hidden="true" />
+            <span>{t('player.companion_outdated', { version: COMPANION_TAG })}</span>
+            <a href={COMPANION_LATEST_URL} target="_blank" rel="noopener noreferrer">{t('player.companion_download')}</a>
+          </div>
+        )}
 
         {/* Summary bar */}
         {bestEntry && (

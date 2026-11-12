@@ -241,7 +241,10 @@ export interface PlayerActiveMods {
 }
 
 export interface PlayerProfile {
-  player: Pick<Player, 'id' | 'nick' | 'twitch_url' | 'youtube_url' | 'kick_url' | 'tiktok_url' | 'gender'>;
+  player: Pick<Player, 'id' | 'nick' | 'twitch_url' | 'youtube_url' | 'kick_url' | 'tiktok_url' | 'gender'> & {
+    /** Versão do Companion no último sync (2.7.0+); null = Companion antigo. migration_v52 */
+    companion_version?: string | null;
+  };
   entries: Entry[];
 }
 

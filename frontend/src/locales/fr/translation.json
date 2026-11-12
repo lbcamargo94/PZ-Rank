@@ -328,6 +328,8 @@
       "military_base": "Base Militaire de Rosewood Conquise",
       "bases_title": "Bases chez Spiffo's"
     },
+    "companion_outdated": "Ce joueur utilise une ancienne version de PZ Rank Companion. Installez la {{version}} manuellement une fois : les anciennes versions ne se mettent pas à jour seules.",
+    "companion_download": "Télécharger Companion",
     "traits": {
       "positive": "Positifs",
       "negative": "Négatifs",

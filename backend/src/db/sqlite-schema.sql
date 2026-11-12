@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS players (
   ban_match               TEXT     DEFAULT NULL,  -- migration_v40: bateu com banned_identities
   yt_resolve_attempts     INTEGER  NOT NULL DEFAULT 0,     -- migration_v44: tentativas de achar o canal (link quebrado)
   yt_resolve_failed_at    TEXT     DEFAULT NULL,           -- migration_v44
+  companion_version       TEXT     DEFAULT NULL,           -- migration_v52
   created_at         TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
 );
 

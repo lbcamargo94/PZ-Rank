@@ -26,6 +26,7 @@ import {
   canCompareSkills,
 } from '../lib/plausibility';
 import { config } from '../config';
+import { parseCompanionVersion } from '../lib/companionVersion';
 import type { Objectives } from '../types';
 
 // Checagem de live do YouTube no sync: no máximo 1 a cada YT_SYNC_CHECK_MS por
@@ -122,13 +123,20 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // Valida token
   const { data: player, error: playerError } = await supabase
     .from('players')
-    .select('id, nick, status, blocked, youtube_url, yt_channel_id, yt_last_live_video_id, yt_live_confirmed_at, twitch_url, twitch_last_live_id')
+    .select('id, nick, status, blocked, youtube_url, yt_channel_id, yt_last_live_video_id, yt_live_confirmed_at, twitch_url, twitch_last_live_id, companion_version')
     .eq('player_token', player_token)
     .maybeSingle();
 
   if (playerError || !player) {
     res.status(401).json({ error: 'Token inválido.' });
     return;
+  }
+  // Versão do Companion (cabeçalho X-Companion-Version, Companion 2.7.0+). Grava só quando
+  // muda; falha aqui não pode recusar o sync. Ausente = Companion antigo: não apaga o valor.
+  const companionVersion = parseCompanionVersion(req.header('x-companion-version'));
+  if (companionVersion && companionVersion !== player.companion_version) {
+    const { error: cvError } = await supabase.from('players').update({ companion_version: companionVersion }).eq('id', player.id);
+    if (cvError) console.warn(`[sync] companion_version nao gravada | player=${player.nick} | ${cvError.message}`);
   }
   // Recusas antes de ler o código não entram no histórico de syncs (que precisa do código
   // decodificado); com o jogador já identificado, ficam no log (v4.30.1 — caso bysouaip).

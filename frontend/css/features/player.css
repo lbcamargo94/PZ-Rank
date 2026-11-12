@@ -2189,3 +2189,21 @@ body.overlay-page-active::before { display: none; }
   .pp-weapon-bars li { grid-template-columns: 1fr auto; }
   .pp-weapon-bar-track { grid-column: 1 / -1; grid-row: 2; }
 }
+
+/* Aviso de Companion desatualizado (v4.32.0) */
+.pp-companion-warn {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin: 12px 0;
+  padding: 10px 14px;
+  border: 1px solid var(--amber-border);
+  border-radius: var(--radius);
+  background: var(--amber-dim);
+  color: var(--text-1);
+  font-size: 16px;
+}
+.pp-companion-warn > i { color: var(--amber-light); font-size: 18px; }
+.pp-companion-warn > span { flex: 1 1 240px; }
+.pp-companion-warn a { color: var(--amber-light); font-weight: 600; text-decoration: underline; }
