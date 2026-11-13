@@ -7,22 +7,17 @@ import type { ModRequest } from '../middleware/moderator';
 import { notifyModAllowed, notifyModRemoved, notifyModBlocked } from '../lib/discord';
 import { computeModStats, type StatsRun, type StatsMod } from '../lib/modStats';
 import { config } from '../config';
+import { extractWorkshopId, canonicalWorkshopUrl, modIdError } from '../lib/modInput';
 
 const router = Router();
 
 const SELECT_PUBLIC = 'id, name, mod_id, workshop_id, workshop_url, is_required, image_url, block_reason, status, created_at, updated_at';
 const SELECT_ALL    = 'id, name, mod_id, workshop_id, workshop_url, is_required, image_url, block_reason, status, created_at, updated_at';
 
-function extractWorkshopId(workshopUrl: string): string | null {
-  const match = workshopUrl.match(/[?&]id=(\d+)/);
-  return match ? match[1] : null;
-}
-
 async function fetchSteamModImage(workshopUrl: string): Promise<string | null> {
   try {
-    const match = workshopUrl.match(/[?&]id=(\d+)/);
-    if (!match) return null;
-    const fileId = match[1];
+    const fileId = extractWorkshopId(workshopUrl);
+    if (!fileId) return null;
 
     const res = await fetch(
       'https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/',
@@ -171,11 +166,16 @@ router.post('/', requireModerator, async (req: ModRequest, res: Response): Promi
     return;
   }
 
-  const trimmedUrl   = workshop_url.trim();
+  const trimmedUrl   = canonicalWorkshopUrl(workshop_url.trim());
   const trimmedModId = mod_id?.trim() || null;
 
   if (!trimmedUrl.startsWith('https://steamcommunity.com/')) {
     res.status(400).json({ error: 'A URL deve ser da Steam (steamcommunity.com).' });
+    return;
+  }
+  const modIdProblem = modIdError(trimmedModId);
+  if (modIdProblem) {
+    res.status(400).json({ error: modIdProblem });
     return;
   }
 
@@ -267,11 +267,16 @@ router.patch('/:id', requireModerator, async (req: ModRequest, res: Response): P
     return;
   }
 
-  const trimmedUrl   = workshop_url.trim();
+  const trimmedUrl   = canonicalWorkshopUrl(workshop_url.trim());
   const trimmedModId = mod_id?.trim() || null;
 
   if (!trimmedUrl.startsWith('https://steamcommunity.com/')) {
     res.status(400).json({ error: 'A URL deve ser da Steam (steamcommunity.com).' });
+    return;
+  }
+  const modIdProblem = modIdError(trimmedModId);
+  if (modIdProblem) {
+    res.status(400).json({ error: modIdProblem });
     return;
   }
 
