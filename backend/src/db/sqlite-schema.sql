@@ -183,6 +183,17 @@ CREATE TABLE IF NOT EXISTS mods (
   updated_at   TEXT     NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
 );
 
+-- migration_v53: dados da Oficina Steam por item (tags, inscritos, última atualização)
+CREATE TABLE IF NOT EXISTS workshop_items (
+  workshop_id      TEXT PRIMARY KEY,
+  title            TEXT DEFAULT NULL,
+  tags             TEXT DEFAULT NULL,
+  subscriptions    INTEGER DEFAULT NULL,
+  steam_updated_at TEXT DEFAULT NULL,
+  fetched_at       TEXT DEFAULT NULL,
+  categories       TEXT DEFAULT NULL
+);
+
 CREATE TABLE IF NOT EXISTS mod_dependencies (
   mod_id        INTEGER NOT NULL REFERENCES mods(id) ON DELETE CASCADE,
   depends_on_id INTEGER NOT NULL REFERENCES mods(id) ON DELETE CASCADE,

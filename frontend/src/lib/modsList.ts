@@ -1,9 +1,9 @@
 // Lógica da página pública "Mods do Campeonato" (/mods-lista), separada da tela
 // para ser testável: agrupamento por item da Oficina, busca e ordenação.
-import type { Mod } from '../types';
+import type { Mod, ModUsageResponse } from '../types';
 
 export type ModGroupStatus = 'allowed' | 'blocked' | 'mixed';
-export type ModSort = 'az' | 'recent';
+export type ModSort = 'az' | 'recent' | 'used';
 
 export interface ModGroup {
   key:        string;
@@ -16,7 +16,38 @@ export interface ModGroup {
   addedAt:    number;
   sortKey:    string;
   letter:     string;
+  /** Categorias do site (v4.34.0). "outros" quando o item ainda não tem tag útil. */
+  categories:    string[];
+  /** Inscritos atuais na Oficina; null se o cron ainda não buscou. */
+  subscriptions: number | null;
+  /** Última atualização do item na Oficina (ms); 0 se desconhecida. */
+  steamUpdatedAt: number;
+  /** Participantes usando o item agora; null até o uso carregar. */
+  players:       number | null;
 }
+
+// Mesmos slugs de backend/src/lib/modCategories.ts, na mesma ordem.
+export const MOD_CATEGORIES: Array<{ slug: string; label: string; short: string }> = [
+  { slug: 'interface',    label: 'Interface e qualidade de vida', short: 'Interface' },
+  { slug: 'visual',       label: 'Visual e texturas',             short: 'Visual' },
+  { slug: 'itens',        label: 'Itens, roupas e armas',         short: 'Itens' },
+  { slug: 'jogabilidade', label: 'Jogabilidade e balanceamento',  short: 'Jogabilidade' },
+  { slug: 'mapas',        label: 'Mapas e veículos',              short: 'Mapas e veículos' },
+  { slug: 'traducao',     label: 'Tradução',                      short: 'Tradução' },
+  { slug: 'audio',        label: 'Áudio',                         short: 'Áudio' },
+  { slug: 'bibliotecas',  label: 'Bibliotecas',                   short: 'Bibliotecas' },
+  { slug: 'diversao',     label: 'Diversão e cultura pop',        short: 'Diversão' },
+  { slug: 'outros',       label: 'Outros',                        short: 'Outros' },
+];
+const CATEGORY_ORDER = new Map(MOD_CATEGORIES.map((c, i) => [c.slug, i]));
+
+export function categoryLabel(slug: string, short = false): string {
+  const c = MOD_CATEGORIES.find(x => x.slug === slug);
+  return c ? (short ? c.short : c.label) : slug;
+}
+
+/** Item sem atualização na Oficina há mais que isso ganha o aviso "pode não funcionar". */
+export const STALE_DAYS = 183;
 
 /** Itens adicionados há menos que isso ganham o selo "Novo". */
 export const NEW_DAYS = 14;
@@ -76,6 +107,12 @@ export function groupMods(list: Mod[]): ModGroup[] {
     const primary = mods[0];
     const sortKey = nameSortKey(primary.name);
     const times   = mods.map(m => Date.parse(m.created_at)).filter(n => !Number.isNaN(n));
+    const cats    = new Set(mods.flatMap(m => m.categories ?? []));
+    const real    = [...cats].filter(c => c !== 'outros');
+    const categories = (real.length ? real : ['outros'])
+      .sort((a, b) => (CATEGORY_ORDER.get(a) ?? 99) - (CATEGORY_ORDER.get(b) ?? 99));
+    const subs    = mods.map(m => m.subscriptions).filter((n): n is number => typeof n === 'number');
+    const updated = mods.map(m => (m.steam_updated_at ? Date.parse(m.steam_updated_at) : NaN)).filter(n => !Number.isNaN(n));
     return {
       key, mods, primary,
       workshopId: key.startsWith('w-') ? key.slice(2) : null,
@@ -84,6 +121,10 @@ export function groupMods(list: Mod[]): ModGroup[] {
       addedAt:    times.length ? Math.min(...times) : 0,
       sortKey,
       letter:     letterOf(sortKey),
+      categories,
+      subscriptions:  subs.length ? Math.max(...subs) : null,
+      steamUpdatedAt: updated.length ? Math.max(...updated) : 0,
+      players:        null,
     };
   });
 }
@@ -107,7 +148,55 @@ export function matchesQuery(group: ModGroup, query: string): boolean {
 
 export function sortGroups(list: ModGroup[], sort: ModSort): ModGroup[] {
   const byName = (a: ModGroup, b: ModGroup) => a.sortKey.localeCompare(b.sortKey, 'pt-BR');
-  return [...list].sort(sort === 'recent' ? (a, b) => (b.addedAt - a.addedAt) || byName(a, b) : byName);
+  const cmp = sort === 'recent'
+    ? (a: ModGroup, b: ModGroup) => (b.addedAt - a.addedAt) || byName(a, b)
+    : sort === 'used'
+      ? (a: ModGroup, b: ModGroup) => ((b.players ?? -1) - (a.players ?? -1)) || byName(a, b)
+      : byName;
+  return [...list].sort(cmp);
+}
+
+/** Preenche `players` de cada grupo com o uso agregado de /mods/usage. */
+export function applyUsage(groups: ModGroup[], usage: ModUsageResponse | null): ModGroup[] {
+  if (!usage) return groups;
+  const byWorkshop = new Map<string, number>();
+  const byModId    = new Map<string, number>();
+  for (const it of usage.items) {
+    if (it.workshop_id) byWorkshop.set(it.workshop_id, it.players);
+    for (const id of it.mod_ids) byModId.set(id, it.players);
+  }
+  return groups.map(g => {
+    let players = g.workshopId ? byWorkshop.get(g.workshopId) : undefined;
+    if (players === undefined) {
+      const hits = g.mods.map(m => (m.mod_id ? byModId.get(m.mod_id) : undefined)).filter((n): n is number => n !== undefined);
+      players = hits.length ? Math.max(...hits) : 0;
+    }
+    return { ...g, players };
+  });
+}
+
+/** Quantos itens de cada categoria há na lista (um item conta em cada categoria que tem). */
+export function countByCategory(list: ModGroup[]): Map<string, number> {
+  const out = new Map<string, number>();
+  for (const g of list) for (const c of g.categories) out.set(c, (out.get(c) ?? 0) + 1);
+  return out;
+}
+
+export function isStaleGroup(group: ModGroup, now: number = Date.now()): boolean {
+  return group.steamUpdatedAt > 0 && now - group.steamUpdatedAt > STALE_DAYS * 86_400_000;
+}
+
+/** Meses inteiros desde a última atualização na Oficina. */
+export function monthsSinceUpdate(group: ModGroup, now: number = Date.now()): number {
+  return group.steamUpdatedAt > 0 ? Math.floor((now - group.steamUpdatedAt) / (30.44 * 86_400_000)) : 0;
+}
+
+/** 950 → "950", 2100 → "2,1 mil", 1_250_000 → "1,3 mi". */
+export function fmtCount(n: number): string {
+  const one = (v: number) => v.toLocaleString('pt-BR', { maximumFractionDigits: v < 10 ? 1 : 0 });
+  if (n >= 1_000_000) return `${one(n / 1_000_000)} mi`;
+  if (n >= 1_000)     return `${one(n / 1_000)} mil`;
+  return String(n);
 }
 
 export function isNewGroup(group: ModGroup, now: number = Date.now()): boolean {

@@ -211,6 +211,20 @@ export interface Mod {
   created_at:    string;
   updated_at:    string;
   dependencies:  ModDependency[];
+  /** v4.34.0: categorias do item (tags da Steam ou correção do moderador). */
+  categories?:        string[];
+  /** true quando a categoria foi definida pelo moderador. */
+  category_override?: boolean;
+  /** Inscritos atuais na Oficina (cron diário). */
+  subscriptions?:     number | null;
+  /** Última atualização do item na Oficina (ISO). */
+  steam_updated_at?:  string | null;
+}
+
+export interface ModUsageResponse {
+  days:         number;
+  participants: number;
+  items:        Array<{ workshop_id: string | null; mod_ids: string[]; players: number }>;
 }
 
 export type ModClassification = 'PERMITTED' | 'BLOCKED' | 'UNLISTED';

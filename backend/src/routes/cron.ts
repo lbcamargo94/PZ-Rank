@@ -188,6 +188,21 @@ router.get('/scan-lives', async (req: Request, res: Response): Promise<void> => 
   res.json({ youtube, twitch });
 });
 
+// GET /cron/refresh-workshop — diário: tags, inscritos e última atualização de cada item
+// da Oficina cadastrado, para a página pública de mods (lib/steamWorkshop.ts).
+router.get('/refresh-workshop', async (req: Request, res: Response): Promise<void> => {
+  if (!requireCronSecret(req, res)) return;
+  try {
+    const { refreshWorkshopItems } = await import('../lib/steamWorkshop');
+    const result = await refreshWorkshopItems();
+    console.log(`[cron] refresh-workshop | itens=${result.items} | gravados=${result.updated} | sem_resposta=${result.missing.length}`);
+    res.json(result);
+  } catch (err) {
+    console.error('[cron] refresh-workshop falhou:', err);
+    res.status(502).json({ error: (err as Error).message });
+  }
+});
+
 // GET /cron/prune-sync-history — apaga do histórico de syncs o que passou da retenção
 // (lib/syncHistory.ts, 90 dias). Diário às 04:40 UTC, depois do backup do banco.
 router.get('/prune-sync-history', async (req: Request, res: Response): Promise<void> => {

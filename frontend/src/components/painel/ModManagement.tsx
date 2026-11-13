@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { apiGetAllMods, apiAddMod, apiUpdateMod, apiBlockMod, apiUnblockMod, apiDeleteMod, apiRefreshModImages } from '../../lib/api';
+import { apiGetAllMods, apiAddMod, apiUpdateMod, apiBlockMod, apiUnblockMod, apiDeleteMod, apiRefreshModImages, apiSetModCategories, apiRefreshWorkshop } from '../../lib/api';
+import { MOD_CATEGORIES, categoryLabel } from '../../lib/modsList';
 import type { Mod } from '../../types';
 import { ConfirmModal } from './ConfirmModal';
 
@@ -19,14 +20,70 @@ interface Props {
   showToast: (msg: string, type?: string) => void;
 }
 
+// Categoria do item na página pública (v4.34.0). Vem das tags da Steam; o moderador
+// pode trocar. "Voltar às tags da Steam" apaga a correção.
+function CategoryEditor({ group, busy, onSave }: {
+  group: Mod[]; busy: boolean; onSave: (categories: string[] | null) => Promise<void>;
+}) {
+  const primary  = group[0];
+  const current  = primary.categories ?? ['outros'];
+  const override = group.some(m => m.category_override);
+  const [open, setOpen]         = useState(false);
+  const [picked, setPicked]     = useState<string[]>(current);
+  if (!primary.workshop_id) return null;
+
+  if (!open) {
+    return (
+      <div className="mod-card-painel-cats">
+        <i className="ti ti-tag" aria-hidden="true" />
+        {current.map(c => categoryLabel(c, true)).join(', ')}
+        {override && <span className="mod-card-painel-cats-note">(definida pela moderação)</span>}
+        <button type="button" className="btn-ghost btn-sm" disabled={busy} onClick={() => { setPicked(current); setOpen(true); }}>
+          Alterar
+        </button>
+      </div>
+    );
+  }
+  return (
+    <div className="mod-card-painel-cats-edit">
+      <div className="mod-card-painel-cats-options">
+        {MOD_CATEGORIES.map(c => (
+          <label key={c.slug} className={picked.includes(c.slug) ? 'on' : ''}>
+            <input
+              type="checkbox"
+              checked={picked.includes(c.slug)}
+              onChange={e => setPicked(p => e.target.checked ? [...p, c.slug] : p.filter(x => x !== c.slug))}
+            />
+            {c.label}
+          </label>
+        ))}
+      </div>
+      <div className="mod-card-painel-cats-actions">
+        <button type="button" className="btn-primary btn-sm" disabled={busy || picked.length === 0}
+                onClick={async () => { await onSave(picked); setOpen(false); }}>
+          Salvar categoria
+        </button>
+        {override && (
+          <button type="button" className="btn-secondary btn-sm" disabled={busy}
+                  onClick={async () => { await onSave(null); setOpen(false); }}>
+            Voltar às tags da Steam
+          </button>
+        )}
+        <button type="button" className="btn-ghost btn-sm" onClick={() => setOpen(false)}>Cancelar</button>
+      </div>
+    </div>
+  );
+}
+
 // Um card por item da Oficina Steam (agrupado por workshop_id) — nao mais um card
 // por mod_id. Um item com N mod_ids aparece UMA vez, listando os N IDs e o status
 // de cada um dentro do mesmo card, em vez de repetir nome/imagem/link N vezes.
 function ModGroupCard({
-  group, busy, onEdit, onBlockClick, onUnblock, onDelete,
+  group, busy, onEdit, onBlockClick, onUnblock, onDelete, onSaveCategories,
 }: {
   group: Mod[]; busy: boolean;
   onEdit: () => void; onBlockClick: () => void; onUnblock: () => void; onDelete: () => void;
+  onSaveCategories: (categories: string[] | null) => Promise<void>;
 }) {
   const primary      = group[0];
   const wasUpdated   = primary.updated_at && primary.updated_at !== primary.created_at;
@@ -106,6 +163,7 @@ function ModGroupCard({
               {deps.map(d => d.name).join(', ')}
             </div>
           )}
+          <CategoryEditor group={group} busy={busy} onSave={onSaveCategories} />
           <div className="mod-card-painel-dates">
             <span><i className="ti ti-calendar-plus" /> {fmtDate(primary.created_at)}</span>
             {wasUpdated && (
@@ -466,6 +524,7 @@ export function ModManagement({ token, showToast }: Props) {
   const [showAddForm,    setShowAddForm]    = useState(false);
   const [editingGroupId, setEditingGroupId] = useState<number | null>(null);
   const [refreshing,     setRefreshing]     = useState(false);
+  const [refreshingSteam, setRefreshingSteam] = useState(false);
 
   const fetchMods = useCallback(async () => {
     setLoading(true);
@@ -605,6 +664,37 @@ export function ModManagement({ token, showToast }: Props) {
     }
   }
 
+  async function handleSaveCategories(group: Mod[], categories: string[] | null) {
+    const wid = group[0].workshop_id;
+    if (!wid) return;
+    setActionId(group[0].id);
+    try {
+      await apiSetModCategories(token, wid, categories);
+      showToast(categories ? 'Categoria salva.' : 'Categoria voltou a seguir as tags da Steam.', 'success');
+      fetchMods();
+    } catch (err) {
+      showToast((err as Error).message, 'error');
+    } finally {
+      setActionId(null);
+    }
+  }
+
+  async function handleRefreshWorkshop() {
+    setRefreshingSteam(true);
+    try {
+      const { items, updated, missing } = await apiRefreshWorkshop(token);
+      showToast(
+        `Dados da Steam atualizados: ${updated} de ${items} itens.` + (missing.length ? ` ${missing.length} sem resposta da Steam.` : ''),
+        missing.length ? 'warning' : 'success',
+      );
+      fetchMods();
+    } catch (err) {
+      showToast((err as Error).message, 'error');
+    } finally {
+      setRefreshingSteam(false);
+    }
+  }
+
   function startEdit(mod: Mod) {
     setShowAddForm(false);
     setEditingGroupId(mod.id);
@@ -657,6 +747,7 @@ export function ModManagement({ token, showToast }: Props) {
         onBlockClick={() => setBlockPrompt(group)}
         onUnblock={() => handleBulkUnblock(group)}
         onDelete={() => setConfirmDelete(group)}
+        onSaveCategories={cats => handleSaveCategories(group, cats)}
       />
     );
   }
@@ -676,6 +767,11 @@ export function ModManagement({ token, showToast }: Props) {
           <button className="btn-secondary btn-sm" onClick={handleRefreshImages} disabled={refreshing} title="Buscar imagens da Steam para mods sem imagem">
             <i className={`ti ${refreshing ? 'ti-loader-2' : 'ti-photo-search'}`} />
             {refreshing ? 'Buscando...' : 'Atualizar imagens'}
+          </button>
+          <button className="btn-secondary btn-sm" onClick={handleRefreshWorkshop} disabled={refreshingSteam}
+                  title="Buscar agora na Steam as tags, inscritos e datas de atualização (o cron faz isso todo dia)">
+            <i className={`ti ${refreshingSteam ? 'ti-loader-2' : 'ti-refresh'}`} />
+            {refreshingSteam ? 'Consultando...' : 'Atualizar dados da Steam'}
           </button>
           <button className="btn-primary btn-sm" onClick={() => { setShowAddForm(v => !v); setEditingGroupId(null); }}>
             <i className={`ti ${showAddForm ? 'ti-x' : 'ti-plus'}`} />

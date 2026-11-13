@@ -1,8 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { apiGetMods } from '../lib/api';
+import { apiGetMods, apiGetModUsage } from '../lib/api';
+import type { ModUsageResponse } from '../types';
 import {
-  groupMods, matchesQuery, sortGroups, isNewGroup,
+  groupMods, matchesQuery, sortGroups, isNewGroup, applyUsage, countByCategory,
+  isStaleGroup, monthsSinceUpdate, fmtCount, categoryLabel, MOD_CATEGORIES,
   type ModGroup, type ModGroupStatus, type ModSort,
 } from '../lib/modsList';
 import './mods.css';
@@ -76,6 +78,29 @@ function ModIds({ group }: { group: ModGroup }) {
   );
 }
 
+function ModMeta({ group, now }: { group: ModGroup; now: number }) {
+  const stale = isStaleGroup(group, now);
+  const parts: React.ReactNode[] = [];
+  const cats = group.categories.filter(c => c !== 'outros');
+  if (cats.length) parts.push(<span key="c" className="ml-meta-cat">{cats.map(c => categoryLabel(c, true)).join(', ')}</span>);
+  if (group.subscriptions != null) {
+    parts.push(<span key="s" title={`${group.subscriptions.toLocaleString('pt-BR')} inscritos na Oficina`}>{fmtCount(group.subscriptions)} inscritos</span>);
+  }
+  if (group.players != null && group.players > 0 && group.status !== 'blocked') {
+    parts.push(<span key="u" className="ml-meta-used">Usado por {group.players} {group.players === 1 ? 'participante' : 'participantes'}</span>);
+  }
+  if (stale) {
+    const m = monthsSinceUpdate(group, now);
+    parts.push(
+      <span key="w" className="ml-meta-stale" title="O autor não atualiza o mod há mais de 6 meses. Ele pode não funcionar na versão atual do jogo.">
+        <i className="ti ti-alert-triangle" aria-hidden="true" /> Sem atualização há {m} meses
+      </span>,
+    );
+  }
+  if (parts.length === 0) return null;
+  return <span className="ml-meta">{parts.map((p, i) => <span key={i}>{i > 0 && <span className="ml-meta-sep" aria-hidden="true">·</span>}{p}</span>)}</span>;
+}
+
 function ModRow({ group, anchor, now }: { group: ModGroup; anchor?: string; now: number }) {
   const { primary } = group;
   const deps    = groupDependencies(group);
@@ -94,6 +119,7 @@ function ModRow({ group, anchor, now }: { group: ModGroup; anchor?: string; now:
           {isNewGroup(group, now) && <span className="ml-tag ml-tag-new" title={`Adicionado em ${fmtDate(group.addedAt)}`}>Novo</span>}
         </div>
         <ModIds group={group} />
+        <ModMeta group={group} now={now} />
         {deps.length > 0 && (
           <span className="ml-deps"><i className="ti ti-link" aria-hidden="true" /> Requer: {deps.map(d => d.name).join(', ')}</span>
         )}
@@ -117,14 +143,17 @@ function ModRow({ group, anchor, now }: { group: ModGroup; anchor?: string; now:
 export function ModsPage() {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
-  const [groups,  setGroups]  = useState<ModGroup[]>([]);
+  const [baseGroups, setGroups] = useState<ModGroup[]>([]);
+  const [usage,   setUsage]   = useState<ModUsageResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState<string | null>(null);
   const [now] = useState(() => Date.now());
 
   const search = params.get('q') ?? '';
   const tab: ModGroupStatus = TAB_FROM_PARAM[params.get('aba') ?? ''] ?? 'allowed';
-  const sort: ModSort       = params.get('ordem') === 'recentes' ? 'recent' : 'az';
+  const ordem = params.get('ordem');
+  const sort: ModSort       = ordem === 'recentes' ? 'recent' : ordem === 'usados' ? 'used' : 'az';
+  const cat                 = MOD_CATEGORIES.some(c => c.slug === params.get('cat')) ? params.get('cat')! : '';
   const view: ViewMode      = params.get('ver') === 'grade' ? 'grid' : 'list';
 
   // Mantém o resto dos filtros e troca só um; o valor padrão sai do endereço.
@@ -143,7 +172,11 @@ export function ModsPage() {
       .then(([active, blocked]) => setGroups(groupMods([...active, ...blocked])))
       .catch(err => setError((err as Error).message))
       .finally(() => setLoading(false));
+    // Uso é opcional: se falhar, a página funciona sem "Usado por" e sem "Mais usados".
+    apiGetModUsage().then(setUsage).catch(() => setUsage(null));
   }, []);
+
+  const groups = useMemo(() => applyUsage(baseGroups, usage), [baseGroups, usage]);
 
   const required = useMemo(
     () => sortGroups(groups.filter(g => g.required && g.status !== 'blocked'), 'az'),
@@ -164,9 +197,11 @@ export function ModsPage() {
     return t;
   }, [matched]);
 
+  const inTab = useMemo(() => matched.filter(g => g.status === tab), [matched, tab]);
+  const catCounts = useMemo(() => countByCategory(inTab), [inTab]);
   const visible = useMemo(
-    () => sortGroups(matched.filter(g => g.status === tab), sort),
-    [matched, tab, sort],
+    () => sortGroups(cat ? inTab.filter(g => g.categories.includes(cat)) : inTab, sort),
+    [inTab, cat, sort],
   );
 
   // Primeira linha de cada letra recebe a âncora da barra A–Z.
@@ -184,7 +219,7 @@ export function ModsPage() {
   const lastAdded = useMemo(() => groups.reduce((max, g) => Math.max(max, g.addedAt), 0), [groups]);
 
   // Busca sem resultado na aba atual, mas com resultado em outra: oferece trocar.
-  const elsewhere = search && visible.length === 0
+  const elsewhere = search && !cat && visible.length === 0
     ? TAB_ORDER.filter(s => s !== tab && matchedByTab[s] > 0)
     : [];
 
@@ -290,12 +325,30 @@ export function ModsPage() {
                 ))}
               </div>
 
+              <div className="ml-cats" role="group" aria-label="Categoria">
+                <button type="button" aria-pressed={!cat} className={`ml-cat${!cat ? ' active' : ''}`} onClick={() => setParam('cat', '', '')}>
+                  Todas <span className="ml-cat-count">{inTab.length}</span>
+                </button>
+                {MOD_CATEGORIES.filter(c => (catCounts.get(c.slug) ?? 0) > 0 || c.slug === cat).map(c => (
+                  <button
+                    key={c.slug}
+                    type="button"
+                    aria-pressed={cat === c.slug}
+                    className={`ml-cat${cat === c.slug ? ' active' : ''}`}
+                    onClick={() => setParam('cat', cat === c.slug ? '' : c.slug, '')}
+                  >
+                    {c.label} <span className="ml-cat-count">{catCounts.get(c.slug) ?? 0}</span>
+                  </button>
+                ))}
+              </div>
+
               <div className="ml-toolbar">
                 <label className="ml-sort">
                   <span>Ordenar</span>
-                  <select value={sort} onChange={e => setParam('ordem', e.target.value === 'recent' ? 'recentes' : '', '')}>
+                  <select value={sort} onChange={e => setParam('ordem', e.target.value === 'recent' ? 'recentes' : e.target.value === 'used' ? 'usados' : '', '')}>
                     <option value="az">A–Z</option>
                     <option value="recent">Adicionados recentemente</option>
+                    {usage && <option value="used">Mais usados</option>}
                   </select>
                 </label>
                 <div className="ml-view" role="group" aria-label="Modo de exibição">
@@ -309,14 +362,19 @@ export function ModsPage() {
                   </button>
                 </div>
                 <span className="ml-count" aria-live="polite">
-                  {search
+                  {search || cat
                     ? `${visible.length} de ${totals[tab]}`
                     : plural(visible.length, 'item', 'itens')}
                 </span>
               </div>
             </div>
 
-            <p className="ml-hint">{TAB_HINT[tab]}</p>
+            <p className="ml-hint">
+              {TAB_HINT[tab]}
+              {sort === 'used' && usage && (
+                <> Uso entre os {usage.participants} participantes com run válida nos últimos {usage.days} dias.</>
+              )}
+            </p>
 
             {sort === 'az' && visible.length > 12 && (
               <nav className="ml-az" aria-label="Pular para a letra">
@@ -330,7 +388,9 @@ export function ModsPage() {
               <div className="mods-empty-state">
                 <i className="ti ti-search-off" />
                 <p>
-                  {search
+                  {cat && !search
+                    ? `Nenhum mod de ${categoryLabel(cat)} em ${TAB_LABEL[tab]}.`
+                    : search
                     ? elsewhere.length > 0
                       ? `Nada encontrado para "${search}" em ${TAB_LABEL[tab]}.`
                       : `Nenhum mod encontrado para "${search}" em nenhuma das listas.`

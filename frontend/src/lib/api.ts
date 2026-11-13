@@ -1,4 +1,4 @@
-import type { Player, Moderator, ModSession, ModeratorRole, Entry, PlayerFilter, PlayerProfile, Mod, DailyNews, FinanceEntry, Achievement, PlayerAchievement, HeatmapPoint, LiveStatus, FeaturedStreamer, PlayerLikeStatus, LikedPlayer, Top10Entry } from '../types';
+import type { Player, Moderator, ModSession, ModeratorRole, Entry, PlayerFilter, PlayerProfile, Mod, ModUsageResponse, DailyNews, FinanceEntry, Achievement, PlayerAchievement, HeatmapPoint, LiveStatus, FeaturedStreamer, PlayerLikeStatus, LikedPlayer, Top10Entry } from '../types';
 
 const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:3000';
 
@@ -607,6 +607,20 @@ export function apiCloseSeason(token: string, id: number): Promise<{ ok: boolean
 
 export function apiGetMods(status: 'active' | 'blocked' = 'active'): Promise<Mod[]> {
   return request(`/mods/list?status=${status}`);
+}
+
+export function apiGetModUsage(): Promise<ModUsageResponse> {
+  return request('/mods/usage');
+}
+
+export function apiSetModCategories(token: string, workshopId: string, categories: string[] | null): Promise<{ workshop_id: string; categories: string[] | null }> {
+  return request(`/mods/workshop/${encodeURIComponent(workshopId)}/categories`, {
+    method: 'PATCH', ...json(token, { categories }),
+  });
+}
+
+export function apiRefreshWorkshop(token: string): Promise<{ items: number; updated: number; missing: string[] }> {
+  return request('/mods/refresh-workshop', { ...auth(token), method: 'POST' });
 }
 
 export function apiGetAllMods(token: string): Promise<Mod[]> {

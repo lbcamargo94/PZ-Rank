@@ -655,6 +655,27 @@
 }
 .mod-card-painel-deps .ti { font-size: 14px; }
 
+/* Categoria do item na página pública (v4.34.0) */
+.mod-card-painel-cats {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  font-size: 14px; color: var(--text-2);
+}
+.mod-card-painel-cats .ti-tag { color: var(--text-3); }
+.mod-card-painel-cats-note { font-size: 12px; color: var(--amber-light); }
+.mod-card-painel-cats-edit {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 10px; border: 1px solid var(--border-mid); border-radius: var(--radius);
+  background: var(--bg-2);
+}
+.mod-card-painel-cats-options { display: flex; flex-wrap: wrap; gap: 6px; }
+.mod-card-painel-cats-options label {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border: 1px solid var(--border-mid); border-radius: var(--radius);
+  font-size: 13px; color: var(--text-2); cursor: pointer;
+}
+.mod-card-painel-cats-options label.on { border-color: var(--green-light); color: var(--text-1); background: var(--green-dim); }
+.mod-card-painel-cats-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+
 .mod-card-painel-block-reason {
   display: flex;
   align-items: flex-start;

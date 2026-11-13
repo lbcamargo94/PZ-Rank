@@ -638,6 +638,34 @@
 .ml-elsewhere-btn:hover { border-color: var(--green); }
 .ml-empty-note { font-size: 14px; color: var(--text-3); max-width: 46ch; text-align: center; }
 
+/* ── Categorias e dados da Oficina (v4.34.0) ── */
+.ml-cats { display: flex; flex-wrap: wrap; gap: 6px; }
+.ml-cat {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 32px;
+  padding: 4px 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-mid);
+  background: #141912;
+  color: var(--text-2);
+  font-size: 13px;
+  cursor: pointer;
+}
+.ml-cat:hover { border-color: #4a5a40; color: var(--text-1); }
+.ml-cat.active { border-color: var(--green-light); background: #1c2c14; color: #d6f0c4; }
+.ml-cat-count { font-family: var(--font-mono); font-size: 12px; color: var(--text-3); }
+.ml-cat.active .ml-cat-count { color: #b8e39c; }
+
+.ml-meta {
+  display: flex; flex-wrap: wrap; align-items: center;
+  font-size: 13px;
+  color: var(--text-3);
+}
+.ml-meta-sep { margin: 0 7px; color: var(--text-4); }
+.ml-meta-cat { color: var(--text-2); }
+.ml-meta-used { color: #a7d88a; }
+.ml-meta-stale { color: #e8b450; display: inline-flex; align-items: center; gap: 4px; }
+
 @media (max-width: 560px) {
   .ml-controls { padding: 12px; }
   .ml-count { margin-left: 0; width: 100%; }

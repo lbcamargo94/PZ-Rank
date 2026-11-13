@@ -8,6 +8,8 @@ import { notifyModAllowed, notifyModRemoved, notifyModBlocked } from '../lib/dis
 import { computeModStats, type StatsRun, type StatsMod } from '../lib/modStats';
 import { config } from '../config';
 import { extractWorkshopId, canonicalWorkshopUrl, modIdError } from '../lib/modInput';
+import { resolveCategories, cleanCategoryOverride, parseStringList } from '../lib/modCategories';
+import { refreshWorkshopItems } from '../lib/steamWorkshop';
 
 const router = Router();
 
@@ -89,6 +91,54 @@ async function resolveModeratorLogin(userId: string | undefined): Promise<string
   return mod?.login ?? userId;
 }
 
+// Dados da Oficina (workshop_items, cron diário) em cada mod: categorias, inscritos e
+// data da última atualização. Mod cujo item ainda não foi buscado fica com categoria
+// "outros" e o resto null — a página não depende do cron ter rodado.
+async function attachWorkshop(mods: RawMod[]): Promise<RawMod[]> {
+  const { data } = await supabase
+    .from('workshop_items')
+    .select('workshop_id, tags, subscriptions, steam_updated_at, categories');
+  const byId = new Map<string, RawMod>(((data ?? []) as RawMod[]).map(w => [String(w.workshop_id), w]));
+  return mods.map(m => {
+    const w = m.workshop_id ? byId.get(String(m.workshop_id)) : undefined;
+    const updated = w?.steam_updated_at;
+    return {
+      ...m,
+      categories:          resolveCategories(w?.tags ?? null, w?.categories ?? null),
+      category_override:   w ? cleanCategoryOverride(parseStringList(w.categories)) !== null : false,
+      subscriptions:       w?.subscriptions != null ? Number(w.subscriptions) : null,
+      steam_updated_at:    updated ? new Date(updated as string).toISOString() : null,
+    };
+  });
+}
+
+// Uso agregado por item na página pública: só o NÚMERO de participantes (run viva e
+// válida com sync nos últimos 14 dias), nunca quem são. Mesmo cálculo da aba de
+// estatísticas do painel (lib/modStats.ts). Cache de 10 min: varre as runs vivas.
+const USAGE_DAYS = 14;
+const USAGE_TTL_MS = 10 * 60_000;
+let usageCache: { at: number; body: unknown } | null = null;
+
+async function computePublicUsage(): Promise<unknown> {
+  const [runsRes, modsRes] = await Promise.all([
+    supabase.from(config.tableName)
+      .select('player_id, active_mods, updated_at, is_alive, sandbox_ok, character_name')
+      .eq('is_alive', true)
+      .is('deleted_at', null),
+    supabase.from('mods').select('mod_id, name, workshop_id, status, is_required'),
+  ]);
+  if (runsRes.error || modsRes.error) throw new Error((runsRes.error ?? modsRes.error)!.message);
+  const runs = ((runsRes.data ?? []) as StatsRun[]).map(r => ({ ...r, nick: null }));
+  const stats = computeModStats(runs, (modsRes.data ?? []) as StatsMod[], USAGE_DAYS);
+  return {
+    days: USAGE_DAYS,
+    participants: stats.participants,
+    items: stats.items
+      .filter(i => i.status === 'permitido' || i.status === 'misto')
+      .map(i => ({ workshop_id: i.workshop_id, mod_ids: i.mod_ids, players: i.players })),
+  };
+}
+
 async function handleGetMods(req: import('express').Request, res: Response): Promise<void> {
   const status = req.query.status === 'blocked' ? 'blocked' : 'active';
   try {
@@ -99,7 +149,7 @@ async function handleGetMods(req: import('express').Request, res: Response): Pro
       .order('name', { ascending: true });
 
     if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
-    res.json(await attachDeps((data ?? []) as RawMod[]));
+    res.json(await attachWorkshop(await attachDeps((data ?? []) as RawMod[])));
   } catch (err) {
     console.error('[GET /mods/list] Erro inesperado:', err);
     res.status(500).json({ error: 'Erro interno ao buscar mods.' });
@@ -110,6 +160,49 @@ async function handleGetMods(req: import('express').Request, res: Response): Pro
 router.get('/list', handleGetMods);
 // Alias legado mantido para compatibilidade com chamadas diretas.
 router.get('/', handleGetMods);
+
+// GET /mods/usage — público: quantos participantes usam cada item permitido (só números).
+router.get('/usage', async (_req, res: Response): Promise<void> => {
+  try {
+    if (!usageCache || Date.now() - usageCache.at > USAGE_TTL_MS) {
+      usageCache = { at: Date.now(), body: await computePublicUsage() };
+    }
+    res.setHeader('Cache-Control', 'public, max-age=300');
+    res.json(usageCache.body);
+  } catch (err) {
+    console.error('[GET /mods/usage] Erro inesperado:', err);
+    res.status(500).json({ error: 'Erro interno ao calcular o uso dos mods.' });
+  }
+});
+
+// PATCH /mods/workshop/:workshopId/categories — moderador: corrige a categoria de um item
+// da Oficina. Body { categories: string[] | null }; null ou lista vazia volta para as tags.
+router.patch('/workshop/:workshopId/categories', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
+  const wid = String(req.params.workshopId ?? '');
+  if (!/^\d{1,20}$/.test(wid)) { res.status(400).json({ error: 'Número do item da Oficina inválido.' }); return; }
+  const raw = (req.body as { categories?: unknown })?.categories;
+  const categories = raw === null ? null : cleanCategoryOverride(raw);
+  if (raw !== null && Array.isArray(raw) && raw.length > 0 && categories === null) {
+    res.status(400).json({ error: 'Categoria desconhecida.' }); return;
+  }
+  const { data: used } = await supabase.from('mods').select('id').eq('workshop_id', wid).limit(1);
+  if (!used || (used as unknown[]).length === 0) { res.status(404).json({ error: 'Nenhum mod cadastrado com esse item da Oficina.' }); return; }
+  const { error } = await supabase.from('workshop_items')
+    .upsert([{ workshop_id: wid, categories: categories ? JSON.stringify(categories) : null }], { onConflict: 'workshop_id' });
+  if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
+  res.json({ workshop_id: wid, categories });
+});
+
+// POST /mods/refresh-workshop — moderador: busca agora na Steam as tags, inscritos e
+// datas (o cron faz o mesmo uma vez por dia).
+router.post('/refresh-workshop', requireModerator, async (_req: ModRequest, res: Response): Promise<void> => {
+  try {
+    res.json(await refreshWorkshopItems());
+  } catch (err) {
+    console.error('[POST /mods/refresh-workshop] falhou:', err);
+    res.status(502).json({ error: 'Não foi possível consultar a Steam agora.' });
+  }
+});
 
 // GET /mods/all — moderator: returns all mods (active + blocked)
 // GET /mods/stats?days=14 — moderador: quantos participantes usam cada mod (lib/modStats.ts).
@@ -142,7 +235,7 @@ router.get('/all', requireModerator, async (_req: ModRequest, res: Response): Pr
       .order('name', { ascending: true });
 
     if (error) { const e = dbError(error); res.status(e.httpStatus).json({ error: e.message }); return; }
-    res.json(await attachDeps((data ?? []) as RawMod[]));
+    res.json(await attachWorkshop(await attachDeps((data ?? []) as RawMod[])));
   } catch (err) {
     console.error('[GET /mods/all] Erro inesperado:', err);
     res.status(500).json({ error: 'Erro interno ao buscar mods.' });
