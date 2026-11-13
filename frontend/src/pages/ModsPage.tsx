@@ -78,11 +78,21 @@ function ModIds({ group }: { group: ModGroup }) {
   );
 }
 
-function ModMeta({ group, now }: { group: ModGroup; now: number }) {
-  const stale = isStaleGroup(group, now);
+function ModMeta({ group, now, activeCat }: { group: ModGroup; now: number; activeCat: string }) {
+  // Obrigatório funciona por definição: o aviso de "parado" só confundiria quem está começando.
+  const stale = !group.required && isStaleGroup(group, now);
   const parts: React.ReactNode[] = [];
-  const cats = group.categories.filter(c => c !== 'outros');
-  if (cats.length) parts.push(<span key="c" className="ml-meta-cat">{cats.map(c => categoryLabel(c, true)).join(', ')}</span>);
+  const cats = group.categories.filter(c => c !== 'outros')
+    .sort((a, b) => Number(b === activeCat) - Number(a === activeCat));
+  // Alguns autores marcam quase todas as tags: mostra 2 e o resto no "+N".
+  if (cats.length) {
+    const shown = cats.slice(0, 2).map(c => categoryLabel(c, true)).join(', ');
+    parts.push(
+      <span key="c" className="ml-meta-cat" title={cats.length > 2 ? cats.map(c => categoryLabel(c)).join(', ') : undefined}>
+        {shown}{cats.length > 2 && ` +${cats.length - 2}`}
+      </span>,
+    );
+  }
   if (group.subscriptions != null) {
     parts.push(<span key="s" title={`${group.subscriptions.toLocaleString('pt-BR')} inscritos na Oficina`}>{fmtCount(group.subscriptions)} inscritos</span>);
   }
@@ -101,7 +111,7 @@ function ModMeta({ group, now }: { group: ModGroup; now: number }) {
   return <span className="ml-meta">{parts.map((p, i) => <span key={i}>{i > 0 && <span className="ml-meta-sep" aria-hidden="true">·</span>}{p}</span>)}</span>;
 }
 
-function ModRow({ group, anchor, now }: { group: ModGroup; anchor?: string; now: number }) {
+function ModRow({ group, anchor, now, activeCat }: { group: ModGroup; anchor?: string; now: number; activeCat: string }) {
   const { primary } = group;
   const deps    = groupDependencies(group);
   const reasons = group.status === 'blocked'
@@ -119,7 +129,7 @@ function ModRow({ group, anchor, now }: { group: ModGroup; anchor?: string; now:
           {isNewGroup(group, now) && <span className="ml-tag ml-tag-new" title={`Adicionado em ${fmtDate(group.addedAt)}`}>Novo</span>}
         </div>
         <ModIds group={group} />
-        <ModMeta group={group} now={now} />
+        <ModMeta group={group} now={now} activeCat={activeCat} />
         {deps.length > 0 && (
           <span className="ml-deps"><i className="ti ti-link" aria-hidden="true" /> Requer: {deps.map(d => d.name).join(', ')}</span>
         )}
@@ -411,7 +421,7 @@ export function ModsPage() {
               </div>
             ) : (
               <ul className={`ml-list${view === 'grid' ? ' ml-grid' : ''}`}>
-                {visible.map(g => <ModRow key={g.key} group={g} anchor={anchors.get(g.key)} now={now} />)}
+                {visible.map(g => <ModRow key={g.key} group={g} anchor={anchors.get(g.key)} now={now} activeCat={cat} />)}
               </ul>
             )}
           </>
