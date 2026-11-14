@@ -18,7 +18,7 @@ import { recordSync, oldestAcceptedSince } from '../lib/syncHistory';
 import { codeOrderIssue, saveReloadFlag } from '../lib/codeOrder';
 import { normalizeDeathCause } from '../lib/statistics';
 import { deathCellFromDelta, regionOfCell } from '../lib/mapRegions';
-import { isDebugAmnestied, isLocalModAmnestied, newModGapFlag } from '../lib/debugAmnesty';
+import { isDebugAmnestied, isLocalModAmnestied, isPzoptAmnestied, newModGapFlag } from '../lib/debugAmnesty';
 import {
   isImplausibleTotal, isImplausibleJump, implausibleFlag, implausibleJumpFlag,
   isImplausible24h, implausible24hFlag, KILLS_WINDOW_MS,
@@ -421,8 +421,10 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       // Pereira, 30/09). Para jogar de novo, só com outro nome — ou o moderador reabilita.
       // Guarda a última hora de jogo em que o debug foi visto (mod v2.31.0+): é o
       // limite que o moderador vê e usa ao conceder a anistia de debug no painel.
-      // O mesmo limite serve para mod fora da Oficina (local_min, mod v2.33.0+).
-      const seenMin = decoded.debugSeenMin ?? decoded.localSeenMin;
+      // O mesmo limite serve para mod fora da Oficina (local_min, mod v2.33.0+) e para o
+      // PZ Optimization (pzopt_min, mod v2.35.0+): vale a maior hora entre os dois.
+      const markMin = [decoded.localSeenMin, decoded.pzoptSeenMin].filter((v): v is number => v != null);
+      const seenMin = decoded.debugSeenMin ?? (markMin.length > 0 ? Math.max(...markMin) : null);
       if (seenMin != null && seenMin !== prev.debug_seen_min) {
         await supabase
           .from(config.tableName)
@@ -566,10 +568,17 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     ? `local_mods:${decoded.localMods.slice(0, 5).join(',')}`
     : null;
 
+  // PZ Optimization instalado na pasta do jogo (mod v2.35.0+): proibido no campeonato, desclassifica
+  // de vez como o mod fora da Oficina (a marca fica no save; só a anistia reverte).
+  const pzoptReason = decoded.pzopt && !isPzoptAmnestied(decoded, prev?.debug_amnesty_until_min)
+    ? 'pzopt'
+    : null;
+  const permanentModReason = localModsReason ?? pzoptReason;
+
   // Mod bloqueado detectado server-side: desclassifica imediatamente e persiste no banco.
   // Formato "nome::mod_id" — o "::" separa os dois campos no reason armazenado; o
   // frontend faz split('::') pra exibir "Nome (mod_id)" ao jogador/moderador.
-  if (blockedModFound && !localModsReason) {
+  if (blockedModFound && !permanentModReason) {
     const reason     = `blocked_mod:${blockedModFound.name}::${blockedModFound.modId}`;
     const modPayload = {
       sandbox_ok:               false,
@@ -632,8 +641,8 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
 
   // Mods UNLISTED detectados server-side: desclassificam igual a BLOCKED. Obrigatório
   // ausente (v4.36.0) usa o mesmo caminho, com motivo próprio.
-  if (localModsReason || (!blockedModFound && (unlistedModIds.length > 0 || missingRequiredIds.length > 0))) {
-    const reason     = localModsReason ?? (unlistedModIds.length > 0
+  if (permanentModReason || (!blockedModFound && (unlistedModIds.length > 0 || missingRequiredIds.length > 0))) {
+    const reason     = permanentModReason ?? (unlistedModIds.length > 0
       ? `unlisted_mods:${unlistedModIds.slice(0, 5).join(',')}`
       : `missing_required:${missingRequiredIds.slice(0, 5).join(',')}`);
     const modPayload = {

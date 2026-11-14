@@ -83,6 +83,8 @@ export interface DecodedCode {
   modGap:                 { minutes: number; atMin: number } | null;
   localMods:              string[];
   localSeenMin:           number | null;
+  pzopt:                  boolean;        // PZ Optimization instalado (mod v2.35.0+)
+  pzoptSeenMin:           number | null;
   codeTimestamp:          number | null;
   modVersion:             string | null;
   // PZRX3 — extended stats (0 when absent / PZRX2 code)

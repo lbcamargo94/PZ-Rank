@@ -39,6 +39,17 @@ export function isLocalModAmnestied(
   return decoded.localSeenMin <= amnestyUntilMin;
 }
 
+// PZ Optimization (mod v2.35.0+): proibido no campeonato. Mesma regra do mod fora da Oficina: a
+// marca fica no save e a anistia perdoa até uma hora de jogo; com ele ainda instalado, a hora
+// sobe e a run cai de novo.
+export function isPzoptAmnestied(
+  decoded: Pick<DecodedCode, 'pzoptSeenMin'>,
+  amnestyUntilMin: number | null | undefined,
+): boolean {
+  if (amnestyUntilMin == null || decoded.pzoptSeenMin == null) return false;
+  return decoded.pzoptSeenMin <= amnestyUntilMin;
+}
+
 // Aviso de possível sessão sem o mod (mod v2.31.0+). Só vira anomalia para o moderador
 // revisar — não desclassifica. O mod repete o aviso em todos os syncs da sessão em que
 // detectou o gap; lastGapAtMin (entries.mod_gap_at_min) evita registrar o mesmo duas vezes.

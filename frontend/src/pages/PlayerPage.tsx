@@ -276,6 +276,7 @@ function ppDisqTooltip(t: TFunction, reason: string | null | undefined): string 
   }
   switch (reason) {
     case 'debug':       return t('rank.disq.debug');
+    case 'pzopt':       return t('rank.disq.pzopt');
     case 'manual':      return t('rank.disq.manual');
     case 'mod_removed': return t('rank.disq.mod_removed_row');
     case 'sandbox':      return t('rank.disq.sandbox');

@@ -76,6 +76,7 @@ function EntryStatusBadge({ entry }: { entry: Entry }) {
 
 const DISQ_INFO: Record<string, { icon: string; label: string; detail: string; color: string }> = {
   sandbox:     { icon: 'ti-adjustments-off', label: 'Sandbox modificado',     detail: 'As configurações do sandbox divergem do preset oficial do desafio.',  color: '#f59e0b' },
+  pzopt:       { icon: 'ti-rocket-off',      label: 'PZ Optimization instalado', detail: 'O PZ Optimization estava instalado na pasta do jogo, e ele é proibido no campeonato. Desinstalar não reabilita a run; só a anistia do moderador.', color: '#ef4444' },
   debug:       { icon: 'ti-bug',             label: 'Modo debug ativo',       detail: 'O jogador ativou o modo debug durante o desafio Brasileirão.',         color: '#ef4444' },
   mods:        { icon: 'ti-puzzle-off',      label: 'Mods não permitidos',    detail: 'Mod(s) fora da whitelist detectado(s) durante o desafio.',             color: '#ef4444' },
   manual:      { icon: 'ti-user-x',          label: 'Desclassificação manual',detail: 'Desclassificado manualmente por um moderador.',                        color: '#6b7280' },
@@ -318,6 +319,8 @@ function DebugAmnestyModal({ entry, onConfirm, onCancel }: DisqualifyModalProps)
 
   const untilMin = Math.max(entry.debug_seen_min ?? 0, entry.time_raw ?? 0);
   const isLocalMods = !!entry.disqualification_reason?.startsWith('local_mods:');
+  const isPzopt     = entry.disqualification_reason === 'pzopt';
+  const markName    = isPzopt ? 'O PZ Optimization visto' : isLocalMods ? 'O mod fora da Oficina visto' : 'O debug visto';
 
   return (
     <div className="modal-overlay active" role="alertdialog" aria-modal="true">
@@ -327,7 +330,7 @@ function DebugAmnestyModal({ entry, onConfirm, onCancel }: DisqualifyModalProps)
         </button>
 
         <h2 className="modal-title">
-          <i className="ti ti-shield-check" /> {isLocalMods ? 'Anistia de mod fora da Oficina' : 'Anistia de debug'}
+          <i className="ti ti-shield-check" /> {isPzopt ? 'Anistia de PZ Optimization' : isLocalMods ? 'Anistia de mod fora da Oficina' : 'Anistia de debug'}
         </h2>
 
         <div className="ban-modal-body">
@@ -335,11 +338,13 @@ function DebugAmnestyModal({ entry, onConfirm, onCancel }: DisqualifyModalProps)
             Reabilitando: <strong>{entry.character_name || entry.name}</strong>
           </p>
           <p className="painel-disq-desc">
-            {isLocalMods ? 'O mod fora da Oficina visto' : 'O debug visto'} até <strong>{fmtGameMinutes(untilMin)}</strong> de jogo fica perdoado.
-            {isLocalMods
+            {markName} até <strong>{fmtGameMinutes(untilMin)}</strong> de jogo fica perdoado.
+            {isPzopt
+              ? ' Se o jogador continuar com o PZ Optimization instalado depois disso, a run é desclassificada outra vez.'
+              : isLocalMods
               ? ' Se o jogador continuar com esse mod depois disso, a run é desclassificada outra vez.'
               : ' Se o mod detectar debug de novo depois disso, a run é desclassificada outra vez.'}
-            {!isLocalMods && entry.debug_seen_min == null && ' O mod deste jogador não informou a hora do debug: vale o último estado gravado.'}
+            {!isLocalMods && !isPzopt && entry.debug_seen_min == null && ' O mod deste jogador não informou a hora do debug: vale o último estado gravado.'}
           </p>
 
           <div className="ban-modal-field">
@@ -609,7 +614,8 @@ export function PainelPage({ session, onSession, onBack }: Props) {
     label: string,
   ) {
     if (patch.sandbox_ok === true && entry.sandbox_ok === false
-      && (entry.disqualification_reason === 'debug' || entry.disqualification_reason?.startsWith('local_mods:'))) {
+      && (entry.disqualification_reason === 'debug' || entry.disqualification_reason === 'pzopt'
+        || entry.disqualification_reason?.startsWith('local_mods:'))) {
       setAmnestyRequest({ entry, patch, label });
       return;
     }

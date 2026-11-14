@@ -169,6 +169,7 @@ function formatDisqReason(reason: string): string {
   switch (reason) {
     case 'sandbox': return 'Configuração de sandbox divergente do preset oficial';
     case 'debug':   return 'Modo debug ativado durante o desafio';
+    case 'pzopt':   return 'PZ Optimization instalado (proibido no campeonato)';
     case 'manual':  return 'Desclassificação manual por um moderador';
     default:        return reason;
   }

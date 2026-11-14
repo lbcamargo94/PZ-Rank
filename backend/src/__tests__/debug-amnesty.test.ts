@@ -1,25 +1,25 @@
 import { describe, it, expect } from 'vitest';
 import { parseReasonField } from '../lib/decoder';
-import { isDebugAmnestied, isLocalModAmnestied, newModGapFlag } from '../lib/debugAmnesty';
+import { isDebugAmnestied, isLocalModAmnestied, isPzoptAmnestied, newModGapFlag } from '../lib/debugAmnesty';
 
 describe('parseReasonField', () => {
   it('motivo simples de mods antigos continua igual', () => {
-    expect(parseReasonField('debug')).toEqual({ reason: 'debug', debugSeenMin: null, debugSeenEstimated: false, presetViolated: false, modGap: null, localMods: [], localSeenMin: null });
+    expect(parseReasonField('debug')).toEqual({ reason: 'debug', debugSeenMin: null, debugSeenEstimated: false, presetViolated: false, modGap: null, localMods: [], localSeenMin: null, pzopt: false, pzoptSeenMin: null });
     expect(parseReasonField('mods:NAO_PERMITIDO:X,AUSENTE:Y').reason).toBe('mods:NAO_PERMITIDO:X,AUSENTE:Y');
-    expect(parseReasonField('')).toEqual({ reason: null, debugSeenMin: null, debugSeenEstimated: false, presetViolated: false, modGap: null, localMods: [], localSeenMin: null });
+    expect(parseReasonField('')).toEqual({ reason: null, debugSeenMin: null, debugSeenEstimated: false, presetViolated: false, modGap: null, localMods: [], localSeenMin: null, pzopt: false, pzoptSeenMin: null });
   });
   it('debug com hora, preset e gap (mod 2.31.0)', () => {
     expect(parseReasonField('debug&debug_min=12150&preset=1&gap=636@6407')).toEqual({
-      reason: 'debug', debugSeenMin: 12150, debugSeenEstimated: false, presetViolated: true, modGap: { minutes: 636, atMin: 6407 }, localMods: [], localSeenMin: null,
+      reason: 'debug', debugSeenMin: 12150, debugSeenEstimated: false, presetViolated: true, modGap: { minutes: 636, atMin: 6407 }, localMods: [], localSeenMin: null, pzopt: false, pzoptSeenMin: null,
     });
   });
   it('só o aviso de gap, sem desclassificação', () => {
     expect(parseReasonField('gap=112@12140')).toEqual({
-      reason: null, debugSeenMin: null, debugSeenEstimated: false, presetViolated: false, modGap: { minutes: 112, atMin: 12140 }, localMods: [], localSeenMin: null,
+      reason: null, debugSeenMin: null, debugSeenEstimated: false, presetViolated: false, modGap: { minutes: 112, atMin: 12140 }, localMods: [], localSeenMin: null, pzopt: false, pzoptSeenMin: null,
     });
   });
   it('extras malformados são ignorados', () => {
-    expect(parseReasonField('debug&debug_min=abc&gap=12')).toEqual({ reason: 'debug', debugSeenMin: null, debugSeenEstimated: false, presetViolated: false, modGap: null, localMods: [], localSeenMin: null });
+    expect(parseReasonField('debug&debug_min=abc&gap=12')).toEqual({ reason: 'debug', debugSeenMin: null, debugSeenEstimated: false, presetViolated: false, modGap: null, localMods: [], localSeenMin: null, pzopt: false, pzoptSeenMin: null });
   });
 });
 
@@ -118,5 +118,26 @@ describe('anistia dada sem hora conhecida (v4.28.2, caso n4ndo)', () => {
   it('decoder lê debug_est', () => {
     expect(parseReasonField('debug&debug_min=16193&debug_est=1').debugSeenEstimated).toBe(true);
     expect(parseReasonField('debug&debug_min=16193').debugSeenEstimated).toBe(false);
+  });
+});
+
+describe('PZ Optimization', () => {
+  it('lê a marca e a hora, junto com outros extras', () => {
+    const out = parseReasonField('gap=5@20&pzopt=1&pzopt_min=740');
+    expect(out.reason).toBeNull();
+    expect(out.pzopt).toBe(true);
+    expect(out.pzoptSeenMin).toBe(740);
+    expect(out.modGap).toEqual({ minutes: 5, atMin: 20 });
+  });
+  it('sem a marca, ou com valor diferente de 1, não conta', () => {
+    expect(parseReasonField('debug').pzopt).toBe(false);
+    expect(parseReasonField('pzopt=0&pzopt_min=x').pzopt).toBe(false);
+    expect(parseReasonField('pzopt=0&pzopt_min=x').pzoptSeenMin).toBeNull();
+  });
+  it('anistia cobre até o limite; depois disso ou sem hora, não', () => {
+    expect(isPzoptAmnestied({ pzoptSeenMin: 740 }, 740)).toBe(true);
+    expect(isPzoptAmnestied({ pzoptSeenMin: 741 }, 740)).toBe(false);
+    expect(isPzoptAmnestied({ pzoptSeenMin: null }, 740)).toBe(false);
+    expect(isPzoptAmnestied({ pzoptSeenMin: 740 }, null)).toBe(false);
   });
 });

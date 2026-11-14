@@ -25,6 +25,8 @@ export type ReasonField = {
   modGap:         { minutes: number; atMin: number } | null;
   localMods:      string[];
   localSeenMin:   number | null;
+  pzopt:          boolean;
+  pzoptSeenMin:   number | null;
 };
 
 // Campo motivo: motivo principal seguido de extras separados por "&" (mod v2.31.0+):
@@ -32,10 +34,12 @@ export type ReasonField = {
 // debug_est=1 (mod v2.31.1+): a hora do debug é estimada (marca antiga, sem hora registrada).
 // local_mods=<ids>&local_min=<n> (mod v2.33.0+): mods fora da Oficina da Steam e a última hora
 // de jogo em que foram vistos.
+// pzopt=1&pzopt_min=<n> (mod v2.35.0+): PZ Optimization instalado na pasta do jogo, proibido no
+// campeonato, e a última hora de jogo em que foi visto.
 // Os extras podem vir sozinhos (sandbox ok + aviso de gap), então o motivo principal é
 // o primeiro token só quando ele não é um extra "chave=valor".
 export function parseReasonField(raw: string | null | undefined): ReasonField {
-  const out: ReasonField = { reason: null, debugSeenMin: null, debugSeenEstimated: false, presetViolated: false, modGap: null, localMods: [], localSeenMin: null };
+  const out: ReasonField = { reason: null, debugSeenMin: null, debugSeenEstimated: false, presetViolated: false, modGap: null, localMods: [], localSeenMin: null, pzopt: false, pzoptSeenMin: null };
   const tokens = (raw ?? '').split('&').map(t => t.trim()).filter(Boolean);
   for (const [i, token] of tokens.entries()) {
     const eq = token.indexOf('=');
@@ -58,6 +62,10 @@ export function parseReasonField(raw: string | null | undefined): ReasonField {
       out.localMods = val.split(',').map(s => s.trim()).filter(Boolean);
     } else if (key === 'local_min' && /^\d+$/.test(val)) {
       out.localSeenMin = parseInt(val, 10);
+    } else if (key === 'pzopt') {
+      out.pzopt = val === '1';
+    } else if (key === 'pzopt_min' && /^\d+$/.test(val)) {
+      out.pzoptSeenMin = parseInt(val, 10);
     }
   }
   return out;
@@ -194,6 +202,8 @@ export function parsePzrCode(raw: string): DecodedCode | null {
     modGap:                 reasonField.modGap,
     localMods:              reasonField.localMods,
     localSeenMin:           reasonField.localSeenMin,
+    pzopt:                  reasonField.pzopt,
+    pzoptSeenMin:           reasonField.pzoptSeenMin,
     codeTimestamp: (codeTimestamp && !isNaN(codeTimestamp)) ? codeTimestamp : null,
     modVersion,
     animalsKilled:     parseExt(animalsKilledRaw),
