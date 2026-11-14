@@ -1,12 +1,13 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { apiGetMods, apiGetModUsage } from '../lib/api';
 import type { ModUsageResponse } from '../types';
 import {
   groupMods, matchesQuery, sortGroups, isNewGroup, applyUsage, countByCategory,
-  isStaleGroup, monthsSinceUpdate, fmtCount, categoryLabel, MOD_CATEGORIES,
+  isStaleGroup, monthsSinceUpdate, fmtCount, categoryLabel, MOD_CATEGORIES, tabForExactModId,
   type ModGroup, type ModGroupStatus, type ModSort,
 } from '../lib/modsList';
+import { ModListChecker } from '../components/ModListChecker';
 import './mods.css';
 
 type ViewMode = 'list' | 'grid';
@@ -160,11 +161,27 @@ export function ModsPage() {
   const [now] = useState(() => Date.now());
 
   const search = params.get('q') ?? '';
-  const tab: ModGroupStatus = TAB_FROM_PARAM[params.get('aba') ?? ''] ?? 'allowed';
+  const exactTab = useMemo(() => tabForExactModId(baseGroups, search), [baseGroups, search]);
+  // Sem aba no endereço, a busca por um ID exato abre na aba do item (links "Ver na lista")
+  const tab: ModGroupStatus = TAB_FROM_PARAM[params.get('aba') ?? ''] ?? exactTab ?? 'allowed';
   const ordem = params.get('ordem');
   const sort: ModSort       = ordem === 'recentes' ? 'recent' : ordem === 'usados' ? 'used' : 'az';
   const cat                 = MOD_CATEGORIES.some(c => c.slug === params.get('cat')) ? params.get('cat')! : '';
   const view: ViewMode      = params.get('ver') === 'grade' ? 'grid' : 'list';
+  const checking            = params.get('conferir') === '1';
+  const controlsRef = useRef<HTMLDivElement>(null);
+
+  // "Ver na lista" da conferência: filtra a lista pelo ID e rola até ela, mantendo o painel aberto.
+  function seeInList(modId: string) {
+    setParams(prev => {
+      const next = new URLSearchParams(prev);
+      next.set('q', modId);
+      next.delete('cat');
+      next.delete('aba');
+      return next;
+    }, { replace: true });
+    requestAnimationFrame(() => controlsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  }
 
   // Mantém o resto dos filtros e troca só um; o valor padrão sai do endereço.
   function setParam(key: string, value: string, fallback: string) {
@@ -291,7 +308,11 @@ export function ModsPage() {
                         <span className="ml-required-text">
                           <span className="ml-required-name">{g.primary.name} <i className="ti ti-external-link" aria-hidden="true" /></span>
                           <span className="ml-required-ids">
-                            {g.mods.filter(m => m.mod_id && m.status === 'active').map(m => m.mod_id).join(' · ')}
+                            {(() => {
+                              const ids = g.mods.filter(m => m.mod_id && m.status === 'active').map(m => m.mod_id);
+                              // Basta um dos IDs do item ativo (é o que as runs válidas usam)
+                              return ids.length > 1 ? `um destes: ${ids.join(', ')}` : ids[0];
+                            })()}
                           </span>
                         </span>
                       </a>
@@ -301,7 +322,18 @@ export function ModsPage() {
               </section>
             )}
 
-            <div className="ml-controls">
+            {checking ? (
+              <ModListChecker groups={groups} onSeeInList={seeInList} onClose={() => setParam('conferir', '', '')} />
+            ) : (
+              <div className="ml-check-cta">
+                <span><i className="ti ti-list-check" aria-hidden="true" /> Vai começar uma run? Cole o mods.txt do save e veja se algum mod desclassifica.</span>
+                <button type="button" className="ml-check-open" onClick={() => setParam('conferir', '1', '')}>
+                  Conferir minha lista
+                </button>
+              </div>
+            )}
+
+            <div className="ml-controls" ref={controlsRef}>
               <div className="wiki-search-wrap ml-search">
                 <i className="ti ti-search wiki-search-icon" aria-hidden="true" />
                 <input

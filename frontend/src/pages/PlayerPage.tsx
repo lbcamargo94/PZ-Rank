@@ -9,6 +9,7 @@ import { parseSkillMap, SKILL_CATEGORIES, MAX_SKILL_LEVEL, TOTAL_SKILLS } from '
 import { COMPANION_LATEST_URL, COMPANION_TAG, isCompanionOutdated } from '../lib/companion';
 import { parseTraitList, resolveTrait, getTraitImageUrl, traitGroup, type TraitGroup } from '../lib/traits';
 import { getProfessionImageUrl } from '../lib/professions';
+import { modListUrl } from '../lib/modsList';
 import { SPIFFOS_RESTAURANTS, BASE_ITEMS, initObjectives } from '../lib/objectives';
 import { ProgressBar } from '../components/ProgressBar';
 import { AchievementsSection } from '../components/AchievementsSection';
@@ -224,6 +225,26 @@ function parseModViolations(reason: string | null | undefined): string[] {
   }).filter(Boolean);
 }
 
+// Os mesmos itens de parseModViolations, com o ID para o link "Ver na lista" (v4.35.0).
+function modViolationLinks(reason: string | null | undefined): Array<{ label: string; id: string }> {
+  if (!reason) return [];
+  if (reason.startsWith('blocked_mod:')) {
+    const [name, modId] = reason.slice('blocked_mod:'.length).split('::');
+    if (!name) return [];
+    return [{ label: modId ? `${name} (${modId})` : name, id: modId || name }];
+  }
+  if (reason.startsWith('unlisted_mods:')) {
+    return reason.slice('unlisted_mods:'.length).split(',').map(v => v.trim()).filter(Boolean)
+      .map(id => ({ label: id, id }));
+  }
+  if (!reason.startsWith('mods:')) return [];
+  return reason.slice(5).split(',').filter(Boolean).map(v => {
+    if (v.startsWith('NAO_PERMITIDO:')) return { label: v.slice(14), id: v.slice(14) };
+    if (v.startsWith('AUSENTE:'))       return { label: `${v.slice(8)} (ausente)`, id: v.slice(8) };
+    return { label: v, id: v };
+  });
+}
+
 function ppDisqTooltip(t: TFunction, reason: string | null | undefined): string {
   if (!reason) return t('rank.disq.sandbox');
   if (reason.startsWith('blocked_mod:')) {
@@ -398,6 +419,11 @@ function ActiveModsSection({ playerId }: { playerId: number }) {
                 <span className="pp-mod-id-chip">{mod.mod_id}</span>
               </div>
               <span className={`pp-mod-badge ${meta.cls}`}>{meta.label}</span>
+              {mod.classification !== 'PERMITTED' && (
+                <Link to={modListUrl(mod.mod_id)} className="pp-mod-see" title={t('player.mods.see_in_list')}>
+                  <i className="ti ti-list-search" />
+                </Link>
+              )}
               {mod.workshop_url && (
                 <a href={mod.workshop_url} target="_blank" rel="noopener noreferrer" className="pp-mod-steam-btn" title={t('player.mods.workshop')}>
                   <i className="ti ti-brand-steam" />
@@ -491,10 +517,15 @@ function CharacterCard({ entry, rank, live }: { entry: Entry; rank: number | nul
                 >
                   <i className="ti ti-ban" /> {t('rank.status.disqualified')}
                 </span>
-                {parseModViolations(entry.disqualification_reason).length > 0 && (
+                {modViolationLinks(entry.disqualification_reason).length > 0 && (
                   <span className="pp-disq-mods">
                     <i className="ti ti-plug-x" />
-                    {parseModViolations(entry.disqualification_reason).join(', ')}
+                    {modViolationLinks(entry.disqualification_reason).map((v, i) => (
+                      <span key={v.id + i}>
+                        {i > 0 && ', '}
+                        <Link to={modListUrl(v.id)} className="pp-disq-mod-link" title={t('player.mods.see_in_list')}>{v.label}</Link>
+                      </span>
+                    ))}
                   </span>
                 )}
               </div>

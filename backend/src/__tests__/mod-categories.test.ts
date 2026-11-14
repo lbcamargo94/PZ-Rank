@@ -3,6 +3,7 @@ import {
   categoriesFromTags, cleanCategoryOverride, resolveCategories, parseStringList, MOD_CATEGORIES,
 } from '../lib/modCategories';
 import { parseDetails, fetchWorkshopDetails } from '../lib/steamWorkshop';
+import { disqModsLink } from '../lib/discord';
 
 describe('categoriesFromTags', () => {
   it('agrupa as tags da Steam nas categorias do site, na ordem da lista', () => {
@@ -76,5 +77,20 @@ describe('fetchWorkshopDetails', () => {
   it('erro HTTP da Steam vira exceção (o cron registra e tenta no dia seguinte)', async () => {
     const fake = (async () => ({ ok: false, status: 503 })) as unknown as typeof fetch;
     await expect(fetchWorkshopDetails(['1'], fake)).rejects.toThrow('503');
+  });
+});
+
+
+describe('disqModsLink (aviso de desclassificação no Discord)', () => {
+  it('mod bloqueado: lista filtrada pelo ID', () => {
+    expect(disqModsLink('blocked_mod:Helicopter::Pz-Helicopter-Events-Spawn', 'https://www.pzrank.com.br/'))
+      .toBe('[Ver na lista](https://www.pzrank.com.br/mods-lista?q=Pz-Helicopter-Events-Spawn)');
+  });
+  it('mod fora do cadastro: abre a conferência da lista', () => {
+    expect(disqModsLink('unlisted_mods:A,B', 'https://x.br')).toBe('[Conferir minha lista de mods](https://x.br/mods-lista?conferir=1)');
+  });
+  it('motivo sem mod: sem link', () => {
+    expect(disqModsLink('debug', 'https://x.br')).toBeNull();
+    expect(disqModsLink('local_mods:A', 'https://x.br')).toBeNull();
   });
 });

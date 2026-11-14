@@ -251,6 +251,7 @@
       "no_results": "Nenhum mod encontrado.",
       "updated": "Última verificação: {{date}}",
       "workshop": "Oficina",
+      "see_in_list": "Ver na lista de mods do campeonato",
       "search": "Buscar mod...",
       "integrity": {
         "approved_title": "Integridade dos Mods — Save aprovado",

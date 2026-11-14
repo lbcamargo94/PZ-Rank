@@ -170,6 +170,22 @@ function formatDisqReason(reason: string): string {
   }
 }
 
+// Link para a página de mods em desclassificação por mod (v4.35.0): o mod bloqueado já
+// filtrado (a página abre na aba do item que tem o ID); para mod fora do cadastro, a conferência da lista (a busca não acharia o ID).
+export function disqModsLink(reason: string, base: string): string | null {
+  const site = base.replace(/\/+$/, '');
+  if (reason.startsWith('blocked_mod:')) {
+    const [name, modId] = reason.slice('blocked_mod:'.length).split('::');
+    const q = (modId || name || '').trim();
+    if (!q) return null;
+    return `[Ver na lista](${site}/mods-lista?${new URLSearchParams({ q }).toString()})`;
+  }
+  if (reason.startsWith('unlisted_mods:') || reason.startsWith('mods:') || reason === 'mods') {
+    return `[Conferir minha lista de mods](${site}/mods-lista?conferir=1)`;
+  }
+  return null;
+}
+
 export interface DisqualificationNotificationPayload {
   nick:          string;
   characterName: string;
@@ -187,6 +203,8 @@ export async function sendDisqualificationNotification(payload: Disqualification
   const fields: { name: string; value: string; inline: boolean }[] = [
     { name: 'Motivo', value: formatDisqReason(reason), inline: false },
   ];
+  const modsLink = disqModsLink(reason, process.env.FRONTEND_URL ?? 'https://www.pzrank.com.br');
+  if (modsLink)          fields.push({ name: 'Lista de mods', value: modsLink,        inline: false });
   if (note?.trim())      fields.push({ name: 'Detalhes',   value: note.trim(),      inline: false });
   if (moderator?.trim()) fields.push({ name: 'Moderador',  value: moderator.trim(), inline: true  });
 

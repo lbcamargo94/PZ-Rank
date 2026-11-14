@@ -666,6 +666,112 @@
 .ml-meta-used { color: #a7d88a; }
 .ml-meta-stale { color: #e8b450; display: inline-flex; align-items: center; gap: 4px; }
 
+/* ── Conferir minha lista (v4.35.0) ── */
+.ml-check-cta {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px;
+  padding: 12px 16px;
+  margin-bottom: 18px;
+  border: 1px dashed #3d5a2c;
+  border-radius: var(--radius-lg);
+  background: #0f170b;
+  color: var(--text-2);
+  font-size: 16px;
+}
+.ml-check-cta .ti { color: var(--green-light); margin-right: 4px; }
+.ml-check-open, .mlc-run {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 40px;
+  padding: 8px 16px;
+  border: 1px solid var(--green);
+  border-radius: var(--radius);
+  background: #1c2c14;
+  color: #d6f0c4;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ml-check-open:hover, .mlc-run:hover:not(:disabled) { background: #24391a; border-color: var(--green-light); }
+.mlc-run:disabled { opacity: 0.5; cursor: default; }
+
+.mlc {
+  margin-bottom: 18px;
+  padding: 16px;
+  border: 1px solid #3d5a2c;
+  border-radius: var(--radius-lg);
+  background: #0f170b;
+}
+.mlc-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.mlc-title {
+  font-family: var(--font-display);
+  font-size: 19px; font-weight: 500;
+  color: #d6f0c4;
+  display: flex; align-items: center; gap: 8px;
+}
+.mlc-close {
+  width: 36px; height: 36px; border: 0; border-radius: var(--radius);
+  background: none; color: var(--text-3); cursor: pointer; font-size: 18px;
+}
+.mlc-close:hover { background: rgba(255,255,255,0.06); color: var(--text-1); }
+.mlc-help { margin: 8px 0 12px; font-size: 16px; line-height: 1.5; color: var(--text-2); max-width: 80ch; }
+.mlc code, .mlc-help code { font-family: var(--font-mono); font-size: 15px; color: var(--text-1); overflow-wrap: anywhere; }
+.mlc-input {
+  width: 100%;
+  min-height: 140px;
+  resize: vertical;
+  padding: 10px 12px;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  background: #0b0e09;
+  color: var(--text-1);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  line-height: 1.45;
+}
+.mlc-input:focus { outline: none; border-color: var(--green); }
+.mlc-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.mlc-clear {
+  min-height: 40px; padding: 8px 14px;
+  border: 1px solid var(--border-mid); border-radius: var(--radius);
+  background: transparent; color: var(--text-2); font-size: 16px; cursor: pointer;
+}
+
+.mlc-result { margin-top: 16px; display: flex; flex-direction: column; gap: 12px; }
+.mlc-verdict {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 10px 12px; border-radius: var(--radius);
+  font-size: 16px; font-weight: 600; line-height: 1.4;
+}
+.mlc-verdict .ti { font-size: 20px; flex-shrink: 0; }
+.mlc-verdict-ok   { background: #142410; border: 1px solid var(--green);  color: #c4e8ad; }
+.mlc-verdict-bad  { background: var(--red-dim); border: 1px solid #b03a3a; color: #f6b0b0; }
+.mlc-verdict-warn { background: var(--amber-dim); border: 1px solid var(--amber); color: #f2c27a; }
+
+.mlc-group h3, .mlc-group summary {
+  font-size: 16px; font-weight: 600; margin-bottom: 6px; color: var(--text-1);
+}
+.mlc-group summary { cursor: pointer; }
+.mlc-group-bad h3  { color: #f39a9a; }
+.mlc-group-warn h3 { color: #e8b450; }
+.mlc-group ul { list-style: none; display: flex; flex-direction: column; }
+.mlc-group li {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 16px;
+}
+.mlc-name { color: var(--text-2); }
+.mlc-sub  { color: var(--text-3); width: 100%; }
+.mlc-note { font-size: 15px; color: var(--text-3); margin-bottom: 6px; line-height: 1.45; }
+.mlc-see {
+  margin-left: auto;
+  display: inline-flex; align-items: center; gap: 4px;
+  min-height: 34px; padding: 4px 10px;
+  border: 1px solid var(--border-mid); border-radius: var(--radius);
+  background: #141912; color: var(--text-1);
+  font-size: 15px; text-decoration: none; cursor: pointer;
+}
+.mlc-see:hover { border-color: var(--green); }
+
 @media (max-width: 560px) {
   .ml-controls { padding: 12px; }
   .ml-count { margin-left: 0; width: 100%; }

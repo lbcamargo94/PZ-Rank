@@ -202,3 +202,87 @@ export function fmtCount(n: number): string {
 export function isNewGroup(group: ModGroup, now: number = Date.now()): boolean {
   return group.addedAt > 0 && now - group.addedAt < NEW_DAYS * 86_400_000;
 }
+
+// ── "Conferir minha lista" (v4.35.0) ─────────────────────────────────────────
+// O jogador cola o mods.txt do save (linhas "mod = X,") ou uma lista de IDs e vê, antes
+// de jogar, o que o servidor vai achar: a regra é a de backend/src/routes/sync.ts —
+// ID exato (maiúscula conta); bloqueado ou fora do cadastro desclassifica.
+// Tudo roda no navegador, com a lista já carregada: nada é enviado ao servidor.
+
+/** IDs que o jogo sempre tem ativos e o mod do rank não envia (RankModCheck.lua, INTERNAL_IDS). */
+const INTERNAL_MOD_IDS = new Set(['base', 'Base', 'pzexo']);
+
+export interface ModCheckHit { id: string; group: ModGroup }
+
+export interface ModCheckResult {
+  total:           number;
+  allowed:         ModCheckHit[];
+  blocked:         ModCheckHit[];
+  /** Fora do cadastro. `suggestion` = ID cadastrado igual, mas com maiúsculas diferentes. */
+  unlisted:        Array<{ id: string; suggestion: string | null }>;
+  /** Item obrigatório sem nenhum dos seus IDs na lista. */
+  requiredMissing: ModGroup[];
+  /** Números da Oficina colados no lugar do ID do mod. */
+  workshopNumbers: string[];
+}
+
+export function parseModListText(text: string): string[] {
+  const fromModsTxt = [...text.matchAll(/^\s*mod\s*=\s*(.+?)\s*,?\s*$/gim)].map(m => m[1]);
+  const raw = fromModsTxt.length > 0 ? fromModsTxt : text.split(/[\n,;]+/);
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const r of raw) {
+    // B42 pode prefixar "\" no ID; aspas e vírgula final vêm de colagens de outras fontes
+    const id = r.trim().replace(/^\+/, '').replace(/^["']|["']$/g, '').replace(/,$/, '').trim();
+    if (!id || INTERNAL_MOD_IDS.has(id) || /^(VERSION|mods|maps|[{}])/.test(id) || seen.has(id)) continue;
+    seen.add(id);
+    out.push(id);
+  }
+  return out;
+}
+
+export function checkModList(text: string, groups: ModGroup[]): ModCheckResult {
+  const ids = parseModListText(text);
+  const byId    = new Map<string, { group: ModGroup; status: string }>();
+  const byLower = new Map<string, string>();
+  for (const g of groups) {
+    for (const m of g.mods) {
+      if (!m.mod_id) continue;
+      byId.set(m.mod_id, { group: g, status: m.status });
+      byLower.set(m.mod_id.toLowerCase(), m.mod_id);
+    }
+  }
+  const res: ModCheckResult = { total: 0, allowed: [], blocked: [], unlisted: [], requiredMissing: [], workshopNumbers: [] };
+  const present = new Set<string>();
+  for (const id of ids) {
+    if (/^\d{6,}$/.test(id)) { res.workshopNumbers.push(id); continue; }
+    res.total++;
+    const hit = byId.get(id);
+    if (!hit) {
+      const s = byLower.get(id.toLowerCase());
+      res.unlisted.push({ id, suggestion: s && s !== id ? s : null });
+      continue;
+    }
+    present.add(id);
+    (hit.status === 'blocked' ? res.blocked : res.allowed).push({ id, group: hit.group });
+  }
+  res.requiredMissing = groups.filter(g =>
+    g.required && g.status !== 'blocked' &&
+    !g.mods.some(m => m.mod_id && m.status === 'active' && present.has(m.mod_id)));
+  return res;
+}
+
+/**
+ * Endereço da lista já filtrada por um ID de mod (links "Ver na lista"). Sem aba: a página
+ * abre na aba do item que tem esse ID exato (um ID bloqueado pode estar num item parcial).
+ */
+export function modListUrl(modId: string): string {
+  return `/mods-lista?${new URLSearchParams({ q: modId }).toString()}`;
+}
+
+/** Aba do item que tem exatamente este mod_id, ou null. */
+export function tabForExactModId(groups: ModGroup[], query: string): ModGroupStatus | null {
+  const q = query.trim();
+  if (!q) return null;
+  return groups.find(g => g.mods.some(m => m.mod_id === q))?.status ?? null;
+}

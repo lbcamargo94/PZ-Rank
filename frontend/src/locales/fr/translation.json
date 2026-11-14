@@ -251,6 +251,7 @@
       "no_results": "Aucun mod trouvé.",
       "updated": "Dernière vérification : {{date}}",
       "workshop": "Atelier",
+      "see_in_list": "Voir dans la liste des mods du championnat",
       "search": "Rechercher un mod...",
       "integrity": {
         "approved_title": "Intégrité des Mods — Save approuvé",

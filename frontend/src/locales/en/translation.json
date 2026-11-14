@@ -251,6 +251,7 @@
       "no_results": "No mods found.",
       "updated": "Last check: {{date}}",
       "workshop": "Workshop",
+      "see_in_list": "See it in the championship mod list",
       "search": "Search mod...",
       "integrity": {
         "approved_title": "Mod Integrity — Save approved",

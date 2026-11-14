@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { Mod } from '../types';
-import { groupMods, matchesQuery, sortGroups, nameSortKey, workshopIdFrom, isNewGroup, applyUsage, countByCategory, isStaleGroup, monthsSinceUpdate, fmtCount } from '../lib/modsList';
+import { groupMods, matchesQuery, sortGroups, nameSortKey, workshopIdFrom, isNewGroup, applyUsage, countByCategory, isStaleGroup, monthsSinceUpdate, fmtCount, parseModListText, checkModList, modListUrl, tabForExactModId } from '../lib/modsList';
 
 let nextId = 1;
 function mod(p: Partial<Mod>): Mod {
@@ -163,5 +163,58 @@ describe('categorias, inscritos e uso (v4.34.0)', () => {
     expect(fmtCount(2100)).toBe('2,1 mil');
     expect(fmtCount(45_300)).toBe('45 mil');
     expect(fmtCount(1_250_000)).toBe('1,3 mi');
+  });
+});
+
+describe('Conferir minha lista (v4.35.0)', () => {
+  const groups = groupMods([
+    mod({ name: 'PZ Community Rank', mod_id: 'PZCommunityRank', workshop_id: '3000001', is_required: true }),
+    mod({ name: 'TwisTonFire - Stats', mod_id: 'twistonfirestats',         workshop_id: '3000002', is_required: true }),
+    mod({ name: 'TwisTonFire - Stats', mod_id: 'twistonfirestatsmpstable', workshop_id: '3000002', is_required: true }),
+    mod({ name: 'Better Crafting', mod_id: 'EURY_CRAFTING', workshop_id: '3000003' }),
+    mod({ name: 'Helicopter', mod_id: 'Pz-Helicopter-Events-Spawn', workshop_id: '3000004', status: 'blocked' }),
+    mod({ name: 'Neat', mod_id: 'Neat_Building_UIOnly', workshop_id: '3000005' }),
+    mod({ name: 'Neat', mod_id: 'Neat_Building',        workshop_id: '3000005', status: 'blocked' }),
+  ]);
+
+  it('lê o mods.txt do save, sem a moldura e sem os IDs internos', () => {
+    const txt = 'VERSION = 1,\n\nmods\n{\n    mod = \EURY_CRAFTING,\n    mod = base,\n    mod = Saint Hairstyles,\n}\n\nmaps\n{\n}\n';
+    expect(parseModListText(txt)).toEqual(['EURY_CRAFTING', 'Saint Hairstyles']);
+  });
+  it('lê também uma lista de IDs por linha ou vírgula, sem repetir', () => {
+    expect(parseModListText('A, B\nC;A\n\n')).toEqual(['A', 'B', 'C']);
+  });
+  it('classifica cada ID como o servidor: exato, bloqueado ou fora do cadastro', () => {
+    const r = checkModList('PZCommunityRank\ntwistonfirestats\nEURY_CRAFTING\nPz-Helicopter-Events-Spawn\neury_crafting\nMeuModLocal', groups);
+    expect(r.total).toBe(6);
+    expect(r.allowed.map(h => h.id)).toEqual(['PZCommunityRank', 'twistonfirestats', 'EURY_CRAFTING']);
+    expect(r.blocked.map(h => h.id)).toEqual(['Pz-Helicopter-Events-Spawn']);
+    expect(r.unlisted).toEqual([
+      { id: 'eury_crafting', suggestion: 'EURY_CRAFTING' },
+      { id: 'MeuModLocal',   suggestion: null },
+    ]);
+  });
+  it('item parcialmente permitido: o ID liberado passa, o bloqueado não', () => {
+    const r = checkModList('Neat_Building_UIOnly\nNeat_Building', groups);
+    expect(r.allowed.map(h => h.id)).toEqual(['Neat_Building_UIOnly']);
+    expect(r.blocked.map(h => h.id)).toEqual(['Neat_Building']);
+  });
+  it('obrigatório cumprido com qualquer um dos IDs do item; aponta o que falta', () => {
+    expect(checkModList('PZCommunityRank\ntwistonfirestatsmpstable', groups).requiredMissing).toEqual([]);
+    expect(checkModList('EURY_CRAFTING', groups).requiredMissing.map(g => g.primary.name))
+      .toEqual(['PZ Community Rank', 'TwisTonFire - Stats']);
+  });
+  it('separa número da Oficina colado no lugar do ID', () => {
+    const r = checkModList('3618123324\nEURY_CRAFTING', groups);
+    expect(r.workshopNumbers).toEqual(['3618123324']);
+    expect(r.total).toBe(1);
+  });
+  it('monta o link "Ver na lista" e acha a aba do ID exato', () => {
+    expect(modListUrl('EURY_CRAFTING')).toBe('/mods-lista?q=EURY_CRAFTING');
+    expect(modListUrl('Neat Building')).toBe('/mods-lista?q=Neat+Building');
+    expect(tabForExactModId(groups, 'Neat_Building')).toBe('mixed');
+    expect(tabForExactModId(groups, 'Pz-Helicopter-Events-Spawn')).toBe('blocked');
+    expect(tabForExactModId(groups, 'EURY_CRAFTING')).toBe('allowed');
+    expect(tabForExactModId(groups, 'eury')).toBeNull();
   });
 });

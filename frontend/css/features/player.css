@@ -2116,6 +2116,17 @@ body.overlay-page-active::before { display: none; }
 }
 .pp-mod-steam-btn:hover { border-color: var(--border-mid); color: var(--text-1); }
 
+/* "Ver na lista" (v4.35.0): leva à página de mods já filtrada pelo ID */
+.pp-mod-see {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border: 1px solid var(--border);
+  border-radius: var(--radius); color: var(--text-3); text-decoration: none;
+  background: var(--bg-4); flex-shrink: 0; font-size: 18px;
+}
+.pp-mod-see:hover { border-color: var(--border-mid); color: var(--text-1); }
+.pp-disq-mod-link { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.pp-disq-mod-link:hover { color: #e89a40; }
+
 .pp-mods-updated { color: var(--text-4); font-size: 14px; }
 
 @media (max-width: 460px) {

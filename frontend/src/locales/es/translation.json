@@ -251,6 +251,7 @@
       "no_results": "Ningún mod encontrado.",
       "updated": "Última verificación: {{date}}",
       "workshop": "Taller",
+      "see_in_list": "Ver en la lista de mods del campeonato",
       "search": "Buscar mod...",
       "integrity": {
         "approved_title": "Integridad de Mods — Save aprobado",
