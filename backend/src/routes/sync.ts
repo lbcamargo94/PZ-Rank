@@ -28,7 +28,7 @@ import {
 import { config } from '../config';
 import { parseCompanionVersion } from '../lib/companionVersion';
 import type { Objectives } from '../types';
-import { missingRequiredMods } from '../lib/requiredMods';
+import { EMPTY_LIST_TRUSTED_FROM, missingRequiredMods } from '../lib/requiredMods';
 
 // Checagem de live do YouTube no sync: no máximo 1 a cada YT_SYNC_CHECK_MS por
 // jogador. O mod sincroniza a cada ~5 min (e a cada 5 kills); checar em todo sync
@@ -533,7 +533,9 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   let unlistedModIds:  string[] = [];   // todos UNLISTED encontrados
   let missingRequiredIds: string[] = []; // obrigatórios ausentes (v4.36.0, se ENFORCE_REQUIRED_MODS)
 
-  if (decoded.activeMods.length > 0) {
+  // Lista vazia do mod v2.36.0+ = só faltam os obrigatórios (ver lib/requiredMods.ts).
+  const trustEmptyList = config.enforceRequiredMods && isVersionAtLeast(decoded.modVersion, EMPTY_LIST_TRUSTED_FROM);
+  if (decoded.activeMods.length > 0 || trustEmptyList) {
     const { data: catalogMods } = await supabase
       .from('mods')
       .select('mod_id, name, status, is_required')
@@ -556,7 +558,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       }
     }
     if (config.enforceRequiredMods) {
-      missingRequiredIds = missingRequiredMods((catalogMods ?? []) as CatalogMod[], decoded.activeMods);
+      missingRequiredIds = missingRequiredMods((catalogMods ?? []) as CatalogMod[], decoded.activeMods, trustEmptyList);
     }
   }
 

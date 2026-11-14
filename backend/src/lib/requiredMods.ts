@@ -2,8 +2,10 @@
 // e permitido precisa estar ativo no save; faltar qualquer um desclassifica (reversível,
 // como os outros motivos de mod: volta a valer no primeiro sync com a lista certa).
 //
-// O mod do rank não envia os IDs internos (RankModCheck.lua, INTERNAL_IDS) — o próprio
-// PZCommunityRank está sempre ativo quando há código, então nunca conta como ausente.
+// Até a v2.35.0 o mod do rank não enviava o próprio PZCommunityRank (RankModCheck.lua), então
+// lista vazia podia ser "só o mod do rank". A partir da v2.36.0 ele vai na lista e a coleta usa
+// getActivatedMods(): lista vazia vira "sem os obrigatórios" (EMPTY_LIST_TRUSTED_FROM). O
+// PZCommunityRank nunca conta como ausente: com código, ele está rodando.
 export const INTERNAL_MOD_IDS = new Set(['base', 'Base', 'pzexo', 'PZCommunityRank']);
 
 export interface RequiredCatalogMod {
@@ -14,9 +16,15 @@ export interface RequiredCatalogMod {
 
 const truthy = (v: unknown) => v === true || v === 1 || v === '1' || v === 't';
 
-/** IDs obrigatórios que faltam em `activeMods`. Lista vazia de mods = não dá para avaliar. */
-export function missingRequiredMods(catalog: RequiredCatalogMod[], activeMods: string[]): string[] {
-  if (activeMods.length === 0) return [];
+/** Versão do mod a partir da qual a lista de mods vazia é confiável (v2.36.0). */
+export const EMPTY_LIST_TRUSTED_FROM = '2.36.0';
+
+/**
+ * IDs obrigatórios que faltam em `activeMods`. Lista vazia só é avaliada com `trustEmpty`
+ * (mod v2.36.0+); antes disso não dá para saber se a coleta falhou.
+ */
+export function missingRequiredMods(catalog: RequiredCatalogMod[], activeMods: string[], trustEmpty = false): string[] {
+  if (activeMods.length === 0 && !trustEmpty) return [];
   const active = new Set(activeMods);
   const out: string[] = [];
   for (const m of catalog) {

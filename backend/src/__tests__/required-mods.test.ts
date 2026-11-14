@@ -26,4 +26,11 @@ describe('missingRequiredMods', () => {
   it('lista de mods vazia (mod antigo ou falha de leitura): não avalia', () => {
     expect(missingRequiredMods(catalog, [])).toEqual([]);
   });
+  it('lista vazia confiável (mod v2.36.0+): faltam todos os obrigatórios', () => {
+    expect(missingRequiredMods(catalog, [], true)).toEqual(['SpiffoStatueFix', 'twistonfirestats']);
+  });
+  it('mod v2.36.0+ manda o próprio PZCommunityRank e ele não atrapalha', () => {
+    expect(missingRequiredMods(catalog, ['PZCommunityRank'], true)).toEqual(['SpiffoStatueFix', 'twistonfirestats']);
+    expect(missingRequiredMods(catalog, ['PZCommunityRank', 'SpiffoStatueFix', 'twistonfirestats'], true)).toEqual([]);
+  });
 });
