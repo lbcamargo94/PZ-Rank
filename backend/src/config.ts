@@ -27,4 +27,7 @@ export const config = {
   frontendUrl:        process.env.FRONTEND_URL ?? 'http://localhost:5173',
   syncHmacSecret:     process.env.SYNC_HMAC_SECRET ?? '',
   minModVersion:      process.env.MIN_MOD_VERSION  ?? '',
+  // Desclassifica quem não tem todos os mods obrigatórios ativos (v4.36.0, lib/requiredMods.ts).
+  // Desligado por padrão: a moderação liga no .env quando a regra for anunciada.
+  enforceRequiredMods: process.env.ENFORCE_REQUIRED_MODS === 'true',
 };

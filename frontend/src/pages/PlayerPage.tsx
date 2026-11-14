@@ -217,6 +217,10 @@ function parseModViolations(reason: string | null | undefined): string[] {
   if (reason.startsWith('unlisted_mods:')) {
     return reason.slice('unlisted_mods:'.length).split(',').map(v => v.trim()).filter(Boolean);
   }
+  if (reason.startsWith('missing_required:')) {
+    return reason.slice('missing_required:'.length).split(',').map(v => v.trim()).filter(Boolean)
+      .map(id => `${id} (ausente)`);
+  }
   if (!reason.startsWith('mods:')) return [];
   return reason.slice(5).split(',').map(v => {
     if (v.startsWith('NAO_PERMITIDO:')) return v.slice(14);
@@ -236,6 +240,10 @@ function modViolationLinks(reason: string | null | undefined): Array<{ label: st
   if (reason.startsWith('unlisted_mods:')) {
     return reason.slice('unlisted_mods:'.length).split(',').map(v => v.trim()).filter(Boolean)
       .map(id => ({ label: id, id }));
+  }
+  if (reason.startsWith('missing_required:')) {
+    return reason.slice('missing_required:'.length).split(',').map(v => v.trim()).filter(Boolean)
+      .map(id => ({ label: `${id} (ausente)`, id }));
   }
   if (!reason.startsWith('mods:')) return [];
   return reason.slice(5).split(',').filter(Boolean).map(v => {
@@ -257,6 +265,10 @@ function ppDisqTooltip(t: TFunction, reason: string | null | undefined): string 
   if (reason.startsWith('unlisted_mods:')) {
     const ids = parseModViolations(reason);
     return ids.length > 0 ? t('rank.disq.unlisted_mods', { list: ids.join(', ') }) : t('rank.disq.mods');
+  }
+  if (reason.startsWith('missing_required:')) {
+    const ids = reason.slice('missing_required:'.length).split(',').map(v => v.trim()).filter(Boolean);
+    return ids.length > 0 ? t('rank.disq.missing_required', { list: ids.join(', ') }) : t('rank.disq.mods');
   }
   if (reason.startsWith('mods:')) {
     const ids = parseModViolations(reason);

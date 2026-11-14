@@ -63,6 +63,10 @@ function disqTooltip(t: TFunction, reason: string | null | undefined): string {
     const ids = r.slice('unlisted_mods:'.length).split(',').map(v => v.trim()).filter(Boolean);
     return ids.length > 0 ? t('rank.disq.unlisted_mods', { list: ids.join(', ') }) : t('rank.disq.mods');
   }
+  if (r.startsWith('missing_required:')) {
+    const ids = r.slice('missing_required:'.length).split(',').map(v => v.trim()).filter(Boolean);
+    return ids.length > 0 ? t('rank.disq.missing_required', { list: ids.join(', ') }) : t('rank.disq.mods');
+  }
   if (r.startsWith('local_mods:')) {
     return t('rank.disq.local_mods', { list: r.slice('local_mods:'.length).split(',').join(', ') });
   }

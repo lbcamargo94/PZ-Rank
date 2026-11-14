@@ -103,16 +103,16 @@ export function ModListChecker({ groups, onSeeInList, onClose }: {
           {result.requiredMissing.length > 0 && (
             <div className="mlc-group mlc-group-warn">
               <h3>Obrigatórios que faltam ({result.requiredMissing.length})</h3>
+              <p className="mlc-note">Sem todos os mods obrigatórios ativos, a run é desclassificada.</p>
               <ul>
-                {result.requiredMissing.map(g => {
-                  const ids = g.mods.filter(m => m.mod_id && m.status === 'active').map(m => m.mod_id!);
+                {result.requiredMissing.map(({ group: g, ids }) => {
                   return (
                     <li key={g.key}>
                       <span className="mlc-name">{g.primary.name}</span>
                       <a href={g.primary.workshop_url} target="_blank" rel="noopener noreferrer" className="mlc-see">
                         Oficina <i className="ti ti-external-link" aria-hidden="true" />
                       </a>
-                      <span className="mlc-sub">{ids.length > 1 ? 'ative um destes: ' : 'ID: '}{ids.map((id, i) => <span key={id}>{i > 0 && ', '}<code>{id}</code></span>)}</span>
+                      <span className="mlc-sub">{ids.length > 1 ? 'ative estes IDs: ' : 'ative o ID: '}{ids.map((id, i) => <span key={id}>{i > 0 && ', '}<code>{id}</code></span>)}</span>
                     </li>
                   );
                 })}

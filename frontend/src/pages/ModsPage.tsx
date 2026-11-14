@@ -308,11 +308,7 @@ export function ModsPage() {
                         <span className="ml-required-text">
                           <span className="ml-required-name">{g.primary.name} <i className="ti ti-external-link" aria-hidden="true" /></span>
                           <span className="ml-required-ids">
-                            {(() => {
-                              const ids = g.mods.filter(m => m.mod_id && m.status === 'active').map(m => m.mod_id);
-                              // Basta um dos IDs do item ativo (é o que as runs válidas usam)
-                              return ids.length > 1 ? `um destes: ${ids.join(', ')}` : ids[0];
-                            })()}
+                            {g.mods.filter(m => m.mod_id && m.is_required && m.status === 'active').map(m => m.mod_id).join(', ')}
                           </span>
                         </span>
                       </a>

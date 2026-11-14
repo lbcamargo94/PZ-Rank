@@ -186,7 +186,8 @@
       "mods_list": "Mods not allowed: {{list}}",
       "local_mods": "Mod(s) outside the Steam Workshop: {{list}}",
       "blocked_mod": "Blocked mod detected: {{name}}",
-      "unlisted_mods": "Unregistered mod(s): {{list}}"
+      "unlisted_mods": "Unregistered mod(s): {{list}}",
+      "missing_required": "Required mod(s) missing: {{list}}"
     },
     "skills": {
       "title": "Skills",

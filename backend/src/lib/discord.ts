@@ -161,6 +161,10 @@ function formatDisqReason(reason: string): string {
   if (reason.startsWith('local_mods:')) {
     return `Mod(s) fora da Oficina da Steam: ${reason.slice('local_mods:'.length).split(',').join(', ')}`;
   }
+  if (reason.startsWith('missing_required:')) {
+    const ids = reason.slice('missing_required:'.length).split(',').map(v => v.trim()).filter(Boolean);
+    return ids.length > 0 ? `Mod(s) obrigatório(s) ausente(s): ${ids.join(', ')}` : 'Mod obrigatório ausente';
+  }
   if (reason.startsWith('mods:')) return 'Uso de mods não permitidos';
   switch (reason) {
     case 'sandbox': return 'Configuração de sandbox divergente do preset oficial';
@@ -180,7 +184,7 @@ export function disqModsLink(reason: string, base: string): string | null {
     if (!q) return null;
     return `[Ver na lista](${site}/mods-lista?${new URLSearchParams({ q }).toString()})`;
   }
-  if (reason.startsWith('unlisted_mods:') || reason.startsWith('mods:') || reason === 'mods') {
+  if (reason.startsWith('unlisted_mods:') || reason.startsWith('missing_required:') || reason.startsWith('mods:') || reason === 'mods') {
     return `[Conferir minha lista de mods](${site}/mods-lista?conferir=1)`;
   }
   return null;

@@ -186,7 +186,8 @@
       "mods_list": "Mods non autorisés : {{list}}",
       "local_mods": "Mod(s) hors du Workshop Steam : {{list}}",
       "blocked_mod": "Mod bloqué détecté : {{name}}",
-      "unlisted_mods": "Mod(s) non enregistré(s) : {{list}}"
+      "unlisted_mods": "Mod(s) non enregistré(s) : {{list}}",
+      "missing_required": "Mod(s) obligatoire(s) manquant(s) : {{list}}"
     },
     "skills": {
       "title": "Compétences",

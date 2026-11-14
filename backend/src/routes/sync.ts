@@ -28,6 +28,7 @@ import {
 import { config } from '../config';
 import { parseCompanionVersion } from '../lib/companionVersion';
 import type { Objectives } from '../types';
+import { missingRequiredMods } from '../lib/requiredMods';
 
 // Checagem de live do YouTube no sync: no máximo 1 a cada YT_SYNC_CHECK_MS por
 // jogador. O mod sincroniza a cada ~5 min (e a cada 5 kills); checar em todo sync
@@ -105,7 +106,8 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // desclassificam permanentemente — reabilita automaticamente no próximo sync limpo.
   const isModsReason   = (r: string | null | undefined) => !!r && (
     r === 'mods' || r === 'mod_removed' ||
-    r.startsWith('mods:') || r.startsWith('blocked_mod:') || r.startsWith('unlisted_mods:')
+    r.startsWith('mods:') || r.startsWith('blocked_mod:') || r.startsWith('unlisted_mods:') ||
+    r.startsWith('missing_required:')
   );
   const companionReason = (disqualification_reason && isValidReason(disqualification_reason))
     ? disqualification_reason
@@ -527,14 +529,15 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   // PERMITTED → ok
   let blockedModFound: { name: string; modId: string } | null = null; // primeiro BLOCKED encontrado
   let unlistedModIds:  string[] = [];   // todos UNLISTED encontrados
+  let missingRequiredIds: string[] = []; // obrigatórios ausentes (v4.36.0, se ENFORCE_REQUIRED_MODS)
 
   if (decoded.activeMods.length > 0) {
     const { data: catalogMods } = await supabase
       .from('mods')
-      .select('mod_id, name, status')
+      .select('mod_id, name, status, is_required')
       .not('mod_id', 'is', null);
 
-    type CatalogMod = { mod_id: string; name: string; status: string };
+    type CatalogMod = { mod_id: string; name: string; status: string; is_required: boolean | number | null };
     const blockedSet   = new Map<string, string>();
     const permittedSet = new Set<string>();
     for (const m of (catalogMods ?? []) as CatalogMod[]) {
@@ -549,6 +552,9 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       if (!permittedSet.has(modId)) {
         unlistedModIds.push(modId);
       }
+    }
+    if (config.enforceRequiredMods) {
+      missingRequiredIds = missingRequiredMods((catalogMods ?? []) as CatalogMod[], decoded.activeMods);
     }
   }
 
@@ -624,9 +630,12 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     return;
   }
 
-  // Mods UNLISTED detectados server-side: desclassificam igual a BLOCKED
-  if (localModsReason || (!blockedModFound && unlistedModIds.length > 0)) {
-    const reason     = localModsReason ?? `unlisted_mods:${unlistedModIds.slice(0, 5).join(',')}`;
+  // Mods UNLISTED detectados server-side: desclassificam igual a BLOCKED. Obrigatório
+  // ausente (v4.36.0) usa o mesmo caminho, com motivo próprio.
+  if (localModsReason || (!blockedModFound && (unlistedModIds.length > 0 || missingRequiredIds.length > 0))) {
+    const reason     = localModsReason ?? (unlistedModIds.length > 0
+      ? `unlisted_mods:${unlistedModIds.slice(0, 5).join(',')}`
+      : `missing_required:${missingRequiredIds.slice(0, 5).join(',')}`);
     const modPayload = {
       sandbox_ok:               false,
       score:                    0,

@@ -220,8 +220,8 @@ export interface ModCheckResult {
   blocked:         ModCheckHit[];
   /** Fora do cadastro. `suggestion` = ID cadastrado igual, mas com maiúsculas diferentes. */
   unlisted:        Array<{ id: string; suggestion: string | null }>;
-  /** Item obrigatório sem nenhum dos seus IDs na lista. */
-  requiredMissing: ModGroup[];
+  /** Itens obrigatórios com algum ID obrigatório fora da lista (todos são exigidos, v4.36.0). */
+  requiredMissing: Array<{ group: ModGroup; ids: string[] }>;
   /** Números da Oficina colados no lugar do ID do mod. */
   workshopNumbers: string[];
 }
@@ -266,9 +266,12 @@ export function checkModList(text: string, groups: ModGroup[]): ModCheckResult {
     present.add(id);
     (hit.status === 'blocked' ? res.blocked : res.allowed).push({ id, group: hit.group });
   }
-  res.requiredMissing = groups.filter(g =>
-    g.required && g.status !== 'blocked' &&
-    !g.mods.some(m => m.mod_id && m.status === 'active' && present.has(m.mod_id)));
+  for (const g of groups) {
+    const missing = g.mods
+      .filter(m => m.mod_id && m.is_required && m.status === 'active' && !present.has(m.mod_id))
+      .map(m => m.mod_id!);
+    if (missing.length > 0) res.requiredMissing.push({ group: g, ids: missing });
+  }
   return res;
 }
 

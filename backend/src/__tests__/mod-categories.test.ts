@@ -86,6 +86,9 @@ describe('disqModsLink (aviso de desclassificação no Discord)', () => {
     expect(disqModsLink('blocked_mod:Helicopter::Pz-Helicopter-Events-Spawn', 'https://www.pzrank.com.br/'))
       .toBe('[Ver na lista](https://www.pzrank.com.br/mods-lista?q=Pz-Helicopter-Events-Spawn)');
   });
+  it('obrigatório ausente: também abre a conferência da lista', () => {
+    expect(disqModsLink('missing_required:twistonfirestats', 'https://x.br')).toBe('[Conferir minha lista de mods](https://x.br/mods-lista?conferir=1)');
+  });
   it('mod fora do cadastro: abre a conferência da lista', () => {
     expect(disqModsLink('unlisted_mods:A,B', 'https://x.br')).toBe('[Conferir minha lista de mods](https://x.br/mods-lista?conferir=1)');
   });

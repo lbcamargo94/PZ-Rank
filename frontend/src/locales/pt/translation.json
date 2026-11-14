@@ -186,7 +186,8 @@
       "mods_list": "Mods não permitidos: {{list}}",
       "local_mods": "Mod(s) fora da Oficina da Steam: {{list}}",
       "blocked_mod": "Mod bloqueado detectado: {{name}}",
-      "unlisted_mods": "Mod(s) não cadastrado(s) no desafio: {{list}}"
+      "unlisted_mods": "Mod(s) não cadastrado(s) no desafio: {{list}}",
+      "missing_required": "Mod(s) obrigatório(s) ausente(s): {{list}}"
     },
     "skills": {
       "title": "Habilidades",

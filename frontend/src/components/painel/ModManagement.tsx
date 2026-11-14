@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { apiGetAllMods, apiAddMod, apiUpdateMod, apiBlockMod, apiUnblockMod, apiDeleteMod, apiRefreshModImages, apiSetModCategories, apiRefreshWorkshop } from '../../lib/api';
-import { MOD_CATEGORIES, categoryLabel } from '../../lib/modsList';
+import {
+  MOD_CATEGORIES, categoryLabel, groupMods, matchesQuery, sortGroups, countByCategory, isStaleGroup,
+  type ModGroup, type ModGroupStatus, type ModSort,
+} from '../../lib/modsList';
 import type { Mod } from '../../types';
 import { ConfirmModal } from './ConfirmModal';
 
@@ -19,6 +22,33 @@ interface Props {
   token:     string;
   showToast: (msg: string, type?: string) => void;
 }
+
+// Filtros só da moderação (v4.36.0), além dos da página pública.
+type ExtraFilter = 'all' | 'required' | 'stale' | 'nosteam' | 'override' | 'others';
+const EXTRA_FILTERS: Array<{ value: ExtraFilter; label: string }> = [
+  { value: 'all',      label: 'Todos os itens' },
+  { value: 'required', label: 'Obrigatórios' },
+  { value: 'stale',    label: 'Sem atualização há 6+ meses' },
+  { value: 'nosteam',  label: 'Sem dados da Steam' },
+  { value: 'override', label: 'Categoria definida pela moderação' },
+  { value: 'others',   label: 'Sem categoria (Outros)' },
+];
+function matchesExtra(g: ModGroup, f: ExtraFilter): boolean {
+  switch (f) {
+    case 'required': return g.required;
+    case 'stale':    return isStaleGroup(g);
+    case 'nosteam':  return !!g.workshopId && g.subscriptions == null;
+    case 'override': return g.mods.some(m => m.category_override);
+    case 'others':   return g.categories.length === 1 && g.categories[0] === 'outros';
+    default:         return true;
+  }
+}
+const STATUS_FILTERS: Array<{ value: 'all' | ModGroupStatus; label: string }> = [
+  { value: 'all',     label: 'Todos' },
+  { value: 'allowed', label: 'Ativos' },
+  { value: 'mixed',   label: 'Parciais' },
+  { value: 'blocked', label: 'Bloqueados' },
+];
 
 // Categoria do item na página pública (v4.34.0). Vem das tags da Steam; o moderador
 // pode trocar. "Voltar às tags da Steam" apaga a correção.
@@ -525,6 +555,12 @@ export function ModManagement({ token, showToast }: Props) {
   const [editingGroupId, setEditingGroupId] = useState<number | null>(null);
   const [refreshing,     setRefreshing]     = useState(false);
   const [refreshingSteam, setRefreshingSteam] = useState(false);
+  // Filtros da lista (v4.36.0)
+  const [fQuery,  setFQuery]  = useState('');
+  const [fStatus, setFStatus] = useState<'all' | ModGroupStatus>('all');
+  const [fCat,    setFCat]    = useState('');
+  const [fSort,   setFSort]   = useState<ModSort>('az');
+  const [fExtra,  setFExtra]  = useState<ExtraFilter>('all');
 
   const fetchMods = useCallback(async () => {
     setLoading(true);
@@ -701,19 +737,29 @@ export function ModManagement({ token, showToast }: Props) {
   }
 
   // Um mesmo item da Oficina Steam pode empacotar mais de um mod (mod_id diferente,
-  // status independente). Agrupa por workshop_id para exibir UM card por item, em
-  // vez de repetir nome/imagem/link uma vez por mod_id. Mods sem workshop_id viram
-  // grupos de 1 (comportamento antigo, mantido).
-  const groups = useMemo(() => {
-    const map   = new Map<string, Mod[]>();
-    const order: string[] = [];
-    for (const m of mods) {
-      const key = m.workshop_id ? `w-${m.workshop_id}` : `m-${m.id}`;
-      if (!map.has(key)) { map.set(key, []); order.push(key); }
-      map.get(key)!.push(m);
-    }
-    return order.map(k => map.get(k)!);
-  }, [mods]);
+  // status independente): um card por item (lib/modsList.ts groupMods, o mesmo da
+  // página pública). Filtros iguais aos de /mods-lista (v4.36.0), mais os da moderação.
+  const allGroups = useMemo(() => groupMods(mods), [mods]);
+
+  const searched = useMemo(
+    () => allGroups.filter(g => matchesQuery(g, fQuery) && matchesExtra(g, fExtra)),
+    [allGroups, fQuery, fExtra],
+  );
+  const statusCounts = useMemo(() => {
+    const c: Record<ModGroupStatus, number> = { allowed: 0, mixed: 0, blocked: 0 };
+    for (const g of searched) c[g.status]++;
+    return c;
+  }, [searched]);
+  const inStatus  = useMemo(() => (fStatus === 'all' ? searched : searched.filter(g => g.status === fStatus)), [searched, fStatus]);
+  const catCounts = useMemo(() => countByCategory(inStatus), [inStatus]);
+  const filtered  = useMemo(
+    () => sortGroups(fCat ? inStatus.filter(g => g.categories.includes(fCat)) : inStatus, fSort),
+    [inStatus, fCat, fSort],
+  );
+  const filtersOn = !!fQuery.trim() || fStatus !== 'all' || !!fCat || fExtra !== 'all';
+  function clearFilters() { setFQuery(''); setFStatus('all'); setFCat(''); setFExtra('all'); }
+
+  const groups: Mod[][] = filtered.map(g => g.mods);
 
   const activeGroups  = groups.filter(g => g.every(m => m.status === 'active'));
   const blockedGroups = groups.filter(g => g.every(m => m.status === 'blocked'));
@@ -800,6 +846,60 @@ export function ModManagement({ token, showToast }: Props) {
           <div className="painel-empty-state">
             <i className="ti ti-puzzle-off" />
             <p>Nenhum mod cadastrado ainda.</p>
+          </div>
+        )}
+
+        {!loading && mods.length > 0 && (
+          <div className="mm-filters">
+            <div className="mm-filters-row">
+              <div className="mm-search">
+                <i className="ti ti-search" aria-hidden="true" />
+                <input
+                  type="search"
+                  value={fQuery}
+                  onChange={e => setFQuery(e.target.value)}
+                  placeholder="Buscar por nome, ID do mod ou link da Oficina"
+                  aria-label="Buscar mod por nome, ID do mod ou link da Oficina"
+                />
+              </div>
+              <select value={fExtra} onChange={e => setFExtra(e.target.value as ExtraFilter)} aria-label="Mostrar">
+                {EXTRA_FILTERS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+              </select>
+              <select value={fSort} onChange={e => setFSort(e.target.value as ModSort)} aria-label="Ordenar">
+                <option value="az">A–Z</option>
+                <option value="recent">Adicionados recentemente</option>
+              </select>
+            </div>
+            <div className="mm-chips" role="group" aria-label="Situação">
+              {STATUS_FILTERS.map(f => (
+                <button key={f.value} type="button" aria-pressed={fStatus === f.value}
+                        className={`mm-chip${fStatus === f.value ? ' active' : ''}`} onClick={() => setFStatus(f.value)}>
+                  {f.label} <span>{f.value === 'all' ? searched.length : statusCounts[f.value]}</span>
+                </button>
+              ))}
+            </div>
+            <div className="mm-chips" role="group" aria-label="Categoria">
+              <button type="button" aria-pressed={!fCat} className={`mm-chip${!fCat ? ' active' : ''}`} onClick={() => setFCat('')}>
+                Todas as categorias <span>{inStatus.length}</span>
+              </button>
+              {MOD_CATEGORIES.filter(c => (catCounts.get(c.slug) ?? 0) > 0 || c.slug === fCat).map(c => (
+                <button key={c.slug} type="button" aria-pressed={fCat === c.slug}
+                        className={`mm-chip${fCat === c.slug ? ' active' : ''}`} onClick={() => setFCat(fCat === c.slug ? '' : c.slug)}>
+                  {c.label} <span>{catCounts.get(c.slug) ?? 0}</span>
+                </button>
+              ))}
+            </div>
+            <div className="mm-filters-foot">
+              <span>{filtered.length} de {allGroups.length} itens</span>
+              {filtersOn && <button type="button" className="btn-ghost btn-sm" onClick={clearFilters}>Limpar filtros</button>}
+            </div>
+          </div>
+        )}
+
+        {!loading && mods.length > 0 && filtered.length === 0 && (
+          <div className="painel-empty-state">
+            <i className="ti ti-search-off" />
+            <p>Nenhum mod com esses filtros.</p>
           </div>
         )}
 

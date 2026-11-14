@@ -199,9 +199,11 @@ describe('Conferir minha lista (v4.35.0)', () => {
     expect(r.allowed.map(h => h.id)).toEqual(['Neat_Building_UIOnly']);
     expect(r.blocked.map(h => h.id)).toEqual(['Neat_Building']);
   });
-  it('obrigatório cumprido com qualquer um dos IDs do item; aponta o que falta', () => {
-    expect(checkModList('PZCommunityRank\ntwistonfirestatsmpstable', groups).requiredMissing).toEqual([]);
-    expect(checkModList('EURY_CRAFTING', groups).requiredMissing.map(g => g.primary.name))
+  it('exige todos os IDs obrigatórios e aponta cada um que falta', () => {
+    expect(checkModList('PZCommunityRank\ntwistonfirestats\ntwistonfirestatsmpstable', groups).requiredMissing).toEqual([]);
+    expect(checkModList('PZCommunityRank\ntwistonfirestats', groups).requiredMissing
+      .map(r => [r.group.primary.name, r.ids])).toEqual([['TwisTonFire - Stats', ['twistonfirestatsmpstable']]]);
+    expect(checkModList('EURY_CRAFTING', groups).requiredMissing.map(r => r.group.primary.name))
       .toEqual(['PZ Community Rank', 'TwisTonFire - Stats']);
   });
   it('separa número da Oficina colado no lugar do ID', () => {
