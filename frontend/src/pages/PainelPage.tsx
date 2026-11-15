@@ -1026,6 +1026,7 @@ export function PainelPage({ session, onSession, onBack }: Props) {
             currentId={session.modId}
             showToast={showToast}
             onInviteClick={() => setShowInviteMod(true)}
+            canRemove={session.role === 'master'}
           />
         )}
 

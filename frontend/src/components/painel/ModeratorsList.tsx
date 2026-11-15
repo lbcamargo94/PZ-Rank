@@ -8,11 +8,13 @@ interface Props {
   currentId?: string;
   showToast:  (msg: string, type?: string) => void;
   onInviteClick: () => void;
+  /** Só o master remove moderadores (DELETE /moderators/:id é requireMaster). */
+  canRemove: boolean;
 }
 
 const ROLE_LABELS = { master: 'Master', moderator: 'Moderador' };
 
-export function ModeratorsList({ token, currentId, showToast, onInviteClick }: Props) {
+export function ModeratorsList({ token, currentId, showToast, onInviteClick, canRemove }: Props) {
   const [mods,          setMods]          = useState<Moderator[]>([]);
   const [loading,       setLoading]       = useState(false);
   const [deleting,      setDeleting]      = useState<string | null>(null);
@@ -59,7 +61,7 @@ export function ModeratorsList({ token, currentId, showToast, onInviteClick }: P
             <span className="mod-email-display">{m.email}</span>
             <span className={`player-status status-badge-${m.role}`}>{ROLE_LABELS[m.role]}</span>
           </div>
-          {m.id !== currentId && m.role !== 'master' && (
+          {canRemove && m.id !== currentId && m.role !== 'master' && (
             <div className="player-card-actions">
               <button className="btn-danger btn-sm" disabled={deleting === m.id}
                 onClick={() => setConfirmDelete({ id: m.id, login: m.login })}>

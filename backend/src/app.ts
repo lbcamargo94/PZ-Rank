@@ -110,6 +110,7 @@ export function createApp() {
   app.use('/auth/player/login',                   authLimiter);
   app.use('/auth/player/forgot-password',         sensitiveActionLimiter);
   app.use('/auth/player/resend-verification',     sensitiveActionLimiter);
+  app.post('/moderators/invite',                  sensitiveActionLimiter); // v4.38.0: qualquer moderador convida
   app.use('/auth/player/activate',                authLimiter);
   app.use('/auth/player/reset-password',          authLimiter);
   app.use('/players/register',                    sensitiveActionLimiter);

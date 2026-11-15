@@ -28,8 +28,11 @@ router.get('/', requireModerator, async (_req: ModRequest, res: Response): Promi
   }
 });
 
-// POST /moderators/invite — master: envia convite por email
-router.post('/invite', requireMaster, async (req: ModRequest, res: Response): Promise<void> => {
+// POST /moderators/invite — qualquer moderador: envia convite por email (v4.38.0; antes só o master).
+// O convite sempre cria conta com role 'moderator' (POST /register), então não dá para promover
+// ninguém a master por aqui; remover moderador continua só do master. Cada convite enviado vai
+// para o moderation_log com quem convidou, e o app.ts limita a 5 convites por 15 min por IP.
+router.post('/invite', requireModerator, async (req: ModRequest, res: Response): Promise<void> => {
   const { email } = req.body as { email?: string };
 
   if (!email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
@@ -71,6 +74,27 @@ router.post('/invite', requireMaster, async (req: ModRequest, res: Response): Pr
       res.status(500).json({ error: 'Não foi possível enviar o email de convite. Tente novamente.' });
       return;
     }
+
+    void (async () => {
+      try {
+        const { data: inviter } = await supabase.from('moderators').select('login').eq('id', req.userId!).maybeSingle();
+        const login = (inviter as { login?: string } | null)?.login ?? null;
+        console.log(`[moderators] convite enviado | por=${login ?? req.userId} | role=${req.modRole}`);
+        const { error } = await supabase.from('moderation_log').insert([{
+          moderator_id:    String(req.userId),
+          moderator_login: login,
+          action:          'convidar_moderador',
+          entry_id:        null,
+          player_id:       null,
+          target:          normalizedEmail,
+          details:         null,
+          http_status:     200,
+        }]);
+        if (error) console.error('[moderation-log] falha ao gravar convite:', error.message ?? error);
+      } catch (logErr) {
+        console.error('[moderation-log] erro ao gravar convite:', logErr);
+      }
+    })();
 
     res.json({ message: 'Convite enviado com sucesso.' });
   } catch (err) {
