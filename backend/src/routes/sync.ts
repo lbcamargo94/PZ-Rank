@@ -29,6 +29,7 @@ import { config } from '../config';
 import { parseCompanionVersion } from '../lib/companionVersion';
 import type { Objectives } from '../types';
 import { EMPTY_LIST_TRUSTED_FROM, missingRequiredMods } from '../lib/requiredMods';
+import { isPzoptPermitted, type PzoptCatalogMod } from '../lib/pzopt';
 
 // Checagem de live do YouTube no sync: no máximo 1 a cada YT_SYNC_CHECK_MS por
 // jogador. O mod sincroniza a cada ~5 min (e a cada 5 kills); checar em todo sync
@@ -374,6 +375,20 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
   const prev = existing as ExistingRow | null;
   syncLog.entryId = prev ? Number(prev.id) : null;
 
+  // PZ Optimization permitido na lista de mods do site (v4.39.0, ver lib/pzopt.ts): não desclassifica
+  // e reabilita sozinho quem foi desclassificado só por ele. Consulta uma vez, só quando importa.
+  let pzoptPermittedCache: boolean | null = null;
+  const pzoptPermitted = async (): Promise<boolean> => {
+    if (pzoptPermittedCache === null) {
+      const { data } = await supabase.from('mods').select('mod_id, workshop_id, status');
+      pzoptPermittedCache = isPzoptPermitted((data ?? []) as PzoptCatalogMod[]);
+    }
+    return pzoptPermittedCache;
+  };
+  const pzoptActive = decoded.pzopt && !(await pzoptPermitted());
+  const isReactivatable = async (r: string | null | undefined) =>
+    isModsReason(r) || (r === 'pzopt' && await pzoptPermitted());
+
   // Se já está desclassificado por mods, reabilita automaticamente (mods não desclassificam mais).
   // Para outros motivos (sandbox, debug, manual), mantém a desclassificação.
   // justReactivated=true sinaliza que o baseline de prev (score/kills) não é confiável:
@@ -389,8 +404,12 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       .eq('sandbox_ok', false)
       .is('deleted_at', null);
     const wanted = normalizeCharName(decoded.characterName);
-    const blocked = ((dqRows ?? []) as { character_name: string; disqualification_reason: string | null }[])
-      .find(r => !isModsReason(r.disqualification_reason) && normalizeCharName(r.character_name) === wanted);
+    const sameName = ((dqRows ?? []) as { character_name: string; disqualification_reason: string | null }[])
+      .filter(r => normalizeCharName(r.character_name) === wanted);
+    let blocked: (typeof sameName)[number] | undefined;
+    for (const r of sameName) {
+      if (!(await isReactivatable(r.disqualification_reason))) { blocked = r; break; }
+    }
     if (blocked) {
       console.log(`[sync] nome de personagem desclassificado recusado | player=${player.nick} | char=${decoded.characterName} | igual a=${blocked.character_name}`);
       res.status(200).json({
@@ -407,7 +426,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
 
   let justReactivated = false;
   if (prev && prev.sandbox_ok === false) {
-    if (isModsReason(prev.disqualification_reason)) {
+    if (await isReactivatable(prev.disqualification_reason)) {
       await supabase
         .from(config.tableName)
         .update({ sandbox_ok: true, disqualification_reason: null, disqualified_at: null })
@@ -423,7 +442,7 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
       // limite que o moderador vê e usa ao conceder a anistia de debug no painel.
       // O mesmo limite serve para mod fora da Oficina (local_min, mod v2.33.0+) e para o
       // PZ Optimization (pzopt_min, mod v2.35.0+): vale a maior hora entre os dois.
-      const markMin = [decoded.localSeenMin, decoded.pzoptSeenMin].filter((v): v is number => v != null);
+      const markMin = [decoded.localSeenMin, pzoptActive ? decoded.pzoptSeenMin : null].filter((v): v is number => v != null);
       const seenMin = decoded.debugSeenMin ?? (markMin.length > 0 ? Math.max(...markMin) : null);
       if (seenMin != null && seenMin !== prev.debug_seen_min) {
         await supabase
@@ -570,9 +589,10 @@ router.post('/update', syncLimiter, async (req: Request, res: Response): Promise
     ? `local_mods:${decoded.localMods.slice(0, 5).join(',')}`
     : null;
 
-  // PZ Optimization instalado na pasta do jogo (mod v2.35.0+): proibido no campeonato, desclassifica
-  // de vez como o mod fora da Oficina (a marca fica no save; só a anistia reverte).
-  const pzoptReason = decoded.pzopt && !isPzoptAmnestied(decoded, prev?.debug_amnesty_until_min)
+  // PZ Optimization instalado na pasta do jogo (mod v2.35.0+): se NÃO estiver permitido na lista de
+  // mods, desclassifica de vez como o mod fora da Oficina (a marca fica no save; só a anistia ou
+  // permitir o PZO na lista reverte). Permitido na lista (v4.39.0): não desclassifica.
+  const pzoptReason = pzoptActive && !isPzoptAmnestied(decoded, prev?.debug_amnesty_until_min)
     ? 'pzopt'
     : null;
   const permanentModReason = localModsReason ?? pzoptReason;
